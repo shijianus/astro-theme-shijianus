@@ -1,7 +1,7 @@
 ---
 title: "Laboratoire de contrôle d'accès aux articles"
 pubDate: 2026-04-26
-updatedDate: 2026-04-26
+updatedDate: 2026-04-25
 description: "Permet de vérifier que le contrôle d'accès par mot de passe fonctionne selon les règles côté serveur et de confirmer que le contenu restreint n'est pas directement affiché sur la page tant qu'il n'est pas déverrouillé."
 author: "shijianus"
 category: "Conception de systèmes"
@@ -17,6 +17,7 @@ access:
 i18nKey: "access-control-lab"
 lang: "fr"
 aiTranslatedFrom: "zh-CN"
+version: "v0.0.1"
 ---
 
 # Cet article est protégé

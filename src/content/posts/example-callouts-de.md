@@ -12,6 +12,8 @@ mermaid: false
 i18nKey: "example-callouts"
 lang: "de"
 aiTranslatedFrom: "zh-CN"
+version: "v0.0.1"
+updatedDate: 2026-08-27
 ---
 
 Dieses Beispiel dient ausschließlich der Verifikation und dem Test der **Callout-/Admonition-/Hinweisboxen**-Rendering-Fähigkeiten des Blog-Themas im Inhaltsbereich.

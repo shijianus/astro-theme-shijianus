@@ -12,6 +12,8 @@ mermaid: false
 i18nKey: "example-tabs"
 lang: "zh-Hant"
 aiTranslatedFrom: "zh-CN"
+version: "v0.0.1"
+updatedDate: 2026-08-27
 ---
 本篇範例專用於展示與測試部落格正文中的 **多標籤頁切換（Interactive Tabs）與多版本下拉切換器（Dropdown Switcher）**。
 

@@ -13,6 +13,8 @@ sticky: 4
 i18nKey: "markdown-scan-showcase"
 lang: "en"
 aiTranslatedFrom: "zh-CN"
+version: "v0.0.1"
+updatedDate: 2026-04-24
 ---
 This article is specifically designed to validate content scanning, table of contents (TOC) synchronization, style enhancement, and readability strategies within the theme. It is not a "conceptual overview" but rather a **genuine content sample suitable for smoke-testing the frontend theme**.
 

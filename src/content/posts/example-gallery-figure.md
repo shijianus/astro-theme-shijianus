@@ -9,6 +9,8 @@ category: "示例"
 series: "功能示例"
 math: false
 mermaid: false
+version: "v0.0.1"
+updatedDate: 2026-08-27
 ---
 
 本篇示例专用于展示与测试博客正文中的 **图片画廊（Gallery）与全屏灯箱（Lightbox）** 组件。

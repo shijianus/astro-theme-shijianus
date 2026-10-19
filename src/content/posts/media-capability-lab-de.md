@@ -1,7 +1,7 @@
 ---
 title: "Labor für Cover-, Bildhosting- und Video-Anpassung"
 pubDate: 2026-04-26
-updatedDate: 2026-04-26
+updatedDate: 2026-04-25
 description: "Zentrale Überprüfung von Artikel-Titelbildern, Remote-Bildhosting, lokalen Ressourcen, Video-Covern, Fallbacks bei Fehlern und Medienanzeige-Effekten bei verschiedenen Breiten."
 author: "shijianus"
 category: "Frontend-Engineering"
@@ -15,6 +15,7 @@ tags: ["Medien-Anpassung", "Markdown", "Theme-Neugestaltung", "Astro"]
 i18nKey: "media-capability-lab"
 lang: "de"
 aiTranslatedFrom: "zh-CN"
+version: "v0.0.1"
 ---
 # Gesamtprüfung der Cover- und Medienanpassung
 

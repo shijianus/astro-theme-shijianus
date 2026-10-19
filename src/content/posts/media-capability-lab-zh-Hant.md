@@ -1,7 +1,7 @@
 ---
 title: "封面、圖床與影片適配實驗室"
 pubDate: 2026-04-26
-updatedDate: 2026-04-26
+updatedDate: 2026-04-25
 description: "集中驗證文章頭圖、遠端圖床、本機資源、影片封面、失效回退以及不同寬度下的媒體展示效果。"
 author: "shijianus"
 category: "前端工程"
@@ -15,6 +15,7 @@ tags: ["媒體適配", "Markdown", "主題重構", "Astro"]
 i18nKey: "media-capability-lab"
 lang: "zh-Hant"
 aiTranslatedFrom: "zh-CN"
+version: "v0.0.1"
 ---
 
 # 封面與媒體適配總檢

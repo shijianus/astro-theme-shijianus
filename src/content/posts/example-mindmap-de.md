@@ -13,6 +13,8 @@ mindmap: true
 i18nKey: "example-mindmap"
 lang: "de"
 aiTranslatedFrom: "zh-CN"
+version: "v0.0.1"
+updatedDate: 2026-08-27
 ---
 
 Dieses Beispiel dient ausschließlich der Demonstration und Prüfung der **Markmap-Dynamik-Interaktiven-Mindmap-Rendering-Engine**, der **6-stufigen Stapelstruktur** und des **Mechanismus für unbegrenzte Tiefe (Infinite Depth)** im Blogtext.

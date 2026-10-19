@@ -1,12 +1,12 @@
 ---
-import { CalendarDays, Clock3, Eye, FileText, FolderOpen, RefreshCw, TimerReset, type LucideIcon } from 'lucide-react';
+import { CalendarDays, Clock3, Eye, FileText, FolderOpen, RefreshCw, TimerReset, Tag as TagIcon, type LucideIcon } from 'lucide-react';
 import { normalizeLangCode } from '../../lib/content';
 
 type PostHeroMetaItem = {
   label: string;
   value: string;
   runtime?: 'views' | 'dwell';
-  icon?: 'calendar' | 'refresh' | 'folder' | 'file' | 'clock' | 'eye' | 'timer';
+  icon?: 'calendar' | 'refresh' | 'folder' | 'file' | 'clock' | 'eye' | 'timer' | 'tag';
 };
 
 interface Props {
@@ -60,6 +60,7 @@ const heroMetaIconMap: Record<NonNullable<PostHeroMetaItem['icon']>, LucideIcon>
   clock: Clock3,
   eye: Eye,
   timer: TimerReset,
+  tag: TagIcon,
 };
 
 const hasMedia = Boolean(image || video);

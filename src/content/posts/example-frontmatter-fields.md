@@ -9,6 +9,8 @@ category: "示例"
 series: "功能示例"
 math: false
 mermaid: false
+version: "v0.0.1"
+updatedDate: 2026-08-27
 ---
 
 本篇示例专用于系统解析与说明本主题在 `src/content.config.ts` 中通过 **Zod Schema** 定义的全部 Front Matter 字段。

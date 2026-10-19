@@ -2,7 +2,7 @@
 title: "EpoCanvas 内容密度规范：字数估算、平均篇幅与四级阈值"
 description: "完整解释 EpoCanvas 当前字数估算算法、四舍五入顺序、全站平均篇幅、四级内容密度阈值、预计阅读时间及质量评价边界。"
 pubDate: 2026-10-18
-updatedDate: 2026-10-18
+updatedDate: 2026-10-17
 author: "shijianus"
 category: "工程规范"
 group: "EpoCanvas Standards"
@@ -14,6 +14,7 @@ mindmap: true
 draft: false
 lang: "zh-CN"
 i18nKey: "ees-content-density"
+version: "v1.1.0"
 ---
 
 # 全站内容密度分级与度量规范

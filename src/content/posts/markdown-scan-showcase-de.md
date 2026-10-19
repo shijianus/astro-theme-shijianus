@@ -13,6 +13,8 @@ sticky: 4
 i18nKey: "markdown-scan-showcase"
 lang: "de"
 aiTranslatedFrom: "zh-CN"
+version: "v0.0.1"
+updatedDate: 2026-04-24
 ---
 Dieser Artikel dient ausschließlich der Validierung der Inhaltsanalyse, der Synchronisation des Inhaltsverzeichnisses, der Stilerweiterungen und der Lesbarkeitsstrategie innerhalb des Themes. Es handelt sich nicht um eine „konzeptionelle Erläuterung“, sondern um eine **echte Inhaltssample, die sich für Smoke-Tests des Frontend-Themes eignet**.
 

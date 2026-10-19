@@ -1,7 +1,7 @@
 ---
 title: "Guide panoramique complet de la syntaxe et des fonctionnalités spéciales de Markdown : formules mathématiques, graphiques, boîtes d'alerte, chiffrement/déchiffrement, flou/mosaïque et typographie moderne"
 pubDate: 2026-08-28
-updatedDate: 2026-08-28
+updatedDate: 2026-08-27
 description: "Le manuel de référence Markdown ultime et l'article de démonstration de test de charge panoramique, spécialement conçu pour ce blog. Couvre toutes les fonctionnalités telles que la mise en page de base, les formules mathématiques KaTeX, les diagrammes Mermaid, les boîtes de notification Anzhiyu, la coloration syntaxique et le pliage/diff de code, les fenêtres contextuelles de chiffrement de mot de passe, le flou gaussien et la mosaïque."
 author: "shijianus"
 category: "Ingénierie Frontend"
@@ -14,6 +14,7 @@ tags: ["Astro", "Markdown", "Refonte du thème", "UI", "Katex", "Mermaid", "Anzh
 i18nKey: "markdown-syntax-mastery"
 lang: "fr"
 aiTranslatedFrom: "zh-CN"
+version: "v0.0.1"
 ---
 # Bienvenue dans le système de rendu Markdown tout-en-un et de fonctionnalités spéciales
 

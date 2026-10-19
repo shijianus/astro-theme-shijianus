@@ -25,6 +25,9 @@ const sidebarData = createSidebarData(allPosts);
     slot="hero"
     title={frontmatter.title}
     description={frontmatter.description}
+    version={frontmatter.version}
+    pubDate={frontmatter.pubDate}
+    updatedDate={frontmatter.updatedDate}
   />
 
   <Content />

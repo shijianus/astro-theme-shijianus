@@ -1,7 +1,7 @@
 ---
 title: "文章访问控制实验室"
 pubDate: 2026-04-26
-updatedDate: 2026-04-26
+updatedDate: 2026-04-25
 description: "用于验证密码访问控制是否按服务端规则生效，并确认受限正文不会在未解锁时直接输出到页面。"
 author: "shijianus"
 category: "系统设计"
@@ -16,6 +16,7 @@ access:
   message: "这篇文章启用了服务端访问控制。输入正确密码后才会继续渲染正文。"
 i18nKey: "access-control-lab"
 lang: "zh-CN"
+version: "v0.0.1"
 ---
 
 # 这是一篇受保护的文章

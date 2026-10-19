@@ -13,6 +13,8 @@ tags: ["UX", "Tema de blog", "Sistema visual"]
 i18nKey: "readable-geek-interfaces"
 lang: "es"
 aiTranslatedFrom: "zh-CN"
+version: "v0.0.1"
+updatedDate: 2026-04-10
 ---
 # La estética técnica no equivale al ruido
 

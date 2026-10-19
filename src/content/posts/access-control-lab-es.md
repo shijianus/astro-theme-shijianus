@@ -1,7 +1,7 @@
 ---
 title: "Laboratorio de Control de Acceso a Artículos"
 pubDate: 2026-04-26
-updatedDate: 2026-04-26
+updatedDate: 2026-04-25
 description: "Para verificar que el control de acceso por contraseña funciona según las reglas del servidor y confirmar que el contenido restringido no se muestra directamente en la página si no está desbloqueado."
 author: "shijianus"
 category: "Diseño de Sistemas"
@@ -17,6 +17,7 @@ access:
 i18nKey: "access-control-lab"
 lang: "es"
 aiTranslatedFrom: "zh-CN"
+version: "v0.0.1"
 ---
 
 # Este es un Artículo Protegido

@@ -13,6 +13,8 @@ tags: ["Astro", "Tailwind", "主題重構"]
 i18nKey: "hello-world"
 lang: "zh-Hant"
 aiTranslatedFrom: "zh-CN"
+version: "v0.0.1"
+updatedDate: 2026-04-01
 ---
 
 # 為什麼要重做

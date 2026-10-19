@@ -11,6 +11,8 @@ tags: ["首頁", "內容策略", "UI"]
 i18nKey: "content-first-homepage"
 lang: "zh-Hant"
 aiTranslatedFrom: "zh-CN"
+version: "v0.0.1"
+updatedDate: 2026-04-15
 ---
 
 # 首頁是入口，不是倉庫

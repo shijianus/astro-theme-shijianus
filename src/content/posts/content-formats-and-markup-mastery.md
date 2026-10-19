@@ -1,7 +1,7 @@
 ---
 title: "静态站点生成器（SSG）与博客主题内容格式全景指南：从主流支持到特异功能、下拉框交互与排版美化"
 pubDate: 2026-08-28
-updatedDate: 2026-08-28
+updatedDate: 2026-08-27
 description: "全面系统梳理 Hugo、Jekyll、Eleventy、Astro、Hexo、WordPress 等主流静态站点与博客系统的内容格式支持清单。从 Markdown、MDX、HTML、AsciiDoc、Org-mode、RST 到全量实装的 WordPress Post Formats、交互式下拉框切换器、手风琴折叠、KaTeX 数学公式、Mermaid 图表与密码加密特异功能。"
 author: "shijianus"
 category: "系统设计"
@@ -48,6 +48,7 @@ externalEncrypts:
     hint: "这是一个独立 URL 的秘密附录，只有持有此链接的人才能访问。"
     showButton: false
     title: "SSG 秘密附录（独立 URL）"
+version: "v0.0.1"
 ---
 
 

@@ -1,7 +1,7 @@
 ---
 title: "Umfassender Leitfaden zur Markdown-Syntax und Sonderfunktionen: Mathematische Formeln, Diagramme, Warnfelder, Verschlüsselung/Entschlüsselung, Unschärfe-Mosaik und modernes Layout"
 pubDate: 2026-08-28
-updatedDate: 2026-08-28
+updatedDate: 2026-08-27
 description: "Das ultimative Markdown-Referenzhandbuch und umfassende Demonstration für diesen Blog. Umfasst alle Funktionen wie grundlegendes Layout, KaTeX-Mathematikformeln, Mermaid-Diagramme, Anzhiyu-Hinweisfelder, Code-Hervorhebung und Diff, Passwort-Verschlüsselungs-Pop-ups, Gaußsche Unschärfe und Mosaik."
 author: "shijianus"
 category: "Frontend-Entwicklung"
@@ -14,6 +14,7 @@ tags: ["Astro", "Markdown", "Themen-Refactoring", "UI", "Katex", "Mermaid", "Anz
 i18nKey: "markdown-syntax-mastery"
 lang: "de"
 aiTranslatedFrom: "zh-CN"
+version: "v0.0.1"
 ---
 # Willkommen beim All-in-One Markdown-Rendering- und Spezialfunktionssystem
 

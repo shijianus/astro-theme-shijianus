@@ -13,6 +13,8 @@ mindmap: true
 i18nKey: "example-mindmap"
 lang: "fr"
 aiTranslatedFrom: "zh-CN"
+version: "v0.0.1"
+updatedDate: 2026-08-27
 ---
 Cet exemple est spécifiquement conçu pour démontrer et tester le moteur de rendu **Markmap Mind Map interactif dynamique** dans le corps de l'article du blog, la structure de **superposition à 6 niveaux de profondeur** ainsi que le **mécanisme d'extension à profondeur infinie (Infinite Depth)**.
 

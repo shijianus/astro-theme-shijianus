@@ -7,6 +7,8 @@ category: "测试"
 tags: ["i18n", "test", "native-en"]
 lang: "zh-CN"
 i18nKey: "test-matrix-native-en"
+version: "v0.0.1"
+updatedDate: 2026-09-18
 ---
 
 # 双后缀文件名下的中文翻译

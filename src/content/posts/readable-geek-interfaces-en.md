@@ -13,6 +13,8 @@ tags: ["UX", "Blog Theme", "Visual System"]
 i18nKey: "readable-geek-interfaces"
 lang: "en"
 aiTranslatedFrom: "zh-CN"
+version: "v0.0.1"
+updatedDate: 2026-04-10
 ---
 # Technical Aesthetic Does Not Equal Noise
 

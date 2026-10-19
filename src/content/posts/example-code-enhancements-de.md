@@ -12,6 +12,8 @@ mermaid: false
 i18nKey: "example-code-enhancements"
 lang: "de"
 aiTranslatedFrom: "zh-CN"
+version: "v0.0.1"
+updatedDate: 2026-08-27
 ---
 
 Dieses Beispiel dient der Validierung und dem Testen der **Codeblock-Erweiterungen** im Blogbeitrag.

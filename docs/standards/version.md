@@ -14,7 +14,7 @@ mindmap: false
 draft: false
 lang: "zh-Hant"
 i18nKey: "ees-version-protocol"
-version: "v1.0.0"
+version: "v1.0.1"
 ---
 
 # EpoCanvas 版本與架構規範

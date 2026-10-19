@@ -13,6 +13,8 @@ sticky: 4
 i18nKey: "markdown-scan-showcase"
 lang: "zh-Hant"
 aiTranslatedFrom: "zh-CN"
+version: "v0.0.1"
+updatedDate: 2026-04-24
 ---
 這篇文章專門用來驗證主題中的內容掃描、目錄同步、樣式增強與可讀性策略。它不是一篇「概念說明」，而是一篇 **真正可以拿來煙測前端主題** 的內容樣本。
 

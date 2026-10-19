@@ -13,6 +13,8 @@ tags: ["API", "配置", "架構"]
 i18nKey: "api-ready-theme-contracts"
 lang: "zh-Hant"
 aiTranslatedFrom: "zh-CN"
+version: "v0.0.1"
+updatedDate: 2026-04-07
 ---
 
 # 為何先建立契約

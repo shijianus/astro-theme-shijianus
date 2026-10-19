@@ -12,6 +12,8 @@ mermaid: false
 i18nKey: "example-callouts"
 lang: "zh-Hant"
 aiTranslatedFrom: "zh-CN"
+version: "v0.0.1"
+updatedDate: 2026-08-27
 ---
 
 本篇範例專用於驗證與測試部落格主題在正文欄中的 **Callouts / Admonitions / 告示框** 渲染能力。

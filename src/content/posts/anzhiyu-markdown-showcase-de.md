@@ -1,7 +1,7 @@
 ---
 title: "Anzhiyu-Stil Markdown-Fähigkeitsprüfung: Inhaltsverzeichnis, Formatierung, versteckte Inhalte, Medien und Inhaltsblöcke"
 pubDate: 2026-04-25
-updatedDate: 2026-04-25
+updatedDate: 2026-04-24
 description: "Ein langer Beispielartikel, der speziell für Belastungstests von Artikelsuchen, Verzeichnisebenen, GFM, versteckten Inhalten, speziellen Formaten, Medienanzeigen und gängigen Inhaltsblöcken entwickelt wurde."
 author: "shijianus"
 category: "Frontend-Entwicklung"
@@ -14,6 +14,7 @@ tags: ["Astro", "Markdown", "Themen-Refactoring", "UI", "Studie"]
 i18nKey: "anzhiyu-markdown-showcase"
 lang: "de"
 aiTranslatedFrom: "zh-CN"
+version: "v0.0.1"
 ---
 # Dies ist ein langer Artikel, der speziell zur Überprüfung der Themenfähigkeit dient
 

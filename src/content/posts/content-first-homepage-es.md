@@ -11,6 +11,8 @@ tags: ["Página de Inicio", "Estrategia de Contenido", "UI"]
 i18nKey: "content-first-homepage"
 lang: "es"
 aiTranslatedFrom: "zh-CN"
+version: "v0.0.1"
+updatedDate: 2026-04-15
 ---
 
 # La página de inicio es una entrada, no un almacén

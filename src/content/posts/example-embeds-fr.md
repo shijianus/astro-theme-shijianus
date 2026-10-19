@@ -12,6 +12,8 @@ mermaid: false
 i18nKey: "example-embeds"
 lang: "fr"
 aiTranslatedFrom: "zh-CN"
+version: "v0.0.1"
+updatedDate: 2026-08-27
 ---
 Cet exemple est dédié à la démonstration et au test de l'**intégration de médias riches (Embeds)**, des **formats de publication WordPress** et des **flux de dialogue (Chat Dialogue)** dans le corps de l'article de blog.
 

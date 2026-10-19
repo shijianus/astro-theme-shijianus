@@ -11,6 +11,8 @@ tags: ["Study", "Refactor", "Astro"]
 i18nKey: "learning-through-rebuilds"
 lang: "en"
 aiTranslatedFrom: "zh-CN"
+version: "v0.0.1"
+updatedDate: 2026-04-12
 ---
 
 # Imitation Only Scratches the Surface

@@ -1,7 +1,7 @@
 ---
 title: "Laboratoire d'adaptation des couvertures, des hébergements d'images et des vidéos"
 pubDate: 2026-04-26
-updatedDate: 2026-04-26
+updatedDate: 2026-04-25
 description: "Vérification centralisée des effets d'affichage des images d'en-tête d'articles, des hébergements d'images distants, des ressources locales, des couvertures vidéo, des retours en cas d'échec et de la présentation des médias à différentes largeurs."
 author: "shijianus"
 category: "Développement Front-end"
@@ -15,6 +15,7 @@ tags: ["Adaptation des médias", "Markdown", "Refonte du thème", "Astro"]
 i18nKey: "media-capability-lab"
 lang: "fr"
 aiTranslatedFrom: "zh-CN"
+version: "v0.0.1"
 ---
 # Contrôle général de l'adaptation de la couverture et des médias
 

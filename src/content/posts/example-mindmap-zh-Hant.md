@@ -13,6 +13,8 @@ mindmap: true
 i18nKey: "example-mindmap"
 lang: "zh-Hant"
 aiTranslatedFrom: "zh-CN"
+version: "v0.0.1"
+updatedDate: 2026-08-27
 ---
 本篇範例專用於展示與測試部落格正文中的 **Markmap 動態互動式思維導圖** 渲染引擎、**6 層深度堆疊** 結構以及 **無限層級（Infinite Depth）擴展機制**。
 

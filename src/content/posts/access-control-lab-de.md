@@ -1,7 +1,7 @@
 ---
 title: "Labor für Artikel-Zugriffskontrolle"
 pubDate: 2026-04-26
-updatedDate: 2026-04-26
+updatedDate: 2026-04-25
 description: "Zur Überprüfung, ob die passwortbasierte Zugriffskontrolle gemäß den Serverregeln funktioniert und um sicherzustellen, dass eingeschränkter Inhalt nicht direkt auf der Seite ausgegeben wird, wenn er nicht freigeschaltet ist."
 author: "shijianus"
 category: "Systemdesign"
@@ -17,6 +17,7 @@ access:
 i18nKey: "access-control-lab"
 lang: "de"
 aiTranslatedFrom: "zh-CN"
+version: "v0.0.1"
 ---
 
 # Dies ist ein geschützter Artikel

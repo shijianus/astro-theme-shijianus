@@ -8,6 +8,8 @@ group: "学习记录"
 cover: "/media/shijianus/network.jpg"
 coverAlt: "network grid"
 tags: ["Study", "Refactor", "Astro"]
+version: "v0.0.1"
+updatedDate: 2026-04-12
 ---
 
 # 临摹只能学到表面

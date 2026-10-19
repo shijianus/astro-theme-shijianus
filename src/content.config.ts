@@ -83,6 +83,7 @@ const postsCollection = defineCollection({
     short_title: z.string().optional(),
     pubDate: z.date(),
     updatedDate: z.date().optional(),
+    version: z.string().optional(),
     outdateDays: z.number().int().positive().optional(),
     validDays: z.number().int().positive().optional(),
     description: z.string().optional(),

@@ -11,6 +11,8 @@ tags: ["Page d'accueil", "Stratégie de contenu", "UI"]
 i18nKey: "content-first-homepage"
 lang: "fr"
 aiTranslatedFrom: "zh-CN"
+version: "v0.0.1"
+updatedDate: 2026-04-15
 ---
 
 # La page d'accueil est une entrée, pas un entrepôt

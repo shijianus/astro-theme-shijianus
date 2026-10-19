@@ -1,7 +1,7 @@
 ---
 title: "Anzhiyu-style Markdown Capability Review: Table of Contents, Formatting, Hidden Content, Media, and Content Blocks"
 pubDate: 2026-04-25
-updatedDate: 2026-04-25
+updatedDate: 2026-04-24
 description: "A long example article specifically designed to stress test article scanning, table of contents levels, GFM, hidden content, special formatting, media display, and common content blocks."
 author: "shijianus"
 category: "Frontend Engineering"
@@ -14,6 +14,7 @@ tags: ["Astro", "Markdown", "Theme Refactoring", "UI", "Study"]
 i18nKey: "anzhiyu-markdown-showcase"
 lang: "en"
 aiTranslatedFrom: "zh-CN"
+version: "v0.0.1"
 ---
 
 # This is a long article specifically for testing theme capabilities

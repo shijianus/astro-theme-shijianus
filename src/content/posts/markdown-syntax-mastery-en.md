@@ -1,7 +1,7 @@
 ---
 title: "Markdown Full Syntax and Special Features Panorama Guide: Math Formulas, Charts, Alert Boxes, Encryption/Decryption, Blur Mosaic, and Modern Typography"
 pubDate: 2026-08-28
-updatedDate: 2026-08-28
+updatedDate: 2026-08-27
 description: "The ultimate Markdown reference manual and panoramic stress test demonstration article custom-made for this blog. Covers full features such as basic typography, KaTeX math formulas, Mermaid diagrams, Anzhiyu alert boxes, code highlighting, folding and Diff, password encryption pop-ups, Gaussian blur, and mosaic."
 author: "shijianus"
 category: "Frontend Engineering"
@@ -14,6 +14,7 @@ tags: ["Astro", "Markdown", "Theme Refactoring", "UI", "Katex", "Mermaid", "Anzh
 i18nKey: "markdown-syntax-mastery"
 lang: "en"
 aiTranslatedFrom: "zh-CN"
+version: "v0.0.1"
 ---
 # Welcome to the All-in-One Markdown Rendering and Advanced Features System
 

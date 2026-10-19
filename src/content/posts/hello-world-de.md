@@ -13,6 +13,8 @@ tags: ["Astro", "Tailwind", "Theme-Neugestaltung"]
 i18nKey: "hello-world"
 lang: "de"
 aiTranslatedFrom: "zh-CN"
+version: "v0.0.1"
+updatedDate: 2026-04-01
 ---
 
 # Warum der Neuaufbau

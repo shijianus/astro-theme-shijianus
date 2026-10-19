@@ -6,6 +6,8 @@ author: "shijianus"
 category: "审计测试"
 tags: ["i18n", "audit", "monolingual"]
 lang: "zh-CN"
+version: "v0.0.1"
+updatedDate: 2026-09-20
 ---
 
 # 单语言独立文章隔离审计测试

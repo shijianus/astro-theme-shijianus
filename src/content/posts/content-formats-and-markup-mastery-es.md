@@ -1,7 +1,7 @@
 ---
 title: "Guía panorámica de formatos de contenido para generadores de sitios estáticos (SSG) y temas de blog: desde soporte principal hasta funciones especiales, interacción con menús desplegables y embellecimiento tipográfico"
 pubDate: 2026-08-28
-updatedDate: 2026-08-28
+updatedDate: 2026-08-27
 description: "Revisión sistemática completa de la lista de soporte de formatos de contenido para los principales sistemas de sitios estáticos y blogs como Hugo, Jekyll, Eleventy, Astro, Hexo, WordPress. Desde Markdown, MDX, HTML, AsciiDoc, Org-mode, RST hasta la implementación completa de WordPress Post Formats, selectores desplegables interactivos, acordeones, fórmulas matemáticas KaTeX, diagramas Mermaid y funciones especiales de cifrado de contraseña."
 author: "shijianus"
 category: "Diseño de Sistemas"
@@ -19,6 +19,7 @@ mindmap: true
 i18nKey: "content-formats-and-markup-mastery"
 lang: "es"
 aiTranslatedFrom: "zh-CN"
+version: "v0.0.1"
 ---
 # Guía panorámica de generadores de sitios estáticos (SSG) y formatos de contenido de temas
 

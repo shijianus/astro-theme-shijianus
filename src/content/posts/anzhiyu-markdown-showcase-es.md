@@ -1,7 +1,7 @@
 ---
 title: "Revisión completa de las capacidades de Markdown al estilo Anzhiyu: tabla de contenido, formato, contenido oculto, medios y bloques de contenido"
 pubDate: 2026-04-25
-updatedDate: 2026-04-25
+updatedDate: 2026-04-24
 description: "Un artículo de ejemplo largo diseñado específicamente para probar el escaneo de artículos, los niveles de la tabla de contenido, GFM, contenido oculto, formato especial, visualización de medios y bloques de contenido comunes."
 author: "shijianus"
 category: "Ingeniería Frontend"
@@ -14,6 +14,7 @@ tags: ["Astro", "Markdown", "Refactorización de Tema", "UI", "Estudio"]
 i18nKey: "anzhiyu-markdown-showcase"
 lang: "es"
 aiTranslatedFrom: "zh-CN"
+version: "v0.0.1"
 ---
 # Este es un artículo largo diseñado específicamente para validar las capacidades del tema
 

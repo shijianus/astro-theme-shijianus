@@ -7,6 +7,8 @@ category: "Audit Test"
 tags: ["i18n", "audit", "polyglot"]
 lang: "fr"
 i18nKey: "test-audit-polyglot-matrix"
+version: "v0.0.1"
+updatedDate: 2026-09-20
 ---
 
 # Vérification de la matrice polyglotte (Français)

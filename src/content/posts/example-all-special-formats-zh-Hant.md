@@ -13,6 +13,8 @@ postFormat: "standard"
 i18nKey: "example-all-special-formats"
 lang: "zh-Hant"
 aiTranslatedFrom: "zh-CN"
+version: "v0.0.1"
+updatedDate: 2026-08-27
 ---
 
 本篇為 **一站式綜合驗收與全景壓力測試示範文章（All-in-one Master Showcase）**，用於快速自動化測試內文欄的所有格式與特異功能。

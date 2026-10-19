@@ -13,6 +13,8 @@ tags: ["UX", "Blog-Thema", "Visuelles System"]
 i18nKey: "readable-geek-interfaces"
 lang: "de"
 aiTranslatedFrom: "zh-CN"
+version: "v0.0.1"
+updatedDate: 2026-04-10
 ---
 # Technisches Design bedeutet nicht automatisch Lärm
 

@@ -12,6 +12,8 @@ mermaid: false
 i18nKey: "example-math"
 lang: "es"
 aiTranslatedFrom: "zh-CN"
+version: "v0.0.1"
+updatedDate: 2026-08-27
 ---
 Este ejemplo está dedicado a demostrar y probar la capacidad de análisis de **fórmulas matemáticas LaTeX (Math / KaTeX)** en el cuerpo del blog.
 

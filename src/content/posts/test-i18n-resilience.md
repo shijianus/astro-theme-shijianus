@@ -1,7 +1,7 @@
 ---
 title: "测试i18n双向容错解析文章"
 pubDate: 2026-09-19
-updatedDate: 2026-09-19
+updatedDate: 2026-09-18
 description: "主文章显式指定了自定义 i18nKey，用于测试英文子篇在未显式提供 i18nKey 时能否凭借双向文件名基名推导正常关联并显示。"
 author: "shijianus"
 category: "测试验证"
@@ -10,6 +10,7 @@ coverAlt: "测试i18n双向容错解析文章"
 tags: ["测试", "i18n", "容错"]
 i18nKey: "custom-resilient-key-2026"
 lang: "zh-CN"
+version: "v0.0.1"
 ---
 
 # 测试i18n双向容错解析文章

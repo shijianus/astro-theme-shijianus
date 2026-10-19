@@ -8,6 +8,8 @@ group: "首页结构"
 cover: "/media/shijianus/hero.jpg"
 coverAlt: "theme hero background"
 tags: ["Homepage", "Content Strategy", "UI"]
+version: "v0.0.1"
+updatedDate: 2026-04-15
 ---
 
 # 首页是入口，不是仓库

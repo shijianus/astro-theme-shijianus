@@ -897,6 +897,8 @@ export const siteConfig = {
       maxTags: 10,
       autoFitTitle: true,
       runtimeMetrics: true,
+      showVersion: true, // 站长可配置开启/关闭版本号展示，默认开启
+      showDates: true, // 站长可配置开启/关闭日期展示，默认开启
       fallbackImage: '/media/shijianus/default.png',
       remoteFallbackImage:
         'https://drawing.shijian.qzz.io/file/AgACAgEAAyEGAAS6jkJbAAMUapQaP6X-fJmi1j0qYD5NgooECLwAAlEMaxuQM6BEoSo1dHbP8ioBAAMCAAN3AAM9BA.png',
@@ -904,6 +906,7 @@ export const siteConfig = {
       metaLabels: {
         published: '发表于',
         updated: '更新于',
+        version: '版本',
         category: '分类',
         words: '字数',
         reading: '阅读',

@@ -11,6 +11,8 @@ tags: ["Homepage", "Content Strategy", "UI"]
 i18nKey: "content-first-homepage"
 lang: "en"
 aiTranslatedFrom: "zh-CN"
+version: "v0.0.1"
+updatedDate: 2026-04-15
 ---
 
 # The Homepage: An Entrance, Not a Warehouse

@@ -13,6 +13,8 @@ postFormat: "standard"
 i18nKey: "example-all-special-formats"
 lang: "fr"
 aiTranslatedFrom: "zh-CN"
+version: "v0.0.1"
+updatedDate: 2026-08-27
 ---
 
 Cet article est un **exemple de test d'acceptation complet et de stress panoramique (All-in-one Master Showcase)**, conçu pour tester rapidement et automatiquement tous les formats et fonctionnalités spéciales de la colonne de contenu.

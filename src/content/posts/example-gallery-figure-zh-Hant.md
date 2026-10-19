@@ -13,6 +13,8 @@ mermaid: false
 i18nKey: "example-gallery-figure"
 lang: "zh-Hant"
 aiTranslatedFrom: "zh-CN"
+version: "v0.0.1"
+updatedDate: 2026-08-27
 ---
 
 本篇範例專用於展示與測試部落格正文中的 **圖片畫廊（Gallery）與全螢幕燈箱（Lightbox）** 元件。

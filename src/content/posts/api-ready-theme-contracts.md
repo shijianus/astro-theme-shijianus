@@ -12,6 +12,8 @@ sticky: 2
 tags: ["API", "Config", "Architecture"]
 i18nKey: "api-ready-theme-contracts"
 lang: "zh-CN"
+version: "v0.0.1"
+updatedDate: 2026-04-07
 ---
 
 # 为什么先做契约

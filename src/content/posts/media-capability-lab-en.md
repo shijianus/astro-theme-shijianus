@@ -1,7 +1,7 @@
 ---
 title: "Cover, Image Hosting, and Video Adaptation Lab"
 pubDate: 2026-04-26
-updatedDate: 2026-04-26
+updatedDate: 2026-04-25
 description: "Concentrated verification of article header images, remote image hosting, local resources, video covers, fallback for failures, and media display effects at different widths."
 author: "shijianus"
 category: "Front-end Engineering"
@@ -15,6 +15,7 @@ tags: ["Media Adaptation", "Markdown", "Theme Refactor", "Astro"]
 i18nKey: "media-capability-lab"
 lang: "en"
 aiTranslatedFrom: "zh-CN"
+version: "v0.0.1"
 ---
 # Cover and Media Adaptation Overview
 

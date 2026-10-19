@@ -11,6 +11,8 @@ tags: ["Lernen", "Refactoring", "Astro"]
 i18nKey: "learning-through-rebuilds"
 lang: "de"
 aiTranslatedFrom: "zh-CN"
+version: "v0.0.1"
+updatedDate: 2026-04-12
 ---
 
 # Nachahmen lernt nur die Oberfläche

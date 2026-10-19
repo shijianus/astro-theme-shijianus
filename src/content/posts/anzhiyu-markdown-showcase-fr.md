@@ -1,7 +1,7 @@
 ---
 title: "Bilan complet des capacités Markdown de An Zhi Yu : Table des matières, formatage, contenu caché, médias et blocs de contenu"
 pubDate: 2026-04-25
-updatedDate: 2026-04-25
+updatedDate: 2026-04-24
 description: "Un long article d'exemple spécialement conçu pour tester le balayage d'articles, les niveaux de table des matières, le GFM, le contenu caché, les formats spéciaux, l'affichage des médias et les blocs de contenu courants."
 author: "shijianus"
 category: "Ingénierie Frontend"
@@ -14,6 +14,7 @@ tags: ["Astro", "Markdown", "Refonte du thème", "UI", "Étude"]
 i18nKey: "anzhiyu-markdown-showcase"
 lang: "fr"
 aiTranslatedFrom: "zh-CN"
+version: "v0.0.1"
 ---
 # Il s'agit d'un long article spécialement conçu pour valider les capacités du thème
 

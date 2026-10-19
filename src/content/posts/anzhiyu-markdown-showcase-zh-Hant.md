@@ -1,7 +1,7 @@
 ---
 title: "安知魚式 Markdown 能力總檢：目錄、格式、隱藏內容、媒體與內容塊"
 pubDate: 2026-04-25
-updatedDate: 2026-04-25
+updatedDate: 2026-04-24
 description: "一篇專門用於壓力測試文章掃描、目錄層級、GFM、隱藏內容、特殊格式、媒體展示與常見內容塊的長範例文章。"
 author: "shijianus"
 category: "前端工程"
@@ -14,6 +14,7 @@ tags: ["Astro", "Markdown", "主題重構", "UI", "學習"]
 i18nKey: "anzhiyu-markdown-showcase"
 lang: "zh-Hant"
 aiTranslatedFrom: "zh-CN"
+version: "v0.0.1"
 ---
 # 這是一篇專門用來驗收主題能力的長文章
 

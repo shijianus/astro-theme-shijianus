@@ -12,6 +12,8 @@ mermaid: false
 i18nKey: "example-details-collapse"
 lang: "es"
 aiTranslatedFrom: "zh-CN"
+version: "v0.0.1"
+updatedDate: 2026-08-27
 ---
 Este ejemplo está diseñado para validar y probar los componentes de **paneles plegables (Details), grupos de acordeón (Accordions) y selectores desplegables especiales (Dropdown Selectors)** en el cuerpo de la publicación del blog.
 

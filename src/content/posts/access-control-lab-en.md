@@ -1,7 +1,7 @@
 ---
 title: "Article Access Control Lab"
 pubDate: 2026-04-26
-updatedDate: 2026-04-26
+updatedDate: 2026-04-25
 description: "This lab article verifies that password-based access control functions correctly according to server-side rules, ensuring restricted content is not directly rendered to the page when locked."
 author: "shijianus"
 category: "System Design"
@@ -17,6 +17,7 @@ access:
 i18nKey: "access-control-lab"
 lang: "en"
 aiTranslatedFrom: "zh-CN"
+version: "v0.0.1"
 ---
 
 # This Is a Protected Article

@@ -13,6 +13,8 @@ author: shijianus
 i18nKey: "example-gallery-figure"
 lang: "es"
 aiTranslatedFrom: "zh-CN"
+version: "v0.0.1"
+updatedDate: 2026-08-27
 ---
 
 Este ejemplo está dedicado a la demostración y prueba de los componentes de **Galería de imágenes (Gallery) y Visor de pantalla completa (Lightbox)** dentro del cuerpo del blog.

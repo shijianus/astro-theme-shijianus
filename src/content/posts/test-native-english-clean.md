@@ -6,6 +6,8 @@ author: "shijianus"
 category: "Test"
 tags: ["i18n", "test", "canonical-en"]
 lang: "en"
+version: "v0.0.1"
+updatedDate: 2026-09-18
 ---
 
 # Native English Canonical Post

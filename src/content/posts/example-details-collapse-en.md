@@ -12,6 +12,8 @@ mermaid: false
 i18nKey: "example-details-collapse"
 lang: "en"
 aiTranslatedFrom: "zh-CN"
+version: "v0.0.1"
+updatedDate: 2026-08-27
 ---
 
 This example article is dedicated to verifying and testing **Collapsible Panels (Details), Accordion Groups, and specialized Dropdown Selectors** within the blog body.

@@ -13,6 +13,8 @@ mindmap: true
 i18nKey: "example-mindmap"
 lang: "en"
 aiTranslatedFrom: "zh-CN"
+version: "v0.0.1"
+updatedDate: 2026-08-27
 ---
 
 This example is specifically for demonstrating and testing the **Markmap dynamic interactive mind map** rendering engine, the **6-layer depth stacking** structure, and the **Infinite Depth expansion mechanism** in the blog body.

@@ -12,6 +12,8 @@ mermaid: false
 i18nKey: "example-tabs"
 lang: "de"
 aiTranslatedFrom: "zh-CN"
+version: "v0.0.1"
+updatedDate: 2026-08-27
 ---
 
 Dieses Beispiel dient ausschließlich dazu, die **Mehrfach-Tab-Umschaltung (Interactive Tabs) und die Mehrversions-Dropdown-Umschaltung (Dropdown Switcher)** im Blog-Text zu demonstrieren und zu testen.

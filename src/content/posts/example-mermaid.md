@@ -9,6 +9,8 @@ category: "示例"
 series: "功能示例"
 math: false
 mermaid: true
+version: "v0.0.1"
+updatedDate: 2026-08-27
 ---
 
 本篇示例专用于展示与测试博客正文中的 **Mermaid 11 矢量图表** 编译与渲染能力。

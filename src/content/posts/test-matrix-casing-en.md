@@ -7,6 +7,8 @@ category: "Testing"
 tags: ["i18n", "test", "casing"]
 lang: "EN"
 i18nKey: "test-matrix-casing"
+version: "v0.0.1"
+updatedDate: 2026-09-18
 ---
 
 # Language Code Casing Resilience Test

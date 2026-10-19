@@ -12,6 +12,8 @@ mermaid: false
 i18nKey: "example-callouts"
 lang: "fr"
 aiTranslatedFrom: "zh-CN"
+version: "v0.0.1"
+updatedDate: 2026-08-27
 ---
 
 Cet exemple est spécifiquement conçu pour vérifier et tester la capacité de rendu des **Callouts / Admonitions / Encadrés d'alerte** dans la colonne de contenu du thème de blog.

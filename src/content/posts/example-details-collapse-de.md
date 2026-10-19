@@ -12,6 +12,8 @@ mermaid: false
 i18nKey: "example-details-collapse"
 lang: "de"
 aiTranslatedFrom: "zh-CN"
+version: "v0.0.1"
+updatedDate: 2026-08-27
 ---
 Dieses Beispiel dient der Validierung und dem Testen der folgenden Komponenten im Blog-Text: **Klappfelder (Details)**, **Akkordeongruppen (Accordions)** sowie **spezieller Dropdown-Auswahlfelder (Dropdown Selectors)**.
 

@@ -7,6 +7,8 @@ category: "测试"
 tags: ["i18n", "test", "casing"]
 lang: "zh-CN"
 i18nKey: "test-matrix-casing"
+version: "v0.0.1"
+updatedDate: 2026-09-18
 ---
 
 # 大小写不规范测试主篇

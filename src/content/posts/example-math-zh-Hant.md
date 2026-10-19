@@ -12,6 +12,8 @@ mermaid: false
 i18nKey: "example-math"
 lang: "zh-Hant"
 aiTranslatedFrom: "zh-CN"
+version: "v0.0.1"
+updatedDate: 2026-08-27
 ---
 
 本篇範例專用於展示與測試部落格正文中的 **LaTeX 數學公式（Math / KaTeX）** 解析能力。

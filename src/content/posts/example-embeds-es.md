@@ -12,6 +12,8 @@ mermaid: false
 i18nKey: "example-embeds"
 lang: "es"
 aiTranslatedFrom: "zh-CN"
+version: "v0.0.1"
+updatedDate: 2026-08-27
 ---
 Este ejemplo está dedicado a mostrar y probar **incrustaciones de medios enriquecidos (Embeds), formatos de publicación de WordPress y flujos de diálogo de chat (Chat Dialogue)** en el cuerpo de la publicación del blog.
 

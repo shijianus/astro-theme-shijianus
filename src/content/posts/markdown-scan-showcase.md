@@ -10,6 +10,8 @@ coverAlt: "markdown showcase board"
 tags: ["Markdown", "Astro", "Config", "UI", "主题重构"]
 featured: true
 sticky: 4
+version: "v0.0.1"
+updatedDate: 2026-04-24
 ---
 
 这篇文章专门用来验证主题中的内容扫描、目录同步、样式增强与可读性策略。它不是一篇“概念说明”，而是一篇 **真正可以拿来烟测前端主题** 的内容样本。

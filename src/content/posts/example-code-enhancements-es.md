@@ -12,6 +12,8 @@ mermaid: false
 i18nKey: "example-code-enhancements"
 lang: "es"
 aiTranslatedFrom: "zh-CN"
+version: "v0.0.1"
+updatedDate: 2026-08-27
 ---
 
 Este artículo de ejemplo está dedicado a la verificación y prueba de las funcionalidades de **Mejoras en Bloques de Código** dentro del cuerpo del blog.

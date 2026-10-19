@@ -12,6 +12,8 @@ mermaid: false
 i18nKey: "example-code-enhancements"
 lang: "zh-Hant"
 aiTranslatedFrom: "zh-CN"
+version: "v0.0.1"
+updatedDate: 2026-08-27
 ---
 
 本篇範例專用於驗證與測試部落格內文中的 **程式碼區塊（Code Block Enhancements）** 功能。

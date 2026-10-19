@@ -2,7 +2,7 @@
 title: "EpoCanvas 工程标准总纲：指标定义、数据链路与核验边界"
 description: "完整说明 EpoCanvas 的活跃等级、内容密度、文章统计、热力图与指标 API，区分构建快照、请求期校准和需要独立验证的工程质量。"
 pubDate: 2026-10-18
-updatedDate: 2026-10-18
+updatedDate: 2026-10-17
 author: "shijianus"
 category: "工程规范"
 group: "EpoCanvas Standards"
@@ -14,6 +14,7 @@ mindmap: true
 draft: false
 lang: "zh-CN"
 i18nKey: "ees-standards-overview"
+version: "v2.6.0"
 ---
 
 # EpoCanvas 工程标准总纲

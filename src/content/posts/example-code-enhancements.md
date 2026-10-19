@@ -11,6 +11,8 @@ math: false
 mermaid: false
 i18nKey: "example-code-enhancements"
 lang: "zh-CN"
+version: "v0.0.1"
+updatedDate: 2026-08-27
 ---
 
 本篇示例专用于验证与测试博客正文中的 **代码块（Code Block Enhancements）** 功能。

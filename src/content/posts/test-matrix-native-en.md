@@ -7,6 +7,8 @@ category: "Test"
 tags: ["i18n", "test", "native-en"]
 lang: "en"
 i18nKey: "test-matrix-native-en"
+version: "v0.0.1"
+updatedDate: 2026-09-18
 ---
 
 # Native English Suffixed Article

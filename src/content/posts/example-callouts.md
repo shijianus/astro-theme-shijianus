@@ -9,6 +9,8 @@ category: "示例"
 series: "功能示例"
 math: false
 mermaid: false
+version: "v0.0.1"
+updatedDate: 2026-08-27
 ---
 
 本篇示例专用于验证与测试博客主题在正文栏中的 **Callouts / Admonitions / 告示框** 渲染能力。

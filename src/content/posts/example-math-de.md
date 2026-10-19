@@ -12,6 +12,8 @@ mermaid: false
 i18nKey: "example-math"
 lang: "de"
 aiTranslatedFrom: "zh-CN"
+version: "v0.0.1"
+updatedDate: 2026-08-27
 ---
 
 Dieses Beispiel dient der Demonstration und dem Test der Parsing-Fähigkeiten von **LaTeX-Mathematikformeln (Math / KaTeX)** im Blogtext.

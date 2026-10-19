@@ -12,6 +12,8 @@ mermaid: false
 i18nKey: "example-frontmatter-fields"
 lang: "zh-Hant"
 aiTranslatedFrom: "zh-CN"
+version: "v0.0.1"
+updatedDate: 2026-08-27
 ---
 
 本篇範例專用於系統解析與說明本主題在 `src/content.config.ts` 中透過 **Zod Schema** 定義的所有 Front Matter 欄位。

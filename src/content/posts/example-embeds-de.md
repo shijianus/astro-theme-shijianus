@@ -12,6 +12,8 @@ mermaid: false
 i18nKey: "example-embeds"
 lang: "de"
 aiTranslatedFrom: "zh-CN"
+version: "v0.0.1"
+updatedDate: 2026-08-27
 ---
 Dieses Beispiel dient der Demonstration und dem Testen von **Rich-Media-Einbettungen (Embeds)**, WordPress Post-Formaten und Zwei-Personen-Dialogflüssen (Chat-Dialog) im Blog-Beitragstext.
 

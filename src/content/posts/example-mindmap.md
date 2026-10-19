@@ -10,6 +10,8 @@ series: "功能示例"
 math: false
 mermaid: false
 mindmap: true
+version: "v0.0.1"
+updatedDate: 2026-08-27
 ---
 
 本篇示例专用于展示与测试博客正文中的 **Markmap 动态交互式思维导图** 渲染引擎、**6 层深度堆叠** 结构以及 **无限层级（Infinite Depth）扩展机制**。

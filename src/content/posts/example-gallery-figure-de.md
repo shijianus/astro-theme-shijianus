@@ -12,6 +12,8 @@ mermaid: false
 i18nKey: "example-gallery-figure"
 lang: "de"
 aiTranslatedFrom: "zh-CN"
+version: "v0.0.1"
+updatedDate: 2026-08-27
 ---
 Dieses Beispiel dient ausschließlich der Demonstration und Prüfung der Komponenten **Bildergalerie (Gallery)** und **Vollbild-Lichtbox (Lightbox)** im Blog-Artikeltext.
 

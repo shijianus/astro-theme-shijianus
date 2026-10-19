@@ -13,6 +13,8 @@ sticky: 4
 i18nKey: "markdown-scan-showcase"
 lang: "fr"
 aiTranslatedFrom: "zh-CN"
+version: "v0.0.1"
+updatedDate: 2026-04-24
 ---
 Cet article est spécifiquement conçu pour valider le balayage du contenu, la synchronisation de la table des matières, l'amélioration des styles et les stratégies de lisibilité au sein du thème. Il ne s'agit pas d'une « explication conceptuelle », mais d'un **échantillon de contenu véritablement utilisable pour tester en conditions réelles le thème frontend**.
 

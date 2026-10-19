@@ -13,6 +13,8 @@ postFormat: "standard"
 i18nKey: "example-all-special-formats"
 lang: "es"
 aiTranslatedFrom: "zh-CN"
+version: "v0.0.1"
+updatedDate: 2026-08-27
 ---
 
 Este es un **artículo de demostración para pruebas de aceptación integrales y de estrés (All-in-one Master Showcase)**, diseñado para probar rápidamente y de forma automatizada todos los formatos y características especiales de la columna principal del texto.

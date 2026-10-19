@@ -12,6 +12,8 @@ mermaid: false
 i18nKey: "example-frontmatter-fields"
 lang: "de"
 aiTranslatedFrom: "zh-CN"
+version: "v0.0.1"
+updatedDate: 2026-08-27
 ---
 Dieses Beispiel dient ausschließlich der systematischen Analyse und Erklärung aller Front‑Matter‑Felder, die in diesem Thema in `src/content.config.ts` mittels **Zod Schema** definiert sind.
 

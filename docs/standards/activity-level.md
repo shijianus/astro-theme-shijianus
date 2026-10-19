@@ -2,7 +2,7 @@
 title: "EpoCanvas 活跃等级规范：发布窗口、五级阈值与可复核评估"
 description: "完整解释 EpoCanvas 近 30 天发布活跃度的计算方式、五级阈值、多语言去重、发布日期边界、热力图区别及当前实现差异。"
 pubDate: 2026-10-18
-updatedDate: 2026-10-18
+updatedDate: 2026-10-17
 author: "shijianus"
 category: "工程规范"
 group: "EpoCanvas Standards"
@@ -14,6 +14,7 @@ mindmap: true
 draft: false
 lang: "zh-CN"
 i18nKey: "ees-activity-level"
+version: "v1.2.0"
 ---
 
 # 站长活跃等级分级与评估规范

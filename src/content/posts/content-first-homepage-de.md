@@ -11,6 +11,8 @@ tags: ["Startseite", "Inhaltsstrategie", "UI"]
 i18nKey: "content-first-homepage"
 lang: "de"
 aiTranslatedFrom: "zh-CN"
+version: "v0.0.1"
+updatedDate: 2026-04-15
 ---
 
 # Die Startseite: Ein Eingang, kein Lager

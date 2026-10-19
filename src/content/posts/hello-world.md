@@ -12,6 +12,8 @@ sticky: 3
 tags: ["Astro", "Tailwind", "主题重构"]
 i18nKey: "hello-world"
 lang: "zh-CN"
+version: "v0.0.1"
+updatedDate: 2026-04-01
 ---
 
 # 为什么要重做

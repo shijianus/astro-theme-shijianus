@@ -12,6 +12,8 @@ mermaid: true
 i18nKey: "example-mermaid"
 lang: "zh-Hant"
 aiTranslatedFrom: "zh-CN"
+version: "v0.0.1"
+updatedDate: 2026-08-27
 ---
 本篇範例專用於展示與測試部落格正文中的 **Mermaid 11 向量圖表** 編譯與渲染能力。
 

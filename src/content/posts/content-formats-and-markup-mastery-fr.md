@@ -1,7 +1,7 @@
 ---
 title: "Guide panoramique des formats de contenu pour générateurs de sites statiques (SSG) et thèmes de blog : du support courant aux fonctionnalités spéciales, interactions avec les menus déroulants et embellissement typographique"
 pubDate: 2026-08-28
-updatedDate: 2026-08-28
+updatedDate: 2026-08-27
 description: "Inventaire systématique et complet des formats de contenu pris en charge par les principaux systèmes de sites statiques et de blogs tels que Hugo, Jekyll, Eleventy, Astro, Hexo, WordPress. Du Markdown, MDX, HTML, AsciiDoc, Org-mode, RST aux formats de publication WordPress entièrement implémentés, sélecteurs interactifs à liste déroulante, accordéons, formules mathématiques KaTeX, diagrammes Mermaid et fonctionnalités spéciales de chiffrement par mot de passe."
 author: "shijianus"
 category: "Conception de systèmes"
@@ -19,6 +19,7 @@ mindmap: true
 i18nKey: "content-formats-and-markup-mastery"
 lang: "fr"
 aiTranslatedFrom: "zh-CN"
+version: "v0.0.1"
 ---
 # Guide panoramique des générateurs de sites statiques (SSG) et des formats de contenu de thème
 

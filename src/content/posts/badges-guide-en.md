@@ -14,6 +14,8 @@ sticky: 10
 i18nKey: "badges-guide"
 lang: "en"
 aiTranslatedFrom: "zh-CN"
+version: "v0.0.1"
+updatedDate: 2026-09-11
 ---
 Hello, fellow geek developers, regular readers, and in-depth blog enthusiasts!
 

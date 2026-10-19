@@ -10,6 +10,8 @@ coverAlt: "developer desk"
 featured: true
 sticky: 1
 tags: ["UX", "Blog Theme", "Visual System"]
+version: "v0.0.1"
+updatedDate: 2026-04-10
 ---
 
 # 技术感不等于噪音

@@ -12,6 +12,8 @@ mermaid: false
 i18nKey: "example-gallery-figure"
 lang: "fr"
 aiTranslatedFrom: "zh-CN"
+version: "v0.0.1"
+updatedDate: 2026-08-27
 ---
 
 Cet article d'exemple est dédié à la démonstration et au test des composants de **galerie d'images (Gallery)** et de **lightbox plein écran (Lightbox)** dans le corps des articles de blog.

@@ -14,7 +14,7 @@ mindmap: false
 draft: false
 lang: "zh-Hant"
 i18nKey: "ees-status-topology"
-version: "v1.0.0"
+version: "v1.0.1"
 ---
 
 # EpoCanvas 系統狀態與服務邊界

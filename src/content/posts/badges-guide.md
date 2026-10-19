@@ -13,6 +13,8 @@ featured: true
 sticky: 10
 i18nKey: "badges-guide"
 lang: "zh-CN"
+version: "v0.0.1"
+updatedDate: 2026-09-11
 ---
 
 各位极客开发者、常驻读者与深研博友们，大家好！

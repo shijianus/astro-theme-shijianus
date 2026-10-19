@@ -1,7 +1,7 @@
 ---
 title: "文章存取控制實驗室"
 pubDate: 2026-04-26
-updatedDate: 2026-04-26
+updatedDate: 2026-04-25
 description: "用於驗證密碼存取控制是否依伺服器端規則生效，並確認受限內文在未解鎖時不會直接輸出到頁面。"
 author: "shijianus"
 category: "系統設計"
@@ -17,6 +17,7 @@ access:
 i18nKey: "access-control-lab"
 lang: "zh-Hant"
 aiTranslatedFrom: "zh-CN"
+version: "v0.0.1"
 ---
 
 # 這是一篇受保護的文章

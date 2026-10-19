@@ -13,6 +13,8 @@ postFormat: "standard"
 i18nKey: "example-all-special-formats"
 lang: "en"
 aiTranslatedFrom: "zh-CN"
+version: "v0.0.1"
+updatedDate: 2026-08-27
 ---
 
 This article serves as an **All-in-one Master Showcase** for comprehensive acceptance testing and full-scale stress testing, designed to quickly and automatically verify all formats and unique features within the main content area.

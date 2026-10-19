@@ -1,7 +1,7 @@
 ---
 title: "Statische Seitengeneratoren (SSG) und Umfassender Leitfaden zu Blog-Themen-Inhaltsformaten: Von Mainstream-Unterstützung bis zu speziellen Funktionen, Dropdown-Interaktionen und typografischer Verschönerung"
 pubDate: 2026-08-28
-updatedDate: 2026-08-28
+updatedDate: 2026-08-27
 description: "Eine umfassende und systematische Übersicht über die wichtigsten statischen Websites und Blog-Systeme wie Hugo, Jekyll, Eleventy, Astro, Hexo, WordPress und deren unterstützte Inhaltsformate. Von Markdown, MDX, HTML, AsciiDoc, Org-mode, RST bis hin zu vollständig implementierten WordPress Post Formats, interaktiven Dropdown-Umschaltern, Akkordeon-Faltfunktionen, KaTeX-Mathematikformeln, Mermaid-Diagrammen und speziellen Passwortverschlüsselungsfunktionen."
 author: "shijianus"
 category: "Systemdesign"
@@ -16,6 +16,7 @@ mindmap: true
 i18nKey: "content-formats-and-markup-mastery"
 lang: "de"
 aiTranslatedFrom: "zh-CN"
+version: "v0.0.1"
 ---
 # Umfassender Leitfaden zu Static Site Generatoren (SSG) und Themen-Inhaltsformaten
 

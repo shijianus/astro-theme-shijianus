@@ -13,6 +13,8 @@ tags: ["Astro", "Tailwind", "Reconstrucción del Tema"]
 i18nKey: "hello-world"
 lang: "es"
 aiTranslatedFrom: "zh-CN"
+version: "v0.0.1"
+updatedDate: 2026-04-01
 ---
 
 # Por qué rehacer

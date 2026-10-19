@@ -12,6 +12,8 @@ mermaid: false
 i18nKey: "example-callouts"
 lang: "es"
 aiTranslatedFrom: "zh-CN"
+version: "v0.0.1"
+updatedDate: 2026-08-27
 ---
 
 Este ejemplo está diseñado específicamente para verificar y probar la capacidad de renderizado de **Callouts / Admonitions / Cuadros de aviso** en la columna de contenido del tema del blog.

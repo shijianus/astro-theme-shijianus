@@ -13,6 +13,8 @@ postFormat: "standard"
 i18nKey: "example-all-special-formats"
 lang: "de"
 aiTranslatedFrom: "zh-CN"
+version: "v0.0.1"
+updatedDate: 2026-08-27
 ---
 
 Dieser Artikel ist ein **umfassender Abnahmetest und ein vollständiger Belastungstest-Demonstrationsartikel (All-in-one Master Showcase)**, der zum schnellen automatisierten Testen aller Formate und speziellen Funktionen im Haupttextbereich dient.

@@ -1,7 +1,7 @@
 ---
 title: "安知鱼式 Markdown 能力总检：目录、格式、隐藏内容、媒体与内容块"
 pubDate: 2026-04-25
-updatedDate: 2026-04-25
+updatedDate: 2026-04-24
 description: "一篇专门用于压测文章扫描、目录层级、GFM、隐藏内容、特殊格式、媒体展示与常见内容块的长示例文章。"
 author: "shijianus"
 category: "前端工程"
@@ -11,6 +11,7 @@ coverAlt: "markdown showcase desk"
 featured: true
 sticky: 4
 tags: ["Astro", "Markdown", "主题重构", "UI", "Study"]
+version: "v0.0.1"
 ---
 
 # 这是一篇专门用来验收主题能力的长文章

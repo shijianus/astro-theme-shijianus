@@ -11,6 +11,8 @@ tags: ["Estudio", "Refactorización", "Astro"]
 i18nKey: "learning-through-rebuilds"
 lang: "es"
 aiTranslatedFrom: "zh-CN"
+version: "v0.0.1"
+updatedDate: 2026-04-12
 ---
 
 # La imitación solo enseña la superficie

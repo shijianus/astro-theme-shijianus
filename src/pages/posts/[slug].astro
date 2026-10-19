@@ -379,7 +379,7 @@ type HeroMetaItem = {
   label: string;
   value: string;
   runtime?: 'views' | 'dwell';
-  icon?: 'calendar' | 'refresh' | 'folder' | 'file' | 'clock' | 'eye' | 'timer';
+  icon?: 'calendar' | 'refresh' | 'folder' | 'file' | 'clock' | 'eye' | 'timer' | 'tag';
 };
 const formatHeroDate = (date: Date) => {
   return `${String(date.getMonth() + 1).padStart(2, '0')}/${String(date.getDate()).padStart(2, '0')}/${String(date.getFullYear()).slice(-2)}`;
@@ -406,14 +406,28 @@ const heroImage = isUnlocked ? resolveExplicitCover(postEntry) : '';
 const heroImageAlt = isUnlocked ? resolveCoverAlt(postEntry) : PROTECTED_POST_TITLE;
 const heroImageUrl = heroImage ? new URL(heroImage, siteConfig.site.url) : null;
 const heroImageOrigin = heroImageUrl && heroImageUrl.origin !== new URL(siteConfig.site.url).origin ? heroImageUrl.origin : '';
-const publicMeta = [
+
+const showDates = (siteConfig.post.hero as any).showDates !== false;
+const showVersion = (siteConfig.post.hero as any).showVersion !== false;
+const postVersion = postEntry.data.version || 'v0.0.1';
+
+const versionMeta = showVersion && postVersion ? [
+  { label: (siteConfig.post.hero.metaLabels as any).version || '版本', value: postVersion, icon: 'tag' as const }
+] : [];
+
+const dateMeta = showDates ? [
   { label: siteConfig.post.hero.metaLabels.published, value: formatHeroDate(postEntry.data.pubDate), icon: 'calendar' as const },
   postEntry.data.updatedDate && {
     label: siteConfig.post.hero.metaLabels.updated,
     value: formatHeroDate(postEntry.data.updatedDate),
     icon: 'refresh' as const,
   },
-].filter(Boolean);
+].filter(Boolean) : [];
+
+const publicMeta = [
+  ...versionMeta,
+  ...dateMeta,
+];
 const fullMeta = [
   ...publicMeta,
   { label: siteConfig.post.hero.metaLabels.category, value: publicCategory, icon: 'folder' as const },

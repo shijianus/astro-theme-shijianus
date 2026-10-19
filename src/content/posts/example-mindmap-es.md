@@ -13,6 +13,8 @@ mindmap: true
 i18nKey: "example-mindmap"
 lang: "es"
 aiTranslatedFrom: "zh-CN"
+version: "v0.0.1"
+updatedDate: 2026-08-27
 ---
 Este ejemplo está diseñado específicamente para demostrar y probar el motor de renderizado de **Mapas Mentales Interactivos Dinámicos de Markmap** en el cuerpo del blog, la estructura de **apilamiento de 6 niveles de profundidad** y el **mecanismo de expansión de Profundidad Infinita**.
 

@@ -12,6 +12,8 @@ mermaid: false
 i18nKey: "example-details-collapse"
 lang: "zh-Hant"
 aiTranslatedFrom: "zh-CN"
+version: "v0.0.1"
+updatedDate: 2026-08-27
 ---
 
 本篇範例專用於驗證與測試部落格正文中的 **摺疊面板（Details）、手風琴組（Accordions）以及特殊的下拉選單（Dropdown Selectors）** 元件。

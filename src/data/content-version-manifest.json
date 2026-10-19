@@ -1,0 +1,986 @@
+{
+  "docs/standards/activity-level.md": {
+    "contentHash": "35820e8094a28c06149fab48e99367d6306a68e5864ac4284c15dcc1decc0a2c",
+    "version": "v1.2.0",
+    "pubDate": "2026-10-17",
+    "updatedDate": "2026-10-17"
+  },
+  "docs/standards/content-density.md": {
+    "contentHash": "0db331d957ce256a8471474bc788067f3cfb1163be4f0a278509975e782c8f16",
+    "version": "v1.1.0",
+    "pubDate": "2026-10-17",
+    "updatedDate": "2026-10-17"
+  },
+  "docs/standards/index.md": {
+    "contentHash": "879433700b605b524aa6267fb0babfb7e1074208d90e01ea80e69c78b03af749",
+    "version": "v2.6.0",
+    "pubDate": "2026-10-17",
+    "updatedDate": "2026-10-17"
+  },
+  "docs/standards/status.md": {
+    "contentHash": "f2c1641159166f67c9441bfa2e5eca0878edb8d12753d7d1dd125c69cf3f0727",
+    "version": "v1.0.1",
+    "pubDate": "2026-10-17",
+    "updatedDate": "2026-10-18"
+  },
+  "docs/standards/version.md": {
+    "contentHash": "076b82b2fbc3a5495f80aa0fe7ca307a6cb835624f74358f10638a4d194a2321",
+    "version": "v1.0.1",
+    "pubDate": "2026-10-17",
+    "updatedDate": "2026-10-18"
+  },
+  "src/content/posts/access-control-lab-de.md": {
+    "contentHash": "61458a59b8ee920a51ae33eeb7a19ac39befdf39dcd61d40d1bf4ae8a6ec5cf4",
+    "version": "v0.0.1",
+    "pubDate": "2026-04-25",
+    "updatedDate": "2026-04-25"
+  },
+  "src/content/posts/access-control-lab-en.md": {
+    "contentHash": "34390ac039926d81c2d95ed006ae24e4fe56e5812a1e4d00c0fc1ef6905b2d1f",
+    "version": "v0.0.1",
+    "pubDate": "2026-04-25",
+    "updatedDate": "2026-04-25"
+  },
+  "src/content/posts/access-control-lab-es.md": {
+    "contentHash": "5aad1389235b61001dc6952e8d86982134b90760ea2c4f7c10a602ce39b3ed90",
+    "version": "v0.0.1",
+    "pubDate": "2026-04-25",
+    "updatedDate": "2026-04-25"
+  },
+  "src/content/posts/access-control-lab-fr.md": {
+    "contentHash": "91ce55ca0f952670d05e9df2f53ae9f90c6811a8bdcedab7a03413c382adac10",
+    "version": "v0.0.1",
+    "pubDate": "2026-04-25",
+    "updatedDate": "2026-04-25"
+  },
+  "src/content/posts/access-control-lab-zh-Hant.md": {
+    "contentHash": "f10380d27f62ce96fae999be8add0c4d9bd3d9e6234f004c0bddb83bac5738ae",
+    "version": "v0.0.1",
+    "pubDate": "2026-04-25",
+    "updatedDate": "2026-04-25"
+  },
+  "src/content/posts/access-control-lab.md": {
+    "contentHash": "5eb93a6d6e5ab38c769705e9f705f826395d2dad1fa737b0b309ee35251bc663",
+    "version": "v0.0.1",
+    "pubDate": "2026-04-25",
+    "updatedDate": "2026-04-25"
+  },
+  "src/content/posts/anzhiyu-markdown-showcase-de.md": {
+    "contentHash": "cb5a95e20e896e71201ace596059a5ef585434712faa263a2de235a3e18c0f03",
+    "version": "v0.0.1",
+    "pubDate": "2026-04-24",
+    "updatedDate": "2026-04-24"
+  },
+  "src/content/posts/anzhiyu-markdown-showcase-en.md": {
+    "contentHash": "7c761ad893774e69f48f63051813a49ea8417780379f36716b2eecd7f9cb346d",
+    "version": "v0.0.1",
+    "pubDate": "2026-04-24",
+    "updatedDate": "2026-04-24"
+  },
+  "src/content/posts/anzhiyu-markdown-showcase-es.md": {
+    "contentHash": "dbe97734a1218555c163e6a57c9d31e06867f2fce38754e0fc1f5770cef95e32",
+    "version": "v0.0.1",
+    "pubDate": "2026-04-24",
+    "updatedDate": "2026-04-24"
+  },
+  "src/content/posts/anzhiyu-markdown-showcase-fr.md": {
+    "contentHash": "d0a283c7ffe3da9a3456ceb23cea6f2664de5a188322ec5027e4b37c9a59aa77",
+    "version": "v0.0.1",
+    "pubDate": "2026-04-24",
+    "updatedDate": "2026-04-24"
+  },
+  "src/content/posts/anzhiyu-markdown-showcase-zh-Hant.md": {
+    "contentHash": "b4fe7a8922bdcbc9c5865f8581e809966b43da3807d3da8e19f53e70bb69ec86",
+    "version": "v0.0.1",
+    "pubDate": "2026-04-24",
+    "updatedDate": "2026-04-24"
+  },
+  "src/content/posts/anzhiyu-markdown-showcase.md": {
+    "contentHash": "1890c453cf382ce7cc04ab477d8a9014d472d9a7d5cabcd2078f15eb27b9c83f",
+    "version": "v0.0.1",
+    "pubDate": "2026-04-24",
+    "updatedDate": "2026-04-24"
+  },
+  "src/content/posts/api-ready-theme-contracts-de.md": {
+    "contentHash": "43e46c3a3f9502c95c749056e243899eb99988e5f9564f58cf3123fb02fa04a2",
+    "version": "v0.0.1",
+    "pubDate": "2026-04-07",
+    "updatedDate": "2026-04-07"
+  },
+  "src/content/posts/api-ready-theme-contracts-en.md": {
+    "contentHash": "d5f2256fd8272145fa9d328aec1535d0c8413f92379987b73d3eab216aea0d16",
+    "version": "v0.0.1",
+    "pubDate": "2026-04-07",
+    "updatedDate": "2026-04-07"
+  },
+  "src/content/posts/api-ready-theme-contracts-es.md": {
+    "contentHash": "b83ef68f05d04494c448aa50ebfdc3bec0bc5df496334a14c986e788cf5b2ddd",
+    "version": "v0.0.1",
+    "pubDate": "2026-04-07",
+    "updatedDate": "2026-04-07"
+  },
+  "src/content/posts/api-ready-theme-contracts-fr.md": {
+    "contentHash": "d45af33ee852d3a807784ac18e89017533d0abe77a3f6fbd54138bc72b8b4de8",
+    "version": "v0.0.1",
+    "pubDate": "2026-04-07",
+    "updatedDate": "2026-04-07"
+  },
+  "src/content/posts/api-ready-theme-contracts-zh-Hant.md": {
+    "contentHash": "ed525da7bfe0f198816d130ee6822cec02028bd6b552be69b00de17ac0c5773b",
+    "version": "v0.0.1",
+    "pubDate": "2026-04-07",
+    "updatedDate": "2026-04-07"
+  },
+  "src/content/posts/api-ready-theme-contracts.md": {
+    "contentHash": "df1357a101d4b4eb248296ec378579275e8737dd1ba7329a6532655e51902d0d",
+    "version": "v0.0.1",
+    "pubDate": "2026-04-07",
+    "updatedDate": "2026-04-07"
+  },
+  "src/content/posts/badges-guide-de.md": {
+    "contentHash": "9efc95774832cf3545f441095ede557b0ec395f6aaa08e2e605f98305a43ac40",
+    "version": "v0.0.1",
+    "pubDate": "2026-09-11",
+    "updatedDate": "2026-09-11"
+  },
+  "src/content/posts/badges-guide-en.md": {
+    "contentHash": "09b01b4e63fabc53b9d032d5f215064c8879d1c47121bb96f456b9e45dd03608",
+    "version": "v0.0.1",
+    "pubDate": "2026-09-11",
+    "updatedDate": "2026-09-11"
+  },
+  "src/content/posts/badges-guide-es.md": {
+    "contentHash": "e9cd0166023c69d3a0b5104b30eb18ad650c5f921774175e2b465610998a1e18",
+    "version": "v0.0.1",
+    "pubDate": "2026-09-11",
+    "updatedDate": "2026-09-11"
+  },
+  "src/content/posts/badges-guide-fr.md": {
+    "contentHash": "59e97555747e9adf6cd4ed5849c4285ec089d80c6049d0ebcb719bad3f009951",
+    "version": "v0.0.1",
+    "pubDate": "2026-09-11",
+    "updatedDate": "2026-09-11"
+  },
+  "src/content/posts/badges-guide-zh-Hant.md": {
+    "contentHash": "81de3f71de1ed2358850af900dbd4940635540f7909a600d60b9781bc2644426",
+    "version": "v0.0.1",
+    "pubDate": "2026-09-11",
+    "updatedDate": "2026-09-11"
+  },
+  "src/content/posts/badges-guide.md": {
+    "contentHash": "22a7a82b17ce22f06c4c88a89afbcd46d5c230bf40941eafc1dfc0eb6dd59770",
+    "version": "v0.0.1",
+    "pubDate": "2026-09-11",
+    "updatedDate": "2026-09-11"
+  },
+  "src/content/posts/content-first-homepage-de.md": {
+    "contentHash": "af71f33b0183ea1b5dc4edd60a5fab3972818bd8b1f3e7c0aae235e3723847b0",
+    "version": "v0.0.1",
+    "pubDate": "2026-04-15",
+    "updatedDate": "2026-04-15"
+  },
+  "src/content/posts/content-first-homepage-en.md": {
+    "contentHash": "6a11a34cd6a05bf25f92bc304b4e79f0ba5f51682b3e4418e8c0833ca60bbbee",
+    "version": "v0.0.1",
+    "pubDate": "2026-04-15",
+    "updatedDate": "2026-04-15"
+  },
+  "src/content/posts/content-first-homepage-es.md": {
+    "contentHash": "4e26d88c8baefc8b0e352c1d62dd38ef5ea42e0c1a36168df6224d67c0f1833f",
+    "version": "v0.0.1",
+    "pubDate": "2026-04-15",
+    "updatedDate": "2026-04-15"
+  },
+  "src/content/posts/content-first-homepage-fr.md": {
+    "contentHash": "e91496f90e292690950f7342c6826d6974b948e027e18268e8a5c401f853dd41",
+    "version": "v0.0.1",
+    "pubDate": "2026-04-15",
+    "updatedDate": "2026-04-15"
+  },
+  "src/content/posts/content-first-homepage-zh-Hant.md": {
+    "contentHash": "32e29a7408e46e506e7b9ee9191de4fa611edd3cb2ff47e859c6d8577377b630",
+    "version": "v0.0.1",
+    "pubDate": "2026-04-15",
+    "updatedDate": "2026-04-15"
+  },
+  "src/content/posts/content-first-homepage.md": {
+    "contentHash": "3b1c8464553fa3c87a4362c9a470c2f7b63062edfaa48d7fbee2b6cde91f386c",
+    "version": "v0.0.1",
+    "pubDate": "2026-04-15",
+    "updatedDate": "2026-04-15"
+  },
+  "src/content/posts/content-formats-and-markup-mastery-de.md": {
+    "contentHash": "6018943ca8063f8d4ffe9650150ea541201b439d575a7105d6a7513d2aadd87e",
+    "version": "v0.0.1",
+    "pubDate": "2026-08-27",
+    "updatedDate": "2026-08-27"
+  },
+  "src/content/posts/content-formats-and-markup-mastery-en.md": {
+    "contentHash": "74da054768bdbc494bcb1f44abb069ac976a70af97975a76b379a58116580bc5",
+    "version": "v0.0.1",
+    "pubDate": "2026-08-27",
+    "updatedDate": "2026-08-27"
+  },
+  "src/content/posts/content-formats-and-markup-mastery-es.md": {
+    "contentHash": "875b4a2af6fff5ba5ec94ef8792c991aba6b9af63927121f8aee939f8f6079cb",
+    "version": "v0.0.1",
+    "pubDate": "2026-08-27",
+    "updatedDate": "2026-08-27"
+  },
+  "src/content/posts/content-formats-and-markup-mastery-fr.md": {
+    "contentHash": "12f12a57f1da04e822d1e8d2d08f50bdc7d80e175d6247ce7a28f3694a3b686c",
+    "version": "v0.0.1",
+    "pubDate": "2026-08-27",
+    "updatedDate": "2026-08-27"
+  },
+  "src/content/posts/content-formats-and-markup-mastery-zh-Hant.md": {
+    "contentHash": "083d636c7f6eed5ac6b5990572dda30d9e1d8bd1ade79b1b98bb2ec00b86802e",
+    "version": "v0.0.1",
+    "pubDate": "2026-08-27",
+    "updatedDate": "2026-08-27"
+  },
+  "src/content/posts/content-formats-and-markup-mastery.md": {
+    "contentHash": "51bf6b830bd05d885d550104f178fadd350567b0cae13064dda4f421d6ca0f25",
+    "version": "v0.0.1",
+    "pubDate": "2026-08-27",
+    "updatedDate": "2026-08-27"
+  },
+  "src/content/posts/example-all-special-formats-de.md": {
+    "contentHash": "86eb59fd6df6f21ce9359c408bec9074f610b0f1cc1143ef7dc4403981749dbd",
+    "version": "v0.0.1",
+    "pubDate": "2026-08-27",
+    "updatedDate": "2026-08-27"
+  },
+  "src/content/posts/example-all-special-formats-en.md": {
+    "contentHash": "469c115a9457842e16cc151681747f68ebcb9cb9c1ea6c172905fe8708e8cb73",
+    "version": "v0.0.1",
+    "pubDate": "2026-08-27",
+    "updatedDate": "2026-08-27"
+  },
+  "src/content/posts/example-all-special-formats-es.md": {
+    "contentHash": "d58c74127033d4fc6525a7bdb69de9ce097c7d7c277b11a50ad8ce6a66b55028",
+    "version": "v0.0.1",
+    "pubDate": "2026-08-27",
+    "updatedDate": "2026-08-27"
+  },
+  "src/content/posts/example-all-special-formats-fr.md": {
+    "contentHash": "2331059f1f67dbe45dfc7f3986a4edcce99907767ce648360f8b921bea39dd7f",
+    "version": "v0.0.1",
+    "pubDate": "2026-08-27",
+    "updatedDate": "2026-08-27"
+  },
+  "src/content/posts/example-all-special-formats-zh-Hant.md": {
+    "contentHash": "ba5656e5370c2875b133c236856451607a27eaf68a60290a90b859dd44c8def8",
+    "version": "v0.0.1",
+    "pubDate": "2026-08-27",
+    "updatedDate": "2026-08-27"
+  },
+  "src/content/posts/example-all-special-formats.md": {
+    "contentHash": "f9d0620fa9f56340a9cfda9869e7e6351e4ab3f7b07a493428cf45180129454a",
+    "version": "v0.0.1",
+    "pubDate": "2026-08-27",
+    "updatedDate": "2026-08-27"
+  },
+  "src/content/posts/example-callouts-de.md": {
+    "contentHash": "16fdab79a049c9a16f2939560b3828360ccf27bbd7a2cf56f6ea1b3588a733f3",
+    "version": "v0.0.1",
+    "pubDate": "2026-08-27",
+    "updatedDate": "2026-08-27"
+  },
+  "src/content/posts/example-callouts-en.md": {
+    "contentHash": "dbd8a5fd55e2066971706492bfd3a0dae1d765934e5526ddf68be5e23cd19115",
+    "version": "v0.0.1",
+    "pubDate": "2026-08-27",
+    "updatedDate": "2026-08-27"
+  },
+  "src/content/posts/example-callouts-es.md": {
+    "contentHash": "3d62c785112d200f4d0eacb0a8e8add4692780a6aeb8ad62c5f11b41fe57b381",
+    "version": "v0.0.1",
+    "pubDate": "2026-08-27",
+    "updatedDate": "2026-08-27"
+  },
+  "src/content/posts/example-callouts-fr.md": {
+    "contentHash": "6c58f9512c260a42686105dea0619604ecc4731ec2b964e76f8a98d73ce8884a",
+    "version": "v0.0.1",
+    "pubDate": "2026-08-27",
+    "updatedDate": "2026-08-27"
+  },
+  "src/content/posts/example-callouts-zh-Hant.md": {
+    "contentHash": "59d975bae304a87ff5226d8d11175d2babfa772e6d14351d16b6636d22cb20a2",
+    "version": "v0.0.1",
+    "pubDate": "2026-08-27",
+    "updatedDate": "2026-08-27"
+  },
+  "src/content/posts/example-callouts.md": {
+    "contentHash": "096989f8972f237e97264a5ff7cfc474d3f9a38235741bbdfc4ff50dcabc3da0",
+    "version": "v0.0.1",
+    "pubDate": "2026-08-27",
+    "updatedDate": "2026-08-27"
+  },
+  "src/content/posts/example-code-enhancements-de.md": {
+    "contentHash": "d6238bc8a82713f4ed426a26c372be95ad3567bffbe014d2921d522fb194f14a",
+    "version": "v0.0.1",
+    "pubDate": "2026-08-27",
+    "updatedDate": "2026-08-27"
+  },
+  "src/content/posts/example-code-enhancements-en.md": {
+    "contentHash": "3f3e8c2cdf6d96ca8cee2b81bf957dd1720ed8f83bba986a9fa9d2fb0a8d9a32",
+    "version": "v0.0.1",
+    "pubDate": "2026-08-27",
+    "updatedDate": "2026-08-27"
+  },
+  "src/content/posts/example-code-enhancements-es.md": {
+    "contentHash": "6beb416ee20e9976120bae4d8c973a0697edd53ad3fe8284028445de30e6423d",
+    "version": "v0.0.1",
+    "pubDate": "2026-08-27",
+    "updatedDate": "2026-08-27"
+  },
+  "src/content/posts/example-code-enhancements-fr.md": {
+    "contentHash": "77f52a7b6a4db9d619969403647fa96df5a9eed1e64d44d842f8fabbb71bb760",
+    "version": "v0.0.1",
+    "pubDate": "2026-08-27",
+    "updatedDate": "2026-08-27"
+  },
+  "src/content/posts/example-code-enhancements-zh-Hant.md": {
+    "contentHash": "b3216c172875a2b9af97b0d3ef7837445c5648585f3707ac031a8fb89a584b87",
+    "version": "v0.0.1",
+    "pubDate": "2026-08-27",
+    "updatedDate": "2026-08-27"
+  },
+  "src/content/posts/example-code-enhancements.md": {
+    "contentHash": "a4cc66f788fc2c62a257263a1cb9f892e634e65e6b67139832327f406bf2f707",
+    "version": "v0.0.1",
+    "pubDate": "2026-08-27",
+    "updatedDate": "2026-08-27"
+  },
+  "src/content/posts/example-details-collapse-de.md": {
+    "contentHash": "3b6eb30884869bef8834fdaf0ee8367fd464b0a0d23cf5a38c61a354257b5bde",
+    "version": "v0.0.1",
+    "pubDate": "2026-08-27",
+    "updatedDate": "2026-08-27"
+  },
+  "src/content/posts/example-details-collapse-en.md": {
+    "contentHash": "a3f8b62a11450b115b204411b5a4486186f957b8ad7f2cfdc27354cca6842f58",
+    "version": "v0.0.1",
+    "pubDate": "2026-08-27",
+    "updatedDate": "2026-08-27"
+  },
+  "src/content/posts/example-details-collapse-es.md": {
+    "contentHash": "14a8ee0b9b7c6c397a6ae8c0d58c83148f9deaa15b577203fa00e0f6c3b1ea1a",
+    "version": "v0.0.1",
+    "pubDate": "2026-08-27",
+    "updatedDate": "2026-08-27"
+  },
+  "src/content/posts/example-details-collapse-fr.md": {
+    "contentHash": "9f840daee578735bd22d09dc9a2ca9110684cc529a1334d3e05bcefd25983c69",
+    "version": "v0.0.1",
+    "pubDate": "2026-08-27",
+    "updatedDate": "2026-08-27"
+  },
+  "src/content/posts/example-details-collapse-zh-Hant.md": {
+    "contentHash": "223cc42a2a7b0fb7d24f597d594de920d36a55ce5a304350b31f3511372e13b7",
+    "version": "v0.0.1",
+    "pubDate": "2026-08-27",
+    "updatedDate": "2026-08-27"
+  },
+  "src/content/posts/example-details-collapse.md": {
+    "contentHash": "b139448353536c113b7acbaa55015520aeee1372d548478fa2db2084332779bd",
+    "version": "v0.0.1",
+    "pubDate": "2026-08-27",
+    "updatedDate": "2026-08-27"
+  },
+  "src/content/posts/example-embeds-de.md": {
+    "contentHash": "2e108086f432c2f7804dc12c89d2a1c6c132c34747bd826a992e2f0d97d1c452",
+    "version": "v0.0.1",
+    "pubDate": "2026-08-27",
+    "updatedDate": "2026-08-27"
+  },
+  "src/content/posts/example-embeds-en.md": {
+    "contentHash": "400f2366d31c8691fd70025fb896f09398c49cb1e8cc1d082c45f0076f277476",
+    "version": "v0.0.1",
+    "pubDate": "2026-08-27",
+    "updatedDate": "2026-08-27"
+  },
+  "src/content/posts/example-embeds-es.md": {
+    "contentHash": "d8029ecf694e062eb1874f879d56f4077b57811bfb3e94a1133f1cc4ab12e5b6",
+    "version": "v0.0.1",
+    "pubDate": "2026-08-27",
+    "updatedDate": "2026-08-27"
+  },
+  "src/content/posts/example-embeds-fr.md": {
+    "contentHash": "f4adc4a4840bb982081cb91b4b7abf3a64068a22a11e215f3e3e36ab5f611f27",
+    "version": "v0.0.1",
+    "pubDate": "2026-08-27",
+    "updatedDate": "2026-08-27"
+  },
+  "src/content/posts/example-embeds-zh-Hant.md": {
+    "contentHash": "1e05c4680eb8d4415a0681859c082fb0cdbb21483dd243a314e5803385d8e886",
+    "version": "v0.0.1",
+    "pubDate": "2026-08-27",
+    "updatedDate": "2026-08-27"
+  },
+  "src/content/posts/example-embeds.md": {
+    "contentHash": "187809b22e5ded985f3f6b002bbac65d21510e4f9f7c6e6876b7607aa2eea728",
+    "version": "v0.0.1",
+    "pubDate": "2026-08-27",
+    "updatedDate": "2026-08-27"
+  },
+  "src/content/posts/example-frontmatter-fields-de.md": {
+    "contentHash": "43423aea8b5b13604fe842c69f12ce72005dd9d87562f56f22be67422921de45",
+    "version": "v0.0.1",
+    "pubDate": "2026-08-27",
+    "updatedDate": "2026-08-27"
+  },
+  "src/content/posts/example-frontmatter-fields-en.md": {
+    "contentHash": "1df8b931db3e8b45c040e8daf3c7c0925a9cfcf2f74aba43b06c87fc0af65415",
+    "version": "v0.0.1",
+    "pubDate": "2026-08-27",
+    "updatedDate": "2026-08-27"
+  },
+  "src/content/posts/example-frontmatter-fields-es.md": {
+    "contentHash": "302270414de6e08a17c62e722ab9868b7b43935d47e48e31e1179371638058ef",
+    "version": "v0.0.1",
+    "pubDate": "2026-08-27",
+    "updatedDate": "2026-08-27"
+  },
+  "src/content/posts/example-frontmatter-fields-fr.md": {
+    "contentHash": "fd050fda4b8c478ddac7965f82ed85c8eb3c27d40b9f55f2a0be892258c807b3",
+    "version": "v0.0.1",
+    "pubDate": "2026-08-27",
+    "updatedDate": "2026-08-27"
+  },
+  "src/content/posts/example-frontmatter-fields-zh-Hant.md": {
+    "contentHash": "07f9fdcc45dc6d828c419ac2f9183fe70b6fe0f362a9401015ea21f46805e815",
+    "version": "v0.0.1",
+    "pubDate": "2026-08-27",
+    "updatedDate": "2026-08-27"
+  },
+  "src/content/posts/example-frontmatter-fields.md": {
+    "contentHash": "d07179948c395fedf9486baad128339b44162f520252ce98211cab7b753d33b1",
+    "version": "v0.0.1",
+    "pubDate": "2026-08-27",
+    "updatedDate": "2026-08-27"
+  },
+  "src/content/posts/example-gallery-figure-de.md": {
+    "contentHash": "47d0343346721df3ad6f1b59f46bf1897f499340d138e2797b02d49ddbca3292",
+    "version": "v0.0.1",
+    "pubDate": "2026-08-27",
+    "updatedDate": "2026-08-27"
+  },
+  "src/content/posts/example-gallery-figure-en.md": {
+    "contentHash": "2683919d273ec06d394e727cf0ffe636c238745637283871955e6588fb6c942a",
+    "version": "v0.0.1",
+    "pubDate": "2026-08-27",
+    "updatedDate": "2026-08-27"
+  },
+  "src/content/posts/example-gallery-figure-es.md": {
+    "contentHash": "424fb8321c54d18c1a66c909307f818f5d3a3672b31817b63deb0c9bcb618918",
+    "version": "v0.0.1",
+    "pubDate": "2026-08-27",
+    "updatedDate": "2026-08-27"
+  },
+  "src/content/posts/example-gallery-figure-fr.md": {
+    "contentHash": "a1cd51e5d3919dcd95a2d85b5bd16b87209cdd65732f77437ed6fe4c11f31ab4",
+    "version": "v0.0.1",
+    "pubDate": "2026-08-27",
+    "updatedDate": "2026-08-27"
+  },
+  "src/content/posts/example-gallery-figure-zh-Hant.md": {
+    "contentHash": "f764353d0b9648567ef134aa45f084f0641a824d6000a52f8f74d9a1329bcd9c",
+    "version": "v0.0.1",
+    "pubDate": "2026-08-27",
+    "updatedDate": "2026-08-27"
+  },
+  "src/content/posts/example-gallery-figure.md": {
+    "contentHash": "8e52192029943f6bf058d3ad700472a4a0d3e03b60c343eac0c437871bb83aac",
+    "version": "v0.0.1",
+    "pubDate": "2026-08-27",
+    "updatedDate": "2026-08-27"
+  },
+  "src/content/posts/example-math-de.md": {
+    "contentHash": "15115507c99ada9443e32b5cafbb8937ebc353208f69acba8f02fcbbf02cca00",
+    "version": "v0.0.1",
+    "pubDate": "2026-08-27",
+    "updatedDate": "2026-08-27"
+  },
+  "src/content/posts/example-math-en.md": {
+    "contentHash": "cbae570ea149ee7d182ab42edaf8f7760a59e60073554f51547723ef61344624",
+    "version": "v0.0.1",
+    "pubDate": "2026-08-27",
+    "updatedDate": "2026-08-27"
+  },
+  "src/content/posts/example-math-es.md": {
+    "contentHash": "298ba58ea023cdfef476793443c09c9d0bf896e04f6427b5a02aae30528d2403",
+    "version": "v0.0.1",
+    "pubDate": "2026-08-27",
+    "updatedDate": "2026-08-27"
+  },
+  "src/content/posts/example-math-fr.md": {
+    "contentHash": "3bd1755b398d46495ce009db7110d311ecb2aaf15ac1cbdb4c4ae1a77f83a233",
+    "version": "v0.0.1",
+    "pubDate": "2026-08-27",
+    "updatedDate": "2026-08-27"
+  },
+  "src/content/posts/example-math-zh-Hant.md": {
+    "contentHash": "5b107a490ec5974c08d24cbee13e05cb89d7582d572b30b2353b0730cc49ad3b",
+    "version": "v0.0.1",
+    "pubDate": "2026-08-27",
+    "updatedDate": "2026-08-27"
+  },
+  "src/content/posts/example-math.md": {
+    "contentHash": "2b45e669060ea6170345591d56f31e8176422dd917bdf6be3106a3f11069ea82",
+    "version": "v0.0.1",
+    "pubDate": "2026-08-27",
+    "updatedDate": "2026-08-27"
+  },
+  "src/content/posts/example-mermaid-de.md": {
+    "contentHash": "70eba9bee2c604119b79428f8bc8438e50dd35b4b138b1ea47da1cc22ea92b80",
+    "version": "v0.0.1",
+    "pubDate": "2026-08-27",
+    "updatedDate": "2026-08-27"
+  },
+  "src/content/posts/example-mermaid-en.md": {
+    "contentHash": "29daedbcb65f8855a2af6b2aafd393abc013ea12460b1fe8bacef8386cd89489",
+    "version": "v0.0.1",
+    "pubDate": "2026-08-27",
+    "updatedDate": "2026-08-27"
+  },
+  "src/content/posts/example-mermaid-es.md": {
+    "contentHash": "9967ded0fe7b78587c4e2cb9c2a7b9f92146c280ebe453f673821b5da12f834b",
+    "version": "v0.0.1",
+    "pubDate": "2026-08-27",
+    "updatedDate": "2026-08-27"
+  },
+  "src/content/posts/example-mermaid-fr.md": {
+    "contentHash": "db6bacbe03712c56047b008ccfa0aa02250d4b132922877eafd790f1cc6d1c00",
+    "version": "v0.0.1",
+    "pubDate": "2026-08-27",
+    "updatedDate": "2026-08-27"
+  },
+  "src/content/posts/example-mermaid-zh-Hant.md": {
+    "contentHash": "54ead3862c2d355d3c2b2523705f09c0ea7cb97b1827a62e105a02b898f5494f",
+    "version": "v0.0.1",
+    "pubDate": "2026-08-27",
+    "updatedDate": "2026-08-27"
+  },
+  "src/content/posts/example-mermaid.md": {
+    "contentHash": "db7762efc9d3c3784c832e7fbb9805636811d4f54fd953d75d5775fb0b79b725",
+    "version": "v0.0.1",
+    "pubDate": "2026-08-27",
+    "updatedDate": "2026-08-27"
+  },
+  "src/content/posts/example-mindmap-de.md": {
+    "contentHash": "0b80be4b3a600e7ba3ca6fb6470d374b35a823b65e29bbc470f0ad63b45a216c",
+    "version": "v0.0.1",
+    "pubDate": "2026-08-27",
+    "updatedDate": "2026-08-27"
+  },
+  "src/content/posts/example-mindmap-en.md": {
+    "contentHash": "55a5c92793890b10a1bc29f04ee2ee32967175a1fbec25ede56c1ecebb29a349",
+    "version": "v0.0.1",
+    "pubDate": "2026-08-27",
+    "updatedDate": "2026-08-27"
+  },
+  "src/content/posts/example-mindmap-es.md": {
+    "contentHash": "701ceeed83a9494858fd5a24ae9747eb90209aaf54417a2d8f1d07ced1a5724e",
+    "version": "v0.0.1",
+    "pubDate": "2026-08-27",
+    "updatedDate": "2026-08-27"
+  },
+  "src/content/posts/example-mindmap-fr.md": {
+    "contentHash": "55ca47209cca89ca27006c5e3ae5f80b813ddea65036b69e6d2a42cdefe0e640",
+    "version": "v0.0.1",
+    "pubDate": "2026-08-27",
+    "updatedDate": "2026-08-27"
+  },
+  "src/content/posts/example-mindmap-zh-Hant.md": {
+    "contentHash": "e0b140d3709672aa6ab7508bb723fc96027d7112561308695d005388182383f0",
+    "version": "v0.0.1",
+    "pubDate": "2026-08-27",
+    "updatedDate": "2026-08-27"
+  },
+  "src/content/posts/example-mindmap.md": {
+    "contentHash": "07721570cb879f448d1fd07d601d51616019df49005025970212c5a4ea39fc4d",
+    "version": "v0.0.1",
+    "pubDate": "2026-08-27",
+    "updatedDate": "2026-08-27"
+  },
+  "src/content/posts/example-tabs-de.md": {
+    "contentHash": "de2d750843f26966a91a32306acee884068b36e98b66f7795f892936caca93d1",
+    "version": "v0.0.1",
+    "pubDate": "2026-08-27",
+    "updatedDate": "2026-08-27"
+  },
+  "src/content/posts/example-tabs-en.md": {
+    "contentHash": "507c618c392ac606b2152433fce815f711c9350bbfaa8bcde9942b4bd3464fa5",
+    "version": "v0.0.1",
+    "pubDate": "2026-08-27",
+    "updatedDate": "2026-08-27"
+  },
+  "src/content/posts/example-tabs-es.md": {
+    "contentHash": "45c2cc118bd359ec6e14da47b77a2ff323a7c88bf00a78d130efa340d2cf36ac",
+    "version": "v0.0.1",
+    "pubDate": "2026-08-27",
+    "updatedDate": "2026-08-27"
+  },
+  "src/content/posts/example-tabs-fr.md": {
+    "contentHash": "d4fe2d12cf0d72a9c986882e11325cb204cf9848dcd24bd314e00d81bf9429ae",
+    "version": "v0.0.1",
+    "pubDate": "2026-08-27",
+    "updatedDate": "2026-08-27"
+  },
+  "src/content/posts/example-tabs-zh-Hant.md": {
+    "contentHash": "3c03a71c7c23b478690a596b7eb86ca59caacf9db25bd535ba5caf1811e187ee",
+    "version": "v0.0.1",
+    "pubDate": "2026-08-27",
+    "updatedDate": "2026-08-27"
+  },
+  "src/content/posts/example-tabs.md": {
+    "contentHash": "259af68f100608b94ec51990855bb31fdde09fa3b151a050004b7d83bcc4e0e3",
+    "version": "v0.0.1",
+    "pubDate": "2026-08-27",
+    "updatedDate": "2026-08-27"
+  },
+  "src/content/posts/hello-world-de.md": {
+    "contentHash": "04247d0f07b39a65d83a52f214024408462273b0237bd88c54e6d53afd0b58b3",
+    "version": "v0.0.1",
+    "pubDate": "2026-04-01",
+    "updatedDate": "2026-04-01"
+  },
+  "src/content/posts/hello-world-en.md": {
+    "contentHash": "a0976e7cc79f88bd1ad69c7883ba17d264aa07b2dabea8aaaaf57bcef60d936d",
+    "version": "v0.0.1",
+    "pubDate": "2026-04-01",
+    "updatedDate": "2026-04-01"
+  },
+  "src/content/posts/hello-world-es.md": {
+    "contentHash": "964702c07758bfa2e9ec3a71ff895456a8cb0af9d7adeabcc44f2fc2c27ff0bb",
+    "version": "v0.0.1",
+    "pubDate": "2026-04-01",
+    "updatedDate": "2026-04-01"
+  },
+  "src/content/posts/hello-world-fr.md": {
+    "contentHash": "66ee4894dbe0c992fcbf3180e0b8f2c023f162d051fba26cd4322df843062357",
+    "version": "v0.0.1",
+    "pubDate": "2026-04-01",
+    "updatedDate": "2026-04-01"
+  },
+  "src/content/posts/hello-world-zh-Hant.md": {
+    "contentHash": "7fd3103f7f9eaa5837a207be363355d5151c504b1ecaf371567497628caf8b99",
+    "version": "v0.0.1",
+    "pubDate": "2026-04-01",
+    "updatedDate": "2026-04-01"
+  },
+  "src/content/posts/hello-world.md": {
+    "contentHash": "3bc55a4889f34811a069f276c0309b4bba6db6d06121ecdf8d0a7ac91cd8b36c",
+    "version": "v0.0.1",
+    "pubDate": "2026-04-01",
+    "updatedDate": "2026-04-01"
+  },
+  "src/content/posts/learning-through-rebuilds-de.md": {
+    "contentHash": "8965d560fe1a4b677725d1390bef60ce56657cf614c2df5c7e31159ddb7a4c5d",
+    "version": "v0.0.1",
+    "pubDate": "2026-04-12",
+    "updatedDate": "2026-04-12"
+  },
+  "src/content/posts/learning-through-rebuilds-en.md": {
+    "contentHash": "9cebc60f8e53c9371a449be097dbb9996d4643953019bee7db2b8f7795e093d5",
+    "version": "v0.0.1",
+    "pubDate": "2026-04-12",
+    "updatedDate": "2026-04-12"
+  },
+  "src/content/posts/learning-through-rebuilds-es.md": {
+    "contentHash": "bfbfe50a750b91c653c604df0475cf39adc8d1f2c11a67389b4b243838056cdb",
+    "version": "v0.0.1",
+    "pubDate": "2026-04-12",
+    "updatedDate": "2026-04-12"
+  },
+  "src/content/posts/learning-through-rebuilds-fr.md": {
+    "contentHash": "76f4945cc9f7d1f246f9ed42b5ea914c7dc7d1dc94eeb52ee4d8d317cf1a78ac",
+    "version": "v0.0.1",
+    "pubDate": "2026-04-12",
+    "updatedDate": "2026-04-12"
+  },
+  "src/content/posts/learning-through-rebuilds-zh-Hant.md": {
+    "contentHash": "d2ec902673cdcd9e8e484aa5c32fdc3fe6cf4752446f33944344f9e8a147606c",
+    "version": "v0.0.1",
+    "pubDate": "2026-04-12",
+    "updatedDate": "2026-04-12"
+  },
+  "src/content/posts/learning-through-rebuilds.md": {
+    "contentHash": "2c8e1559356a3013f5ac1d6303b54ae0a472c5a6f2154f02ae5687e5208bdfde",
+    "version": "v0.0.1",
+    "pubDate": "2026-04-12",
+    "updatedDate": "2026-04-12"
+  },
+  "src/content/posts/markdown-scan-showcase-de.md": {
+    "contentHash": "10f6fcb833514026b6784f20b600a792de710433c5a1311c985faae5f853768d",
+    "version": "v0.0.1",
+    "pubDate": "2026-04-24",
+    "updatedDate": "2026-04-24"
+  },
+  "src/content/posts/markdown-scan-showcase-en.md": {
+    "contentHash": "aa2f2e5b809ab8e327ebb157206655348126ea64a1100c28f9f5f1d81ca56003",
+    "version": "v0.0.1",
+    "pubDate": "2026-04-24",
+    "updatedDate": "2026-04-24"
+  },
+  "src/content/posts/markdown-scan-showcase-es.md": {
+    "contentHash": "52a0cec8b29fc132c8f8b2de35a9b1ce7afa6351c456d944305b988e17223a55",
+    "version": "v0.0.1",
+    "pubDate": "2026-04-24",
+    "updatedDate": "2026-04-24"
+  },
+  "src/content/posts/markdown-scan-showcase-fr.md": {
+    "contentHash": "8c7838bb8c1f80c685ac8dab8b602c0fbab8a205c57f48ccf68ccd116c784cce",
+    "version": "v0.0.1",
+    "pubDate": "2026-04-24",
+    "updatedDate": "2026-04-24"
+  },
+  "src/content/posts/markdown-scan-showcase-zh-Hant.md": {
+    "contentHash": "631dceb4b6453a9c6fb35950919a2aed33d14478d165f688c147522a5dcd51cc",
+    "version": "v0.0.1",
+    "pubDate": "2026-04-24",
+    "updatedDate": "2026-04-24"
+  },
+  "src/content/posts/markdown-scan-showcase.md": {
+    "contentHash": "f4fba78509c5c9fbeb4a5519ff23e642b7eff8b46532b6e28bfd4a298c9be5a0",
+    "version": "v0.0.1",
+    "pubDate": "2026-04-24",
+    "updatedDate": "2026-04-24"
+  },
+  "src/content/posts/markdown-syntax-mastery-de.md": {
+    "contentHash": "887aa72dc2005f86f35e8a4a58503a6f6c6deaa26de4acdaa72647158bf5283c",
+    "version": "v0.0.1",
+    "pubDate": "2026-08-27",
+    "updatedDate": "2026-08-27"
+  },
+  "src/content/posts/markdown-syntax-mastery-en.md": {
+    "contentHash": "477feaf83802653506dc4d76b261ea0cd560b72733713d4ed416196d8b26d105",
+    "version": "v0.0.1",
+    "pubDate": "2026-08-27",
+    "updatedDate": "2026-08-27"
+  },
+  "src/content/posts/markdown-syntax-mastery-es.md": {
+    "contentHash": "d3128d3517d2c75521231dc67084e1dfc1fcd4af0cb2a51ce966e81ecedb3303",
+    "version": "v0.0.1",
+    "pubDate": "2026-08-27",
+    "updatedDate": "2026-08-27"
+  },
+  "src/content/posts/markdown-syntax-mastery-fr.md": {
+    "contentHash": "47d2b4d3162b56c85486689bb5fdd3661ec89213b324b2f38cc3afea89daba49",
+    "version": "v0.0.1",
+    "pubDate": "2026-08-27",
+    "updatedDate": "2026-08-27"
+  },
+  "src/content/posts/markdown-syntax-mastery-zh-Hant.md": {
+    "contentHash": "e7631bb9707abd5b1bfd6f7be8f980d3f510f1e4b47fd89c20ed3c374009bcad",
+    "version": "v0.0.1",
+    "pubDate": "2026-08-27",
+    "updatedDate": "2026-08-27"
+  },
+  "src/content/posts/markdown-syntax-mastery.md": {
+    "contentHash": "6bd8bc90e644c5b1bd36a14aa87c516cc38a34a5e2ab457978094802810fea57",
+    "version": "v0.0.1",
+    "pubDate": "2026-08-27",
+    "updatedDate": "2026-08-27"
+  },
+  "src/content/posts/media-capability-lab-de.md": {
+    "contentHash": "be5811c1110645240226c211da253bbd9b099cead5adac713660a4eec16a2815",
+    "version": "v0.0.1",
+    "pubDate": "2026-04-25",
+    "updatedDate": "2026-04-25"
+  },
+  "src/content/posts/media-capability-lab-en.md": {
+    "contentHash": "405a2a9e3d50dbca6a3bf2e5d7d483896d296e3112548d3ce78223b2b7e33f03",
+    "version": "v0.0.1",
+    "pubDate": "2026-04-25",
+    "updatedDate": "2026-04-25"
+  },
+  "src/content/posts/media-capability-lab-es.md": {
+    "contentHash": "87f03b65c02462e2e3cc6bee7de7397033933c3f533c4c1bc830c5c7be648a84",
+    "version": "v0.0.1",
+    "pubDate": "2026-04-25",
+    "updatedDate": "2026-04-25"
+  },
+  "src/content/posts/media-capability-lab-fr.md": {
+    "contentHash": "7250743012d9fc1d1c632ed9961c231c74516730b99049d0888d7e119817114d",
+    "version": "v0.0.1",
+    "pubDate": "2026-04-25",
+    "updatedDate": "2026-04-25"
+  },
+  "src/content/posts/media-capability-lab-zh-Hant.md": {
+    "contentHash": "ff9f171cc9ec051eb6b33143657c663234277c3d9f8fae1553a8fbc26d860a74",
+    "version": "v0.0.1",
+    "pubDate": "2026-04-25",
+    "updatedDate": "2026-04-25"
+  },
+  "src/content/posts/media-capability-lab.md": {
+    "contentHash": "c51ee932f51493dfbebdbfc8ce021e25a5a87c31b14bd6372d3b25892e197495",
+    "version": "v0.0.1",
+    "pubDate": "2026-04-25",
+    "updatedDate": "2026-04-25"
+  },
+  "src/content/posts/readable-geek-interfaces-de.md": {
+    "contentHash": "55a6e14402aeb100cc54b4baa25f4cbe69beec75c651247616efdd32bbfafc5a",
+    "version": "v0.0.1",
+    "pubDate": "2026-04-10",
+    "updatedDate": "2026-04-10"
+  },
+  "src/content/posts/readable-geek-interfaces-en.md": {
+    "contentHash": "6bbc3c9ad0f4a6eaac183f49189a175c9e1ec2100b2fff4246a6351644ee5afa",
+    "version": "v0.0.1",
+    "pubDate": "2026-04-10",
+    "updatedDate": "2026-04-10"
+  },
+  "src/content/posts/readable-geek-interfaces-es.md": {
+    "contentHash": "ceb84e8b999029417517317f0414c6f2e6dab9558b347bf49617e5a8379bf690",
+    "version": "v0.0.1",
+    "pubDate": "2026-04-10",
+    "updatedDate": "2026-04-10"
+  },
+  "src/content/posts/readable-geek-interfaces-fr.md": {
+    "contentHash": "8734e30d9095414f12847dff40f6a18d47c211c7389d228658606f95d8b9e0a0",
+    "version": "v0.0.1",
+    "pubDate": "2026-04-10",
+    "updatedDate": "2026-04-10"
+  },
+  "src/content/posts/readable-geek-interfaces-zh-Hant.md": {
+    "contentHash": "6314dd04e3703975db373c5c868a78148e0e92306990ddf923db85e233b0db40",
+    "version": "v0.0.1",
+    "pubDate": "2026-04-10",
+    "updatedDate": "2026-04-10"
+  },
+  "src/content/posts/readable-geek-interfaces.md": {
+    "contentHash": "03f2cc781bdafdd2a1ee8825844101a7148a60d83c2c01060cf474b710902f5c",
+    "version": "v0.0.1",
+    "pubDate": "2026-04-10",
+    "updatedDate": "2026-04-10"
+  },
+  "src/content/posts/test-audit-dot-casing.en.md": {
+    "contentHash": "bd19964e50030c26af6811d37e69f0d50796aa26286285bbb614d6960853afa8",
+    "version": "v0.0.1",
+    "pubDate": "2026-09-20",
+    "updatedDate": "2026-09-20"
+  },
+  "src/content/posts/test-audit-dot-casing.zh-CN.md": {
+    "contentHash": "7b8c202f5108ae443afa63ee351185b294a1e7b577207fad2f9b487fda8ce219",
+    "version": "v0.0.1",
+    "pubDate": "2026-09-20",
+    "updatedDate": "2026-09-20"
+  },
+  "src/content/posts/test-audit-monolingual-single.md": {
+    "contentHash": "74ca01e904f0562f66c7df737aedeadc653ab6eb47218793348097d02e7c8894",
+    "version": "v0.0.1",
+    "pubDate": "2026-09-20",
+    "updatedDate": "2026-09-20"
+  },
+  "src/content/posts/test-audit-polyglot-matrix-de.md": {
+    "contentHash": "ac6ed2c21cda40eef5b24f6ffe3b06ff481d62b541b1e1a94c4ee2096300da14",
+    "version": "v0.0.1",
+    "pubDate": "2026-09-20",
+    "updatedDate": "2026-09-20"
+  },
+  "src/content/posts/test-audit-polyglot-matrix-en.md": {
+    "contentHash": "483d963494fcd147f673eef04ca21a04da276ac9d9aea9a398fe1f082bf8c0d4",
+    "version": "v0.0.1",
+    "pubDate": "2026-09-20",
+    "updatedDate": "2026-09-20"
+  },
+  "src/content/posts/test-audit-polyglot-matrix-es.md": {
+    "contentHash": "4db7c4435fdf7a71a6cd959f947edfbf70375e67e0ce8917c44044c11b69b99f",
+    "version": "v0.0.1",
+    "pubDate": "2026-09-20",
+    "updatedDate": "2026-09-20"
+  },
+  "src/content/posts/test-audit-polyglot-matrix-fr.md": {
+    "contentHash": "448180f24b45af5f4ad76008f8311a6bda00581295c9069763f90e5236fac088",
+    "version": "v0.0.1",
+    "pubDate": "2026-09-20",
+    "updatedDate": "2026-09-20"
+  },
+  "src/content/posts/test-audit-polyglot-matrix-it.md": {
+    "contentHash": "6c41173bb4b959b36a7b2661a5aeb5437a9c7dd1353d5cb481bc49ef95b17e10",
+    "version": "v0.0.1",
+    "pubDate": "2026-09-20",
+    "updatedDate": "2026-09-20"
+  },
+  "src/content/posts/test-audit-polyglot-matrix-ja.md": {
+    "contentHash": "7fc036522d80fcd35fe058a0b97c15552c69fc7691a68821b011ff4533a2651e",
+    "version": "v0.0.1",
+    "pubDate": "2026-09-20",
+    "updatedDate": "2026-09-20"
+  },
+  "src/content/posts/test-audit-polyglot-matrix-ko.md": {
+    "contentHash": "1f130deca14d5f52f48f59c51ad83c7730c67eb91687d7d08efba92f08c427df",
+    "version": "v0.0.1",
+    "pubDate": "2026-09-20",
+    "updatedDate": "2026-09-20"
+  },
+  "src/content/posts/test-audit-polyglot-matrix-ru.md": {
+    "contentHash": "e67fc2f002f88242b5a0bbb779cb11522de6ae131bb3124566682932b50039c2",
+    "version": "v0.0.1",
+    "pubDate": "2026-09-20",
+    "updatedDate": "2026-09-20"
+  },
+  "src/content/posts/test-audit-polyglot-matrix-zh-Hant.md": {
+    "contentHash": "b8edfb3db102ce0b4955a96e65e6ee5db6e3e4760f3d2e8d8c48a29508a0ec07",
+    "version": "v0.0.1",
+    "pubDate": "2026-09-20",
+    "updatedDate": "2026-09-20"
+  },
+  "src/content/posts/test-audit-polyglot-matrix.md": {
+    "contentHash": "28437d3c9b64fc2ce9b26fa812df0e4ca86b337bbcf11f3692106fd448919d3a",
+    "version": "v0.0.1",
+    "pubDate": "2026-09-20",
+    "updatedDate": "2026-09-20"
+  },
+  "src/content/posts/test-i18n-resilience-en.md": {
+    "contentHash": "558bf0bd58cd1fabb964d0cc5bce8ce14b4dbf92518f4ddf81fc54a99dfef25e",
+    "version": "v0.0.1",
+    "pubDate": "2026-09-18",
+    "updatedDate": "2026-09-18"
+  },
+  "src/content/posts/test-i18n-resilience.md": {
+    "contentHash": "dadaeaa4976ed4e1e98eb603c1a57fa0e6cb1614a95348ea30997b44b17c557c",
+    "version": "v0.0.1",
+    "pubDate": "2026-09-18",
+    "updatedDate": "2026-09-18"
+  },
+  "src/content/posts/test-matrix-casing-en.md": {
+    "contentHash": "3fbb73b10c930c997e139eeaa96ea6a6264af758d3793fdeb31204e5960c3918",
+    "version": "v0.0.1",
+    "pubDate": "2026-09-18",
+    "updatedDate": "2026-09-18"
+  },
+  "src/content/posts/test-matrix-casing.md": {
+    "contentHash": "837db7be9783e889dc16d665c80b0dbfd4f720d9a2d6ceea484e093b2b4e7567",
+    "version": "v0.0.1",
+    "pubDate": "2026-09-18",
+    "updatedDate": "2026-09-18"
+  },
+  "src/content/posts/test-matrix-native-en-zh-CN.md": {
+    "contentHash": "b0438100f2adb1dbc876a26681f88023ee16cc3ea267f07b74f5c9520d05f854",
+    "version": "v0.0.1",
+    "pubDate": "2026-09-18",
+    "updatedDate": "2026-09-18"
+  },
+  "src/content/posts/test-matrix-native-en.md": {
+    "contentHash": "674ec8273bfe492e781171252c15996a84f78e3e76c7942b41283454cf0d4fc4",
+    "version": "v0.0.1",
+    "pubDate": "2026-09-18",
+    "updatedDate": "2026-09-18"
+  },
+  "src/content/posts/test-native-english-clean-zh-CN.md": {
+    "contentHash": "1a58fd011bdfd33eeb2b0d610c071c0f2d603db94fd1b6720eb6b102c37ff71c",
+    "version": "v0.0.1",
+    "pubDate": "2026-09-18",
+    "updatedDate": "2026-09-18"
+  },
+  "src/content/posts/test-native-english-clean.md": {
+    "contentHash": "6879abacddf42a8f5ca04693f352b65dce002b160e6827f9a6d7494d559a978e",
+    "version": "v0.0.1",
+    "pubDate": "2026-09-18",
+    "updatedDate": "2026-09-18"
+  }
+}

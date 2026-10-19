@@ -11,6 +11,8 @@ tags: ["學習", "重構", "Astro"]
 i18nKey: "learning-through-rebuilds"
 lang: "zh-Hant"
 aiTranslatedFrom: "zh-CN"
+version: "v0.0.1"
+updatedDate: 2026-04-12
 ---
 
 # 臨摹只能學到表面

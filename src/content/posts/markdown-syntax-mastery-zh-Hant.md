@@ -1,7 +1,7 @@
 ---
 title: "Markdown 全語法與特異功能全景指南：數學公式、圖表、告警框、加密解密、模糊馬賽克與現代排版"
 pubDate: 2026-08-28
-updatedDate: 2026-08-28
+updatedDate: 2026-08-27
 description: "專為本部落格量身定制的 Markdown 終極參考手冊與全景壓測示範文章。涵蓋基礎排版、KaTeX 數學公式、Mermaid 繪圖、安知魚告示框、程式碼高亮折疊與 Diff、密碼加密彈窗、高斯模糊與馬賽克等全量功能。"
 author: "shijianus"
 category: "前端工程"
@@ -14,6 +14,7 @@ tags: ["Astro", "Markdown", "主題重構", "UI", "Katex", "Mermaid", "安知魚
 i18nKey: "markdown-syntax-mastery"
 lang: "zh-Hant"
 aiTranslatedFrom: "zh-CN"
+version: "v0.0.1"
 ---
 # 歡迎體驗全能 Markdown 渲染與特異功能系統
 

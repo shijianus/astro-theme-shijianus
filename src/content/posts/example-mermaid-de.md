@@ -12,6 +12,8 @@ mermaid: true
 i18nKey: "example-mermaid"
 lang: "de"
 aiTranslatedFrom: "zh-CN"
+version: "v0.0.1"
+updatedDate: 2026-08-27
 ---
 Dieses Beispiel ist ausschließlich dafür gedacht, die Kompilierungs‑ und Rendering‑Fähigkeiten von **Mermaid 11 Vektordiagrammen** im Blog‑Artikeltext zu demonstrieren und zu testen.
 

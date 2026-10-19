@@ -13,6 +13,8 @@ sticky: 4
 i18nKey: "markdown-scan-showcase"
 lang: "es"
 aiTranslatedFrom: "zh-CN"
+version: "v0.0.1"
+updatedDate: 2026-04-24
 ---
 Este artículo está diseñado específicamente para validar la estrategia de escaneo de contenido, sincronización de la tabla de contenidos, mejora de estilos y legibilidad del tema. No es una "explicación conceptual", sino una **muestra de contenido real que puede utilizarse para realizar pruebas de humo al tema de la interfaz de usuario**.
 

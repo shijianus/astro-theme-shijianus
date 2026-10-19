@@ -6,6 +6,8 @@ author: "shijianus"
 category: "测试"
 tags: ["i18n", "test", "canonical-en"]
 lang: "zh-CN"
+version: "v0.0.1"
+updatedDate: 2026-09-18
 ---
 
 # 原生英文主篇的中文变体

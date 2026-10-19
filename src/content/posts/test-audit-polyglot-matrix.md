@@ -7,6 +7,8 @@ category: "审计测试"
 tags: ["i18n", "audit", "polyglot"]
 lang: "zh-CN"
 i18nKey: "test-audit-polyglot-matrix"
+version: "v0.0.1"
+updatedDate: 2026-09-20
 ---
 
 # 多语言全矩阵极限审计测试

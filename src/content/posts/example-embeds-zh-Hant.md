@@ -12,6 +12,8 @@ mermaid: false
 i18nKey: "example-embeds"
 lang: "zh-Hant"
 aiTranslatedFrom: "zh-CN"
+version: "v0.0.1"
+updatedDate: 2026-08-27
 ---
 本篇範例專用於展示與測試部落格正文中的 **富媒體嵌入（Embeds）、WordPress 文章格式與雙人對話流（Chat Dialogue）**。
 

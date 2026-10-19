@@ -12,6 +12,8 @@ mermaid: true
 postFormat: "standard"
 i18nKey: "example-all-special-formats"
 lang: "zh-CN"
+version: "v0.0.1"
+updatedDate: 2026-08-27
 ---
 
 本篇为 **一站式综合验收与全景压测示范文章（All-in-one Master Showcase）**，用于快速自动化测试正文栏的所有格式与特异功能。

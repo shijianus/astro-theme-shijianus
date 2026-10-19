@@ -12,6 +12,8 @@ mermaid: false
 i18nKey: "example-tabs"
 lang: "en"
 aiTranslatedFrom: "zh-CN"
+version: "v0.0.1"
+updatedDate: 2026-08-27
 ---
 This example is dedicated to demonstrating and testing **Interactive Tabs and Dropdown Switchers** within blog post bodies.
 

@@ -12,6 +12,8 @@ mermaid: false
 i18nKey: "example-callouts"
 lang: "en"
 aiTranslatedFrom: "zh-CN"
+version: "v0.0.1"
+updatedDate: 2026-08-27
 ---
 This example is dedicated to verifying and testing the blog theme's rendering capabilities for **Callouts / Admonitions** in the main content area.
 

@@ -1,7 +1,7 @@
 ---
 title: "封面、图床与视频适配实验室"
 pubDate: 2026-04-26
-updatedDate: 2026-04-26
+updatedDate: 2026-04-25
 description: "集中验证文章头图、远程图床、本地资源、视频封面、失效回退和不同宽度下的媒体展示效果。"
 author: "shijianus"
 category: "前端工程"
@@ -12,6 +12,7 @@ coverAlt: "封面与媒体适配实验室"
 featured: true
 sticky: 2
 tags: ["媒体适配", "Markdown", "主题重构", "Astro"]
+version: "v0.0.1"
 ---
 
 # 封面与媒体适配总检

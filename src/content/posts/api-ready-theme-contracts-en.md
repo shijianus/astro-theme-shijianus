@@ -13,6 +13,8 @@ tags: ["API", "Config", "Architecture"]
 i18nKey: "api-ready-theme-contracts"
 lang: "en"
 aiTranslatedFrom: "zh-CN"
+version: "v0.0.1"
+updatedDate: 2026-04-07
 ---
 
 # Why Start with a Contract

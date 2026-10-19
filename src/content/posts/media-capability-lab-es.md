@@ -1,7 +1,7 @@
 ---
 title: "Laboratorio de Adaptación de Portadas, Alojamiento de Imágenes y Videos"
 pubDate: 2026-04-26
-updatedDate: 2026-04-26
+updatedDate: 2026-04-25
 description: "Verificación centralizada de imágenes de portada de artículos, alojamiento de imágenes remoto, recursos locales, portadas de video, reversión ante fallos y efectos de visualización de medios en diferentes anchos."
 author: "shijianus"
 category: "Ingeniería Front-end"
@@ -15,6 +15,7 @@ tags: ["Adaptación de Medios", "Markdown", "Refactorización de Tema", "Astro"]
 i18nKey: "media-capability-lab"
 lang: "es"
 aiTranslatedFrom: "zh-CN"
+version: "v0.0.1"
 ---
 # Revisión general de la portada y la adaptación de medios
 

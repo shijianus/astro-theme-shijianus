@@ -12,6 +12,8 @@ mermaid: false
 i18nKey: "example-tabs"
 lang: "fr"
 aiTranslatedFrom: "zh-CN"
+version: "v0.0.1"
+updatedDate: 2026-08-27
 ---
 
 Cet exemple est dédié à la démonstration et aux tests des **onglets interactifs (Interactive Tabs) et du sélecteur déroulant multi-version (Dropdown Switcher)** dans le corps du blog.
