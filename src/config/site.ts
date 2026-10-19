@@ -443,7 +443,7 @@ export const siteConfig = {
           { label: '关于作者', href: '/about/', description: '作者与站点说明', icon: 'user' },
           { label: '请喝咖啡', href: '/support/', description: '赞赏与支援名录', icon: 'mug-hot' },
           { label: '站点状态', href: '/status/', description: '查看当前重构进度', icon: 'chart-bar' },
-          { label: '主题路线', href: '/roadmap/', description: '尚在整理中的专题入口', icon: 'compass' },
+          { label: '專案路線圖', href: '/roadmap/', description: '已落地、差異與後續工作', icon: 'compass' },
           { label: '社群政策', href: '/community/', description: '公约、隐私与使用规范', icon: 'book' },
           { label: '工程标准', href: '/standards/', description: '系统指标与架构规范', icon: 'book' },
         ],
