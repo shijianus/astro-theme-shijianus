@@ -257,7 +257,7 @@ export const supportConfig: SupportConfig = {
     {
       question: 'Stripe 国际收银台的到账与致谢名册记录机制是怎样的？',
       answer:
-        'Stripe 结账完成后，浏览器会进入寄语记录流程；本站的 `/api/record-blessing` 会向 Stripe 核对 Session 或 PaymentIntent 状态，核验成功后才更新内部记录。公开名录更新会受浏览器、网络、数据库与第三方服务影响；目前没有独立 Stripe Webhook 路由，也不承诺即时刷新或每次都能自动完成。',
+        'Stripe 结账完成后，浏览器会进入寄语记录流程；本站的 `/api/record-blessing` 会向 Stripe 核对 Session 或 PaymentIntent 状态，核验成功后才更新内部记录。公开名录更新会受浏览器、网络、数据库与第三方服务影响；目前没有独立的 Stripe 支付回呼路由，也不承诺即时刷新或每次都能自动完成。',
       i18n: {
         en: {
           question: 'How does the recording mechanism work for Stripe checkout and the supporter directory?',
