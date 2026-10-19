@@ -429,7 +429,14 @@ const isMantleActiveOnThisPage = Boolean(
         )}
 
         <div id="content-inner" class:list={['layout', showAside && sidebarData ? 'page-grid--with-aside' : '']}>
-          <main class="page-main">
+          <main
+            class:list={[
+              'page-main',
+              pageType === 'standards' && 'post-content article-body standards-page-main',
+            ]}
+            data-content-features={pageType === 'standards' ? 'true' : undefined}
+            data-lang={lang}
+          >
             <slot />
           </main>
 

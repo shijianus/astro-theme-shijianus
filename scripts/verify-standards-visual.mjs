@@ -86,19 +86,29 @@ async function runAudit() {
     const dataType = await page.getAttribute('body', 'data-type');
     console.log(`[Audit] body[data-type] = "${dataType}"`);
 
-    // 2. Check layout width of the article container
-    const articleBox = await page.locator('.standards-spec-shell').boundingBox();
-    console.log(`[Audit] standards-spec-shell width = ${articleBox?.width}px (Expected ~1300-1400px)`);
+    // 2. Check layout width of .page-main and ensure #article-container is deleted
+    const mainBox = await page.locator('.page-main').boundingBox();
+    const articleContainerCount = await page.locator('#article-container').count();
+    const specShellCount = await page.locator('.standards-spec-shell').count();
+    console.log(`[Audit] .page-main width = ${mainBox?.width}px (Expected ~1300-1400px)`);
+    console.log(`[Audit] #article-container count = ${articleContainerCount} (Expected: 0)`);
+    console.log(`[Audit] .standards-spec-shell count = ${specShellCount} (Expected: 0)`);
 
-    // 3. Verify no post widgets are visible
+    // 3. Verify .standards-spec-header learns from post-hero: formal, pure color, title + subtitle, no tags, no stats
+    const headerBox = await page.locator('.standards-spec-header').boundingBox();
+    const tagsCount = await page.locator('.standards-spec-header .post-hero__badges').count();
+    const statsCount = await page.locator('.standards-spec-header .post-hero__meta-grid').count();
+    const wavesCount = await page.locator('.standards-spec-header .post-hero__waves').count();
+    console.log(`[Audit] .standards-spec-header height = ${headerBox?.height}px (Expected ~390-440px)`);
+    console.log(`[Audit] tags count in header = ${tagsCount} (Expected: 0)`);
+    console.log(`[Audit] stats count in header = ${statsCount} (Expected: 0)`);
+    console.log(`[Audit] waves in header = ${wavesCount} (Expected: 1)`);
+
+    // 4. Verify no post widgets are visible
     const readmodeVisible = await page.locator('#readmode').isVisible().catch(() => false);
     const commentVisible = await page.locator('#post-comment').isVisible().catch(() => false);
     const recoVisible = await page.locator('#post-end-recommendation').isVisible().catch(() => false);
     console.log(`[Audit] Hidden widgets check: #readmode=${readmodeVisible}, #post-comment=${commentVisible}, #post-end-recommendation=${recoVisible}`);
-
-    // 4. Verify that standards-spec-nav is COMPLETELY REMOVED (0 elements)
-    const specNavCount = await page.locator('.standards-spec-nav').count();
-    console.log(`[Audit] .standards-spec-nav count = ${specNavCount} (Expected: 0)`);
 
     // 5. Special check for activity-level: check KaTeX formula and color mapping table
     if (item.url.includes('activity-level')) {
@@ -142,15 +152,19 @@ async function runAudit() {
     await page.screenshot({ path: shotPath, fullPage: false });
     console.log(`[Audit] Saved viewport screenshot to: ${shotPath}`);
 
+    const isHeaderValid = (headerBox?.height || 0) >= 380 && tagsCount === 0 && statsCount === 0 && wavesCount === 1;
+    const isMainValid = (mainBox?.width || 0) > 1000 && articleContainerCount === 0 && specShellCount === 0;
+
     results.push({
       page: item.title,
       url: item.url,
       dataType,
-      width: articleBox?.width,
-      readmodeHidden: !readmodeVisible,
-      commentsHidden: !commentVisible,
-      specNavRemoved: specNavCount === 0,
-      passed: dataType === 'standards' && (articleBox?.width || 0) > 1000 && !readmodeVisible && !commentVisible && specNavCount === 0,
+      mainWidth: Math.round(mainBox?.width || 0),
+      headerHeight: Math.round(headerBox?.height || 0),
+      articleContainerRemoved: articleContainerCount === 0,
+      noTags: tagsCount === 0,
+      noStats: statsCount === 0,
+      passed: dataType === 'standards' && isMainValid && isHeaderValid && !readmodeVisible && !commentVisible,
     });
   }
 

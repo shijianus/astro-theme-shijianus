@@ -2,6 +2,7 @@
 import { getCollection } from 'astro:content';
 import BlogLayout from '../../layouts/BlogLayout.astro';
 import ContentFeatureEnhancer from '../../components/ContentFeatureEnhancer.astro';
+import StandardsHero from '../../components/theme/StandardsHero.astro';
 import { createSidebarData } from '../../lib/theme.ts';
 import {
   Content,
@@ -20,26 +21,13 @@ const sidebarData = createSidebarData(allPosts);
   sidebarData={sidebarData}
   lang="zh-CN"
 >
-  <div class="standards-spec-shell">
-    <header class="standards-spec-header">
-      <div class="standards-spec-header__meta">
-        <span class="standards-badge standards-badge--primary">内容密度规范</span>
-        <span class="standards-badge standards-badge--status">● 生产环境持续生效</span>
-        <span class="standards-badge standards-badge--version">Content Density Specification</span>
-      </div>
-      <h1 class="standards-spec-header__title">{frontmatter.title}</h1>
-      <p class="standards-spec-header__desc">{frontmatter.description}</p>
-    </header>
+  <StandardsHero
+    slot="hero"
+    title={frontmatter.title}
+    description={frontmatter.description}
+  />
 
-    <article
-      id="article-container"
-      class="article-body post-content standards-article-body"
-      data-content-features="true"
-      data-lang="zh-CN"
-    >
-      <Content />
-    </article>
-  </div>
+  <Content />
 
   <ContentFeatureEnhancer lang="zh-CN" />
 </BlogLayout>

@@ -7755,8 +7755,11 @@ body[data-type='post'] #aside-content #post-sticky-layout #card-categories .asid
 
 /* Task B: Force Hero Section to full width (100vw) with consistent height capped below half screen */
 .page-shell__hero:has(.post-hero),
+.page-shell__hero:has(.standards-spec-header),
 body[data-type='post'] .page-shell__hero,
-.post-hero {
+body[data-type='standards'] .page-shell__hero,
+.post-hero,
+.standards-spec-header {
   width: 100vw !important;
   max-width: 100vw !important;
   margin-left: calc(50% - 50vw) !important;
@@ -7773,8 +7776,11 @@ body[data-type='post'] .page-shell__hero,
 
 @media screen and (max-width: 768px) {
   .page-shell__hero:has(.post-hero),
+  .page-shell__hero:has(.standards-spec-header),
   body[data-type='post'] .page-shell__hero,
-  .post-hero {
+  body[data-type='standards'] .page-shell__hero,
+  .post-hero,
+  .standards-spec-header {
     min-height: 280px !important;
     height: clamp(280px, 44vh, 320px) !important;
     max-height: 48vh !important;
@@ -9782,69 +9788,95 @@ body[data-type='standards'] .page-main {
   }
 }
 
-/* 规范页结构与隔离头部 */
-body[data-type='standards'] .standards-spec-shell {
-  display: flex;
-  flex-direction: column;
-  gap: 28px;
-  width: 100%;
+/* ==========================================================================
+   Standards 专属规范头部 (学习 PostHero 架构，纯色背景 + 主标题 + 副标题，尺寸与区间严格限制)
+   ========================================================================== */
+.standards-spec-header {
+  position: relative !important;
+  width: 100vw !important;
+  max-width: 100vw !important;
+  margin-left: calc(50% - 50vw) !important;
+  margin-right: calc(50% - 50vw) !important;
+  left: 0 !important;
+  right: 0 !important;
+  border-radius: 0 !important;
+  min-height: 390px !important;
+  height: clamp(390px, 30vw, 440px) !important;
+  max-height: min(480px, 48vh) !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+  background:
+    radial-gradient(circle at 85% 15%, rgba(255, 255, 255, 0.22) 0%, transparent 45%),
+    radial-gradient(circle at 15% 85%, rgba(26, 44, 153, 0.4) 0%, transparent 50%),
+    linear-gradient(135deg, #425aef 0%, #3047d9 50%, #2035be 100%) !important;
 }
 
-body[data-type='standards'] .standards-spec-header {
-  padding-bottom: 24px;
-  border-bottom: 1px solid rgba(66, 90, 239, 0.16);
+:root[data-theme='dark'] .standards-spec-header {
+  background:
+    radial-gradient(circle at 85% 15%, rgba(66, 90, 239, 0.35) 0%, transparent 45%),
+    radial-gradient(circle at 15% 85%, rgba(20, 32, 95, 0.45) 0%, transparent 50%),
+    linear-gradient(135deg, #1b244d 0%, #121838 60%, #0c1026 100%) !important;
 }
 
-body[data-type='standards'] .standards-spec-header__meta {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 12px;
-  flex-wrap: wrap;
+@media screen and (max-width: 768px) {
+  .standards-spec-header {
+    min-height: 280px !important;
+    height: clamp(280px, 44vh, 320px) !important;
+    max-height: 48vh !important;
+  }
 }
 
-body[data-type='standards'] .standards-badge {
-  display: inline-flex;
-  align-items: center;
-  padding: 4px 10px;
-  font-size: 11px;
-  font-weight: 700;
-  border-radius: 4px;
-  letter-spacing: 0.04em;
-  font-family: var(--font-family-mono, monospace);
+.standards-spec-header .post-hero__inner {
+  position: relative !important;
+  z-index: 10 !important;
+  max-width: 1400px !important;
+  width: 100% !important;
+  margin: 0 auto !important;
+  padding: 68px clamp(1.5rem, 4vw, 3.5rem) clamp(36px, 4vw, 48px) !important;
+  box-sizing: border-box !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  height: 100% !important;
 }
 
-body[data-type='standards'] .standards-badge--primary {
-  color: #ffffff;
-  background: var(--theme-main, #425aef);
+.standards-spec-header .post-hero__title-block {
+  width: 100% !important;
+  max-width: 100% !important;
+  max-height: clamp(190px, 24vw, 270px) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  gap: 12px !important;
 }
 
-body[data-type='standards'] .standards-badge--status {
-  color: #2da44e;
-  background: rgba(45, 164, 78, 0.12);
-  border: 1px solid rgba(45, 164, 78, 0.28);
+.standards-spec-header .standards-spec-header__title,
+.standards-spec-header .post-hero__title {
+  display: block !important;
+  -webkit-line-clamp: unset !important;
+  line-clamp: unset !important;
+  overflow: visible !important;
+  line-height: 1.28 !important;
+  margin: 0 !important;
+  font-size: clamp(1.85rem, 3vw, 2.65rem) !important;
+  font-weight: 800 !important;
+  letter-spacing: -0.015em !important;
+  color: #ffffff !important;
+  text-shadow: 0 3px 14px rgba(0, 0, 0, 0.45) !important;
+  word-break: break-word !important;
 }
 
-body[data-type='standards'] .standards-badge--version {
-  color: var(--text-muted, #656d76);
-  background: rgba(66, 90, 239, 0.08);
-  border: 1px solid rgba(66, 90, 239, 0.15);
-}
-
-body[data-type='standards'] .standards-spec-header__title {
-  font-size: 2.1rem;
-  font-weight: 800;
-  margin: 0 0 12px 0;
-  color: var(--font-color, #1f2328);
-  letter-spacing: -0.02em;
-  line-height: 1.3;
-}
-
-body[data-type='standards'] .standards-spec-header__desc {
-  font-size: 1.05rem;
-  line-height: 1.7;
-  color: var(--text-muted, #57606a);
-  margin: 0 0 20px 0;
+.standards-spec-header .standards-spec-header__desc,
+.standards-spec-header .post-hero__lede {
+  display: -webkit-box !important;
+  -webkit-box-orient: vertical !important;
+  -webkit-line-clamp: 2 !important;
+  overflow: hidden !important;
+  line-height: 1.6 !important;
+  margin: 0 !important;
+  font-size: 15px !important;
+  color: rgba(255, 255, 255, 0.92) !important;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.35) !important;
 }
 
 

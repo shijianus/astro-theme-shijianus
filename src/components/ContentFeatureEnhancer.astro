@@ -1161,7 +1161,7 @@ const tExtGate = EXT_GATE_I18N[lang] || EXT_GATE_I18N['zh-CN'];
       updateExtEncryptBanners(currentLang);
       updateExtEncryptGate(currentLang);
 
-      const articles = document.querySelectorAll('[data-content-features], .article-body, .post-content, #article-container');
+      const articles = document.querySelectorAll('[data-content-features], .article-body, .post-content, #article-container, .page-main');
       if (!articles.length) return;
 
       // 1. Spoilers and Hidden Inline Text Nodes

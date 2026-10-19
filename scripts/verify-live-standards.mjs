@@ -34,16 +34,26 @@ async function verifyLive() {
     await page.waitForTimeout(1000);
 
     const dataType = await page.getAttribute('body', 'data-type');
-    const shellBox = await page.locator('.standards-spec-shell').boundingBox();
+    const mainBox = await page.locator('.page-main').boundingBox();
+    const articleContainerCount = await page.locator('#article-container').count();
+    const specShellCount = await page.locator('.standards-spec-shell').count();
+    const headerBox = await page.locator('.standards-spec-header').boundingBox();
+    const tagsCount = await page.locator('.standards-spec-header .post-hero__badges').count();
+    const statsCount = await page.locator('.standards-spec-header .post-hero__meta-grid').count();
+    const wavesCount = await page.locator('.standards-spec-header .post-hero__waves').count();
     const readmodeVisible = await page.locator('#readmode').isVisible().catch(() => false);
     const commentVisible = await page.locator('#post-comment').isVisible().catch(() => false);
     const recoVisible = await page.locator('#post-end-recommendation').isVisible().catch(() => false);
-    const specNavCount = await page.locator('.standards-spec-nav').count();
 
     console.log(`[Live Audit] HTTP Status: ${status}`);
     console.log(`[Live Audit] body[data-type]: "${dataType}"`);
-    console.log(`[Live Audit] Shell width: ${shellBox?.width}px`);
-    console.log(`[Live Audit] .standards-spec-nav count: ${specNavCount} (Expected: 0)`);
+    console.log(`[Live Audit] .page-main width: ${mainBox?.width}px`);
+    console.log(`[Live Audit] #article-container count: ${articleContainerCount} (Expected: 0)`);
+    console.log(`[Live Audit] .standards-spec-shell count: ${specShellCount} (Expected: 0)`);
+    console.log(`[Live Audit] .standards-spec-header height: ${headerBox?.height}px`);
+    console.log(`[Live Audit] tags in header: ${tagsCount} (Expected: 0)`);
+    console.log(`[Live Audit] stats in header: ${statsCount} (Expected: 0)`);
+    console.log(`[Live Audit] waves in header: ${wavesCount} (Expected: 1)`);
     console.log(`[Live Audit] Hidden Widgets: readmode=${!readmodeVisible}, comment=${!commentVisible}, reco=${!recoVisible}`);
 
     if (r.path.includes('activity-level')) {
@@ -70,16 +80,20 @@ async function verifyLive() {
     await page.screenshot({ path: shotPath });
     console.log(`[Live Audit] Saved page screenshot to: ${shotPath}`);
 
+    const isHeaderValid = (headerBox?.height || 0) >= 380 && tagsCount === 0 && statsCount === 0 && wavesCount === 1;
+    const isMainValid = (mainBox?.width || 0) > 1000 && articleContainerCount === 0 && specShellCount === 0;
+
     results.push({
       page: r.title,
       url: r.path,
       httpStatus: status,
       dataType,
-      width: shellBox?.width,
-      readmodeHidden: !readmodeVisible,
-      commentsHidden: !commentVisible,
-      specNavRemoved: specNavCount === 0,
-      passed: status === 200 && dataType === 'standards' && (shellBox?.width || 0) > 1000 && !readmodeVisible && !commentVisible && specNavCount === 0,
+      mainWidth: Math.round(mainBox?.width || 0),
+      headerHeight: Math.round(headerBox?.height || 0),
+      articleContainerRemoved: articleContainerCount === 0,
+      noTags: tagsCount === 0,
+      noStats: statsCount === 0,
+      passed: status === 200 && dataType === 'standards' && isMainValid && isHeaderValid && !readmodeVisible && !commentVisible,
     });
   }
 
