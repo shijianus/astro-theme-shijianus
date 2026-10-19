@@ -5958,3 +5958,24 @@
   2. 宽屏阅读模式 `standards-spec-shell width = 1254px` 居中且视觉优雅；
   3. 普通博文控件（`#readmode`、`#post-comment`、`#post-end-recommendation`）全部隐匿；
   4. 截取并核验浅色与深色模式下的真实视口与公式渲染截图。
+
+### Task 29: 消除多余 #article-container 层级、文章内容统一直接共用 .page-main 与规范专属 Header 升格正式 PostHero (`6e9206b`)
+- [x] **彻底删除多余一层的 `id="article-container"` 与 `.standards-spec-shell`**：
+  1. 从所有规范页面（`/standards/`、`/standards/activity-level/`、`/standards/content-density/`、`/version/`、`/status/`）中彻底清除外层包裹的 `<div class="standards-spec-shell">` 与 `<article id="article-container">`；
+  2. 在 `src/layouts/BlogLayout.astro` 中为 `pageType="standards"` 赋予 `<main class="page-main post-content article-body standards-page-main" data-content-features="true">`，所有 Markdown 内容直接共用 `class="page-main"` 作为核心排版容器；
+  3. 同步升级 `ContentFeatureEnhancer.astro`，直接挂载至 `.page-main` 识别并增强富文本表格、代码块及折叠组件。
+- [x] **规范头部 `class="standards-spec-header"` 深度学习 PostHero 视觉体系**：
+  1. **插槽升格**：通过 `<slot name="hero">` 将 `StandardsHero` 提升至顶层 `.page-shell__hero` 容器中，自然锚定在导航栏下方，脱离内部卡片流；
+  2. **视觉纯粹性 (消除杂质)**：不再打 tag 标签（0 badges）、不再统计阅读时长与字数（0 stats），专注于纯粹、严肃、权威的工程技术规范呈现；
+  3. **纯色背景与波浪视差**：应用安知鱼标志性径向与线性混合纯色蓝底渐变（`radial-gradient` + `linear-gradient`），浅色与深色模式自适应，底部无缝嵌入动态视差水波纹动画（`.post-hero__waves`）；
+  4. **严格尺寸与区间限制**：
+     - 宽度满屏扩展（100vw），内部容器限制在 1400px 最大宽；
+     - 高度严格约束在 `clamp(390px, 30vw, 440px)`（移动端 `clamp(280px, 44vh, 320px)`），最大高度不超过半屏（48vh）；
+     - 标题块采用 auto-fit 约束，字体自适应 `clamp(1.85rem, 3vw, 2.65rem)`，副标题优雅截断约束在 2 行以内。
+- [x] **自动化端到端 Playwright 视觉与结构审计全量通过 (`scripts/verify-standards-visual.mjs`)**：
+  1. 5 大规范页面的 `#article-container` 元素计数严格断言为 0；
+  2. `.standards-spec-shell` 元素计数严格断言为 0；
+  3. `.page-main` 宽度达到 1360px，承载 Markdown 正文并直属排版；
+  4. `.standards-spec-header` 高度达到 426px ~ 432px（严格在 390px ~ 440px 区间），无 tag、无 stats、水波纹为 1；
+  5. 全部断言通过率 100%（ALL AUDITS PASSED ✓），截取完整视觉报告。
+
