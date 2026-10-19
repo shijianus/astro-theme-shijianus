@@ -15,7 +15,7 @@ lang: "zh-Hant"
 # EpoCanvas 使用條款
 
 <div class="article-aside">
-  <p><span class="badge badge-primary">COMMUNITY-007</span> <span class="badge badge-success">站點使用</span> <span class="badge badge-warning">持續更新</span></p>
+  <p><span class="badge badge-primary">COMMUNITY-008</span> <span class="badge badge-success">站點使用</span> <span class="badge badge-warning">持續更新</span></p>
   <p>本頁說明使用 EpoCanvas 網站、帳號、評論、讚賞及相關服務時的基本規則。它與《社群公約》、《隱私與資料使用說明》及《內容授權與版權說明》一起構成本站的公開使用規範。</p>
 </div>
 
