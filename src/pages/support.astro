@@ -11,10 +11,13 @@ const sidebarData = createSidebarData(posts);
 
 <BlogLayout
   title="请喝一杯咖啡 | 赞赏支持"
-  description="全景打赏支援与公开致谢名册：支持 Stripe 国际收银台 (Apple Pay / Google Pay / 信用卡)、微信支付、支付宝、PayPal 及 Web3 加密货币。"
+  description="赞赏与公开致谢名册：支持 Stripe 结账、地区性 QR/PayPal，以及在页面条件允许时显示的 USDT 通道；可用方式以当前界面与第三方服务为准。"
   showAside={false}
   pageType="page"
   sidebarData={sidebarData}
 >
+  <p class="mx-auto max-w-[1240px] px-3 sm:px-6 pt-6 text-center text-xs sm:text-sm text-slate-500 dark:text-slate-400">
+    赞赏前请先阅读<a class="mx-1 text-[#425aef] hover:underline" href="/community/support-and-refunds/">《贊賞、退款與第三方支付說明》</a>，了解支付核验、公开名录、退款与第三方通道限制。
+  </p>
   <SupportDashboard client:load />
 </BlogLayout>

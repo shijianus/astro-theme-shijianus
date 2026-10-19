@@ -699,6 +699,7 @@ export const siteConfig = {
           { label: '隐私说明', href: '/community/privacy-and-data/' },
           { label: '版权说明', href: '/community/content-license/' },
           { label: '使用条款', href: '/community/terms-of-use/' },
+          { label: '赞赏与退款说明', href: '/community/support-and-refunds/' },
           { label: '社群公约', href: '/community/code-of-conduct/' },
         ] satisfies SiteNavItem[],
       },

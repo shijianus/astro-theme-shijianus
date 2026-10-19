@@ -31,6 +31,7 @@ lang: "zh-Hant"
 | [隱私與資料使用說明](/community/privacy-and-data/) | 評論、帳號、讚賞與安全審計資料從哪裡來、如何使用、哪些欄位不公開？ |
 | [內容授權與版權說明](/community/content-license/) | 程式碼、文章、留言、商標與第三方素材分別可以如何使用？ |
 | [使用條款](/community/terms-of-use/) | 使用本站、登入、評論、讚賞及第三方服務時，雙方的基本責任是什麼？ |
+| [贊賞、退款與第三方支付說明](/community/support-and-refunds/) | 贊賞如何核驗、何時進入名錄、如何申請退款，以及第三方支付有哪些限制？ |
 | [身份等級與徽章說明](/community/identity-levels-and-badges/) | LV、TL、角色與徽章分別代表什麼？哪些規則目前仍有實作差異？ |
 | [檢舉與申訴說明](/community/reporting-and-appeals/) | 如何安全回報違規、隱私或安全事件，以及如何申訴處置？ |
 
