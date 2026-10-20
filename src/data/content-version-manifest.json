@@ -1,21 +1,21 @@
 {
   "docs/standards/activity-level.md": {
-    "contentHash": "35820e8094a28c06149fab48e99367d6306a68e5864ac4284c15dcc1decc0a2c",
-    "version": "v1.2.0",
+    "contentHash": "d43bed383dc06231258e8125fb581e220767cd9a3af74636f54e2e704d7e92c8",
+    "version": "v1.2.1",
     "pubDate": "2026-10-17",
-    "updatedDate": "2026-10-17"
+    "updatedDate": "2026-10-19"
   },
   "docs/standards/content-density.md": {
-    "contentHash": "0db331d957ce256a8471474bc788067f3cfb1163be4f0a278509975e782c8f16",
-    "version": "v1.1.0",
+    "contentHash": "67ca2179dd190cbe15b418957abe8fec8e7137f55e7752a340b3fdf2e51bcd64",
+    "version": "v1.1.1",
     "pubDate": "2026-10-17",
-    "updatedDate": "2026-10-17"
+    "updatedDate": "2026-10-19"
   },
   "docs/standards/index.md": {
-    "contentHash": "879433700b605b524aa6267fb0babfb7e1074208d90e01ea80e69c78b03af749",
-    "version": "v2.6.0",
+    "contentHash": "9e107bca0d1efc48ecc94e4b4113c3e38ab9b40095f95d1842e60cc2a078f4a8",
+    "version": "v2.6.1",
     "pubDate": "2026-10-17",
-    "updatedDate": "2026-10-17"
+    "updatedDate": "2026-10-19"
   },
   "docs/standards/status.md": {
     "contentHash": "f2c1641159166f67c9441bfa2e5eca0878edb8d12753d7d1dd125c69cf3f0727",

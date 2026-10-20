@@ -35,6 +35,7 @@ functions/generated/
 *-screenshot*.png
 verification-screenshots/
 scripts/audit_screenshots/
+dist-screenshots/
 scripts/*.png
 playwright-report/
 test-results/

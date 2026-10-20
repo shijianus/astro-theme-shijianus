@@ -7753,12 +7753,27 @@ body[data-type='post'] #aside-content #post-sticky-layout #card-categories .asid
   box-sizing: border-box !important;
 }
 
-/* Task B: Force Hero Section to full width (100vw) with consistent height capped below half screen */
+/* Task B: Force Hero Section to full width (100vw) with compact, content-fitting height (Zero excessive void) */
 .page-shell__hero:has(.post-hero),
-.page-shell__hero:has(.standards-spec-header),
 body[data-type='post'] .page-shell__hero,
+.post-hero {
+  width: 100vw !important;
+  max-width: 100vw !important;
+  margin-left: calc(50% - 50vw) !important;
+  margin-right: calc(50% - 50vw) !important;
+  left: 0 !important;
+  right: 0 !important;
+  border-radius: 0 !important;
+  min-height: 280px !important;
+  height: clamp(280px, 22vw, 330px) !important;
+  max-height: 350px !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+  margin-bottom: 0 !important;
+}
+
+.page-shell__hero:has(.standards-spec-header),
 body[data-type='standards'] .page-shell__hero,
-.post-hero,
 .standards-spec-header {
   width: 100vw !important;
   max-width: 100vw !important;
@@ -7767,24 +7782,52 @@ body[data-type='standards'] .page-shell__hero,
   left: 0 !important;
   right: 0 !important;
   border-radius: 0 !important;
-  min-height: 390px !important;
-  height: clamp(390px, 30vw, 440px) !important;
-  max-height: min(480px, 48vh) !important;
+  min-height: 220px !important;
+  height: clamp(220px, 18vw, 260px) !important;
+  max-height: 280px !important;
   overflow: hidden !important;
   box-sizing: border-box !important;
+  margin-bottom: 0 !important;
 }
 
 @media screen and (max-width: 768px) {
   .page-shell__hero:has(.post-hero),
-  .page-shell__hero:has(.standards-spec-header),
   body[data-type='post'] .page-shell__hero,
-  body[data-type='standards'] .page-shell__hero,
-  .post-hero,
-  .standards-spec-header {
-    min-height: 280px !important;
-    height: clamp(280px, 44vh, 320px) !important;
-    max-height: 48vh !important;
+  .post-hero {
+    min-height: 210px !important;
+    height: clamp(210px, 30vh, 250px) !important;
+    max-height: 270px !important;
   }
+
+  .page-shell__hero:has(.standards-spec-header),
+  body[data-type='standards'] .page-shell__hero,
+  .standards-spec-header {
+    min-height: 240px !important;
+    height: auto !important;
+    max-height: none !important;
+  }
+}
+
+/* Eliminate excessive gap below page-shell__hero */
+.page-shell__hero + #content-inner.layout,
+body:has(.page-shell__hero) #content-inner.layout,
+body[data-type='post'] #content-inner.layout,
+body[data-type='standards'] #content-inner.layout {
+  margin-top: 8px !important;
+  padding-top: 0 !important;
+}
+
+body[data-type='standards'] .page-main,
+body[data-type='standards'] .standards-page-main {
+  padding-top: 20px !important;
+}
+
+body[data-type='post'] .page-main {
+  padding-top: 20px !important;
+}
+
+.page-main > :first-child {
+  margin-top: 0 !important;
 }
 
 body[data-type='home'] .page-shell__hero {
@@ -9752,7 +9795,8 @@ body[data-type='standards'] #content-inner.layout {
   width: 100% !important;
   max-width: 1400px !important;
   margin: 0 auto !important;
-  padding: 24px 20px 60px !important;
+  padding: 0 20px 60px !important;
+  margin-top: 8px !important;
   box-sizing: border-box !important;
   justify-content: center !important;
 }
@@ -9763,12 +9807,17 @@ body[data-type='standards'] .page-main {
   max-width: 1400px !important;
   min-width: 0 !important;
   margin: 0 auto !important;
-  padding: 44px 52px !important;
+  padding: 24px 52px 44px !important;
   background: var(--home-blue-card-bg) !important;
   border: 1px solid var(--home-blue-card-border) !important;
   border-radius: 12px !important;
   box-shadow: 0 8px 32px rgba(66, 90, 239, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04) !important;
   box-sizing: border-box !important;
+}
+
+body[data-type='standards'] .page-main > :first-child,
+body[data-type='standards'] .standards-page-main > :first-child {
+  margin-top: 0 !important;
 }
 
 :root[data-theme='dark'] body[data-type='standards'] .page-main {
@@ -9779,16 +9828,17 @@ body[data-type='standards'] .page-main {
 
 @media (max-width: 1024px) {
   body[data-type='standards'] .page-main {
-    padding: 32px 28px !important;
+    padding: 20px 28px 32px !important;
   }
 }
 
 @media (max-width: 768px) {
   body[data-type='standards'] #content-inner.layout {
-    padding: 12px 8px 40px !important;
+    padding: 0 8px 40px !important;
+    margin-top: 6px !important;
   }
   body[data-type='standards'] .page-main {
-    padding: 22px 14px !important;
+    padding: 16px 14px 24px !important;
     border-radius: 8px !important;
   }
 }
@@ -9805,11 +9855,12 @@ body[data-type='standards'] .page-main {
   left: 0 !important;
   right: 0 !important;
   border-radius: 0 !important;
-  min-height: 390px !important;
-  height: clamp(390px, 30vw, 440px) !important;
-  max-height: min(480px, 48vh) !important;
+  min-height: 220px !important;
+  height: clamp(220px, 18vw, 260px) !important;
+  max-height: 280px !important;
   overflow: hidden !important;
   box-sizing: border-box !important;
+  margin-bottom: 0 !important;
   background:
     radial-gradient(circle at 85% 15%, rgba(255, 255, 255, 0.22) 0%, transparent 45%),
     radial-gradient(circle at 15% 85%, rgba(26, 44, 153, 0.4) 0%, transparent 50%),
@@ -9823,26 +9874,18 @@ body[data-type='standards'] .page-main {
     linear-gradient(135deg, #1b244d 0%, #121838 60%, #0c1026 100%) !important;
 }
 
-@media screen and (max-width: 768px) {
-  .standards-spec-header {
-    min-height: 280px !important;
-    height: clamp(280px, 44vh, 320px) !important;
-    max-height: 48vh !important;
-  }
-}
-
 .standards-spec-header .post-hero__inner {
   position: relative !important;
   z-index: 10 !important;
   max-width: 1400px !important;
   width: 100% !important;
   margin: 0 auto !important;
-  padding: clamp(34px, 5.2vh, 52px) clamp(1.5rem, 4vw, 3.5rem) clamp(20px, 2.5vh, 32px) !important;
+  padding: clamp(20px, 2.5vh, 28px) clamp(1.5rem, 4vw, 3.5rem) clamp(10px, 1.2vh, 16px) !important;
   box-sizing: border-box !important;
   display: flex !important;
   flex-direction: column !important;
   justify-content: flex-start !important;
-  gap: 12px !important;
+  gap: 8px !important;
   height: 100% !important;
 }
 
@@ -9852,8 +9895,8 @@ body[data-type='standards'] .page-main {
   display: flex !important;
   flex-direction: column !important;
   justify-content: flex-start !important;
-  gap: 10px !important;
-  margin-top: clamp(6px, 1.2vh, 16px) !important;
+  gap: 8px !important;
+  margin-top: clamp(4px, 0.8vh, 10px) !important;
 }
 
 .standards-spec-header .standards-spec-header__title,
@@ -9926,6 +9969,39 @@ body[data-type='standards'] .page-main {
 
 .standards-spec-header .post-hero__meta-dot {
   color: rgba(255, 255, 255, 0.45) !important;
+}
+
+@media screen and (max-width: 768px) {
+  .standards-spec-header {
+    min-height: 250px !important;
+    height: auto !important;
+    max-height: none !important;
+  }
+
+  .standards-spec-header .post-hero__inner {
+    padding: 76px 16px 48px !important;
+    gap: 8px !important;
+  }
+
+  .standards-spec-header .standards-spec-header__title,
+  .standards-spec-header .post-hero__title {
+    font-size: clamp(1.35rem, 5vw, 1.75rem) !important;
+    line-height: 1.3 !important;
+  }
+
+  .standards-spec-header .standards-spec-header__desc,
+  .standards-spec-header .post-hero__lede {
+    font-size: 13.5px !important;
+    line-height: 1.5 !important;
+    -webkit-line-clamp: 2 !important;
+  }
+
+  .standards-spec-header .standards-spec-header__meta-grid,
+  .standards-spec-header .post-hero__meta-grid {
+    font-size: 12px !important;
+    gap: 6px 10px !important;
+    margin-top: 4px !important;
+  }
 }
 
 
