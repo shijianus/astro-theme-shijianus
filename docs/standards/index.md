@@ -1,8 +1,8 @@
 ---
 title: "EpoCanvas 工程標準總綱：指標定義、資料鏈路與核驗邊界"
-description: "完整說明 EpoCanvas 的活躍等級、內容密度、文章統計、熱力圖與指標 API，區分建置快照、請求期校準與需要獨立驗證的工程品質。"
+description: "完整說明 EpoCanvas 的指標、內容撰寫、文件生命週期、版本、服務邊界與需要獨立驗證的工程品質。"
 pubDate: 2026-10-18
-updatedDate: 2026-10-19
+updatedDate: 2026-10-20
 author: "shijianus"
 category: "工程規範"
 group: "EpoCanvas Standards"
@@ -14,7 +14,7 @@ mindmap: true
 draft: false
 lang: "zh-Hant"
 i18nKey: "ees-standards-overview"
-version: "v2.6.1"
+version: "v2.7.0"
 ---
 
 # EpoCanvas 工程標準總綱
@@ -47,7 +47,7 @@ EES 拒絕把多維度的複雜工程質量壓縮為一個單一的分數。發�
 
 ### 1.1 文件體系結構
 
-EES 規範體系由一個總綱與四個專項子規範構成，各文件分工如下：
+EES 規範體系由一個總綱與六個專項子規範構成，各文件分工如下：
 
 | 規範編號 | 規範領域 | 核心職責與系統邊界 | 權威資料來源 |
 | :--- | :--- | :--- | :--- |
@@ -56,6 +56,8 @@ EES 規範體系由一個總綱與四個專項子規範構成，各文件分工�
 | **EES-003** | 內容密度模型 | 正文字數精算演算法、全站平均篇幅、四級閾值與閱讀耗時 | 文章純文本內容長度特徵 |
 | **EES-004** | 版本協議規範 | 語義化版本控制、不可變 Git SHA 追溯、架構分層與授權邊界 | Git 倉庫提交元資訊與環境變數 |
 | **EES-005** | 系統狀態與服務邊界 | 靜態建置、邊緣函式、資料儲存、支付/通知邊界、失敗模式與證據等級 | `docs/standards/status.md`、`functions/` 與部署設定 |
+| **EES-006** | 文件生命週期 | 官方文件權威層級、狀態機、版本、審閱、棄用與歸檔 | `docs/standards/document-lifecycle.md`、Git 提交與文件入口 |
+| **EES-007** | 內容撰寫規範 | Markdown/MDX、front matter、連結、程式碼、敏感資料與可及性要求 | `docs/standards/content-authoring.md`、`src/content.config.ts` |
 
 當前配置檔案標識與基線版本：
 
