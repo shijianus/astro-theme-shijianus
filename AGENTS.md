@@ -6001,21 +6001,17 @@
   2. 断言验证 `headerHeight` 严格保持 426px ~ 432px，`titleTop` 均在 57px ~ 83px（`isUpperMiddle: true` 100% 通过）；
   3. 结构断言 `#article-container count === 0`，版本与 `MM/DD/YY` 日期格式校验全部通过。
 
-### Task 31: 彻底消除 page-shell__hero 内部及下方过量留白、正文卡片与波浪无缝紧凑衔接、移动端导航避让保障与全平台 Playwright 视觉端到端核验
-- [x] **排查并根除 325px 巨幅空白的核心病根**：
-  1. 诊断出 `src/styles/final-pass.css` 后部（原第 9850 行左右）残留重复的 `.standards-spec-header` 规则块，其硬编码的 `height: clamp(390px, 30vw, 440px) !important;` 覆盖了收敛高度，导致 Hero 高度长达 432px，而内部文字仅占 ~130px，内部产生 181px 的死寂留白；
-  2. 诊断出下方容器层层叠加的外部留白：`#content-inner.layout` 的 `padding-top: 24px` + `margin-top: 8px`、`.page-main` 的 `padding-top: 44px` 以及首个 Markdown 标题默认外边距，累计导致水波纹底部到文章首行文字间产生近 90px 的多余断层。
-- [x] **精细化收敛 Hero 高度、内部边距与卡片间距**：
-  1. 将 `.standards-spec-header` 高度严格约束至 `clamp(220px, 18vw, 260px) !important; max-height: 280px !important;`，将内部文字到底部水波纹的闲置间隙直接压缩至 ~40px 饱满自然呼吸区间；
-  2. 彻底清除 `#content-inner.layout` 的上内边距（`padding: 0 20px 60px !important; margin-top: 8px !important;`）；
-  3. 将 `.page-main` 上内边距从 44px 收敛为紧凑精致的 24px（`padding: 24px 52px 44px !important;`），同时强制首个子元素 `margin-top: 0 !important;`，使正文卡片无缝紧贴视差水波纹起伏底部，水波纹到正文距离直接缩短至 ~33px。
-- [x] **移动端视口导航避让与文字自适应高度保障**：
-  1. 修复移动端（≤768px）因 60px 顶栏固定导航造成的标题遮挡缺陷：为移动端 `.standards-spec-header .post-hero__inner` 明确设置 `padding: 76px 16px 48px !important;`，确保标题顶部距离视口顶端保持 90px+（在 60px 导航栏下方留出 30px 安全距离）；
-  2. 移动端取消固定 height clamp 束缚，改为自适应 `height: auto !important; min-height: 250px !important; max-height: none !important;`，确保标题、副标题与三项元数据完整渲染且绝不溢出或被波浪吞噬。
-- [x] **全平台 Playwright 真实无头浏览器截图与数据端到端双重验证 (`scripts/verify-hero-whitespace.mjs`)**：
-  1. 启动静态服务，对 `/standards/activity-level/` 与 `/standards/content-density/` 进行全量度量；
-  2. 桌面端（1440x900）实测：Hero 高度从 432px 降至 259px，内部间隙 41.9px，Hero 下方间隙从 88px 压缩至 8px，到正文距离从 112px 缩短至 33px，`padding-top: 0px`，完全符合要求；
-  3. 移动端（390x844）实测：`titleTop: 90.75px`，严格大于 `navBottom: 60px`，标题与元数据零遮挡，卡片起步正常；
-  4. 截取并人工视觉查验 Desktop Light、Desktop Dark、Mobile Light、Mobile Dark 多维度真机截图，视觉效果紧凑、大气、典雅。
+### Task 31: 彻底消除 page-shell__hero 内部及下方过量留白、纯内容自适应高度与波浪紧凑贴合、移动端零遮挡与全平台 Playwright 视觉端到端核验
+- [x] **根除 page-shell__hero 内部与下方留白病根**：
+  1. 诊断出原硬编码 clamp 高度（260px~440px）在内容紧凑时留下 100px~180px 的空洞蓝底；
+  2. 将 `.page-shell__hero`、`.post-hero` 与 `.standards-spec-header` 重构为完全纯内容自适应：`height: auto !important; min-height: 0 !important; max-height: none !important; margin-bottom: 0 !important;`；
+  3. 精准校准 `.post-hero__inner` 底部内边距为 `44px`，使 42px 的视差水波纹与元信息行紧密贴合（`gapBetweenMetaAndWaves` 为 -9px 至 -16px），内部闲置留白彻底清零；
+  4. 清除下方 `#content-inner.layout` 的外部间隙（`margin-top: 0 !important; padding-top: 0 !important;`），使正文卡片 `.page-main` 直接无缝衔接水波纹起伏底部（`gapHeroToMain <= 0px`）。
+- [x] **全量路由自动化审计套件 (`scripts/verify-all-heroes.mjs`) 双端核验全绿**：
+  1. 覆盖 7 大核心页面（5 大规范页 + 2 大博文典型页）；
+  2. 桌面端（1440x900）实测：Hero 高度收敛至 203px~233px，内部死留白 0px，波浪自然贴合，正文卡片间隙 <= 0px；
+  3. 移动端（390x844）实测：`titleTop: 79px ~ 128px`，完全避让 60px 导航栏，标题零遮挡，卡片无缝衔接；
+  4. 截取并保存完整视觉证据至 `playwright-report/hero-verification/` 及 Artifact 目录。
+
 
 

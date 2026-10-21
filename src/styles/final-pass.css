@@ -7764,9 +7764,9 @@ body[data-type='post'] .page-shell__hero,
   left: 0 !important;
   right: 0 !important;
   border-radius: 0 !important;
-  min-height: 280px !important;
-  height: clamp(280px, 22vw, 330px) !important;
-  max-height: 350px !important;
+  min-height: 0 !important;
+  height: auto !important;
+  max-height: none !important;
   overflow: hidden !important;
   box-sizing: border-box !important;
   margin-bottom: 0 !important;
@@ -7782,9 +7782,9 @@ body[data-type='standards'] .page-shell__hero,
   left: 0 !important;
   right: 0 !important;
   border-radius: 0 !important;
-  min-height: 220px !important;
-  height: clamp(220px, 18vw, 260px) !important;
-  max-height: 280px !important;
+  min-height: 0 !important;
+  height: auto !important;
+  max-height: none !important;
   overflow: hidden !important;
   box-sizing: border-box !important;
   margin-bottom: 0 !important;
@@ -7793,16 +7793,11 @@ body[data-type='standards'] .page-shell__hero,
 @media screen and (max-width: 768px) {
   .page-shell__hero:has(.post-hero),
   body[data-type='post'] .page-shell__hero,
-  .post-hero {
-    min-height: 210px !important;
-    height: clamp(210px, 30vh, 250px) !important;
-    max-height: 270px !important;
-  }
-
+  .post-hero,
   .page-shell__hero:has(.standards-spec-header),
   body[data-type='standards'] .page-shell__hero,
   .standards-spec-header {
-    min-height: 240px !important;
+    min-height: 0 !important;
     height: auto !important;
     max-height: none !important;
   }
@@ -7813,17 +7808,35 @@ body[data-type='standards'] .page-shell__hero,
 body:has(.page-shell__hero) #content-inner.layout,
 body[data-type='post'] #content-inner.layout,
 body[data-type='standards'] #content-inner.layout {
-  margin-top: 8px !important;
+  margin-top: 0 !important;
   padding-top: 0 !important;
 }
 
 body[data-type='standards'] .page-main,
 body[data-type='standards'] .standards-page-main {
-  padding-top: 20px !important;
+  padding-top: 14px !important;
+  margin-top: 0 !important;
+}
+
+body[data-type='standards'] .page-main > h1:first-child,
+body[data-type='standards'] .standards-page-main > h1:first-child {
+  margin-top: 0 !important;
+  margin-bottom: 12px !important;
+  font-size: 1.4rem !important;
 }
 
 body[data-type='post'] .page-main {
-  padding-top: 20px !important;
+  padding-top: 8px !important;
+  margin-top: 0 !important;
+}
+
+body[data-type='post'] #post.post-page-shell {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+}
+
+body[data-type='post'] .shijianus-ai-summary {
+  margin-top: 0 !important;
 }
 
 .page-main > :first-child {
@@ -7861,12 +7874,13 @@ body[data-type='home'] .page-shell__hero {
   max-width: 1400px !important;
   width: 100% !important;
   margin: 0 auto !important;
-  padding: clamp(34px, 4.8vh, 48px) clamp(1.5rem, 4vw, 3.5rem) clamp(24px, 3vh, 36px) !important;
+  padding: clamp(24px, 3vh, 32px) clamp(1.5rem, 4vw, 3.5rem) 46px !important;
   display: flex !important;
   flex-direction: column !important;
   justify-content: flex-start !important;
-  gap: 10px !important;
-  height: 100% !important;
+  gap: 8px !important;
+  height: auto !important;
+  min-height: 0 !important;
 }
 
 /* Post Hero Badges: Strict horizontal space boundary */
@@ -9855,9 +9869,9 @@ body[data-type='standards'] .standards-page-main > :first-child {
   left: 0 !important;
   right: 0 !important;
   border-radius: 0 !important;
-  min-height: 220px !important;
-  height: clamp(220px, 18vw, 260px) !important;
-  max-height: 280px !important;
+  min-height: 0 !important;
+  height: auto !important;
+  max-height: none !important;
   overflow: hidden !important;
   box-sizing: border-box !important;
   margin-bottom: 0 !important;
@@ -9880,13 +9894,14 @@ body[data-type='standards'] .standards-page-main > :first-child {
   max-width: 1400px !important;
   width: 100% !important;
   margin: 0 auto !important;
-  padding: clamp(20px, 2.5vh, 28px) clamp(1.5rem, 4vw, 3.5rem) clamp(10px, 1.2vh, 16px) !important;
+  padding: clamp(20px, 2.5vh, 28px) clamp(1.5rem, 4vw, 3.5rem) 44px !important;
   box-sizing: border-box !important;
   display: flex !important;
   flex-direction: column !important;
   justify-content: flex-start !important;
   gap: 8px !important;
-  height: 100% !important;
+  height: auto !important;
+  min-height: 0 !important;
 }
 
 .standards-spec-header .post-hero__title-block {

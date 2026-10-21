@@ -1,17 +1,17 @@
 {
   "ok": true,
-  "generatedAt": "2026-10-20T00:07:06.477Z",
+  "generatedAt": "2026-10-21T08:56:26.725Z",
   "stats": {
     "posts": 30,
     "totalWords": 100922,
     "readingMinutes": 461,
     "avgWordsPerPost": 3364,
-    "uptimeDays": 1023,
-    "recentPostCount30d": 3,
-    "activeStatus": "Status 2",
-    "activeLevel": "Lv.2",
-    "activeTitle": "稳定维护",
-    "activeBadge": "Lv.2 Standard",
+    "uptimeDays": 1024,
+    "recentPostCount30d": 0,
+    "activeStatus": "Status 0",
+    "activeLevel": "Lv.0",
+    "activeTitle": "维护休眠",
+    "activeBadge": "Lv.0 Idle",
     "activeHref": "/standards/activity-level/",
     "densityStatus": "Level 4 (Ultra)",
     "densityLevel": "Lv.4",
@@ -138,16 +138,16 @@
   },
   "currentTiers": {
     "activity": {
-      "key": "status-2",
-      "status": "Status 2",
-      "level": "Lv.2",
-      "badge": "Lv.2 Standard",
-      "title": "稳定维护",
-      "minPosts": 3,
-      "maxPosts": 4,
-      "description": "近 30 天发文 3 ~ 4 篇，系统节奏稳定，稳步推进技术专题",
-      "paceGuide": "每周约 1 篇（健康稳定博主基线）",
-      "badgeColor": "#0052d9"
+      "key": "status-0",
+      "status": "Status 0",
+      "level": "Lv.0",
+      "badge": "Lv.0 Idle",
+      "title": "维护休眠",
+      "minPosts": 0,
+      "maxPosts": 0,
+      "description": "近 30 天内暂无公开内容发布，站点处于常规静默维护态",
+      "paceGuide": "超过 30 天未发布新内容",
+      "badgeColor": "#9e9e9e"
     },
     "density": {
       "key": "level-4",
@@ -3061,14 +3061,14 @@
       "displayDate": "2026/10/20",
       "level": 0,
       "posts": [],
-      "isFuture": true
+      "isFuture": false
     },
     {
       "date": "2026-10-21",
       "displayDate": "2026/10/21",
       "level": 0,
       "posts": [],
-      "isFuture": true
+      "isFuture": false
     },
     {
       "date": "2026-10-22",

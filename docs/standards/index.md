@@ -2,7 +2,7 @@
 title: "EpoCanvas 工程標準總綱：指標定義、資料鏈路與核驗邊界"
 description: "完整說明 EpoCanvas 的指標、內容撰寫、文件生命週期、版本、服務邊界與需要獨立驗證的工程品質。"
 pubDate: 2026-10-18
-updatedDate: 2026-10-20
+updatedDate: 2026-10-21
 author: "shijianus"
 category: "工程規範"
 group: "EpoCanvas Standards"
@@ -14,7 +14,7 @@ mindmap: true
 draft: false
 lang: "zh-Hant"
 i18nKey: "ees-standards-overview"
-version: "v2.7.0"
+version: "v2.7.1"
 ---
 
 # EpoCanvas 工程標準總綱
