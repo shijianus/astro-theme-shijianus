@@ -6039,6 +6039,15 @@
   2. 桌面端高度差异：`0.00px`（Zero Layout Shift, CLS = 0）；
   3. 移动端高度差异：`0.00px`；
   4. 截取并保存完整视觉证据至 `playwright-report/hero-i18n/` 与 Artifact 目录。
+- [x] **Cloudflare Pages 边缘生产环境真实链路全量部署与实机验收 (`scripts/verify-live-production-i18n.mjs`)**：
+  1. 编译全站并通过 Wrangler 成功部署至 Cloudflare Pages edge (`8588bbd4.shijianus-blog.pages.dev` / `https://blog.epocanvas.com`)；
+  2. 代码全量推送至 `origin` 与 `cf` 远端仓库；
+  3. 在真实生产域名 `https://blog.epocanvas.com` 进行 Playwright 浏览器自动化多语言切换实测：
+     - 桌面端（1440x900）切换 `zh-CN` -> `en` -> `zh-Hant`：高度严格锁定为 `316.8px`，语言切换高度差 `0.00px`，CLS 为 0；
+     - 移动端（390x844）切换 `zh-CN` -> `en`：高度严格锁定为 `320.7px`，语言切换高度差 `0.00px`；
+     - 规范页实机测得正文卡片间距仅 `8px`，贴合视差波浪；
+     - 控制台致命 JS 报错严格为 `0`，100% 验收通过。
+
 
 
 
