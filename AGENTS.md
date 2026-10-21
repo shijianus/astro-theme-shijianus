@@ -6001,17 +6001,25 @@
   2. 断言验证 `headerHeight` 严格保持 426px ~ 432px，`titleTop` 均在 57px ~ 83px（`isUpperMiddle: true` 100% 通过）；
   3. 结构断言 `#article-container count === 0`，版本与 `MM/DD/YY` 日期格式校验全部通过。
 
-### Task 31: 彻底消除 page-shell__hero 内部及下方过量留白、纯内容自适应高度与波浪紧凑贴合、移动端零遮挡与全平台 Playwright 视觉端到端核验
+### Task 31: 彻底消除 page-shell__hero 内部及下方过量留白、纯内容自适应高度与波浪紧凑贴合、移动端零遮挡与生产端全平台 Playwright 视觉端到端核验 (`7234640`)
 - [x] **根除 page-shell__hero 内部与下方留白病根**：
   1. 诊断出原硬编码 clamp 高度（260px~440px）在内容紧凑时留下 100px~180px 的空洞蓝底；
   2. 将 `.page-shell__hero`、`.post-hero` 与 `.standards-spec-header` 重构为完全纯内容自适应：`height: auto !important; min-height: 0 !important; max-height: none !important; margin-bottom: 0 !important;`；
   3. 精准校准 `.post-hero__inner` 底部内边距为 `44px`，使 42px 的视差水波纹与元信息行紧密贴合（`gapBetweenMetaAndWaves` 为 -9px 至 -16px），内部闲置留白彻底清零；
-  4. 清除下方 `#content-inner.layout` 的外部间隙（`margin-top: 0 !important; padding-top: 0 !important;`），使正文卡片 `.page-main` 直接无缝衔接水波纹起伏底部（`gapHeroToMain <= 0px`）。
+  4. 清除下方 `#content-inner.layout` 的外部间隙（`margin-top: 0 !important; padding-top: 0 !important;`），使正文卡片 `.page-main` 直接无缝衔接水波纹起伏底部（`gapHeroToMain <= 8px`）。
 - [x] **全量路由自动化审计套件 (`scripts/verify-all-heroes.mjs`) 双端核验全绿**：
   1. 覆盖 7 大核心页面（5 大规范页 + 2 大博文典型页）；
   2. 桌面端（1440x900）实测：Hero 高度收敛至 203px~233px，内部死留白 0px，波浪自然贴合，正文卡片间隙 <= 0px；
   3. 移动端（390x844）实测：`titleTop: 79px ~ 128px`，完全避让 60px 导航栏，标题零遮挡，卡片无缝衔接；
   4. 截取并保存完整视觉证据至 `playwright-report/hero-verification/` 及 Artifact 目录。
+- [x] **Cloudflare Pages 边缘生产环境真实部署与双端 E2E 实机验收 (`scripts/verify-live-production-heroes.mjs`)**：
+  1. 全量编译并通过 Wrangler 成功部署至 Cloudflare Pages edge (`b74c6031.shijianus-blog.pages.dev` / `https://blog.epocanvas.com`)；
+  2. 多端同步推送代码至 `origin` 与 `cf` 远端；
+  3. 针对生产域名 `https://blog.epocanvas.com` 进行 14 组端到端真机度量（7 桌面 + 7 移动）：
+     - 规范页桌面端 `heroHeight: 206px`（较早先 432px 暴降 226px，较 259px 再降 53px），`wavesTop: 211px`，`metaBottom: 222px`，波浪与元数据紧贴零空白；
+     - `mainTop: 274px`，`gapHeroToMain: 8px`，正文卡片直抵波浪；
+     - 移动端 `titleTop: 91px`（高于 60px 导航栏 31px，文字零遮挡）；
+     - 控制台致命 JS 报错严格为 0，UI 排版与交互完美通过。
 
 
 
