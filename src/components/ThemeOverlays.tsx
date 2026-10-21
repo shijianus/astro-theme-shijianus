@@ -3478,6 +3478,38 @@ export function ThemeOverlays({
                     {t('settings.compliance.note', '特别说明：前台隐匿仅针对普通访客隐藏属地徽章。出于社区反垃圾、网络安全与评论风控管理合规需要，系统后台仍会如实记录发件连接 IP，仅站长与管理员后台可见，绝不对公众展示。')}
                   </span>
                 </div>
+
+                <div className="account-policy-links flex items-center justify-center gap-3 pt-3 pb-1 text-xs text-slate-400 dark:text-slate-500 flex-wrap">
+                  <a
+                    href="/community/account-and-session/"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="hover:text-theme-main transition-colors text-slate-500 dark:text-slate-400"
+                    title={convertText('查看账号与会话安全说明', localeVariant)}
+                  >
+                    🛡️ {convertText('会话安全', localeVariant)}
+                  </a>
+                  <span>·</span>
+                  <a
+                    href="/community/identity-levels-and-badges/"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="hover:text-theme-main transition-colors text-slate-500 dark:text-slate-400"
+                    title={convertText('查看身份等级与徽章体系说明', localeVariant)}
+                  >
+                    🏅 {convertText('等级规则', localeVariant)}
+                  </a>
+                  <span>·</span>
+                  <a
+                    href="/community/accessibility/"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="hover:text-theme-main transition-colors text-slate-500 dark:text-slate-400"
+                    title={convertText('查看无障碍与可及性说明', localeVariant)}
+                  >
+                    ♿ {convertText('无障碍说明', localeVariant)}
+                  </a>
+                </div>
               </section>
             </div>
           )}

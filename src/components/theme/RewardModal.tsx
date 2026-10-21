@@ -1195,8 +1195,19 @@ export const RewardModal: React.FC<RewardModalProps> = ({
           </div>
 
           {/* Concise, subtle single-line privacy note */}
-          <div className="text-center text-[10px] text-slate-400/80 dark:text-slate-500 leading-normal truncate">
-            {t.privacyNote}
+          <div className="text-center text-[10px] text-slate-400/80 dark:text-slate-500 leading-normal flex items-center justify-center gap-1.5 flex-wrap">
+            <span>{t.privacyNote}</span>
+            <span>·</span>
+            <a
+              href="/community/support-and-refunds/"
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              className="text-[#425aef] hover:underline"
+              title="查看赞赏与退款说明"
+            >
+              退款说明
+            </a>
           </div>
         </div>
       </div>

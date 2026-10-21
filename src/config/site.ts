@@ -681,8 +681,8 @@ export const siteConfig = {
         title: '主题',
         links: [
           { label: '设计对齐', href: '/about/' },
-          { label: '重构进度', href: '/archives/' },
-          { label: '内容系统', href: '/tags/' },
+          { label: '專案路線圖', href: '/roadmap/' },
+          { label: '工程标准', href: '/standards/' },
         ] satisfies SiteNavItem[],
       },
       {
@@ -697,21 +697,9 @@ export const siteConfig = {
         title: '协议',
         links: [
           { label: '隐私说明', href: '/community/privacy-and-data/' },
-          { label: '版权说明', href: '/community/content-license/' },
           { label: '使用条款', href: '/community/terms-of-use/' },
+          { label: '版权说明', href: '/community/content-license/' },
           { label: '赞赏与退款说明', href: '/community/support-and-refunds/' },
-          { label: '社群公约', href: '/community/code-of-conduct/' },
-          { label: '评论与审核规范', href: '/community/comments-and-moderation/' },
-          { label: '举报与申诉说明', href: '/community/reporting-and-appeals/' },
-          { label: '账号与会话安全', href: '/community/account-and-session/' },
-          { label: '安全问题通报', href: '/community/security-disclosure/' },
-          { label: '无障碍说明', href: '/community/accessibility/' },
-          { label: '翻译维护政策', href: '/community/translation-policy/' },
-          { label: '贡献与文件编辑', href: '/community/contributing-and-editorial/' },
-          { label: '工程标准总纲', href: '/standards/' },
-          { label: '内容撰写规范', href: '/standards/content-authoring/' },
-          { label: '文件生命周期规范', href: '/standards/document-lifecycle/' },
-          { label: '发布与事件手册', href: '/operations/release-and-incident-runbook/' },
         ] satisfies SiteNavItem[],
       },
       {

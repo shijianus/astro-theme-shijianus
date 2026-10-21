@@ -1,0 +1,7 @@
+# EpoCanvas Security Disclosure Policy
+# Reference: RFC 9116
+
+Contact: mailto:contact@epocanvas.com
+Policy: https://blog.epocanvas.com/community/security-disclosure/
+Preferred-Languages: zh-TW, zh-CN, en
+Canonical: https://blog.epocanvas.com/.well-known/security.txt

@@ -1839,6 +1839,30 @@ export function PostComments({
               : tC.loginAsGuest}
           </a>
           <a
+            href="/community/code-of-conduct/"
+            target="_blank"
+            rel="noreferrer"
+            title="查看 EpoCanvas 社群公约"
+          >
+            社群公约
+          </a>
+          <a
+            href="/community/comments-and-moderation/"
+            target="_blank"
+            rel="noreferrer"
+            title="查看评论与审核规范"
+          >
+            审核规范
+          </a>
+          <a
+            href="/community/reporting-and-appeals/"
+            target="_blank"
+            rel="noreferrer"
+            title="查看检举与申诉说明"
+          >
+            申诉说明
+          </a>
+          <a
             href="/community/privacy-and-data/"
             target="_blank"
             rel="noreferrer"
