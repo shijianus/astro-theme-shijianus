@@ -6021,5 +6021,25 @@
      - 移动端 `titleTop: 91px`（高于 60px 导航栏 31px，文字零遮挡）；
      - 控制台致命 JS 报错严格为 0，UI 排版与交互完美通过。
 
+### Task 32: i18n 多语言 Hero 方框统一管理系统、固定与自适应双模式解耦、Line-Clamping 溢出保护与零跳变 (CLS=0) 全链路审计
+- [x] **架构设计与配置体系扩展 (`src/config/site.ts`)**：
+  1. 在 `siteConfig.post.hero` 中新增独立 `i18n` 子模块，支持站长自主选择：
+     - `mode`: `'fixed'`（固定对齐统一方框，彻底杜绝语言切换跳变）或 `'adaptive'`（紧凑贴合内容）；
+     - `fixedStrategy`: `'max-content'`（智能按最多文字版本对齐）或 `'custom'`（使用自定义高度）；
+     - `customHeights`: 桌面端 `clamp(260px, 20vw, 300px)` 与移动端 `clamp(280px, 34vh, 320px)`；
+     - `contentAlign`: 支持 `'flex-start'`（中上部黄金分割吸附）、`'center'`（居中）、`'space-between'`（通透分散）；
+     - `maxLines`: 标题与副标题行数保护（Line-Clamping）；
+     - `smoothTransition`: 语言切换平滑尺寸过渡缓动。
+- [x] **组件与样式层双模式解耦 (`PostHero.astro`、`StandardsHero.astro`、`final-pass.css`)**：
+  1. 严格遵循最小修改原则，既有功能 100% 保持不动；
+  2. 在 `posts/[slug].astro` 预估各语言变体最大篇幅（`renderedVariants`），动态计算并向组件注入 `--hero-uniform-height-desktop` 与 `--hero-uniform-height-mobile`；
+  3. 在 `final-pass.css` 中为 `[data-hero-i18n-mode='fixed']` 提供统一高度锁与垂直对齐规则，同时保留 `adaptive` 模式下的纯紧凑自适应能力。
+- [x] **端到端 Playwright 真实多语言切换跳变审计 (`scripts/verify-hero-i18n.mjs`)**：
+  1. 在多语言博文 `/posts/readable-geek-interfaces/` 下实测切换 `zh-CN` -> `en` -> `zh-Hant`；
+  2. 桌面端高度差异：`0.00px`（Zero Layout Shift, CLS = 0）；
+  3. 移动端高度差异：`0.00px`；
+  4. 截取并保存完整视觉证据至 `playwright-report/hero-i18n/` 与 Artifact 目录。
+
+
 
 

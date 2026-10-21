@@ -361,6 +361,35 @@ for (const v of renderedVariants) {
 }
 const hasTranslations = Object.keys(translationsByLang).length > 1;
 
+// i18n Uniform Hero Height Calculation (Fixed Strategy: max-content or custom)
+const heroI18nConfig = (siteConfig.post.hero as any).i18n;
+let uniformHeroHeight: { desktop?: string; mobile?: string } | undefined = undefined;
+
+if (heroI18nConfig?.mode === 'fixed') {
+  if (heroI18nConfig.fixedStrategy === 'max-content' && renderedVariants.length > 0) {
+    const maxTitleLen = Math.max(...renderedVariants.map((v) => (v.title || '').length));
+    const maxSummaryLen = Math.max(...renderedVariants.map((v) => (v.summary || '').length));
+
+    const isMultiLineTitle = maxTitleLen > 30;
+    const isMultiLineSummary = maxSummaryLen > 70;
+
+    let calcDesktop = 'clamp(260px, 20vw, 300px)';
+    let calcMobile = 'clamp(280px, 34vh, 320px)';
+
+    if (isMultiLineTitle && isMultiLineSummary) {
+      calcDesktop = 'clamp(280px, 22vw, 320px)';
+      calcMobile = 'clamp(320px, 38vh, 360px)';
+    } else if (!isMultiLineTitle && !isMultiLineSummary) {
+      calcDesktop = 'clamp(240px, 18vw, 270px)';
+      calcMobile = 'clamp(260px, 32vh, 290px)';
+    }
+
+    uniformHeroHeight = { desktop: calcDesktop, mobile: calcMobile };
+  } else if (heroI18nConfig?.customHeights) {
+    uniformHeroHeight = heroI18nConfig.customHeights;
+  }
+}
+
 const relatedPosts = isUnlocked ? getRelatedPosts(publicPosts, postEntry, 6) : [];
 const publicPostIndex = publicPosts.findIndex((post) => post.id === postEntry.id);
 const previousPost = publicPostIndex > 0 ? publicPosts[publicPostIndex - 1] : null;
@@ -570,6 +599,7 @@ const heroSummary = isUnlocked
         runtimeMetrics={siteConfig.post.hero.runtimeMetrics && isUnlocked}
         maxTags={siteConfig.post.hero.maxTags ?? 10}
         autoFitTitle={siteConfig.post.hero.autoFitTitle ?? true}
+        uniformHeroHeight={uniformHeroHeight}
       />
     </Fragment>
 

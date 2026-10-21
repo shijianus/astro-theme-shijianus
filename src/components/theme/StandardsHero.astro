@@ -31,11 +31,39 @@ const formatHeroDate = (dateInput?: Date | string) => {
 const pubStr = pubDate ? formatHeroDate(pubDate) : '';
 const updStr = updatedDate ? formatHeroDate(updatedDate) : '';
 const hasMeta = (showVersion && Boolean(version)) || (showDates && (Boolean(pubStr) || Boolean(updStr)));
+
+const heroI18n = (siteConfig.post.hero as any).i18n || {
+  mode: 'fixed',
+  fixedStrategy: 'max-content',
+  customHeights: {
+    desktop: 'clamp(260px, 20vw, 300px)',
+    mobile: 'clamp(280px, 34vh, 320px)',
+  },
+  contentAlign: 'flex-start',
+  maxLines: {
+    title: 2,
+    lede: 2,
+  },
+  smoothTransition: true,
+};
+
+const resolvedDesktopHeight =
+  heroI18n.mode === 'fixed'
+    ? heroI18n.customHeights?.desktop || 'clamp(260px, 20vw, 300px)'
+    : 'auto';
+const resolvedMobileHeight =
+  heroI18n.mode === 'fixed'
+    ? heroI18n.customHeights?.mobile || 'clamp(280px, 34vh, 320px)'
+    : 'auto';
 ---
 
 <header
   class="standards-spec-header post-hero is-pure-color"
   data-post-hero
+  data-hero-i18n-mode={heroI18n.mode}
+  data-hero-align={heroI18n.contentAlign}
+  data-hero-smooth-transition={heroI18n.smoothTransition ? 'true' : 'false'}
+  style={`--hero-uniform-height-desktop: ${resolvedDesktopHeight}; --hero-uniform-height-mobile: ${resolvedMobileHeight}; --hero-content-align: ${heroI18n.contentAlign}; --hero-title-max-lines: ${heroI18n.maxLines?.title ?? 2}; --hero-lede-max-lines: ${heroI18n.maxLines?.lede ?? 2};`}
 >
   <div class="post-hero__inner">
     <div class="post-hero__title-block" data-auto-fit-title="true">

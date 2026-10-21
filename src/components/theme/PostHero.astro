@@ -31,9 +31,14 @@ interface Props {
     lang: string;
   }>;
   currentLang?: string;
+  uniformHeroHeight?: {
+    desktop?: string;
+    mobile?: string;
+  };
 }
 
 import { getLocaleMeta } from '../../config/i18n';
+import { siteConfig } from '../../config/site';
 
 const {
   slug,
@@ -50,7 +55,32 @@ const {
   runtimeMetrics = true,
   maxTags = 10,
   autoFitTitle = true,
+  uniformHeroHeight,
 } = Astro.props;
+
+const heroI18n = (siteConfig.post.hero as any).i18n || {
+  mode: 'fixed',
+  fixedStrategy: 'max-content',
+  customHeights: {
+    desktop: 'clamp(260px, 20vw, 300px)',
+    mobile: 'clamp(280px, 34vh, 320px)',
+  },
+  contentAlign: 'flex-start',
+  maxLines: {
+    title: 2,
+    lede: 2,
+  },
+  smoothTransition: true,
+};
+
+const resolvedDesktopHeight =
+  heroI18n.mode === 'fixed'
+    ? uniformHeroHeight?.desktop || heroI18n.customHeights?.desktop || 'clamp(260px, 20vw, 300px)'
+    : 'auto';
+const resolvedMobileHeight =
+  heroI18n.mode === 'fixed'
+    ? uniformHeroHeight?.mobile || heroI18n.customHeights?.mobile || 'clamp(280px, 34vh, 320px)'
+    : 'auto';
 
 const heroMetaIconMap: Record<NonNullable<PostHeroMetaItem['icon']>, LucideIcon> = {
   calendar: CalendarDays,
@@ -71,6 +101,10 @@ const hasMedia = Boolean(image || video);
   data-post-hero
   data-post-slug={slug}
   data-runtime-metrics={runtimeMetrics ? 'true' : 'false'}
+  data-hero-i18n-mode={heroI18n.mode}
+  data-hero-align={heroI18n.contentAlign}
+  data-hero-smooth-transition={heroI18n.smoothTransition ? 'true' : 'false'}
+  style={`--hero-uniform-height-desktop: ${resolvedDesktopHeight}; --hero-uniform-height-mobile: ${resolvedMobileHeight}; --hero-content-align: ${heroI18n.contentAlign}; --hero-title-max-lines: ${heroI18n.maxLines?.title ?? 2}; --hero-lede-max-lines: ${heroI18n.maxLines?.lede ?? 2};`}
 >
   {hasMedia && (
     <div class="post-hero__cover">
