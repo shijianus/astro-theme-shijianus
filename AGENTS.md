@@ -6080,6 +6080,11 @@
      - 德文：`Gast (Anmelden) · Verhaltenskodex · Moderation · Einsprüche · Datenschutzrichtlinie`
      - 西文：`Visitante (Acceso) · Código de conducta · Moderación · Apelaciones · Política de privacidad`
   3. 控制台致命 JS 报错严格为 `0`，断言全部通过。
+- [x] **生产端 Cloudflare Pages 边缘节点全量部署与真实链路双环境验证 (`scripts/verify-policy-i18n-live.mjs`)**：
+  1. 通过 `npm run cf:deploy` 将 306 个静态路由及 Edge Functions 全量部署至 Cloudflare Pages 边缘节点；
+  2. 针对生产域名 `https://blog.epocanvas.com` 及 Cloudflare Pages 节点 `https://7cea971b.shijianus-blog.pages.dev` 执行真实 Playwright E2E 审计；
+  3. 确认生产端响应均为 `200 OK`，Footer 政策严格收敛至 4 项，评论区多语言动态响应正常，全链路 0 控制台报错，双目标 100% 验收通过。
+
 
 
 
