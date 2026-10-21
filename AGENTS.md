@@ -6062,6 +6062,26 @@
   1. 静态配置与 DOM 深度断言：Policies 严格为 4 项且涵盖全部法务刚需；
   2. 真实无头浏览器 E2E 渲染：全视口验证页脚网格对称度、评论头部链接、赞赏退款链接与 `security.txt` 可达性，0 控制台致命报错，测试全绿。
 
+### Task 34: 新增治理与政策 UI 文本全语系 i18n 补齐与多语言浏览器自动化审计 (`4512785`)
+- [x] **评论区专用字典全量多语言扩展 (`src/lib/comments-i18n.ts`)**：
+  1. 在 `CommentTranslations` 接口中扩充 `conductLabel`、`conductTitle`、`moderationLabel`、`moderationTitle`、`appealsLabel`、`appealsTitle`；
+  2. 在 `zh-CN`、`zh-Hant`、`en`、`fr`、`es`、`de` 全部 6 个语系中注入地道官方翻译，在 `PostComments.tsx` 中彻底清除硬编码中文。
+- [x] **赞赏收银台模态框专用字典补齐 (`src/components/theme/RewardModal.tsx`)**：
+  1. 在 `REWARD_I18N` 的 6 个语系中全量定义 `refundPolicy` 与 `refundPolicyTitle`（中文“退款说明”、繁体“退款說明”、英文“Refund Policy”、法文“Politique de remboursement”、西文“Política de reembolso”、德文“Erstattungsrichtlinie”）；
+  2. 渲染处使用 `{t.refundPolicy}` 动态插槽，与多币种收银台无缝自适应。
+- [x] **全站全局翻译引擎词库补齐 (`src/lib/client-locale.ts`)**：
+  1. 注册 19 项新增的治理、政策与运维术语（包含 `赞赏与退款说明`、`社群公约`、`审核规范`、`申诉说明`、`会话安全`、`等级规则`、`无障碍说明`、`專案路線圖`、`工程标准` 等）；
+  2. 为每一项提供英语、法语、西班牙语、德语 4 国权威对应词汇，并在繁体模式下结合 OpenCC 保持地道繁体转换。
+- [x] **端到端 Playwright 多语言浏览器实时切换审计 (`scripts/verify-policy-i18n-browser.mjs`)**：
+  1. 实测在文章页广播 `shijianus:localechange` 切换 `zh` -> `en` -> `fr` -> `de` -> `es`；
+  2. 捕获评论头部、模态框及底栏各链接文本，实机确认：
+     - 英文：`Guest (Sign in) · Code of Conduct · Moderation · Appeals · Privacy Policy`
+     - 法文：`Invité (Connexion) · Code de conduite · Modération · Recours · Politique de confidentialité`
+     - 德文：`Gast (Anmelden) · Verhaltenskodex · Moderation · Einsprüche · Datenschutzrichtlinie`
+     - 西文：`Visitante (Acceso) · Código de conducta · Moderación · Apelaciones · Política de privacidad`
+  3. 控制台致命 JS 报错严格为 `0`，断言全部通过。
+
+
 
 
 
