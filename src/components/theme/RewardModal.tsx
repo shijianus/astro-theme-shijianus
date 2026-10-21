@@ -233,6 +233,8 @@ const I18N = {
     privacyNote: '本站不存储任何支付卡号及隐私信息 · 结算由 Stripe 端到端加密处理',
     securedBy: 'Secured by',
     rewardRecords: '赞赏记录 ↗',
+    refundPolicy: '退款说明',
+    refundPolicyTitle: '查看赞赏与退款说明',
   },
   'zh-Hant': {
     title: '讚賞支持',
@@ -258,6 +260,8 @@ const I18N = {
     privacyNote: '本站不儲存任何支付卡號及隱私資訊 · 結算由 Stripe 端到端加密處理',
     securedBy: 'Secured by',
     rewardRecords: '讚賞記錄 ↗',
+    refundPolicy: '退款說明',
+    refundPolicyTitle: '查看贊賞與退款說明',
   },
   'en': {
     title: 'Support Creator',
@@ -283,6 +287,8 @@ const I18N = {
     privacyNote: 'No card or personal data is stored · Processed securely via Stripe',
     securedBy: 'Secured by',
     rewardRecords: 'Donation Log ↗',
+    refundPolicy: 'Refund Policy',
+    refundPolicyTitle: 'View Support & Refund Policy',
   },
   'fr': {
     title: 'Soutenir le Créateur',
@@ -308,6 +314,8 @@ const I18N = {
     privacyNote: 'Aucune coordonnée bancaire n est stockée · Traitement sécurisé par Stripe',
     securedBy: 'Secured by',
     rewardRecords: 'Historique des dons ↗',
+    refundPolicy: 'Politique de remboursement',
+    refundPolicyTitle: 'Consulter la politique de remboursement',
   },
   'es': {
     title: 'Apoyar al Creador',
@@ -333,6 +341,8 @@ const I18N = {
     privacyNote: 'No se almacenan datos bancarios · Procesamiento cifrado vía Stripe',
     securedBy: 'Secured by',
     rewardRecords: 'Registro de donaciones ↗',
+    refundPolicy: 'Política de reembolso',
+    refundPolicyTitle: 'Consultar política de reembolso',
   },
   'de': {
     title: 'Autor unterstützen',
@@ -358,6 +368,8 @@ const I18N = {
     privacyNote: 'Keine Kartendaten werden gespeichert · End-to-End-Verschlüsselung via Stripe',
     securedBy: 'Secured by',
     rewardRecords: 'Spendenprotokoll ↗',
+    refundPolicy: 'Erstattungsrichtlinie',
+    refundPolicyTitle: 'Spenden- und Erstattungsrichtlinie anzeigen',
   },
 };
 
@@ -1204,9 +1216,9 @@ export const RewardModal: React.FC<RewardModalProps> = ({
               rel="noopener noreferrer"
               onClick={(e) => e.stopPropagation()}
               className="text-[#425aef] hover:underline"
-              title="查看赞赏与退款说明"
+              title={t.refundPolicyTitle}
             >
-              退款说明
+              {t.refundPolicy}
             </a>
           </div>
         </div>

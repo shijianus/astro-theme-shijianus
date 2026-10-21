@@ -1842,25 +1842,25 @@ export function PostComments({
             href="/community/code-of-conduct/"
             target="_blank"
             rel="noreferrer"
-            title="查看 EpoCanvas 社群公约"
+            title={tC.conductTitle}
           >
-            社群公约
+            {tC.conductLabel}
           </a>
           <a
             href="/community/comments-and-moderation/"
             target="_blank"
             rel="noreferrer"
-            title="查看评论与审核规范"
+            title={tC.moderationTitle}
           >
-            审核规范
+            {tC.moderationLabel}
           </a>
           <a
             href="/community/reporting-and-appeals/"
             target="_blank"
             rel="noreferrer"
-            title="查看检举与申诉说明"
+            title={tC.appealsTitle}
           >
-            申诉说明
+            {tC.appealsLabel}
           </a>
           <a
             href="/community/privacy-and-data/"

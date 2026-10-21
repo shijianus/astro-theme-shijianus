@@ -373,6 +373,12 @@ export interface CommentTranslations {
   geoRealIpPrefix: string;
   geoAdminPrivilege: string;
   headingComments: string;
+  conductLabel: string;
+  conductTitle: string;
+  moderationLabel: string;
+  moderationTitle: string;
+  appealsLabel: string;
+  appealsTitle: string;
   policyLabel: string;
   policyTitle: string;
   loginAsGuest: string;
@@ -413,6 +419,12 @@ export const COMMENTS_I18N: Record<LocaleVariant, CommentTranslations> = {
 
   'zh-CN': {
     headingComments: '评论',
+    conductLabel: '社群公约',
+    conductTitle: '查看 EpoCanvas 社群公约与行为底线',
+    moderationLabel: '审核规范',
+    moderationTitle: '查看评论、Reaction 与审核规则',
+    appealsLabel: '申诉说明',
+    appealsTitle: '查看内容检举与申诉处理说明',
     policyLabel: '隐私政策',
     policyTitle: '阅读站点使用协议与隐私政策',
     loginAsGuest: '访客身份 (点击登录)',
@@ -813,6 +825,12 @@ export const COMMENTS_I18N: Record<LocaleVariant, CommentTranslations> = {
 
   'zh-Hant': {
     headingComments: '評論',
+    conductLabel: '社群公約',
+    conductTitle: '查看 EpoCanvas 社群公約與行為底線',
+    moderationLabel: '審核規範',
+    moderationTitle: '查看評論、Reaction 與審核規則',
+    appealsLabel: '申訴說明',
+    appealsTitle: '查看內容檢舉與申訴處理說明',
     policyLabel: '隱私政策',
     policyTitle: '閱讀站點使用協議與隱私政策',
     loginAsGuest: '訪客身分 (點擊登入)',
@@ -1213,6 +1231,12 @@ export const COMMENTS_I18N: Record<LocaleVariant, CommentTranslations> = {
 
   en: {
     headingComments: 'Comments',
+    conductLabel: 'Code of Conduct',
+    conductTitle: 'View EpoCanvas Community Code of Conduct',
+    moderationLabel: 'Moderation',
+    moderationTitle: 'View Comment & Moderation Guidelines',
+    appealsLabel: 'Appeals',
+    appealsTitle: 'View Reporting & Appeals Policy',
     policyLabel: 'Privacy Policy',
     policyTitle: 'Read Terms of Service and Privacy Policy',
     loginAsGuest: 'Guest (Sign in)',
@@ -1613,6 +1637,12 @@ export const COMMENTS_I18N: Record<LocaleVariant, CommentTranslations> = {
 
   fr: {
     headingComments: 'Commentaires',
+    conductLabel: 'Code de conduite',
+    conductTitle: 'Consulter le code de conduite de la communauté',
+    moderationLabel: 'Modération',
+    moderationTitle: 'Consulter les règles de modération des commentaires',
+    appealsLabel: 'Recours',
+    appealsTitle: 'Consulter la politique de signalement et recours',
     policyLabel: 'Politique de confidentialité',
     policyTitle: 'Consulter les conditions d’utilisation et la politique de confidentialité',
     loginAsGuest: 'Invité (Connexion)',
@@ -2013,6 +2043,12 @@ export const COMMENTS_I18N: Record<LocaleVariant, CommentTranslations> = {
 
   es: {
     headingComments: 'Comentarios',
+    conductLabel: 'Código de conducta',
+    conductTitle: 'Consultar el código de conducta de la comunidad',
+    moderationLabel: 'Moderación',
+    moderationTitle: 'Consultar las normas de moderación de comentarios',
+    appealsLabel: 'Apelaciones',
+    appealsTitle: 'Consultar la política de reportes y apelaciones',
     policyLabel: 'Política de privacidad',
     policyTitle: 'Leer términos de servicio y política de privacidad',
     loginAsGuest: 'Visitante (Acceso)',
@@ -2413,6 +2449,12 @@ export const COMMENTS_I18N: Record<LocaleVariant, CommentTranslations> = {
 
   de: {
     headingComments: 'Kommentare',
+    conductLabel: 'Verhaltenskodex',
+    conductTitle: 'EpoCanvas-Community-Verhaltenskodex anzeigen',
+    moderationLabel: 'Moderation',
+    moderationTitle: 'Kommentar- und Moderationsregeln anzeigen',
+    appealsLabel: 'Einsprüche',
+    appealsTitle: 'Meldungs- und Einspruchsrichtlinie anzeigen',
     policyLabel: 'Datenschutzrichtlinie',
     policyTitle: 'Nutzungsbedingungen und Datenschutzrichtlinie lesen',
     loginAsGuest: 'Gast (Anmelden)',
