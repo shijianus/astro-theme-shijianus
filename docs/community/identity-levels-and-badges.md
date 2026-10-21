@@ -2,7 +2,7 @@
 title: "EpoCanvas 身份等級與徽章說明"
 description: "說明 LV/TL 身份、社群稱號、徽章判定與目前客戶端／服務端規則差異。"
 pubDate: 2026-10-18
-updatedDate: 2026-10-18
+updatedDate: 2026-10-20
 author: "EpoCanvas 社群"
 category: "社群規範"
 group: "Community Policies"
@@ -29,7 +29,7 @@ lang: "zh-Hant"
 - **角色（Role）**：目前身份資料中的 `visitor`、`reader` 或 `admin`，它決定 API 鑑權與管理範圍，不由一個本地徽章單獨授予。
 - **徽章（Badge）**：可解鎖、可顯示或可佩戴的成就/身份標籤。徽章不是安全權限，也不會取代會話驗證。
 
-讚賞與付款不會自動增加 LV/TL，也不會解鎖付費文章或評論特權；社群參與與資金支持應保持分離。
+讚賞與付款不會自動增加 LV/TL，也不會解鎖付費文章或評論特權；社群參與與資金支持應保持分離。帳號角色與 API 權限請另見[帳號與會話安全說明](/community/account-and-session/)。
 
 ## 2. 客戶端顯示的官方階梯
 
@@ -85,4 +85,4 @@ lang: "zh-Hant"
 
 如果你發現自己的等級、徽章、地區顯示或帳號角色明顯錯誤，請依[檢舉與申訴說明](/community/reporting-and-appeals/)提供必要資訊。請不要公開貼出電子郵件、會話令牌或管理欄位。
 
-最後更新：2026-10-18。
+最後更新：2026-10-20。

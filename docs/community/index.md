@@ -2,7 +2,7 @@
 title: "EpoCanvas 社群政策總覽"
 description: "集中整理 EpoCanvas 的社群公約、評論審核、隱私、帳號安全、無障礙、翻譯維護、內容授權、使用條款、身份徽章與檢舉申訴入口。"
 pubDate: 2026-10-19
-updatedDate: 2026-10-19
+updatedDate: 2026-10-20
 author: "EpoCanvas 社群"
 category: "站點政策"
 group: "Community Policies"
@@ -58,4 +58,4 @@ lang: "zh-Hant"
 
 一般政策、隱私請求、內容權利或安全事件可寄至 [contact@epocanvas.com](mailto:contact@epocanvas.com)。安全問題請使用明確的 `[安全]` 主旨；請在信件中只提供定位與處理案件所需的最少資訊。
 
-最後更新：2026-10-19。
+最後更新：2026-10-20。
