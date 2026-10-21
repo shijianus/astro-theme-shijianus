@@ -6048,6 +6048,21 @@
      - 规范页实机测得正文卡片间距仅 `8px`，贴合视差波浪；
      - 控制台致命 JS 报错严格为 `0`，100% 验收通过。
 
+### Task 33: Policies 协议精简收敛、页脚网格视觉平衡与社群/工程规范上下文就近伴奏治理 (`0bf980f`)
+- [x] **页脚 Policies（协议）精简与视觉对称平衡 (`src/config/site.ts`)**：
+  1. 彻底解决页脚协议列膨胀 16 项导致页面排版悬崖的缺陷，精简并收敛为严格 **4 项核心法务条款**：`隐私说明`、`使用条款`、`版权说明`、`赞赏与退款说明`；
+  2. 平衡页脚“主题”列为 3 项（`设计对齐`、`專案路線圖`、`工程标准`），使得全站页脚 5 列严格保持 3~4 项，实现极具美感的水平平齐基线（Baseline Alignment）。
+- [x] **伴奏治理与上下文就近落地 (Context-aware Placement)**：
+  1. 评论区 (`PostComments.tsx`)：在头部 `comment-randomInfo` 补充 `社群公约`、`审核规范`、`申诉说明` 就近伴奏链接；
+  2. 赞赏模态框 (`RewardModal.tsx`)：在底栏追加包含 `退款说明` (`/community/support-and-refunds/`) 的法务直达链接，满足 Stripe 国际支付商户审计合规；
+  3. 账号中心抽屉 (`ThemeOverlays.tsx`)：在底栏合规注脚处增加 `会话安全`、`等级规则`、`无障碍说明` 伴奏指引；
+  4. 安全漏洞通报：引入遵循 RFC-9116 国际标准的 `public/.well-known/security.txt`，规范指向 `/community/security-disclosure/`；
+  5. 严格禁止在 Post 文章中直接放置 button 跳转文章，仅允许标准行内引用。
+- [x] **自动化端到端测试套件全量审计 (`scripts/verify-policy-alignment.mjs` & `scripts/verify-policy-browser-e2e.mjs`)**：
+  1. 静态配置与 DOM 深度断言：Policies 严格为 4 项且涵盖全部法务刚需；
+  2. 真实无头浏览器 E2E 渲染：全视口验证页脚网格对称度、评论头部链接、赞赏退款链接与 `security.txt` 可达性，0 控制台致命报错，测试全绿。
+
+
 
 
 
