@@ -1,0 +1,65 @@
+---
+import { getCollection } from 'astro:content';
+import OfficialDocLayout from './OfficialDocLayout.astro';
+import { getPublicPosts } from '../lib/content';
+import { createSidebarData } from '../lib/theme';
+
+interface DocumentModule {
+  Content: any;
+  frontmatter: Record<string, any>;
+}
+
+interface Props {
+  docPath: string;
+}
+
+const { docPath } = Astro.props;
+const modules = import.meta.glob('../../docs/**/*.md', { eager: true }) as Record<string, DocumentModule>;
+const localeOrder = ['zh-Hant', 'zh-CN', 'en', 'fr', 'es', 'de'] as const;
+const fileFor = (locale: string) => {
+  const suffix = locale === 'zh-Hant' ? '' : `.${locale}`;
+  return modules[`../../docs/${docPath}${suffix}.md`];
+};
+
+const rawVariants = localeOrder.map((lang) => {
+  const module = fileFor(lang);
+  if (!module) return null;
+  const { frontmatter } = module;
+  return {
+    lang,
+    title: String(frontmatter.title || ''),
+    description: String(frontmatter.description || ''),
+    version: frontmatter.version ? String(frontmatter.version) : undefined,
+    pubDate: frontmatter.pubDate,
+    updatedDate: frontmatter.updatedDate,
+    Content: module.Content,
+  };
+}).filter(Boolean) as Array<{
+  lang: string;
+  title: string;
+  description: string;
+  version?: string;
+  pubDate?: Date | string;
+  updatedDate?: Date | string;
+  Content: any;
+}>;
+
+const defaultVariant = rawVariants[0];
+if (!defaultVariant) {
+  throw new Error(`Official document "${docPath}" has no content`);
+}
+
+const variants = localeOrder.map((lang) => {
+  const existing = rawVariants.find((v) => v.lang === lang);
+  if (existing) return existing;
+  return {
+    ...defaultVariant,
+    lang,
+  };
+});
+
+const posts = getPublicPosts(await getCollection('posts'));
+const sidebarData = createSidebarData(posts);
+---
+
+<OfficialDocLayout variants={variants} showAside={false} pageType="standards" sidebarData={sidebarData} />

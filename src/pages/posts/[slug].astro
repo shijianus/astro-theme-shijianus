@@ -373,15 +373,15 @@ if (heroI18nConfig?.mode === 'fixed') {
     const isMultiLineTitle = maxTitleLen > 30;
     const isMultiLineSummary = maxSummaryLen > 70;
 
-    let calcDesktop = 'clamp(260px, 20vw, 300px)';
-    let calcMobile = 'clamp(280px, 34vh, 320px)';
+    let calcDesktop = 'clamp(360px, 28vw, 420px)';
+    let calcMobile = 'clamp(320px, 40vh, 380px)';
 
     if (isMultiLineTitle && isMultiLineSummary) {
-      calcDesktop = 'clamp(280px, 22vw, 320px)';
-      calcMobile = 'clamp(320px, 38vh, 360px)';
+      calcDesktop = 'clamp(380px, 30vw, 440px)';
+      calcMobile = 'clamp(340px, 42vh, 400px)';
     } else if (!isMultiLineTitle && !isMultiLineSummary) {
-      calcDesktop = 'clamp(240px, 18vw, 270px)';
-      calcMobile = 'clamp(260px, 32vh, 290px)';
+      calcDesktop = 'clamp(340px, 26vw, 390px)';
+      calcMobile = 'clamp(300px, 36vh, 350px)';
     }
 
     uniformHeroHeight = { desktop: calcDesktop, mobile: calcMobile };

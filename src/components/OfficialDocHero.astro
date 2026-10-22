@@ -1,0 +1,107 @@
+---
+import { CalendarDays, RefreshCw, Tag as TagIcon } from 'lucide-react';
+import { siteConfig } from '../config/site';
+
+interface Variant {
+  lang: string;
+  title: string;
+  description?: string;
+  version?: string;
+  pubDate?: Date | string;
+  updatedDate?: Date | string;
+}
+
+interface Props {
+  variants: Variant[];
+}
+
+const { variants } = Astro.props;
+const defaultVariant = variants.find((variant) => variant.lang === 'zh-Hant') ?? variants[0];
+
+const formatDate = (dateInput?: Date | string) => {
+  if (!dateInput) return '';
+  const date = dateInput instanceof Date ? dateInput : new Date(dateInput);
+  if (Number.isNaN(date.getTime())) return String(dateInput);
+  return `${String(date.getMonth() + 1).padStart(2, '0')}/${String(date.getDate()).padStart(2, '0')}/${String(date.getFullYear()).slice(-2)}`;
+};
+
+const showVersion = (siteConfig.post.hero as any).showVersion !== false;
+const showDates = (siteConfig.post.hero as any).showDates !== false;
+const heroI18n = (siteConfig.post.hero as any).i18n || {};
+const desktopHeight = heroI18n.mode === 'fixed'
+  ? heroI18n.customHeights?.desktop || 'clamp(360px, 28vw, 420px)'
+  : 'auto';
+const mobileHeight = heroI18n.mode === 'fixed'
+  ? heroI18n.customHeights?.mobile || 'clamp(320px, 40vh, 380px)'
+  : 'auto';
+
+const serializedVariants = variants.map((variant) => ({
+  lang: variant.lang,
+  title: variant.title,
+  description: variant.description || '',
+  version: variant.version || '',
+  pubDate: formatDate(variant.pubDate),
+  updatedDate: formatDate(variant.updatedDate),
+}));
+---
+
+<header
+  class="standards-spec-header post-hero is-pure-color official-doc-hero"
+  data-post-hero
+  data-official-doc-hero
+  data-hero-i18n-mode={heroI18n.mode || 'adaptive'}
+  style={`--hero-uniform-height-desktop: ${desktopHeight}; --hero-uniform-height-mobile: ${mobileHeight}; --hero-content-align: ${heroI18n.contentAlign || 'flex-start'}; --hero-title-max-lines: ${heroI18n.maxLines?.title ?? 2}; --hero-lede-max-lines: ${heroI18n.maxLines?.lede ?? 2};`}
+>
+  <div class="post-hero__inner">
+    <div class="post-hero__title-block" data-auto-fit-title="true">
+      <h1 class="standards-spec-header__title post-hero__title" data-official-doc-title>{defaultVariant.title}</h1>
+      {defaultVariant.description && (
+        <p class="standards-spec-header__desc post-hero__lede" data-official-doc-description>{defaultVariant.description}</p>
+      )}
+    </div>
+
+    {(showVersion || showDates) && (
+      <div class="standards-spec-header__meta-grid post-hero__meta-grid" data-official-doc-meta>
+        {showVersion && (
+          <span class="post-hero__meta-item standards-spec-meta-item" data-official-doc-version-wrap>
+            <span class="post-hero__meta-icon" aria-hidden="true"><TagIcon className="post-hero__meta-icon-svg" aria-hidden="true" /></span>
+            <span class="post-hero__meta-label">{(siteConfig.post.hero.metaLabels as any).version || '版本'}</span>
+            <strong class="post-hero__meta-value" data-official-doc-version>{defaultVariant.version || ''}</strong>
+          </span>
+        )}
+        {showDates && (
+          <>
+            {showVersion && <span class="post-hero__meta-dot" aria-hidden="true">•</span>}
+            <span class="post-hero__meta-item standards-spec-meta-item" data-official-doc-published-wrap>
+              <span class="post-hero__meta-icon" aria-hidden="true"><CalendarDays className="post-hero__meta-icon-svg" aria-hidden="true" /></span>
+              <span class="post-hero__meta-label">{siteConfig.post.hero.metaLabels.published}</span>
+              <strong class="post-hero__meta-value" data-official-doc-published>{formatDate(defaultVariant.pubDate)}</strong>
+            </span>
+            <span class="post-hero__meta-dot" aria-hidden="true">•</span>
+            <span class="post-hero__meta-item standards-spec-meta-item" data-official-doc-updated-wrap>
+              <span class="post-hero__meta-icon" aria-hidden="true"><RefreshCw className="post-hero__meta-icon-svg" aria-hidden="true" /></span>
+              <span class="post-hero__meta-label">{siteConfig.post.hero.metaLabels.updated}</span>
+              <strong class="post-hero__meta-value" data-official-doc-updated>{formatDate(defaultVariant.updatedDate)}</strong>
+            </span>
+          </>
+        )}
+      </div>
+    )}
+  </div>
+
+  <div class="post-hero__waves" aria-hidden="true">
+    <svg class="post-hero__waves-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 24 150 28" preserveAspectRatio="none" shape-rendering="auto">
+      <defs>
+        <path id="official-doc-wave" d="M-160 44c30 0 58-18 88-18s58 18 88 18 58-18 88-18 58 18 88 18v44h-352Z"></path>
+      </defs>
+      <g class="post-hero__waves-group">
+        <use href="#official-doc-wave" x="48" y="0"></use>
+        <use href="#official-doc-wave" x="48" y="3"></use>
+        <use href="#official-doc-wave" x="48" y="5"></use>
+        <use href="#official-doc-wave" x="48" y="7"></use>
+      </g>
+    </svg>
+  </div>
+
+  <script type="application/json" data-official-doc-variants set:html={JSON.stringify(serializedVariants)}></script>
+</header>

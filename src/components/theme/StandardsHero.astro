@@ -36,10 +36,10 @@ const heroI18n = (siteConfig.post.hero as any).i18n || {
   mode: 'fixed',
   fixedStrategy: 'max-content',
   customHeights: {
-    desktop: 'clamp(260px, 20vw, 300px)',
-    mobile: 'clamp(280px, 34vh, 320px)',
+    desktop: 'clamp(360px, 28vw, 420px)',
+    mobile: 'clamp(320px, 40vh, 380px)',
   },
-  contentAlign: 'flex-start',
+  contentAlign: 'center',
   maxLines: {
     title: 2,
     lede: 2,
@@ -49,11 +49,11 @@ const heroI18n = (siteConfig.post.hero as any).i18n || {
 
 const resolvedDesktopHeight =
   heroI18n.mode === 'fixed'
-    ? heroI18n.customHeights?.desktop || 'clamp(260px, 20vw, 300px)'
+    ? heroI18n.customHeights?.desktop || 'clamp(360px, 28vw, 420px)'
     : 'auto';
 const resolvedMobileHeight =
   heroI18n.mode === 'fixed'
-    ? heroI18n.customHeights?.mobile || 'clamp(280px, 34vh, 320px)'
+    ? heroI18n.customHeights?.mobile || 'clamp(320px, 40vh, 380px)'
     : 'auto';
 ---
 

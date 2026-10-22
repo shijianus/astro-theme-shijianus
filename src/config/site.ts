@@ -925,10 +925,10 @@ export const siteConfig = {
         mode: 'fixed' as 'fixed' | 'adaptive', // 'fixed' (固定对齐统一方框) | 'adaptive' (各语言自适应紧凑)
         fixedStrategy: 'max-content' as 'max-content' | 'custom', // 'max-content' (智能按最多文字版本对齐) | 'custom' (使用自定义高度)
         customHeights: {
-          desktop: 'clamp(260px, 20vw, 300px)',
-          mobile: 'clamp(280px, 34vh, 320px)',
+          desktop: 'clamp(360px, 28vw, 420px)',
+          mobile: 'clamp(320px, 40vh, 380px)',
         },
-        contentAlign: 'flex-start' as 'flex-start' | 'center' | 'space-between', // 垂直对齐策略
+        contentAlign: 'center' as 'flex-start' | 'center' | 'space-between', // 垂直对齐策略
         maxLines: {
           title: 2,
           lede: 2,

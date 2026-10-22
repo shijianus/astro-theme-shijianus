@@ -6080,6 +6080,22 @@
   2. 验证个人中心抽屉内 0 视觉风格卡片残留、0 控制台切换按钮残留；
   3. 验证 6 种视口下控制台按钮严格为 6 个且间距合规，测试全部通过。
 
+### Task 36: 文章头图 (.post-hero__inner) 重排优化：标题垂直黄金居中、版本及元数据稳定锚定水波纹 (.post-hero__waves) 起始线上方
+- [x] **文章头图容器与高度黄金比例优化 (`src/config/site.ts`, `src/pages/posts/[slug].astro`, `src/styles/final-pass.css`)**：
+  1. 桌面端统一高度由过矮的 260px~300px 提升至大气的 `clamp(360px, 28vw, 420px)`，单行短标题自适应 `clamp(340px, 26vw, 390px)`，多行长标题拓展至 `clamp(380px, 30vw, 440px)`；
+  2. 移动端统一高度提升至 `clamp(340px, 42vh, 400px)`，并设为 `height: auto !important` 允许根据折行行数自适应延展，杜绝截断。
+- [x] **标题 (.post-hero__title-block) 绝对垂直居中重排**：
+  1. `.post-hero__inner` 采用 `display: flex; flex-direction: column; justify-content: space-between; height: 100%;`；
+  2. 为 `.post-hero__title-block` 配置 `margin-top: auto !important; margin-bottom: auto !important;`，自动平分上下剩余垂直空间，让大标题与副标题不论长短均稳定处于视觉中心；
+  3. 消除之前 `justify-content: flex-start` 导致的所有内容严重偏靠容器顶部的压迫感。
+- [x] **版本与元数据 (.post-hero__meta-grid) 锚定水波纹起始线上方**：
+  1. 将 `.post-hero__inner` 的 `padding-bottom` 明确设为 `clamp(70px, 8.5vh, 84px) !important`（移动端 `clamp(66px, 8.5vh, 76px)`）；
+  2. 水波纹高度 56px（移动端 42px），确保元数据行（包含版本信息）稳定落于水波纹起始线上方 `+21px ~ +30px` 处，踏浪而立；
+  3. 彻底根除此前长标题文章中元数据（版本、日期等）跌入水波纹内部被淹没、截断的重叠缺陷（`metaOverlapWithWaves: false`）。
+- [x] **自动化端到端测试套件全量审计 (`scripts/verify-post-hero-layout.mjs`)**：
+  1. 桌面端 (1440x900) 覆盖短标题、中标题、超长大标题文章，标题中心偏移绝对值仅 17.7px，meta 与波浪间距均保持在 +21.2px；
+  2. 移动端 (390x844) 验证多行折行自适应，meta 与波浪间距保持在 +30.3px，0 重叠，测试全绿。
+
 
 
 
