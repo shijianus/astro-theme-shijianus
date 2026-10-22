@@ -6062,7 +6062,7 @@
   1. 静态配置与 DOM 深度断言：Policies 严格为 4 项且涵盖全部法务刚需；
   2. 真实无头浏览器 E2E 渲染：全视口验证页脚网格对称度、评论头部链接、赞赏退款链接与 `security.txt` 可达性，0 控制台致命报错，测试全绿。
 
-### Task 35: 卡片视觉风格与质感移至管理员配置文件管理，个人中心相关选项完全移除并保持透明模式默认
+### Task 35: 卡片视觉风格与质感移至管理员配置文件管理，个人中心相关选项完全移除并保持透明模式默认 (`c55bec1`)
 - [x] **配置中心单一数据源归集 (`src/config/site.ts`)**：
   1. 将 `siteConfig.theme.cardStyle` 固化为 `'transparent'`（透明模式，背景星空与雪境深度透光）；
   2. 将 `siteConfig.theme.translucent.defaultStyle` 同步设为 `'transparent'`；
