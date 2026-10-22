@@ -6062,28 +6062,24 @@
   1. 静态配置与 DOM 深度断言：Policies 严格为 4 项且涵盖全部法务刚需；
   2. 真实无头浏览器 E2E 渲染：全视口验证页脚网格对称度、评论头部链接、赞赏退款链接与 `security.txt` 可达性，0 控制台致命报错，测试全绿。
 
-### Task 34: 新增治理与政策 UI 文本全语系 i18n 补齐与多语言浏览器自动化审计 (`4512785`)
-- [x] **评论区专用字典全量多语言扩展 (`src/lib/comments-i18n.ts`)**：
-  1. 在 `CommentTranslations` 接口中扩充 `conductLabel`、`conductTitle`、`moderationLabel`、`moderationTitle`、`appealsLabel`、`appealsTitle`；
-  2. 在 `zh-CN`、`zh-Hant`、`en`、`fr`、`es`、`de` 全部 6 个语系中注入地道官方翻译，在 `PostComments.tsx` 中彻底清除硬编码中文。
-- [x] **赞赏收银台模态框专用字典补齐 (`src/components/theme/RewardModal.tsx`)**：
-  1. 在 `REWARD_I18N` 的 6 个语系中全量定义 `refundPolicy` 与 `refundPolicyTitle`（中文“退款说明”、繁体“退款說明”、英文“Refund Policy”、法文“Politique de remboursement”、西文“Política de reembolso”、德文“Erstattungsrichtlinie”）；
-  2. 渲染处使用 `{t.refundPolicy}` 动态插槽，与多币种收银台无缝自适应。
-- [x] **全站全局翻译引擎词库补齐 (`src/lib/client-locale.ts`)**：
-  1. 注册 19 项新增的治理、政策与运维术语（包含 `赞赏与退款说明`、`社群公约`、`审核规范`、`申诉说明`、`会话安全`、`等级规则`、`无障碍说明`、`專案路線圖`、`工程标准` 等）；
-  2. 为每一项提供英语、法语、西班牙语、德语 4 国权威对应词汇，并在繁体模式下结合 OpenCC 保持地道繁体转换。
-- [x] **端到端 Playwright 多语言浏览器实时切换审计 (`scripts/verify-policy-i18n-browser.mjs`)**：
-  1. 实测在文章页广播 `shijianus:localechange` 切换 `zh` -> `en` -> `fr` -> `de` -> `es`；
-  2. 捕获评论头部、模态框及底栏各链接文本，实机确认：
-     - 英文：`Guest (Sign in) · Code of Conduct · Moderation · Appeals · Privacy Policy`
-     - 法文：`Invité (Connexion) · Code de conduite · Modération · Recours · Politique de confidentialité`
-     - 德文：`Gast (Anmelden) · Verhaltenskodex · Moderation · Einsprüche · Datenschutzrichtlinie`
-     - 西文：`Visitante (Acceso) · Código de conducta · Moderación · Apelaciones · Política de privacidad`
-  3. 控制台致命 JS 报错严格为 `0`，断言全部通过。
-- [x] **生产端 Cloudflare Pages 边缘节点全量部署与真实链路双环境验证 (`scripts/verify-policy-i18n-live.mjs`)**：
-  1. 通过 `npm run cf:deploy` 将 306 个静态路由及 Edge Functions 全量部署至 Cloudflare Pages 边缘节点；
-  2. 针对生产域名 `https://blog.epocanvas.com` 及 Cloudflare Pages 节点 `https://7cea971b.shijianus-blog.pages.dev` 执行真实 Playwright E2E 审计；
-  3. 确认生产端响应均为 `200 OK`，Footer 政策严格收敛至 4 项，评论区多语言动态响应正常，全链路 0 控制台报错，双目标 100% 验收通过。
+### Task 35: 卡片视觉风格与质感移至管理员配置文件管理，个人中心相关选项完全移除并保持透明模式默认
+- [x] **配置中心单一数据源归集 (`src/config/site.ts`)**：
+  1. 将 `siteConfig.theme.cardStyle` 固化为 `'transparent'`（透明模式，背景星空与雪境深度透光）；
+  2. 将 `siteConfig.theme.translucent.defaultStyle` 同步设为 `'transparent'`；
+  3. 明确注释注明该配置仅限站长在配置文件中调整，不在前端开放给访客随意修改。
+- [x] **个人中心 (Account Center) 视觉风格卡片彻底删除 (`src/components/ThemeOverlays.tsx`)**：
+  1. 彻底移除 `class="account-card"` 中包含“视觉风格与卡片质感”以及纯色/磨砂/透明三档单选按钮（`account-card-style-grid`）的整个 `<section>`；
+  2. 移除底栏控制台（#console）中切换卡片质感的 `<Layers>` 按钮及 `cycleCardStyle` 方法，控制台按钮恢复标准 6 项排布，消除与 Activity 卡片的冲突；
+  3. 清除 `src/styles/final-pass.css` 中冗余的 `.account-card-style-grid` 与 `.card-style-option` 样式定义。
+- [x] **SSR 与客户端生命周期解耦 (`src/layouts/BlogLayout.astro` & `src/lib/client-theme.ts`)**：
+  1. `<html>` 标签直出 SSR 注入 `data-card-style={siteConfig.theme.cardStyle || 'transparent'}`；
+  2. 移除读取 `localStorage` 覆盖主题质感的逻辑，改为自动清除访客历史残留的 `shijianus-card-style`，确保站长配置 100% 具备绝对最高执行优先级；
+  3. `readCardStyle()` 直接读取 DOM 根节点数据集，消除本地缓存对站长配置的污染。
+- [x] **自动化端到端测试套件全量更新与审计 (`scripts/verify-translucent-frosted-glass.mjs` & `scripts/verify-console-buttons.mjs`)**：
+  1. 验证默认 `data-card-style="transparent"`、`data-translucent="true"`；
+  2. 验证个人中心抽屉内 0 视觉风格卡片残留、0 控制台切换按钮残留；
+  3. 验证 6 种视口下控制台按钮严格为 6 个且间距合规，测试全部通过。
+
 
 
 

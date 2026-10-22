@@ -318,12 +318,13 @@ export const siteConfig = {
       },
     },
     /**
-     * 卡片视觉质感模式 (Card Style Mode)
-     * - 'solid': 纯色模式 (Solid Opaque) - 100% 不透明，扎实质感
-     * - 'gray': 磨砂模式 (Frosted Glass / Gray) - 85% 半透明 + 16px 视网膜毛玻璃 (默认)
-     * - 'transparent': 透明模式 (Clear Glass) - 35% 清透透明 + 8px 晶莹毛玻璃，背景星空/雪境深度透光
+     * 卡片视觉风格与质感模式 (Card Visual Style Mode)
+     * 仅限管理员(站长)在此配置文件中进行修改与集中设置，不在个人中心 (Account Center) 开放访客随意修改。
+     * - 'transparent': 透明模式 (Clear Glass, 默认推荐) - 35% 清透透明 + 8px 晶莹毛玻璃，背景星空与雪境随心透出
+     * - 'gray': 磨砂模式 (Frosted Glass / Gray) - 85% 半透明 + 16px 视网膜毛玻璃
+     * - 'solid': 纯色模式 (Solid Opaque) - 100% 扎实不透明，无模糊开销
      */
-    cardStyle: 'gray' as 'solid' | 'gray' | 'transparent',
+    cardStyle: 'transparent' as 'solid' | 'gray' | 'transparent',
     translucent: {
       /**
        * 方框/卡片半透明毛玻璃模式开关 (Translucent Frosted Glass - 兼容旧版配置)
@@ -332,9 +333,9 @@ export const siteConfig = {
        */
       enable: true,
       /**
-       * 默认卡片风格
+       * 默认卡片风格 (透明模式)
        */
-      defaultStyle: 'gray' as 'solid' | 'gray' | 'transparent',
+      defaultStyle: 'transparent' as 'solid' | 'gray' | 'transparent',
       /**
        * 卡片不透明度 (0.0 ~ 1.0)
        * 默认 0.85 (85% 卡片质感，15% 透底)

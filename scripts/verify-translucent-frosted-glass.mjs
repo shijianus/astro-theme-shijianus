@@ -39,19 +39,19 @@ async function runLocalAndLiveTest(isProduction = false) {
     console.log(`✅ HTTP Status: ${res.status()}`);
     await page.waitForTimeout(1000);
 
-    // 2. Check default cardStyle attribute (expected: 'gray' / 磨砂)
+    // 2. Check default cardStyle attribute (expected: 'transparent' / 透明模式 as configured by admin)
     const initialCardStyle = await page.evaluate(() => document.documentElement.dataset.cardStyle);
     const initialTranslucent = await page.evaluate(() => document.documentElement.dataset.translucent);
-    console.log(`✅ Default data-card-style: "${initialCardStyle}" (Expected: "gray")`);
+    console.log(`✅ Default data-card-style: "${initialCardStyle}" (Expected: "transparent")`);
     console.log(`✅ Default data-translucent: "${initialTranslucent}" (Expected: "true")`);
 
-    if (initialCardStyle !== 'gray') {
-      throw new Error(`❌ Expected default data-card-style to be "gray", got "${initialCardStyle}"`);
+    if (initialCardStyle !== 'transparent') {
+      throw new Error(`❌ Expected default data-card-style to be "transparent", got "${initialCardStyle}"`);
     }
 
-    // 3. Inspect Gray Mode (磨砂模式) computed styles
-    console.log('\n[Step 2] Verifying Gray Mode (磨砂模式) computed styles...');
-    const grayStyles = await page.evaluate(() => {
+    // 3. Inspect Transparent Mode (透明模式 - 默认) computed styles
+    console.log('\n[Step 2] Verifying Transparent Mode (透明模式) computed styles...');
+    const transparentStyles = await page.evaluate(() => {
       const postCard = document.querySelector('.recent-post-item');
       const asideWidget = document.querySelector('#aside-content .card-widget');
       const postStyle = postCard ? window.getComputedStyle(postCard) : null;
@@ -64,10 +64,10 @@ async function runLocalAndLiveTest(isProduction = false) {
       };
     });
 
-    console.log(`✅ Gray Mode .recent-post-item background: ${grayStyles.postBg}`);
-    console.log(`✅ Gray Mode .recent-post-item backdrop-filter: ${grayStyles.postBackdrop}`);
-    console.log(`✅ Gray Mode #aside-content .card-widget background: ${grayStyles.asideBg}`);
-    console.log(`✅ Gray Mode #aside-content .card-widget backdrop-filter: ${grayStyles.asideBackdrop}`);
+    console.log(`✅ Transparent Mode .recent-post-item background: ${transparentStyles.postBg}`);
+    console.log(`✅ Transparent Mode .recent-post-item backdrop-filter: ${transparentStyles.postBackdrop}`);
+    console.log(`✅ Transparent Mode #aside-content .card-widget background: ${transparentStyles.asideBg}`);
+    console.log(`✅ Transparent Mode #aside-content .card-widget backdrop-filter: ${transparentStyles.asideBackdrop}`);
 
     // 4. Test Solid Mode (纯色模式: data-card-style='solid')
     console.log('\n[Step 3] Switching to Solid Mode (纯色模式: data-card-style="solid")...');
@@ -92,15 +92,15 @@ async function runLocalAndLiveTest(isProduction = false) {
       throw new Error(`❌ Expected backdrop-filter to be 'none' in solid mode, got "${solidStyles.asideBackdrop}"`);
     }
 
-    // 5. Test Transparent Mode (透明模式: data-card-style='transparent')
-    console.log('\n[Step 4] Switching to Transparent Mode (透明模式: data-card-style="transparent")...');
+    // 5. Test Gray Mode (磨砂模式: data-card-style='gray')
+    console.log('\n[Step 4] Switching to Gray Mode (磨砂模式: data-card-style="gray")...');
     await page.evaluate(() => {
-      document.documentElement.dataset.cardStyle = 'transparent';
+      document.documentElement.dataset.cardStyle = 'gray';
       document.documentElement.dataset.translucent = 'true';
     });
     await page.waitForTimeout(400);
 
-    const transparentStyles = await page.evaluate(() => {
+    const grayStyles = await page.evaluate(() => {
       const postCard = document.querySelector('.recent-post-item');
       const asideWidget = document.querySelector('#aside-content .card-widget');
       const postStyle = postCard ? window.getComputedStyle(postCard) : null;
@@ -113,10 +113,10 @@ async function runLocalAndLiveTest(isProduction = false) {
       };
     });
 
-    console.log(`✅ Transparent Mode .recent-post-item background: ${transparentStyles.postBg}`);
-    console.log(`✅ Transparent Mode .recent-post-item backdrop-filter: ${transparentStyles.postBackdrop}`);
-    console.log(`✅ Transparent Mode #aside-content .card-widget background: ${transparentStyles.asideBg}`);
-    console.log(`✅ Transparent Mode #aside-content .card-widget backdrop-filter: ${transparentStyles.asideBackdrop}`);
+    console.log(`✅ Gray Mode .recent-post-item background: ${grayStyles.postBg}`);
+    console.log(`✅ Gray Mode .recent-post-item backdrop-filter: ${grayStyles.postBackdrop}`);
+    console.log(`✅ Gray Mode #aside-content .card-widget background: ${grayStyles.asideBg}`);
+    console.log(`✅ Gray Mode #aside-content .card-widget backdrop-filter: ${grayStyles.asideBackdrop}`);
 
     // 6. Test Dark Mode across all 3 styles
     console.log('\n[Step 5] Testing Dark Mode across all 3 Card Styles...');
@@ -160,11 +160,9 @@ async function runLocalAndLiveTest(isProduction = false) {
     });
     console.log(`✅ Dark + Solid .card-widget: bg=${darkSolid.bg}, backdrop=${darkSolid.backdrop}`);
 
-    // 7. Test Account Settings Drawer UI Interaction
-    console.log('\n[Step 6] Testing Account Settings Drawer UI Switcher...');
+    // 7. Verify Account Settings Drawer has NO "视觉风格与卡片质感" (Admin-Only in config)
+    console.log('\n[Step 6] Verifying Account Center has removed "视觉风格与卡片质感"...');
     await page.evaluate(() => {
-      document.documentElement.dataset.theme = 'light';
-      document.documentElement.dataset.cardStyle = 'gray';
       window.dispatchEvent(new CustomEvent('shijianus:open-notifications', { detail: { tab: 'settings' } }));
     });
     await page.waitForTimeout(800);
@@ -175,45 +173,22 @@ async function runLocalAndLiveTest(isProduction = false) {
     });
     console.log(`✅ Account Drawer opened: ${drawerVisible}`);
 
-    // Click on Transparent option in UI
-    console.log('👉 Clicking on Transparent option in Settings Drawer UI...');
-    const transparentOption = await page.$('.card-style-option--transparent');
-    if (transparentOption) {
-      await transparentOption.click();
-      await page.waitForTimeout(500);
-      const activeStyle = await page.evaluate(() => document.documentElement.dataset.cardStyle);
-      console.log(`✅ Active data-card-style after UI click: "${activeStyle}" (Expected: "transparent")`);
-      if (activeStyle !== 'transparent') {
-        throw new Error(`❌ UI Switch failed, expected data-card-style to be "transparent", got "${activeStyle}"`);
-      }
-    } else {
-      console.warn('⚠️ .card-style-option--transparent not found in DOM');
-    }
+    const visualCardAudit = await page.evaluate(() => {
+      const drawer = document.querySelector('.theme-account-drawer');
+      const drawerText = drawer ? drawer.textContent || '' : '';
+      const hasTitle = drawerText.includes('视觉风格与卡片质感') || drawerText.includes('Card Visual Style');
+      const optionElements = document.querySelectorAll('.card-style-option, .account-card-style-grid');
+      return {
+        hasTitle,
+        optionsCount: optionElements.length,
+      };
+    });
 
-    // Click on Solid option in UI
-    console.log('👉 Clicking on Solid option in Settings Drawer UI...');
-    const solidOption = await page.$('.card-style-option--solid');
-    if (solidOption) {
-      await solidOption.click();
-      await page.waitForTimeout(500);
-      const activeStyle = await page.evaluate(() => document.documentElement.dataset.cardStyle);
-      console.log(`✅ Active data-card-style after UI click: "${activeStyle}" (Expected: "solid")`);
-      if (activeStyle !== 'solid') {
-        throw new Error(`❌ UI Switch failed, expected data-card-style to be "solid", got "${activeStyle}"`);
-      }
-    }
+    console.log(`✅ Account Center visual card title present: ${visualCardAudit.hasTitle} (Expected: false)`);
+    console.log(`✅ Account Center .card-style-option elements count: ${visualCardAudit.optionsCount} (Expected: 0)`);
 
-    // Click on Gray option in UI
-    console.log('👉 Clicking on Gray option in Settings Drawer UI...');
-    const grayOption = await page.$('.card-style-option--gray');
-    if (grayOption) {
-      await grayOption.click();
-      await page.waitForTimeout(500);
-      const activeStyle = await page.evaluate(() => document.documentElement.dataset.cardStyle);
-      console.log(`✅ Active data-card-style after UI click: "${activeStyle}" (Expected: "gray")`);
-      if (activeStyle !== 'gray') {
-        throw new Error(`❌ UI Switch failed, expected data-card-style to be "gray", got "${activeStyle}"`);
-      }
+    if (visualCardAudit.hasTitle || visualCardAudit.optionsCount > 0) {
+      throw new Error(`❌ "视觉风格与卡片质感" was not completely removed from Account Center!`);
     }
 
     // Close account drawer
@@ -223,8 +198,8 @@ async function runLocalAndLiveTest(isProduction = false) {
     });
     await page.waitForTimeout(500);
 
-    // 7.5 Test Console Button Group Quick-Toggle (Layers button)
-    console.log('\n[Step 6.5] Testing Console Quick-Toggle Button (Layers)...');
+    // 7.5 Verify Console button group has NO card style toggle (strictly config-driven)
+    console.log('\n[Step 6.5] Verifying Console button-group has NO interactive card style toggle button...');
     await page.evaluate(() => {
       window.dispatchEvent(new CustomEvent('shijianus:open-console'));
     });
@@ -236,29 +211,13 @@ async function runLocalAndLiveTest(isProduction = false) {
     });
     console.log(`✅ Console opened: ${consoleOpened}`);
 
-    const currentStyleBeforeCycle = await page.evaluate(() => document.documentElement.dataset.cardStyle);
-    console.log(`Current card style before quick cycle: "${currentStyleBeforeCycle}"`);
-
-    // Find and click the Layers button in #console .button-group
-    const layersBtn = await page.$('#console .button-group button[title*="质感"], #console .button-group button[title*="Texture"], #console .button-group button[title*="card_style"]');
-    if (layersBtn) {
-      console.log('👉 Clicking Layers button in console button-group...');
-      await layersBtn.click();
-      await page.waitForTimeout(400);
-      const styleAfterClick1 = await page.evaluate(() => document.documentElement.dataset.cardStyle);
-      console.log(`✅ Style after quick cycle 1: "${styleAfterClick1}"`);
-
-      await layersBtn.click();
-      await page.waitForTimeout(400);
-      const styleAfterClick2 = await page.evaluate(() => document.documentElement.dataset.cardStyle);
-      console.log(`✅ Style after quick cycle 2: "${styleAfterClick2}"`);
-
-      await layersBtn.click();
-      await page.waitForTimeout(400);
-      const styleAfterClick3 = await page.evaluate(() => document.documentElement.dataset.cardStyle);
-      console.log(`✅ Style after quick cycle 3: "${styleAfterClick3}"`);
-    } else {
-      console.warn('⚠️ Console Layers button not found in .button-group');
+    const layersBtnPresent = await page.evaluate(() => {
+      const btn = document.querySelector('#console .button-group button[title*="质感"], #console .button-group button[title*="Texture"], #console .button-group button[title*="card_style"]');
+      return btn !== null;
+    });
+    console.log(`✅ Console card style toggle button present: ${layersBtnPresent} (Expected: false)`);
+    if (layersBtnPresent) {
+      throw new Error(`❌ Interactive card style toggle button still found in console!`);
     }
 
     // Close console

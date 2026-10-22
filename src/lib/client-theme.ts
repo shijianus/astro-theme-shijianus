@@ -15,24 +15,21 @@ export const TRANSLUCENT_KEY = 'shijianus-translucent';
 
 export function readCardStyle(): CardStyle {
   try {
-    const val = window.localStorage.getItem(CARD_STYLE_KEY);
-    if (val === 'solid' || val === 'gray' || val === 'transparent') {
-      return val;
+    if (typeof document !== 'undefined' && document.documentElement.dataset.cardStyle) {
+      const docStyle = document.documentElement.dataset.cardStyle;
+      if (docStyle === 'solid' || docStyle === 'gray' || docStyle === 'transparent') {
+        return docStyle;
+      }
     }
-    // Backward compatibility with legacy translucent boolean
-    const oldTranslucent = window.localStorage.getItem(TRANSLUCENT_KEY);
-    if (oldTranslucent === 'false') return 'solid';
-    return 'gray';
-  } catch {
-    return 'gray';
-  }
+  } catch {}
+  return 'transparent';
 }
 
 export function syncCardStyle(style: CardStyle) {
-  document.documentElement.dataset.cardStyle = style;
-  document.documentElement.dataset.translucent = style === 'solid' ? 'false' : 'true';
-  writeStorage(CARD_STYLE_KEY, style);
-  writeStorage(TRANSLUCENT_KEY, style === 'solid' ? 'false' : 'true');
+  if (typeof document !== 'undefined') {
+    document.documentElement.dataset.cardStyle = style;
+    document.documentElement.dataset.translucent = style === 'solid' ? 'false' : 'true';
+  }
   window.dispatchEvent(new CustomEvent('shijianus:cardstylechange', { detail: style }));
   window.dispatchEvent(new CustomEvent('shijianus:translucentchange', { detail: style !== 'solid' }));
 }
