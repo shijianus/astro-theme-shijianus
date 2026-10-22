@@ -363,20 +363,33 @@ const hasTranslations = Object.keys(translationsByLang).length > 1;
 
 // i18n Uniform Hero Height Calculation (Fixed Strategy: max-content or custom)
 const heroI18nConfig = (siteConfig.post.hero as any).i18n;
+const frontmatterHero = (postEntry.data as any).hero || {};
+
 let uniformHeroHeight: { desktop?: string; mobile?: string } | undefined = undefined;
 
-if (heroI18nConfig?.mode === 'fixed') {
+// 1. 如果 Frontmatter 中显式指定了 height，具备最高优先级，支持按语言/文章独立定制
+if (frontmatterHero.height) {
+  uniformHeroHeight = {
+    desktop: frontmatterHero.height,
+    mobile: frontmatterHero.mobileHeight || frontmatterHero.height,
+  };
+} else if (heroI18nConfig?.mode === 'fixed') {
   if (heroI18nConfig.fixedStrategy === 'max-content' && renderedVariants.length > 0) {
     const maxTitleLen = Math.max(...renderedVariants.map((v) => (v.title || '').length));
     const maxSummaryLen = Math.max(...renderedVariants.map((v) => (v.summary || '').length));
 
     const isMultiLineTitle = maxTitleLen > 30;
     const isMultiLineSummary = maxSummaryLen > 70;
+    const isUltraShort = maxTitleLen < 22 && maxSummaryLen === 0;
 
     let calcDesktop = 'clamp(360px, 28vw, 420px)';
     let calcMobile = 'clamp(320px, 40vh, 380px)';
 
-    if (isMultiLineTitle && isMultiLineSummary) {
+    if (heroI18nConfig.compactWhenShort && isUltraShort) {
+      // 画圈分区防空旷：文本极少时，自动收拢为紧凑精致高度，配合大字号消除大片空白
+      calcDesktop = 'clamp(290px, 23vw, 340px)';
+      calcMobile = 'clamp(280px, 34vh, 320px)';
+    } else if (isMultiLineTitle && isMultiLineSummary) {
       calcDesktop = 'clamp(380px, 30vw, 440px)';
       calcMobile = 'clamp(340px, 42vh, 400px)';
     } else if (!isMultiLineTitle && !isMultiLineSummary) {
@@ -388,6 +401,18 @@ if (heroI18nConfig?.mode === 'fixed') {
   } else if (heroI18nConfig?.customHeights) {
     uniformHeroHeight = heroI18nConfig.customHeights;
   }
+}
+
+// 2. 自适应标题字号策略：根据字符数自适应放大，配合画圈分区确保饱满占位
+const currentTitleLen = (postEntry.data.title || '').length;
+const currentSummaryLen = ((postEntry.data as any).summary || postEntry.data.description || '').length;
+let autoTitleSize = 'clamp(2.15rem, 3.8vw, 3.25rem)';
+if (currentTitleLen < 22 && currentSummaryLen === 0) {
+  // 短标题饱满大字，占位充盈
+  autoTitleSize = 'clamp(2.35rem, 4.2vw, 3.45rem)';
+} else if (currentTitleLen > 45) {
+  // 长标题适度收敛
+  autoTitleSize = 'clamp(1.85rem, 3.0vw, 2.65rem)';
 }
 
 const relatedPosts = isUnlocked ? getRelatedPosts(publicPosts, postEntry, 6) : [];
@@ -600,6 +625,8 @@ const heroSummary = isUnlocked
         maxTags={siteConfig.post.hero.maxTags ?? 10}
         autoFitTitle={siteConfig.post.hero.autoFitTitle ?? true}
         uniformHeroHeight={uniformHeroHeight}
+        frontmatterHero={frontmatterHero}
+        autoTitleSize={autoTitleSize}
       />
     </Fragment>
 

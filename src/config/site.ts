@@ -918,6 +918,12 @@ export const siteConfig = {
         dwell: '停留',
       },
       /**
+       * 是否将官方规范与政策文档 (community, standards, operations) 与普通文章 (post) 的 Hero 规范隔离
+       * true: 开启隔离，官方文档采用独立的端庄规范布局，博客文章采用黄金视觉流 (默认推荐)
+       * false: 关闭隔离，官方文档完全直接同步复用博客文章的样式规范
+       */
+      isolateOfficialDocHero: true,
+      /**
        * 多语言 (i18n) Hero 高度与方框管理配置
        * 允许站长选择在切换多语言时是保持统一规格方框（fixed），还是按单语言文本量自然贴合（adaptive）
        */
@@ -934,6 +940,11 @@ export const siteConfig = {
           lede: 2,
         },
         smoothTransition: true, // 切换语言时的平滑尺寸过渡
+        /**
+         * 针对内容极少/极短时的紧凑自适应策略 (画圈分区防空旷)
+         * 当标题极短且无摘要时，智能收拢高度并放大标题字号填补视觉空白
+         */
+        compactWhenShort: true,
       },
     },
     tools: {

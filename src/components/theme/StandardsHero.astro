@@ -55,11 +55,15 @@ const resolvedMobileHeight =
   heroI18n.mode === 'fixed'
     ? heroI18n.customHeights?.mobile || 'clamp(320px, 40vh, 380px)'
     : 'auto';
+
+const isolateHero = (siteConfig.post.hero as any).isolateOfficialDocHero !== false;
+const heroType = isolateHero ? 'official' : 'post';
 ---
 
 <header
   class="standards-spec-header post-hero is-pure-color"
   data-post-hero
+  data-hero-type={heroType}
   data-hero-i18n-mode={heroI18n.mode}
   data-hero-align={heroI18n.contentAlign}
   data-hero-smooth-transition={heroI18n.smoothTransition ? 'true' : 'false'}

@@ -145,6 +145,20 @@ const postsCollection = defineCollection({
 
     /** Source language code this translation was generated from */
     aiTranslatedFrom: z.string().optional(),
+
+    /**
+     * Custom Hero Styling & Layout Overrides:
+     * Allows authors to define post-hero__inner dimensions, font scaling, and alignment per-article and per-language in markdown frontmatter.
+     */
+    hero: z.object({
+      height: z.string().optional(),
+      mobileHeight: z.string().optional(),
+      titleSize: z.string().optional(),
+      align: z.enum(['flex-start', 'center', 'space-between']).optional(),
+      paddingBottom: z.string().optional(),
+      paddingTop: z.string().optional(),
+      compactWhenShort: z.boolean().optional(),
+    }).optional(),
   }),
 });
 

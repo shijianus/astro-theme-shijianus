@@ -7954,7 +7954,10 @@ body[data-type='home'] .page-shell__hero {
   max-width: 1400px !important;
   width: 100% !important;
   margin: 0 auto !important;
-  padding: clamp(34px, 4.5vh, 48px) clamp(1.5rem, 4vw, 3.5rem) clamp(70px, 8.5vh, 84px) !important;
+  padding-top: var(--hero-custom-padding-top, clamp(34px, 4.5vh, 48px)) !important;
+  padding-right: clamp(1.5rem, 4vw, 3.5rem) !important;
+  padding-bottom: var(--hero-custom-padding-bottom, clamp(70px, 8.5vh, 84px)) !important;
+  padding-left: clamp(1.5rem, 4vw, 3.5rem) !important;
   display: flex !important;
   flex-direction: column !important;
   justify-content: space-between !important;
@@ -7968,9 +7971,26 @@ body[data-type='home'] .page-shell__hero {
   .post-hero__inner {
     height: auto !important;
     min-height: var(--hero-uniform-height-mobile, clamp(340px, 42vh, 400px)) !important;
-    padding: clamp(24px, 3.5vh, 32px) clamp(1rem, 3.5vw, 1.5rem) clamp(66px, 8.5vh, 76px) !important;
+    padding-top: var(--hero-custom-padding-top, clamp(24px, 3.5vh, 32px)) !important;
+    padding-right: clamp(1rem, 3.5vw, 1.5rem) !important;
+    padding-bottom: var(--hero-custom-padding-bottom, clamp(66px, 8.5vh, 76px)) !important;
+    padding-left: clamp(1rem, 3.5vw, 1.5rem) !important;
     gap: 8px !important;
   }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Specification Isolation: Official Documents (standards/community) vs Posts
+   ───────────────────────────────────────────────────────────────────────────── */
+.post-hero[data-hero-type='official'] .post-hero__inner {
+  padding-top: var(--hero-custom-padding-top, clamp(30px, 4vh, 42px)) !important;
+  padding-bottom: var(--hero-custom-padding-bottom, clamp(68px, 8vh, 80px)) !important;
+}
+
+.post-hero[data-hero-type='official'] .post-hero__title {
+  font-size: var(--hero-title-size, clamp(1.95rem, 3.2vw, 2.75rem)) !important;
+  letter-spacing: -0.01em !important;
+  line-height: 1.32 !important;
 }
 
 /* Post Hero Badges: Strict horizontal space boundary */
@@ -8062,11 +8082,11 @@ body[data-type='home'] .page-shell__hero {
   line-clamp: unset !important;
   overflow: visible !important;
   text-overflow: clip !important;
-  line-height: 1.28 !important;
+  line-height: 1.25 !important;
   margin: 0 !important;
-  font-size: clamp(1.85rem, 3.2vw, 2.75rem);
-  font-weight: 800 !important;
-  letter-spacing: -0.015em !important;
+  font-size: var(--hero-title-size, clamp(2.15rem, 3.8vw, 3.25rem)) !important;
+  font-weight: 850 !important;
+  letter-spacing: -0.018em !important;
   color: #ffffff !important;
   text-shadow: 0 3px 14px rgba(0, 0, 0, 0.45) !important;
   word-break: break-word !important;
@@ -8102,6 +8122,10 @@ body[data-type='home'] .page-shell__hero {
   -webkit-line-clamp: unset !important;
   overflow: visible !important;
   max-height: none !important;
+  font-size: var(--hero-title-size, clamp(2.15rem, 3.8vw, 3.25rem)) !important;
+  font-weight: 850 !important;
+  letter-spacing: -0.018em !important;
+  line-height: 1.25 !important;
 }
 
 .post-hero__title-block[data-auto-fit-title="false"] .post-hero__lede {

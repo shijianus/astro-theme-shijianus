@@ -43,11 +43,14 @@ const serializedVariants = variants.map((variant) => ({
   pubDate: formatDate(variant.pubDate),
   updatedDate: formatDate(variant.updatedDate),
 }));
+const isolateHero = (siteConfig.post.hero as any).isolateOfficialDocHero !== false;
+const heroType = isolateHero ? 'official' : 'post';
 ---
 
 <header
   class="standards-spec-header post-hero is-pure-color official-doc-hero"
   data-post-hero
+  data-hero-type={heroType}
   data-official-doc-hero
   data-hero-i18n-mode={heroI18n.mode || 'adaptive'}
   style={`--hero-uniform-height-desktop: ${desktopHeight}; --hero-uniform-height-mobile: ${mobileHeight}; --hero-content-align: ${heroI18n.contentAlign || 'flex-start'}; --hero-title-max-lines: ${heroI18n.maxLines?.title ?? 2}; --hero-lede-max-lines: ${heroI18n.maxLines?.lede ?? 2};`}

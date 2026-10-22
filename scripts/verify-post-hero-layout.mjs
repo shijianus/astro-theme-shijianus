@@ -97,7 +97,35 @@ server.listen(PORT, async () => {
       console.log(`[Desktop] ✓ ${slug} passed: Title centered, meta safely above waves (+${metrics.metaDistAboveWaves?.toFixed(1)}px).`);
     }
 
-    // 2. Mobile Test (390x844)
+    // 2. Official Documents Specification Isolation Test
+    console.log('\n--- 2. Testing Official Documents Specification Isolation ---');
+    const officialCases = [
+      '/standards/activity-level/',
+      '/community/',
+    ];
+    for (const slug of officialCases) {
+      console.log(`[Official] Checking ${slug}...`);
+      await desktopPage.goto(`http://localhost:${PORT}${slug}`);
+      await desktopPage.waitForTimeout(300);
+
+      const docData = await desktopPage.evaluate(() => {
+        const hero = document.querySelector('.post-hero');
+        const title = document.querySelector('.post-hero__title');
+        const tStyle = title ? window.getComputedStyle(title) : null;
+        return {
+          heroType: hero?.getAttribute('data-hero-type'),
+          titleFontSize: tStyle?.fontSize,
+        };
+      });
+
+      console.log(`[Official] Metrics for ${slug}:`, docData);
+      if (docData.heroType !== 'official') {
+        throw new Error(`[Official] Expected heroType "official", got "${docData.heroType}" on ${slug}`);
+      }
+      console.log(`[Official] ✓ ${slug} passed: Hero correctly isolated as 'official' spec.`);
+    }
+
+    // 3. Mobile Test (390x844)
     console.log('\n--- 2. Testing Mobile Layout (390x844) ---');
     const mobilePage = await browser.newPage({ viewport: { width: 390, height: 844 } });
 

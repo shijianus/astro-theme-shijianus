@@ -6096,6 +6096,20 @@
   1. 桌面端 (1440x900) 覆盖短标题、中标题、超长大标题文章，标题中心偏移绝对值仅 17.7px，meta 与波浪间距均保持在 +21.2px；
   2. 移动端 (390x844) 验证多行折行自适应，meta 与波浪间距保持在 +30.3px，0 重叠，测试全绿。
 
+### Task 37: 文章头图大标题自适应放大、画圈分区防空旷、官方文档规范隔离与 Markdown 自定义
+- [x] **大标题自适应放大与画圈分区排版引擎 (`src/pages/posts/[slug].astro`, `src/styles/final-pass.css`)**：
+  1. 标题字号升级为饱满现代字重与大字阶梯：默认 `var(--hero-title-size, clamp(2.15rem, 3.8vw, 3.25rem))`，短标题更享有放大至 `clamp(2.35rem, 4.2vw, 3.45rem)` 的视觉主干；
+  2. 画圈分区防空旷（Bounding Zone Partitioning）：内容极少（无摘要且短标题）时，容器高度智能收拢为 `clamp(290px, 23vw, 340px)`，配合放大字号充实视觉重心，彻底消除空旷感。
+- [x] **官方文档 (Official Docs) 与博客文章规范隔离及站长配置开关 (`src/config/site.ts`, `src/components/OfficialDocHero.astro`, `src/components/theme/StandardsHero.astro`)**：
+  1. 在 `site.ts` 新增 `isolateOfficialDocHero: true/false` 站长开关，默认开启独立类型隔离（`data-hero-type="official"` vs `data-hero-type="post"`）；
+  2. 官方规约文档（standards, community, operations）采用专属严肃规范的排版阶梯，杜绝与普通博客文章相互干扰；站长若设为 false 则一键无缝全局同步。
+- [x] **允许 Markdown Frontmatter 自由定制 `post-hero__inner` 尺寸与多语言独立配置 (`src/content.config.ts`, `PostHero.astro`)**：
+  1. 在 `content.config.ts` 的 schema 中正式注入可选 `hero` 前言对象（支持 `height`, `mobileHeight`, `titleSize`, `align`, `paddingBottom`, `paddingTop`, `compactWhenShort`）；
+  2. 在组件层以 CSS 变量注入（`--hero-custom-height`、`--hero-title-size`、`--hero-custom-padding-bottom`），优先级最高，允许作者在任意语言版本的 `.md` 文件中按需量身定制画法。
+- [x] **自动化端到端测试全量审计 (`scripts/verify-post-hero-layout.mjs`)**：
+  1. 验证 Post 页面与官方文档类型隔离（`heroType: 'official'` vs `'post'`）；
+  2. 验证多语言自适应字号阶梯、标题黄金居中（偏移仅 17.7px）、版本与水波纹间距（+21.2px / 移动端 +30.4px）0 重叠全绿通过。
+
 
 
 

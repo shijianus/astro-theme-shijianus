@@ -35,6 +35,16 @@ interface Props {
     desktop?: string;
     mobile?: string;
   };
+  frontmatterHero?: {
+    height?: string;
+    mobileHeight?: string;
+    titleSize?: string;
+    align?: 'flex-start' | 'center' | 'space-between';
+    paddingBottom?: string;
+    paddingTop?: string;
+    compactWhenShort?: boolean;
+  };
+  autoTitleSize?: string;
 }
 
 import { getLocaleMeta } from '../../config/i18n';
@@ -56,6 +66,8 @@ const {
   maxTags = 10,
   autoFitTitle = true,
   uniformHeroHeight,
+  frontmatterHero = {},
+  autoTitleSize,
 } = Astro.props;
 
 const heroI18n = (siteConfig.post.hero as any).i18n || {
@@ -74,13 +86,19 @@ const heroI18n = (siteConfig.post.hero as any).i18n || {
 };
 
 const resolvedDesktopHeight =
-  heroI18n.mode === 'fixed'
+  frontmatterHero.height ||
+  (heroI18n.mode === 'fixed'
     ? uniformHeroHeight?.desktop || heroI18n.customHeights?.desktop || 'clamp(360px, 28vw, 420px)'
-    : 'auto';
+    : 'auto');
 const resolvedMobileHeight =
-  heroI18n.mode === 'fixed'
+  frontmatterHero.mobileHeight ||
+  frontmatterHero.height ||
+  (heroI18n.mode === 'fixed'
     ? uniformHeroHeight?.mobile || heroI18n.customHeights?.mobile || 'clamp(320px, 40vh, 380px)'
-    : 'auto';
+    : 'auto');
+
+const effectiveTitleSize = frontmatterHero.titleSize || autoTitleSize || 'clamp(2.15rem, 3.8vw, 3.25rem)';
+const effectiveContentAlign = frontmatterHero.align || heroI18n.contentAlign || 'center';
 
 const heroMetaIconMap: Record<NonNullable<PostHeroMetaItem['icon']>, LucideIcon> = {
   calendar: CalendarDays,
@@ -99,12 +117,13 @@ const hasMedia = Boolean(image || video);
 <section
   class:list={['post-hero', !hasMedia && 'is-pure-color']}
   data-post-hero
+  data-hero-type="post"
   data-post-slug={slug}
   data-runtime-metrics={runtimeMetrics ? 'true' : 'false'}
   data-hero-i18n-mode={heroI18n.mode}
-  data-hero-align={heroI18n.contentAlign}
+  data-hero-align={effectiveContentAlign}
   data-hero-smooth-transition={heroI18n.smoothTransition ? 'true' : 'false'}
-  style={`--hero-uniform-height-desktop: ${resolvedDesktopHeight}; --hero-uniform-height-mobile: ${resolvedMobileHeight}; --hero-content-align: ${heroI18n.contentAlign}; --hero-title-max-lines: ${heroI18n.maxLines?.title ?? 2}; --hero-lede-max-lines: ${heroI18n.maxLines?.lede ?? 2};`}
+  style={`--hero-uniform-height-desktop: ${resolvedDesktopHeight}; --hero-uniform-height-mobile: ${resolvedMobileHeight}; --hero-content-align: ${effectiveContentAlign}; --hero-title-max-lines: ${heroI18n.maxLines?.title ?? 2}; --hero-lede-max-lines: ${heroI18n.maxLines?.lede ?? 2}; --hero-title-size: ${effectiveTitleSize}; ${frontmatterHero.paddingBottom ? `--hero-custom-padding-bottom: ${frontmatterHero.paddingBottom};` : ''} ${frontmatterHero.paddingTop ? `--hero-custom-padding-top: ${frontmatterHero.paddingTop};` : ''}`}
 >
   {hasMedia && (
     <div class="post-hero__cover">
