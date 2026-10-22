@@ -6080,7 +6080,7 @@
   2. 验证个人中心抽屉内 0 视觉风格卡片残留、0 控制台切换按钮残留；
   3. 验证 6 种视口下控制台按钮严格为 6 个且间距合规，测试全部通过。
 
-### Task 36: 文章头图 (.post-hero__inner) 重排优化：标题垂直黄金居中、版本及元数据稳定锚定水波纹 (.post-hero__waves) 起始线上方
+### Task 36: 文章头图 (.post-hero__inner) 重排优化：标题垂直黄金居中、版本及元数据稳定锚定水波纹 (.post-hero__waves) 起始线上方 (`f2b8c3c`)
 - [x] **文章头图容器与高度黄金比例优化 (`src/config/site.ts`, `src/pages/posts/[slug].astro`, `src/styles/final-pass.css`)**：
   1. 桌面端统一高度由过矮的 260px~300px 提升至大气的 `clamp(360px, 28vw, 420px)`，单行短标题自适应 `clamp(340px, 26vw, 390px)`，多行长标题拓展至 `clamp(380px, 30vw, 440px)`；
   2. 移动端统一高度提升至 `clamp(340px, 42vh, 400px)`，并设为 `height: auto !important` 允许根据折行行数自适应延展，杜绝截断。
