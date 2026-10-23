@@ -109,7 +109,7 @@ try {
     margin: 1,
     width: 256,
     color: {
-      dark: '#1e3a8a',
+      dark: '#1d4ed8',
       light: '#ffffff'
     },
     errorCorrectionLevel: 'M'
@@ -131,39 +131,22 @@ try {
         class="face front-face"
         onclick={finalConfig.href && finalConfig.href !== '#' ? `window.open("${finalConfig.href}", "_blank")` : undefined}
       >
-        <!-- 画面感：纯净高清立体多层折纸飞机矢量大水印 -->
+        <!-- 画面感：纯净高清官方立体折纸飞机矢量大水印 -->
         <div class="promo-watermark" aria-hidden="true">
-          <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <linearGradient id={`watermark-main-${id}`} x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stop-color="#ffffff" stop-opacity="0.36" />
-                <stop offset="60%" stop-color="#ffffff" stop-opacity="0.18" />
-                <stop offset="100%" stop-color="#ffffff" stop-opacity="0.04" />
-              </linearGradient>
-              <linearGradient id={`watermark-shadow-${id}`} x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stop-color="#ffffff" stop-opacity="0.22" />
-                <stop offset="100%" stop-color="#ffffff" stop-opacity="0.02" />
-              </linearGradient>
-            </defs>
-            <path d="M12 48 L88 16 L44 86 L36 56 Z" fill={`url(#watermark-main-${id})`} />
-            <path d="M88 16 L36 56 L44 86 L58 52 Z" fill={`url(#watermark-shadow-${id})`} />
-            <path d="M36 56 L44 86 L48 68 Z" fill="#ffffff" fill-opacity="0.28" />
+          <svg viewBox="0 0 240 240" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M98 175c-3.8 0-3.2-1.5-4.5-5.2L82 132.2 152.8 88" fill="#ffffff" opacity="0.14" />
+            <path d="M98 175c3 0 4.3-1.4 6-3l16-15.5-20-12" fill="#ffffff" opacity="0.09" />
+            <path d="M100 144.5l48.4 35.7c5.6 3.1 9.6 1.5 11-5.2l19.5-92c2-8.3-3.2-12-8.6-9.6L24.8 111c-8 3.2-8 7.7-1.4 9.7l37.4 11.7 86.8-54.8c4.1-2.5 7.8-1.2 4.7 1.6" fill="#ffffff" opacity="0.22" />
           </svg>
         </div>
 
-        <!-- 正面主体布局 -->
+        <!-- 正面主体布局：毛玻璃微光圆舱 + 官方白折纸飞机 -->
         <div class="promo-front-body">
           <div class="promo-icon-emblem">
-            <!-- 纯净高清双色折纸飞机图标，饱满鲜活告别灰蒙蒙 -->
-            <svg viewBox="0 0 32 32" width="28" height="28" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M26.5 6.5L4 15.2L11.8 18.3L22.2 11.2L14.2 19.8V25.5L18.2 21.7L24.2 24.8L26.5 6.5Z" fill={`url(#tg-logo-grad-${id})`} />
-              <path d="M11.8 18.3L14.2 25.5L14.5 20.8L22.2 11.2L11.8 18.3Z" fill="#1d4ed8" fill-opacity="0.26" />
-              <defs>
-                <linearGradient id={`tg-logo-grad-${id}`} x1="4" y1="6.5" x2="26.5" y2="25.5" gradientUnits="userSpaceOnUse">
-                  <stop stop-color="#2563eb" />
-                  <stop offset="1" stop-color="#38bdf8" />
-                </linearGradient>
-              </defs>
+            <svg width="27" height="27" viewBox="14 68 168 118" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M98 175c-3.8 0-3.2-1.5-4.5-5.2L82 132.2 152.8 88" fill="rgba(255,255,255,0.72)" />
+              <path d="M98 175c3 0 4.3-1.4 6-3l16-15.5-20-12" fill="rgba(255,255,255,0.48)" />
+              <path d="M100 144.5l48.4 35.7c5.6 3.1 9.6 1.5 11-5.2l19.5-92c2-8.3-3.2-12-8.6-9.6L24.8 111c-8 3.2-8 7.7-1.4 9.7l37.4 11.7 86.8-54.8c4.1-2.5 7.8-1.2 4.7 1.6" fill="#ffffff" />
             </svg>
           </div>
           <div class="promo-front-info">
@@ -173,14 +156,6 @@ try {
             </div>
             <div class="promo-subtitle">{finalConfig.subtitle}</div>
           </div>
-        </div>
-
-        <!-- 正面底栏轻量提示 -->
-        <div class="promo-front-hint">
-          <span class="hint-text">悬停翻转直达二维码</span>
-          <svg class="hint-arrow" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2">
-            <path d="M5 12h14M12 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" />
-          </svg>
         </div>
       </div>
 
@@ -193,9 +168,10 @@ try {
       >
         <!-- 画面感：背面对应微透水印 -->
         <div class="promo-watermark promo-watermark--back" aria-hidden="true">
-          <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 48 L88 16 L44 86 L36 56 Z" fill={`url(#watermark-main-${id})`} opacity="0.8" />
-            <path d="M88 16 L36 56 L44 86 L58 52 Z" fill={`url(#watermark-shadow-${id})`} opacity="0.8" />
+          <svg viewBox="0 0 240 240" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M98 175c-3.8 0-3.2-1.5-4.5-5.2L82 132.2 152.8 88" fill="#ffffff" opacity="0.14" />
+            <path d="M98 175c3 0 4.3-1.4 6-3l16-15.5-20-12" fill="#ffffff" opacity="0.09" />
+            <path d="M100 144.5l48.4 35.7c5.6 3.1 9.6 1.5 11-5.2l19.5-92c2-8.3-3.2-12-8.6-9.6L24.8 111c-8 3.2-8 7.7-1.4 9.7l37.4 11.7 86.8-54.8c4.1-2.5 7.8-1.2 4.7 1.6" fill="#ffffff" opacity="0.22" />
           </svg>
         </div>
 
@@ -230,7 +206,6 @@ try {
                 decoding="sync"
               />
             </div>
-            <span class="promo-qr-label">扫码加入</span>
           </div>
         </div>
       </div>
@@ -249,7 +224,7 @@ try {
     box-sizing: border-box !important;
     padding: 0 !important;
     border: none;
-    height: 126px;
+    height: 114px;
     border-radius: 8px;
     margin: 0 !important;
     overflow: visible !important;
@@ -265,11 +240,11 @@ try {
     border-radius: 8px;
     /* 核心：通透、饱满、清新的现代亮色天空蓝渐变体系 */
     --promo-bg-gradient: 
-      radial-gradient(circle at 18% 18%, rgba(255, 255, 255, 0.28), transparent 28%),
-      radial-gradient(circle at 85% 82%, rgba(255, 255, 255, 0.16), transparent 26%),
-      linear-gradient(135deg, #3b66f5 0%, #2f81f7 50%, #38bdf8 100%);
-    --promo-card-shadow: 0 10px 24px -6px rgba(47, 129, 247, 0.32), 0 2px 6px rgba(0, 0, 0, 0.05);
-    --promo-border-color: rgba(255, 255, 255, 0.5);
+      radial-gradient(circle at 18% 18%, rgba(255, 255, 255, 0.28), transparent 30%),
+      radial-gradient(circle at 85% 82%, rgba(255, 255, 255, 0.16), transparent 28%),
+      linear-gradient(135deg, #2b73f8 0%, #1ea1f2 100%);
+    --promo-card-shadow: 0 8px 24px -4px rgba(30, 161, 242, 0.35), 0 2px 6px rgba(0, 0, 0, 0.04);
+    --promo-border-color: rgba(255, 255, 255, 0.45);
   }
 
   :global([data-theme="dark"]) #flip-wrapper {
@@ -299,10 +274,9 @@ try {
     box-shadow: var(--promo-card-shadow);
     color: #ffffff;
     overflow: hidden;
-    padding: 10px 14px !important;
+    padding: 12px 16px !important;
     display: flex !important;
-    flex-direction: column !important;
-    justify-content: space-between !important;
+    align-items: center !important;
     -webkit-backface-visibility: hidden !important;
     backface-visibility: hidden !important;
     /* 核心动画优化：0.85s 从容丝滑缓动曲线 */
@@ -339,7 +313,7 @@ try {
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
-    transition-delay: 0.2s;
+    transition-delay: 0.15s;
   }
 
   .promo-widget:hover .back-face,
@@ -351,19 +325,19 @@ try {
     visibility: visible;
     pointer-events: auto;
     z-index: 3;
-    transition-delay: 0.2s;
+    transition-delay: 0.15s;
   }
 
-  /* 大尺寸画面感半透明矢量折纸飞机水印 */
+  /* 官方折纸飞机大水印 */
   .promo-watermark {
     position: absolute;
     right: -16px;
-    bottom: -18px;
-    width: 130px;
-    height: 130px;
+    bottom: -20px;
+    width: 126px;
+    height: 126px;
     pointer-events: none;
-    transform: rotate(-12deg);
-    z-index: 0;
+    transform: rotate(-10deg);
+    z-index: 1;
   }
 
   .promo-watermark svg {
@@ -377,20 +351,27 @@ try {
     z-index: 2;
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 13px;
+    width: 100%;
   }
 
   .promo-icon-emblem {
-    width: 48px;
-    height: 48px;
+    width: 46px;
+    height: 46px;
     border-radius: 50%;
-    background: #ffffff;
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.45);
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.6), 0 4px 10px rgba(0, 0, 0, 0.1);
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    box-shadow: 0 4px 14px rgba(20, 60, 160, 0.22), inset 0 1px 1px rgba(255, 255, 255, 0.9);
-    position: relative;
+  }
+
+  .promo-icon-emblem svg {
+    filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.15));
   }
 
   .promo-front-info {
@@ -405,16 +386,16 @@ try {
     display: flex;
     align-items: center;
     gap: 7px;
-    margin-bottom: 2px;
+    margin-bottom: 3px;
   }
 
   .promo-title {
     font-size: 1.15rem;
     font-weight: 800;
-    letter-spacing: 0.3px;
+    letter-spacing: 0.2px;
     color: #ffffff;
     line-height: 1.2;
-    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
   }
 
   .promo-badge {
@@ -422,12 +403,11 @@ try {
     font-weight: 700;
     padding: 1.5px 6px;
     border-radius: 4px;
-    background: rgba(255, 255, 255, 0.28);
+    background: rgba(255, 255, 255, 0.25);
     border: 1px solid rgba(255, 255, 255, 0.45);
     color: #ffffff;
     line-height: 1.2;
     white-space: nowrap;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
   }
 
   .promo-subtitle {
@@ -438,28 +418,7 @@ try {
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
-  }
-
-  .promo-front-hint {
-    position: relative;
-    z-index: 2;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    font-size: 0.72rem;
-    color: rgba(255, 255, 255, 0.92);
-    padding-top: 4px;
-    border-top: 1px solid rgba(255, 255, 255, 0.22);
-    font-weight: 500;
-  }
-
-  .hint-arrow {
-    transition: transform 0.25s ease;
-  }
-
-  .promo-widget:hover .hint-arrow {
-    transform: translateX(3px);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
   }
 
   /* BACK FACE 样式 */
@@ -467,9 +426,10 @@ try {
     position: relative;
     z-index: 2;
     display: grid !important;
-    grid-template-columns: 1fr 78px !important;
+    grid-template-columns: 1fr 76px !important;
     align-items: center !important;
-    gap: 10px !important;
+    gap: 12px !important;
+    width: 100% !important;
     height: 100% !important;
   }
 
@@ -486,7 +446,7 @@ try {
     color: #ffffff;
     margin-bottom: 2px;
     line-height: 1.2;
-    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -501,7 +461,6 @@ try {
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
   }
 
   .promo-cta-action {
@@ -512,21 +471,22 @@ try {
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    padding: 3.5px 13px;
+    padding: 3px 12px;
     background: #ffffff;
-    color: #2563eb;
+    color: #1d4ed8;
     font-size: 0.75rem;
     font-weight: 700;
     border-radius: 999px;
     text-decoration: none;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.16);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.14);
     transition: all 0.2s ease;
+    width: fit-content;
   }
 
   .promo-cta-btn:hover {
     transform: translateY(-1px) scale(1.02);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.24);
-    color: #1d4ed8;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.22);
+    color: #1e40af;
   }
 
   .cta-arrow {
@@ -538,14 +498,13 @@ try {
   /* 内嵌二维码容器 */
   .promo-qr-chassis {
     display: flex;
-    flex-direction: column;
     align-items: center;
-    gap: 3px;
+    justify-content: center;
   }
 
   .promo-qr-wrapper {
-    width: 70px;
-    height: 70px;
+    width: 76px;
+    height: 76px;
     background: #ffffff;
     border-radius: 6px;
     padding: 3px;
@@ -554,7 +513,7 @@ try {
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 1px solid rgba(255, 255, 255, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.85);
     overflow: hidden;
   }
 
@@ -566,14 +525,5 @@ try {
     object-position: center !important;
     display: block !important;
     image-rendering: pixelated;
-  }
-
-  .promo-qr-label {
-    font-size: 0.65rem;
-    color: rgba(255, 255, 255, 0.95);
-    font-weight: 700;
-    line-height: 1;
-    letter-spacing: 0.3px;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
   }
 </style>

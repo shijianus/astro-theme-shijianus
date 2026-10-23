@@ -6177,6 +6177,24 @@
   2. 生产端最新背面实机截图归档：`scripts/audit_screenshots/live_back_vivid.png`（0.85s 平滑翻转，背面完全正向呈现，零镜面倒置，二维码 100% 完整无损）；
   3. 生产端客观指标全量达标：`cardHeight: 126px`，`isQrEmbeddedDataUrl: true`，`frontOpacityOnHover: 0`，`backOpacityOnHover: 1`，`backTransform: 'matrix(1, 0, 0, 1, 0, 0)'`。
 
+### Task 83: 彻底移除底栏冗余提示、官方标准立构Telegram白纸飞机与极简毛玻璃圆舱重塑 (`c77c912`)
+- [x] **彻底删除正面底栏说明与分割线 (`src/components/theme/PromoWidgetCard.astro`)**：
+  1. 严格响应用户要求，完全移除“悬停翻转直达二维码”文字提示、箭头图标及顶部分割线；
+  2. 卡片高度由 126px 紧凑收敛至 **114px**，释放冗余垂直空间，正反面主信息自然垂直居中。
+- [x] **官方标准 3D 立构纸飞机矢量与高级质感毛玻璃圆舱重塑**：
+  1. 彻底淘汰自画低多边形失真粗糙 SVG，采用官方标准几何纸飞机矢量路径；
+  2. 将套娃实心白圆盘重塑为通透轻盈的毛玻璃微光圆舱（`rgba(255, 255, 255, 0.2)` + `backdrop-filter: blur(8px)` + 细微天光内阴影）；
+  3. 纸飞机精准居中剪裁（`viewBox="14 68 168 118"`，27px 比例），主翼纯白 `#ffffff`，翼底与折角采用多层纯白半透光影（`0.72` 与 `0.48`），高对比度且立体生动，彻底告别灰蒙蒙与机械AI感；
+  4. 背景矢量大水印同步更新为官方标准纸飞机光影，浑然一体。
+- [x] **背面二维码纯净扩容**：
+  1. 移除二维码下方冗余的“扫码加入”小标签，卡槽扩容至 76px x 76px；
+  2. 100% Base64 Data URI 内嵌生成，零外部网络请求，扫码区域开阔醒目。
+- [x] **严格执行 Git Commit 规范与禁止推送 remote repo 铁律**：
+  1. 严禁向 remote repo (`origin`) 推送任何代码，仅允许推送并部署至 `cf` 远端；
+  2. 全量静态编译并通过 Wrangler 部署至 Cloudflare Pages 生产边缘节点。
+- [x] **生产环境 (https://blog.epocanvas.com) Playwright 实机全链路实测与客观证据链归档**。
+
+
 
 
 
