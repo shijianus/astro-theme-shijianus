@@ -27,7 +27,7 @@ const defaultCopy = {
     title: 'Telegram',
     subtitle: '专注隐私传播。海外更新、测试第一时间获取。',
     backTitle: '扫码加入',
-    backSubtitle: '无缝安全交流 · 极客动态首发',
+    backSubtitle: '海外更新、测试通知与动态首发。',
     badge: '官方社群',
     ctaText: '立即直达'
   },
@@ -67,7 +67,6 @@ const platformConfigs = {
     backSubtitle: siteConfig.aside.telegramWidget?.summary || defaultCopy.telegram.backSubtitle,
     badge: defaultCopy.telegram.badge,
     ctaText: defaultCopy.telegram.ctaText,
-    iconPath: 'M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z'
   },
   wechat: {
     href: '#',
@@ -78,7 +77,6 @@ const platformConfigs = {
     backSubtitle: defaultCopy.wechat.backSubtitle,
     badge: defaultCopy.wechat.badge,
     ctaText: defaultCopy.wechat.ctaText,
-    iconPath: 'M17.333 11.333c0-3.313-3.284-6-7.333-6S2.667 8.02 2.667 11.333c0 1.84 1.01 3.486 2.63 4.545l-.697 2.121 2.502-1.252c.904.254 1.88.386 2.9.386 4.049 0 7.331-2.687 7.331-6zm-9.333-1.333a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm5.333 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm8 4c0-2.576-2.537-4.667-5.667-4.667-.113 0-.223.006-.333.013.432.842.667 1.776.667 2.766 0 3.864-3.731 7-8.333 7-.53 0-1.045-.038-1.543-.109 1.155 1.583 3.324 2.664 5.876 2.664.815 0 1.595-.106 2.324-.31l2.001 1.002-.558-1.697c1.296-.847 2.103-2.163 2.103-3.636zm-3.666-.667a.833.833 0 1 1-1.667 0 .833.833 0 0 1 1.667 0zm-4.334 0a.833.833 0 1 1-1.667 0 .833.833 0 0 1 1.667 0z'
   },
   whatsapp: {
     href: '#',
@@ -89,7 +87,6 @@ const platformConfigs = {
     backSubtitle: defaultCopy.whatsapp.backSubtitle,
     badge: defaultCopy.whatsapp.badge,
     ctaText: defaultCopy.whatsapp.ctaText,
-    iconPath: 'M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01a1.096 1.096 0 0 0-.792.371c-.297.322-1.139 1.114-1.139 2.716s1.164 3.146 1.337 3.37c.173.223 2.302 3.518 5.577 4.935 2.187.947 2.923.8 3.541.748.723-.06 2.303-.941 2.625-1.849.322-.909.322-1.688.223-1.849-.099-.161-.371-.247-.669-.396zM12 21.6A9.6 9.6 0 0 1 3.731 16.7l-1.312 4.79 4.908-1.288A9.553 9.553 0 0 1 12 21.6c5.3 0 9.6-4.3 9.6-9.6S17.3 2.4 12 2.4 2.4 6.7 2.4 12c0 1.676.433 3.25 1.196 4.593L2.4 21.6l5.132-1.35A9.57 9.57 0 0 0 12 21.6z'
   },
   facebook: {
     href: '#',
@@ -100,12 +97,10 @@ const platformConfigs = {
     backSubtitle: defaultCopy.facebook.backSubtitle,
     badge: defaultCopy.facebook.badge,
     ctaText: defaultCopy.facebook.ctaText,
-    iconPath: 'M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.469h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.469h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z'
   }
 };
 
 const finalConfig = Astro.props.config || platformConfigs[platform];
-const iconPath = platformConfigs[platform].iconPath;
 
 // Generate truly embedded high-resolution vector QR Code data URI
 let embeddedQrDataUrl = '';
@@ -114,7 +109,7 @@ try {
     margin: 1,
     width: 256,
     color: {
-      dark: '#1c3d5a',
+      dark: '#1e3a8a',
       light: '#ffffff'
     },
     errorCorrectionLevel: 'M'
@@ -130,24 +125,45 @@ try {
     <div id="flip-content">
       
       <!-- ============================================== -->
-      <!-- FRONT FACE: 亮色调清新优雅浅蓝正面            -->
+      <!-- FRONT FACE: 亮色调清新透亮浅蓝正面            -->
       <!-- ============================================== -->
       <div
         class="face front-face"
         onclick={finalConfig.href && finalConfig.href !== '#' ? `window.open("${finalConfig.href}", "_blank")` : undefined}
       >
-        <!-- 画面感：右侧倾斜 15 度半透明纯净矢量大水印 -->
+        <!-- 画面感：纯净高清立体多层折纸飞机矢量大水印 -->
         <div class="promo-watermark" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="currentColor">
-            <path d={iconPath} />
+          <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id={`watermark-main-${id}`} x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#ffffff" stop-opacity="0.36" />
+                <stop offset="60%" stop-color="#ffffff" stop-opacity="0.18" />
+                <stop offset="100%" stop-color="#ffffff" stop-opacity="0.04" />
+              </linearGradient>
+              <linearGradient id={`watermark-shadow-${id}`} x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#ffffff" stop-opacity="0.22" />
+                <stop offset="100%" stop-color="#ffffff" stop-opacity="0.02" />
+              </linearGradient>
+            </defs>
+            <path d="M12 48 L88 16 L44 86 L36 56 Z" fill={`url(#watermark-main-${id})`} />
+            <path d="M88 16 L36 56 L44 86 L58 52 Z" fill={`url(#watermark-shadow-${id})`} />
+            <path d="M36 56 L44 86 L48 68 Z" fill="#ffffff" fill-opacity="0.28" />
           </svg>
         </div>
 
         <!-- 正面主体布局 -->
         <div class="promo-front-body">
-          <div class="promo-icon-box">
-            <svg viewBox="0 0 24 24" width="28" height="28" fill="#ffffff">
-              <path d={iconPath} />
+          <div class="promo-icon-emblem">
+            <!-- 纯净高清双色折纸飞机图标，饱满鲜活告别灰蒙蒙 -->
+            <svg viewBox="0 0 32 32" width="28" height="28" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M26.5 6.5L4 15.2L11.8 18.3L22.2 11.2L14.2 19.8V25.5L18.2 21.7L24.2 24.8L26.5 6.5Z" fill={`url(#tg-logo-grad-${id})`} />
+              <path d="M11.8 18.3L14.2 25.5L14.5 20.8L22.2 11.2L11.8 18.3Z" fill="#1d4ed8" fill-opacity="0.26" />
+              <defs>
+                <linearGradient id={`tg-logo-grad-${id}`} x1="4" y1="6.5" x2="26.5" y2="25.5" gradientUnits="userSpaceOnUse">
+                  <stop stop-color="#2563eb" />
+                  <stop offset="1" stop-color="#38bdf8" />
+                </linearGradient>
+              </defs>
             </svg>
           </div>
           <div class="promo-front-info">
@@ -177,8 +193,9 @@ try {
       >
         <!-- 画面感：背面对应微透水印 -->
         <div class="promo-watermark promo-watermark--back" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="currentColor">
-            <path d={iconPath} />
+          <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 48 L88 16 L44 86 L36 56 Z" fill={`url(#watermark-main-${id})`} opacity="0.8" />
+            <path d="M88 16 L36 56 L44 86 L58 52 Z" fill={`url(#watermark-shadow-${id})`} opacity="0.8" />
           </svg>
         </div>
 
@@ -232,7 +249,7 @@ try {
     box-sizing: border-box !important;
     padding: 0 !important;
     border: none;
-    height: 130px;
+    height: 126px;
     border-radius: 8px;
     margin: 0 !important;
     overflow: visible !important;
@@ -246,16 +263,21 @@ try {
     width: 100%;
     height: 100%;
     border-radius: 8px;
-    /* 核心：亮色调清新优雅浅蓝渐变 */
-    --promo-bg-gradient: linear-gradient(135deg, #2481cc 0%, #3598dc 50%, #4aaff6 100%);
-    --promo-card-shadow: 0 4px 16px rgba(36, 129, 204, 0.28);
-    --promo-border-color: rgba(255, 255, 255, 0.45);
+    /* 核心：通透、饱满、清新的现代亮色天空蓝渐变体系 */
+    --promo-bg-gradient: 
+      radial-gradient(circle at 18% 18%, rgba(255, 255, 255, 0.28), transparent 28%),
+      radial-gradient(circle at 85% 82%, rgba(255, 255, 255, 0.16), transparent 26%),
+      linear-gradient(135deg, #3b66f5 0%, #2f81f7 50%, #38bdf8 100%);
+    --promo-card-shadow: 0 10px 24px -6px rgba(47, 129, 247, 0.32), 0 2px 6px rgba(0, 0, 0, 0.05);
+    --promo-border-color: rgba(255, 255, 255, 0.5);
   }
 
   :global([data-theme="dark"]) #flip-wrapper {
-    --promo-bg-gradient: linear-gradient(135deg, #185a8c 0%, #1a4f78 50%, #1f4263 100%);
-    --promo-card-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
-    --promo-border-color: rgba(255, 255, 255, 0.2);
+    --promo-bg-gradient: 
+      radial-gradient(circle at 18% 18%, rgba(255, 255, 255, 0.12), transparent 28%),
+      linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #1d4ed8 100%);
+    --promo-card-shadow: 0 10px 24px -6px rgba(0, 0, 0, 0.5);
+    --promo-border-color: rgba(255, 255, 255, 0.22);
   }
 
   #flip-content {
@@ -277,13 +299,14 @@ try {
     box-shadow: var(--promo-card-shadow);
     color: #ffffff;
     overflow: hidden;
-    padding: 12px 14px !important;
+    padding: 10px 14px !important;
     display: flex !important;
     flex-direction: column !important;
     justify-content: space-between !important;
     -webkit-backface-visibility: hidden !important;
     backface-visibility: hidden !important;
-    transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease, visibility 0.3s ease;
+    /* 核心动画优化：0.85s 从容丝滑缓动曲线 */
+    transition: transform 0.85s cubic-bezier(0.25, 1, 0.35, 1), opacity 0.35s ease, visibility 0.35s ease;
     will-change: transform, opacity;
   }
 
@@ -316,6 +339,7 @@ try {
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
+    transition-delay: 0.2s;
   }
 
   .promo-widget:hover .back-face,
@@ -327,19 +351,18 @@ try {
     visibility: visible;
     pointer-events: auto;
     z-index: 3;
+    transition-delay: 0.2s;
   }
 
-  /* 大尺寸画面感半透明矢量水印 */
+  /* 大尺寸画面感半透明矢量折纸飞机水印 */
   .promo-watermark {
     position: absolute;
-    right: -18px;
+    right: -16px;
     bottom: -18px;
-    width: 125px;
-    height: 125px;
-    opacity: 0.13;
+    width: 130px;
+    height: 130px;
     pointer-events: none;
     transform: rotate(-12deg);
-    color: #ffffff;
     z-index: 0;
   }
 
@@ -357,19 +380,17 @@ try {
     gap: 12px;
   }
 
-  .promo-icon-box {
-    width: 46px;
-    height: 46px;
+  .promo-icon-emblem {
+    width: 48px;
+    height: 48px;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.22);
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
+    background: #ffffff;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    border: 1px solid rgba(255, 255, 255, 0.4);
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 4px 14px rgba(20, 60, 160, 0.22), inset 0 1px 1px rgba(255, 255, 255, 0.9);
+    position: relative;
   }
 
   .promo-front-info {
@@ -393,7 +414,7 @@ try {
     letter-spacing: 0.3px;
     color: #ffffff;
     line-height: 1.2;
-    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
   }
 
   .promo-badge {
@@ -401,22 +422,23 @@ try {
     font-weight: 700;
     padding: 1.5px 6px;
     border-radius: 4px;
-    background: rgba(255, 255, 255, 0.25);
-    border: 1px solid rgba(255, 255, 255, 0.38);
+    background: rgba(255, 255, 255, 0.28);
+    border: 1px solid rgba(255, 255, 255, 0.45);
     color: #ffffff;
     line-height: 1.2;
     white-space: nowrap;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
   }
 
   .promo-subtitle {
     font-size: 0.76rem;
-    color: rgba(255, 255, 255, 0.92);
+    color: rgba(255, 255, 255, 0.95);
     line-height: 1.35;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
   }
 
   .promo-front-hint {
@@ -426,9 +448,10 @@ try {
     align-items: center;
     justify-content: space-between;
     font-size: 0.72rem;
-    color: rgba(255, 255, 255, 0.88);
+    color: rgba(255, 255, 255, 0.92);
     padding-top: 4px;
-    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    border-top: 1px solid rgba(255, 255, 255, 0.22);
+    font-weight: 500;
   }
 
   .hint-arrow {
@@ -463,7 +486,7 @@ try {
     color: #ffffff;
     margin-bottom: 2px;
     line-height: 1.2;
-    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -471,14 +494,14 @@ try {
 
   .promo-back-subtitle {
     font-size: 0.72rem;
-    color: rgba(255, 255, 255, 0.9);
+    color: rgba(255, 255, 255, 0.92);
     line-height: 1.35;
     margin-bottom: 8px;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
   }
 
   .promo-cta-action {
@@ -489,20 +512,21 @@ try {
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    padding: 3.5px 12px;
+    padding: 3.5px 13px;
     background: #ffffff;
-    color: #2481cc;
-    font-size: 0.74rem;
+    color: #2563eb;
+    font-size: 0.75rem;
     font-weight: 700;
     border-radius: 999px;
     text-decoration: none;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.16);
+    transition: all 0.2s ease;
   }
 
   .promo-cta-btn:hover {
     transform: translateY(-1px) scale(1.02);
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.22);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.24);
+    color: #1d4ed8;
   }
 
   .cta-arrow {
@@ -520,16 +544,17 @@ try {
   }
 
   .promo-qr-wrapper {
-    width: 74px;
-    height: 74px;
+    width: 70px;
+    height: 70px;
     background: #ffffff;
     border-radius: 6px;
     padding: 3px;
     box-sizing: border-box;
-    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.18);
+    box-shadow: 0 4px 12px rgba(10, 40, 110, 0.2);
     display: flex;
     align-items: center;
     justify-content: center;
+    border: 1px solid rgba(255, 255, 255, 0.8);
     overflow: hidden;
   }
 
@@ -545,9 +570,10 @@ try {
 
   .promo-qr-label {
     font-size: 0.65rem;
-    color: rgba(255, 255, 255, 0.92);
-    font-weight: 600;
+    color: rgba(255, 255, 255, 0.95);
+    font-weight: 700;
     line-height: 1;
     letter-spacing: 0.3px;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
   }
 </style>
