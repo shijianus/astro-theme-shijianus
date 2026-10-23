@@ -6135,7 +6135,24 @@
   2. 验证 2：正反面全新 HUD 科技要素（`techCanvas`、`radarWatermark`、`hudTopBar`、`waveformBars`、`orbitRing`、`pulseDot`、`laserScanline`、`uplinkBtn`）100% 存在；
   3. 验证 3：生产端二维码验证为真正内嵌（`isEmbeddedDataUrl: true`，`qrSrcPrefix: 'data:image/png;base64,iVBORw0K'`，零网络延迟与无外部依赖）；
   4. 验证 4：生产端 3D 翻转动画与可见性测试通过（尺寸 65.97px x 65.99px 完整无损露出展示）；
-  5. 验证 5：自动化截图实机归档至 `scripts/audit_screenshots/live-category-bar-and-flip.png`，生产端响应状态码 200 OK，控制台 0 报错。
+### Task 81: 彻底重做翻转卡片为亮色调清新浅蓝、高质感矢量水印画面、正向完整扫码后板与内嵌矢量 QR (`3199857`)
+- [x] **根除暗色调赛博黑底与复杂 AI 机械风 (`src/components/theme/PromoWidgetCard.astro`)**：
+  1. 彻底清除暗黑底色、假电路板刻度、波形跳动条、激光瞄准框、`PROTO-V2` 与 `AES-256` 等复杂华而不实的 AI 味元素；
+  2. 全量采用清新纯正的亮色调天空浅蓝渐变（`linear-gradient(135deg, #2481cc 0%, #3598dc 50%, #4aaff6 100%)`），深色模式平滑降级为优雅深蓝；
+  3. 重塑画面感：左侧为 Telegram 高质感圆形微透纸飞机 Logo（`backdrop-filter: blur(6px)`），右侧衬底大尺寸倾斜半透明纯净矢量大水印（`opacity: 0.13`），视觉层次开阔通透。
+- [x] **后板完整重构与 3D 翻转防倒置/防穿透双重保障 (`src/components/theme/PromoWidgetCard.astro`)**：
+  1. 彻底解决翻转后背面空白及文字镜面倒置穿透缺陷：放弃脆弱的单容器翻转，采用正反面独立 3D 翻折；
+  2. 默认态：正面板 `rotateY(0deg)`，背面板 `rotateY(-180deg)` 隐藏；
+  3. 悬停态：正面板 `rotateY(180deg)` 翻出并透明隐去（`opacity: 0; visibility: hidden; pointer-events: none`），背面板 `rotateY(0deg)` 翻入正向呈现（`opacity: 1; visibility: visible; pointer-events: auto`），100% 杜绝反转镜像字与空白；
+  4. 后板完整布局：左侧“扫码加入”加粗大标题与说明文字，搭配“立即直达 ↗”白底蓝字胶囊按钮；右侧白底内嵌高清矢量二维码（Base64 Data URI），四角定位码与数据完整无裁剪露出。
+- [x] **严格遵守禁止推送 remote repo 准则与 Cloudflare 部署**：
+  1. 绝对未推送 `origin`（remote repo），仅推送并同步 `cf` 远端；
+  2. 通过 Wrangler 全量编译并部署至 Cloudflare Pages 生产边缘节点（`https://bee901ba.shijianus-blog.pages.dev`）。
+- [x] **生产环境 (https://blog.epocanvas.com) Playwright 实机全链路端到端真实视觉证据链全量通过 (`scripts/verify-live-clean-flip.mjs`)**：
+  1. 生产端亮色模式正面截图实测归档：`scripts/audit_screenshots/live_front_light.png`；
+  2. 生产端亮色模式背面截图实测归档：`scripts/audit_screenshots/live_back_light.png`（后板正向呈现，零镜像反字，零空白）；
+  3. 生产端内嵌二维码验证：`isQrEmbeddedDataUrl: true`，`qrSize: { width: 68, height: 68 }`；
+  4. 生产端交互验证：`backTransform: 'matrix(1, 0, 0, 1, 0, 0)'`（完全正对视口），`ctaText: '立即直达 ↗'`。
 
 
 
