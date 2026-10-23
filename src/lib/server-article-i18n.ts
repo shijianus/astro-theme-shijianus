@@ -1751,8 +1751,58 @@ export async function translateArticleByExtraction(options: TranslateArticleOpti
 
   let template = rawBody;
 
-  // Mask non-diagram fenced code blocks (``` ... ```)
-  template = template.replace(/```(?!mindmap|markmap|mermaid)[a-z0-9_-]*\r?\n[\s\S]*?\r?\n```/gi, (m) => mask(m));
+  // Mask non-diagram fenced code blocks with a stateful line scanner. A
+  // regexp that starts at every ``` line can mistake a diagram's closing
+  // fence for a new opening fence and swallow the following prose until the
+  // next code block. Keep mindmap/mermaid source visible to the extractor,
+  // while treating every other complete fence as an atomic protected token.
+  const maskNonDiagramFencedBlocks = (input: string): string => {
+    const lines = input.split('\n');
+    const output: string[] = [];
+    const diagramLanguages = new Set(['mindmap', 'markmap', 'mermaid']);
+    const isClosingFence = (line: string, character: string, length: number) => {
+      const pattern = character === '`' ? '`' : '~';
+      return new RegExp(`^\\s*${pattern}{${length},}\\s*$`).test(line);
+    };
+
+    for (let index = 0; index < lines.length; index += 1) {
+      const line = lines[index];
+      const opening = line.match(/^\s*(`{3,}|~{3,})([^\r\n]*)$/);
+      if (!opening) {
+        output.push(line);
+        continue;
+      }
+
+      const fence = opening[1];
+      const character = fence[0];
+      const language = opening[2].trim().split(/\s+/)[0].toLowerCase();
+      const block = [line];
+      let closingFound = false;
+      index += 1;
+      while (index < lines.length) {
+        block.push(lines[index]);
+        if (isClosingFence(lines[index], character, fence.length)) {
+          closingFound = true;
+          break;
+        }
+        index += 1;
+      }
+
+      if (diagramLanguages.has(language)) {
+        output.push(...block);
+      } else {
+        output.push(mask(block.join('\n')));
+      }
+
+      // An unclosed fence is still kept as one protected block. The normal
+      // format validator will report the source/translation parity problem;
+      // the extractor must not resume in the middle of the fenced payload.
+      if (!closingFound) break;
+    }
+
+    return output.join('\n');
+  };
+  template = maskNonDiagramFencedBlocks(template);
 
   // Mask block math ($$ ... $$)
   template = template.replace(/\$\$[\s\S]*?\$\$/g, (m) => mask(m));
@@ -2083,6 +2133,16 @@ export async function translateArticleByExtraction(options: TranslateArticleOpti
       const trans = result.translatedBatch?.[String(index)];
       translatedSegments[result.start + index] = (trans && trans.trim()) ? trans.trim() : source;
     });
+  }
+
+  if (process.env.ARTICLE_I18N_DEBUG_EXTRACTION === 'true') {
+    const untranslated = translatedSegments
+      .map((value, index) => ({ index, value: value || '' }))
+      .filter(({ value }) => /[\u4e00-\u9fff]/.test(value));
+    console.warn(`[Article-i18n] [Scheme 2] Debug target=${targetLocale}: ${untranslated.length}/${translatedSegments.length} translated segments still contain CJK; first indexes=${untranslated.slice(0, 24).map(({ index }) => index).join(',')}`);
+    for (const { index, value } of untranslated.slice(0, 4)) {
+      console.warn(`[Article-i18n] [Scheme 2] Debug segment ${index}: ${value.slice(0, 240)}`);
+    }
   }
 
   // 4. In-place re-insertion of translated segments into protected tokens (for HTML attributes like data-title)
