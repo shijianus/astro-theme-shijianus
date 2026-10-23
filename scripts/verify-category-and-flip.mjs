@@ -36,7 +36,7 @@ const server = http.createServer((req, res) => {
 const PORT = 5792;
 
 server.listen(PORT, async () => {
-  console.log(`[E2E] Verifying CategoryBar line width and Flip-Content Tech UI on http://localhost:${PORT}...`);
+  console.log(`[E2E] Verifying CategoryBar thin line & Overhauled Cyber Hologram Flip-Content on http://localhost:${PORT}...`);
   const browser = await chromium.launch({ headless: true });
   
   try {
@@ -47,7 +47,7 @@ server.listen(PORT, async () => {
     // ==========================================
     // 1. Audit #categoryBar and #category-bar UI Style
     // ==========================================
-    console.log('[Audit] Checking #categoryBar and #category-bar styling in Light Mode...');
+    console.log('[Audit] Checking #categoryBar styling in Light Mode...');
     const categoryAudit = await page.evaluate(() => {
       const bar = document.getElementById('category-bar');
       const firstPost = document.querySelector('.recent-post-item');
@@ -57,9 +57,6 @@ server.listen(PORT, async () => {
       const barStyle = window.getComputedStyle(bar);
       const postStyle = window.getComputedStyle(firstPost);
 
-      const items = Array.from(document.querySelectorAll('#catalog-list .catalog-list-item a'));
-      const firstItemStyle = items.length > 0 ? window.getComputedStyle(items[0]) : null;
-
       return {
         barBorderWidth: barStyle.borderTopWidth,
         barBorderStyle: barStyle.borderTopStyle,
@@ -68,8 +65,6 @@ server.listen(PORT, async () => {
         barBoxShadow: barStyle.boxShadow,
         postBorderWidth: postStyle.borderTopWidth,
         postBorderRadius: postStyle.borderRadius,
-        postBorderColor: postStyle.borderTopColor,
-        itemBorderRadius: firstItemStyle ? firstItemStyle.borderRadius : null,
       };
     });
 
@@ -79,28 +74,32 @@ server.listen(PORT, async () => {
 
     console.log('CategoryBar Audit Metrics:', categoryAudit);
 
-    // Verify 1px border width
     if (categoryAudit.barBorderWidth !== '1px') {
       throw new Error(`Expected #category-bar border width to be 1px, got: ${categoryAudit.barBorderWidth}`);
     }
-    // Verify border radius matches recent-post-item (8px ~ 12px)
-    if (categoryAudit.barBorderRadius !== categoryAudit.postBorderRadius && !['8px', '10px', '12px'].includes(categoryAudit.barBorderRadius)) {
-      throw new Error(`Expected #category-bar border radius to match recent-post-item (${categoryAudit.postBorderRadius}), got: ${categoryAudit.barBorderRadius}`);
+    if (!['8px', '10px', '12px'].includes(categoryAudit.barBorderRadius)) {
+      throw new Error(`Expected #category-bar border radius to be refined 8px~12px, got: ${categoryAudit.barBorderRadius}`);
     }
     console.log(`✅ #categoryBar 1px thin line & border-radius (${categoryAudit.barBorderRadius}) matching post cards verified!`);
 
     // ==========================================
-    // 2. Audit #flip-content Tech UI & QR-Code
+    // 2. Audit #flip-content Overhauled Cyber HUD & Truly Embedded QR
     // ==========================================
-    console.log('[Audit] Checking #flip-content Tech UI & Full QR-Code...');
+    console.log('[Audit] Checking Overhauled Cyber Holographic Front & Back Pod...');
     const flipAudit = await page.evaluate(() => {
       const card = document.getElementById('card-telegram');
       const flipContent = document.querySelector('#card-telegram #flip-content');
       const techCanvas = document.querySelector('#card-telegram .promo-tech-canvas');
-      const techSvg = document.querySelector('#card-telegram .tech-grid-svg');
       const radarWatermark = document.querySelector('#card-telegram .promo-radar-watermark');
+      const hudTopBar = document.querySelector('#card-telegram .hud-top-bar');
+      const waveformBars = document.querySelector('#card-telegram .hud-waveform-bars');
+      const orbitRing = document.querySelector('#card-telegram .promo-icon-orbit-ring');
       const pulseDot = document.querySelector('#card-telegram .status-pulse-dot');
-      const cyberOrb = document.querySelector('#card-telegram .promo-icon-cyber-wrap');
+      const bottomTracker = document.querySelector('#card-telegram .hud-bottom-tracker');
+      
+      const hudBackHeader = document.querySelector('#card-telegram .hud-back-header');
+      const laserScanline = document.querySelector('#card-telegram .hud-laser-scanline');
+      const uplinkBtn = document.querySelector('#card-telegram .promo-uplink-btn');
       const qrHudBox = document.querySelector('#card-telegram .promo-qr-hud-box');
       const qrContainer = document.querySelector('#card-telegram .promo-qr-container');
       const qrImg = document.querySelector('#card-telegram .promo-qr-container img');
@@ -109,18 +108,25 @@ server.listen(PORT, async () => {
 
       const qrStyle = qrImg ? window.getComputedStyle(qrImg) : null;
       const flipStyle = window.getComputedStyle(flipContent);
+      const qrSrc = qrImg ? qrImg.getAttribute('src') : '';
 
       return {
         hasTechCanvas: !!techCanvas,
-        hasTechSvg: !!techSvg,
         hasRadarWatermark: !!radarWatermark,
+        hasHudTopBar: !!hudTopBar,
+        hasWaveformBars: !!waveformBars,
+        hasOrbitRing: !!orbitRing,
         hasPulseDot: !!pulseDot,
-        hasCyberOrb: !!cyberOrb,
+        hasBottomTracker: !!bottomTracker,
+        hasHudBackHeader: !!hudBackHeader,
+        hasLaserScanline: !!laserScanline,
+        hasUplinkBtn: !!uplinkBtn,
         hasQrHudBox: !!qrHudBox,
         hasQrContainer: !!qrContainer,
         qrObjectFit: qrStyle ? qrStyle.objectFit : null,
         transformStyle: flipStyle.transformStyle,
-        qrSrc: qrImg ? qrImg.getAttribute('src') : null,
+        isEmbeddedDataUrl: qrSrc.startsWith('data:image/'),
+        qrSrcPrefix: qrSrc.slice(0, 30),
       };
     });
 
@@ -128,24 +134,26 @@ server.listen(PORT, async () => {
       throw new Error(`FlipAudit Failed: ${flipAudit.error}`);
     }
 
-    console.log('Flip-Content Audit Metrics:', flipAudit);
+    console.log('Overhauled Flip-Content Audit Metrics:', flipAudit);
 
-    if (!flipAudit.hasTechCanvas || !flipAudit.hasTechSvg) {
-      throw new Error('Cyber Tech Canvas SVG not found in flip-content');
+    // Assert Front Face Cyber HUD Elements
+    if (!flipAudit.hasTechCanvas || !flipAudit.hasRadarWatermark || !flipAudit.hasHudTopBar || !flipAudit.hasWaveformBars || !flipAudit.hasOrbitRing || !flipAudit.hasPulseDot || !flipAudit.hasBottomTracker) {
+      throw new Error('Front face Cyber HUD elements are missing from overhauled card');
     }
-    if (!flipAudit.hasRadarWatermark) {
-      throw new Error('Radar Compass Watermark SVG not found in flip-content');
+
+    // Assert Back Face Holographic Scanner Pod Elements
+    if (!flipAudit.hasHudBackHeader || !flipAudit.hasLaserScanline || !flipAudit.hasUplinkBtn || !flipAudit.hasQrHudBox) {
+      throw new Error('Back face Holographic Scanner Pod elements are missing from overhauled card');
     }
-    if (!flipAudit.hasPulseDot || !flipAudit.hasCyberOrb) {
-      throw new Error('Status pulse dot or Cyber Orb not found in flip-content');
-    }
-    if (!flipAudit.hasQrHudBox) {
-      throw new Error('QR HUD Box with reticles not found in back-face');
+
+    // Assert Truly Embedded QR-Code
+    if (!flipAudit.isEmbeddedDataUrl) {
+      throw new Error(`Expected truly embedded QR Code (data:image/...), got: ${flipAudit.qrSrcPrefix}`);
     }
     if (flipAudit.qrObjectFit !== 'contain') {
-      throw new Error(`Expected QR Code object-fit to be contain (for full uncropped display), got: ${flipAudit.qrObjectFit}`);
+      throw new Error(`Expected QR Code object-fit to be contain, got: ${flipAudit.qrObjectFit}`);
     }
-    console.log('✅ Tech UI Elements and Full QR-Code contain configuration verified!');
+    console.log('✅ Overhauled Front Cyber HUD, Back Scanner Pod, and Truly Embedded QR-Code verified!');
 
     // ==========================================
     // 3. Hover Flip Animation & QR Visibility
@@ -153,7 +161,7 @@ server.listen(PORT, async () => {
     console.log('[Audit] Testing 3D Flip Animation on hover...');
     const cardEl = await page.$('#card-telegram');
     await cardEl.hover();
-    await page.waitForTimeout(700);
+    await page.waitForTimeout(800);
 
     const hoverResult = await page.evaluate(() => {
       const qrImg = document.querySelector('#card-telegram .promo-qr-container img');
@@ -193,7 +201,7 @@ server.listen(PORT, async () => {
     }
     console.log('✅ Dark mode 1px border verified!');
 
-    console.log('\n🎉 ALL E2E AUDITS FOR CATEGORYBAR & FLIP-CONTENT PASSED CONVINCINGLY!');
+    console.log('\n🎉 ALL E2E AUDITS FOR CATEGORYBAR & OVERHAULED CYBER FLIP-CONTENT PASSED CONVINCINGLY!');
   } finally {
     await browser.close();
     server.close();

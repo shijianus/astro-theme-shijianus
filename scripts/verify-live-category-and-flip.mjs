@@ -19,7 +19,7 @@ async function verifyLive() {
   const page = await context.newPage();
 
   try {
-    const res = await page.goto(LIVE_URL, { waitUntil: 'networkidle', timeout: 30000 });
+    const res = await page.goto(LIVE_URL, { waitUntil: 'networkidle', timeout: 35000 });
     console.log(`[E2E Live] Response status code: ${res?.status()}`);
 
     if (res?.status() !== 200) {
@@ -62,45 +62,65 @@ async function verifyLive() {
     console.log('✅ Production #categoryBar 1px thin line & rounded-xl border-radius verified!');
 
     // ==========================================
-    // 2. Production #flip-content & Tech UI Audit
+    // 2. Production #flip-content Overhauled Tech UI & Truly Embedded QR Audit
     // ==========================================
-    console.log('[E2E Live] Auditing #flip-content Tech UI & QR-code...');
+    console.log('[E2E Live] Auditing Overhauled #flip-content Cyber HUD & Embedded QR...');
     const flipMetrics = await page.evaluate(() => {
       const card = document.getElementById('card-telegram');
       const techCanvas = document.querySelector('#card-telegram .promo-tech-canvas');
       const radarWatermark = document.querySelector('#card-telegram .promo-radar-watermark');
+      const hudTopBar = document.querySelector('#card-telegram .hud-top-bar');
+      const waveformBars = document.querySelector('#card-telegram .hud-waveform-bars');
+      const orbitRing = document.querySelector('#card-telegram .promo-icon-orbit-ring');
       const pulseDot = document.querySelector('#card-telegram .status-pulse-dot');
-      const cyberOrb = document.querySelector('#card-telegram .promo-icon-cyber-wrap');
+      const bottomTracker = document.querySelector('#card-telegram .hud-bottom-tracker');
+      
+      const hudBackHeader = document.querySelector('#card-telegram .hud-back-header');
+      const laserScanline = document.querySelector('#card-telegram .hud-laser-scanline');
+      const uplinkBtn = document.querySelector('#card-telegram .promo-uplink-btn');
       const qrHudBox = document.querySelector('#card-telegram .promo-qr-hud-box');
+      const qrContainer = document.querySelector('#card-telegram .promo-qr-container');
       const qrImg = document.querySelector('#card-telegram .promo-qr-container img');
 
       const qrStyle = qrImg ? window.getComputedStyle(qrImg) : null;
+      const qrSrc = qrImg ? qrImg.getAttribute('src') : '';
 
       return {
         cardFound: !!card,
         techCanvas: !!techCanvas,
         radarWatermark: !!radarWatermark,
+        hudTopBar: !!hudTopBar,
+        waveformBars: !!waveformBars,
+        orbitRing: !!orbitRing,
         pulseDot: !!pulseDot,
-        cyberOrb: !!cyberOrb,
+        bottomTracker: !!bottomTracker,
+        hudBackHeader: !!hudBackHeader,
+        laserScanline: !!laserScanline,
+        uplinkBtn: !!uplinkBtn,
         qrHudBox: !!qrHudBox,
+        qrContainer: !!qrContainer,
         qrObjectFit: qrStyle ? qrStyle.objectFit : null,
-        qrSrc: qrImg ? qrImg.getAttribute('src') : null,
+        isEmbeddedDataUrl: qrSrc.startsWith('data:image/'),
+        qrSrcPrefix: qrSrc.slice(0, 30),
       };
     });
 
-    console.log('[E2E Live] Flip-Content Metrics:', flipMetrics);
+    console.log('[E2E Live] Overhauled Flip-Content Metrics:', flipMetrics);
 
     if (!flipMetrics.cardFound) throw new Error('Live Telegram widget card not found');
-    if (!flipMetrics.techCanvas || !flipMetrics.radarWatermark) {
-      throw new Error('Live Cyber Tech Canvas or Radar Watermark not found');
+    if (!flipMetrics.techCanvas || !flipMetrics.radarWatermark || !flipMetrics.hudTopBar || !flipMetrics.waveformBars) {
+      throw new Error('Live Front Cyber HUD elements are missing from production');
     }
-    if (!flipMetrics.pulseDot || !flipMetrics.cyberOrb) {
-      throw new Error('Live Pulse Dot or Cyber Orb badge not found');
+    if (!flipMetrics.hudBackHeader || !flipMetrics.laserScanline || !flipMetrics.uplinkBtn || !flipMetrics.qrHudBox) {
+      throw new Error('Live Back Scanner Pod elements are missing from production');
+    }
+    if (!flipMetrics.isEmbeddedDataUrl) {
+      throw new Error(`Expected truly embedded QR Code on production, got: ${flipMetrics.qrSrcPrefix}`);
     }
     if (flipMetrics.qrObjectFit !== 'contain') {
       throw new Error(`Expected Live QR-Code object-fit to be contain, got: ${flipMetrics.qrObjectFit}`);
     }
-    console.log('✅ Production Cyber Tech UI Elements & object-fit contain verified!');
+    console.log('✅ Production Overhauled Front Cyber HUD, Back Scanner Pod, and Truly Embedded QR-Code verified!');
 
     // ==========================================
     // 3. Production Flip Hover Test
