@@ -10674,6 +10674,7 @@ body[data-type='page'] .friends-page__panel.theme-card,
 }
 
 /* 8. Target: Promo Flip Widget Chassis Isolation - Preserve 3D & Transparent Inner Shell */
+.promo-widget,
 #flip-wrapper,
 #flip-content {
   background: transparent !important;

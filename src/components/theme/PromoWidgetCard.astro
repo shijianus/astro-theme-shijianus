@@ -13,12 +13,6 @@ interface Props {
     subtitle: string;
     backTitle?: string;
     backSubtitle?: string;
-    qrCrop?: {
-      enable: boolean;
-      scale?: number;
-      offsetX?: string;
-      offsetY?: string;
-    };
   };
 }
 
@@ -32,47 +26,58 @@ const defaultCopy = {
   telegram: {
     title: 'Telegram',
     subtitle: '专注隐私传播。海外更新、测试第一时间获取。',
-    backTitle: '扫码直连社群',
-    backSubtitle: '无缝安全交流 · 极客动态首发'
+    backTitle: '扫码加入',
+    backSubtitle: '无缝安全交流 · 极客动态首发',
+    badge: '官方社群',
+    ctaText: '立即直达'
   },
   wechat: {
     title: 'WeChat',
     subtitle: '微信公众号。快人一步获取最新文章与动态。',
     backTitle: '扫一扫关注',
-    backSubtitle: '不错过精彩内容 · 微信动态订阅'
+    backSubtitle: '不错过精彩内容 · 微信动态订阅',
+    badge: '官方微信',
+    ctaText: '关注我们'
   },
   facebook: {
     title: 'Facebook',
-    subtitle: '开放社群。加入我们，结识千万同好畅所欲言。',
+    subtitle: '开放社群。加入我们，结识同好畅所欲言。',
     backTitle: '扫码关注主页',
-    backSubtitle: '探索更多可能 · 开放社群交流'
+    backSubtitle: '探索更多可能 · 开放社群交流',
+    badge: '官方主页',
+    ctaText: '前往主页'
   },
   whatsapp: {
     title: 'WhatsApp',
     subtitle: '快捷简单安全。即刻加入，随时保持密切联系。',
     backTitle: '扫码添加联系',
-    backSubtitle: '开启即时通讯 · 保持密切连结'
+    backSubtitle: '开启即时通讯 · 保持密切连结',
+    badge: '即时联系',
+    ctaText: '添加好友'
   }
 };
 
 const platformConfigs = {
   telegram: {
-    href: siteConfig.aside.telegramWidget?.href || '#',
+    href: siteConfig.aside.telegramWidget?.href || 'https://t.me/chronoral',
     qrImage: siteConfig.aside.telegramWidget?.qrImage || '',
     title: siteConfig.aside.telegramWidget?.title || defaultCopy.telegram.title,
     subtitle: siteConfig.aside.telegramWidget?.subtitle || defaultCopy.telegram.subtitle,
     backTitle: siteConfig.aside.telegramWidget?.backLabel || defaultCopy.telegram.backTitle,
     backSubtitle: siteConfig.aside.telegramWidget?.summary || defaultCopy.telegram.backSubtitle,
-    qrCrop: siteConfig.aside.telegramWidget?.qrCrop,
+    badge: defaultCopy.telegram.badge,
+    ctaText: defaultCopy.telegram.ctaText,
     iconPath: 'M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z'
   },
   wechat: {
-    href: '#', 
+    href: '#',
     qrImage: '',
     title: defaultCopy.wechat.title,
     subtitle: defaultCopy.wechat.subtitle,
     backTitle: defaultCopy.wechat.backTitle,
     backSubtitle: defaultCopy.wechat.backSubtitle,
+    badge: defaultCopy.wechat.badge,
+    ctaText: defaultCopy.wechat.ctaText,
     iconPath: 'M17.333 11.333c0-3.313-3.284-6-7.333-6S2.667 8.02 2.667 11.333c0 1.84 1.01 3.486 2.63 4.545l-.697 2.121 2.502-1.252c.904.254 1.88.386 2.9.386 4.049 0 7.331-2.687 7.331-6zm-9.333-1.333a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm5.333 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm8 4c0-2.576-2.537-4.667-5.667-4.667-.113 0-.223.006-.333.013.432.842.667 1.776.667 2.766 0 3.864-3.731 7-8.333 7-.53 0-1.045-.038-1.543-.109 1.155 1.583 3.324 2.664 5.876 2.664.815 0 1.595-.106 2.324-.31l2.001 1.002-.558-1.697c1.296-.847 2.103-2.163 2.103-3.636zm-3.666-.667a.833.833 0 1 1-1.667 0 .833.833 0 0 1 1.667 0zm-4.334 0a.833.833 0 1 1-1.667 0 .833.833 0 0 1 1.667 0z'
   },
   whatsapp: {
@@ -82,6 +87,8 @@ const platformConfigs = {
     subtitle: defaultCopy.whatsapp.subtitle,
     backTitle: defaultCopy.whatsapp.backTitle,
     backSubtitle: defaultCopy.whatsapp.backSubtitle,
+    badge: defaultCopy.whatsapp.badge,
+    ctaText: defaultCopy.whatsapp.ctaText,
     iconPath: 'M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01a1.096 1.096 0 0 0-.792.371c-.297.322-1.139 1.114-1.139 2.716s1.164 3.146 1.337 3.37c.173.223 2.302 3.518 5.577 4.935 2.187.947 2.923.8 3.541.748.723-.06 2.303-.941 2.625-1.849.322-.909.322-1.688.223-1.849-.099-.161-.371-.247-.669-.396zM12 21.6A9.6 9.6 0 0 1 3.731 16.7l-1.312 4.79 4.908-1.288A9.553 9.553 0 0 1 12 21.6c5.3 0 9.6-4.3 9.6-9.6S17.3 2.4 12 2.4 2.4 6.7 2.4 12c0 1.676.433 3.25 1.196 4.593L2.4 21.6l5.132-1.35A9.57 9.57 0 0 0 12 21.6z'
   },
   facebook: {
@@ -91,6 +98,8 @@ const platformConfigs = {
     subtitle: defaultCopy.facebook.subtitle,
     backTitle: defaultCopy.facebook.backTitle,
     backSubtitle: defaultCopy.facebook.backSubtitle,
+    badge: defaultCopy.facebook.badge,
+    ctaText: defaultCopy.facebook.ctaText,
     iconPath: 'M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.469h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.469h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z'
   }
 };
@@ -98,14 +107,14 @@ const platformConfigs = {
 const finalConfig = Astro.props.config || platformConfigs[platform];
 const iconPath = platformConfigs[platform].iconPath;
 
-// Generate truly embedded high-resolution vector QR Code and data URI
+// Generate truly embedded high-resolution vector QR Code data URI
 let embeddedQrDataUrl = '';
 try {
   embeddedQrDataUrl = await QRCode.toDataURL(finalConfig.href, {
     margin: 1,
     width: 256,
     color: {
-      dark: '#030816',
+      dark: '#1c3d5a',
       light: '#ffffff'
     },
     errorCorrectionLevel: 'M'
@@ -114,201 +123,97 @@ try {
   console.error('Failed to generate embedded QR code', e);
   embeddedQrDataUrl = finalConfig.qrImage || '';
 }
-
-// JSON encode themes for client-side mode toggling
-const themesJson = JSON.stringify({
-  telegram: [
-    { bg: 'linear-gradient(135deg, #0b1a30 0%, #00122e 45%, #05244f 100%)', textLight: '#00f2fe', badgeBg: 'rgba(0, 242, 254, 0.18)', badgeText: '#00f2fe', accentGlow: '#00f2fe' },
-    { bg: 'linear-gradient(135deg, #0d1b2a 0%, #1b263b 50%, #003566 100%)', textLight: '#80ed99', badgeBg: 'rgba(128, 237, 153, 0.18)', badgeText: '#80ed99', accentGlow: '#80ed99' },
-    { bg: 'linear-gradient(135deg, #1f1035 0%, #0f0c29 50%, #24243e 100%)', textLight: '#f72585', badgeBg: 'rgba(247, 37, 133, 0.22)', badgeText: '#ff70a6', accentGlow: '#f72585' }
-  ],
-  wechat: [
-    { bg: 'linear-gradient(135deg, #041c10 0%, #022c19 50%, #074728 100%)', textLight: '#25d366', badgeBg: 'rgba(37, 211, 102, 0.2)', badgeText: '#25d366', accentGlow: '#25d366' },
-    { bg: 'linear-gradient(135deg, #0a2318 0%, #113f28 50%, #0d5c38 100%)', textLight: '#a7f3d0', badgeBg: 'rgba(167, 243, 208, 0.2)', badgeText: '#a7f3d0', accentGlow: '#34d399' }
-  ],
-  whatsapp: [
-    { bg: 'linear-gradient(135deg, #042017 0%, #063829 50%, #0a4f3b 100%)', textLight: '#25d366', badgeBg: 'rgba(37, 211, 102, 0.2)', badgeText: '#25d366', accentGlow: '#25d366' }
-  ],
-  facebook: [
-    { bg: 'linear-gradient(135deg, #0a1733 0%, #0d2857 50%, #154080 100%)', textLight: '#60a5fa', badgeBg: 'rgba(96, 165, 250, 0.2)', badgeText: '#60a5fa', accentGlow: '#3b82f6' }
-  ]
-});
 ---
 
 <div class:list={['card-widget promo-widget', className]} id={id}>
-  <div id="flip-wrapper" data-platform={platform} data-themes={themesJson}>
+  <div id="flip-wrapper">
     <div id="flip-content">
       
       <!-- ============================================== -->
-      <!-- FRONT FACE: Cyber Holographic Interface        -->
+      <!-- FRONT FACE: 亮色调清新优雅浅蓝正面            -->
       <!-- ============================================== -->
       <div
         class="face front-face"
         onclick={finalConfig.href && finalConfig.href !== '#' ? `window.open("${finalConfig.href}", "_blank")` : undefined}
       >
-        <!-- Background Cyber Mesh & Vector Circuit Canvas -->
-        <div class="promo-tech-canvas" aria-hidden="true">
-          <svg class="tech-grid-svg" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <pattern id={`tech-grid-dots-${id}`} width="16" height="16" patternUnits="userSpaceOnUse">
-                <circle cx="2" cy="2" r="0.75" fill="rgba(0, 242, 254, 0.25)" />
-              </pattern>
-              <linearGradient id={`tech-trace-grad-${id}`} x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stop-color="rgba(0, 242, 254, 0)" />
-                <stop offset="40%" stop-color="rgba(0, 242, 254, 0.45)" />
-                <stop offset="80%" stop-color="rgba(255, 255, 255, 0.65)" />
-                <stop offset="100%" stop-color="rgba(0, 242, 254, 0)" />
-              </linearGradient>
-            </defs>
-            <rect width="100%" height="100%" fill={`url(#tech-grid-dots-${id})`} />
-            <!-- High-Tech Circuit Traces -->
-            <path d="M 0 28 L 70 28 L 95 48 L 180 48 L 205 72 L 360 72" stroke={`url(#tech-trace-grad-${id})`} stroke-width="1.2" fill="none" />
-            <path d="M 120 14 L 160 14 L 180 32 L 290 32" stroke={`url(#tech-trace-grad-${id})`} stroke-width="0.8" fill="none" opacity="0.6" />
-            <circle cx="95" cy="48" r="2.2" fill="var(--promo-text-light, #00f2fe)" />
-            <circle cx="205" cy="72" r="2.2" fill="var(--promo-text-light, #00f2fe)" />
+        <!-- 画面感：右侧倾斜 15 度半透明纯净矢量大水印 -->
+        <div class="promo-watermark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d={iconPath} />
           </svg>
         </div>
 
-        <!-- High-Tech Radar Compass & Huge Vector Watermark -->
-        <div class="promo-radar-watermark" aria-hidden="true">
-          <svg viewBox="0 0 160 160" width="160" height="160" fill="none" stroke="currentColor">
-            <circle cx="80" cy="80" r="74" stroke="rgba(0, 242, 254, 0.15)" stroke-width="1" stroke-dasharray="4 4" />
-            <circle cx="80" cy="80" r="56" stroke="rgba(0, 242, 254, 0.22)" stroke-width="1" />
-            <circle cx="80" cy="80" r="38" stroke="rgba(0, 242, 254, 0.12)" stroke-width="1" stroke-dasharray="2 3" />
-            <line x1="80" y1="2" x2="80" y2="158" stroke="rgba(0, 242, 254, 0.15)" stroke-width="0.8" />
-            <line x1="2" y1="80" x2="158" y2="80" stroke="rgba(0, 242, 254, 0.15)" stroke-width="0.8" />
-            <path d="M 80 80 L 138 42" stroke="rgba(0, 242, 254, 0.45)" stroke-width="1.2" />
-            <g transform="translate(46, 46) scale(2.8)" fill="rgba(255, 255, 255, 0.12)">
+        <!-- 正面主体布局 -->
+        <div class="promo-front-body">
+          <div class="promo-icon-box">
+            <svg viewBox="0 0 24 24" width="28" height="28" fill="#ffffff">
               <path d={iconPath} />
-            </g>
-          </svg>
-        </div>
-
-        <!-- Top Telemetry Status Header -->
-        <div class="hud-top-bar">
-          <div class="hud-band-badge">
-            <span class="hud-node-dot"></span>
-            <span class="hud-node-text">[CHRONORAL // PROTO-V2]</span>
+            </svg>
           </div>
-
-          <!-- Dynamic Waveform Equalizer Bars -->
-          <div class="hud-waveform-bars" aria-hidden="true">
-            <span class="eq-bar eq-bar-1"></span>
-            <span class="eq-bar eq-bar-2"></span>
-            <span class="eq-bar eq-bar-3"></span>
-            <span class="eq-bar eq-bar-4"></span>
-          </div>
-
-          <div class="hud-header-controls">
-            <!-- Theme Mode Chip Button -->
-            <button
-              class="theme-toggle-btn"
-              aria-label="切换色调"
-              onclick="event.stopPropagation(); window.togglePromoTheme(this)"
-              title="切换极客频谱"
-            >
-              <svg viewBox="0 0 24 24" width="13" height="13" stroke="currentColor" stroke-width="2" fill="none">
-                <circle cx="12" cy="12" r="3"></circle>
-                <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"></path>
-              </svg>
-            </button>
-            <div class="status-pulse-wrapper">
-              <span class="status-pulse-dot"></span>
-              <span class="status-pulse-label">LIVE</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Main Body: Hologram Crest + Typography -->
-        <div class="promo-main-body">
-          <div class="promo-icon-cyber-wrap">
-            <div class="promo-icon-orbit-ring"></div>
-            <div class="promo-icon-inner-glow"></div>
-            <div class="promo-icon">
-              <svg viewBox="0 0 24 24" width="32" height="32" fill="currentColor">
-                <path d={iconPath} />
-              </svg>
-            </div>
-          </div>
-          <div class="promo-info-col">
+          <div class="promo-front-info">
             <div class="promo-title-row">
               <span class="promo-title">{finalConfig.title}</span>
-              <span class="promo-chip-badge">OFFICIAL</span>
+              <span class="promo-badge">{platformConfigs[platform].badge}</span>
             </div>
-            <div class="promo-desc">{finalConfig.subtitle}</div>
+            <div class="promo-subtitle">{finalConfig.subtitle}</div>
           </div>
         </div>
 
-        <!-- Bottom HUD Tracking Footer -->
-        <div class="hud-bottom-tracker">
-          <span class="hud-tracker-label">⚡ HOVER TO DECRYPT QR // 悬停开启量子二维码</span>
-          <span class="hud-tracker-arrow">&rarr;</span>
+        <!-- 正面底栏轻量提示 -->
+        <div class="promo-front-hint">
+          <span class="hint-text">悬停翻转直达二维码</span>
+          <svg class="hint-arrow" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2">
+            <path d="M5 12h14M12 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
         </div>
       </div>
 
       <!-- ============================================== -->
-      <!-- BACK FACE: Holographic Quantum Scanner Pod     -->
+      <!-- BACK FACE: 完整设计的正向展示扫码后板         -->
       <!-- ============================================== -->
       <div
-        class="back face back-face"
+        class="face back-face"
         onclick={finalConfig.href && finalConfig.href !== '#' ? `window.open("${finalConfig.href}", "_blank")` : undefined}
       >
-        <!-- Background Tech Grid -->
-        <div class="promo-tech-canvas" aria-hidden="true">
-          <svg class="tech-grid-svg" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-            <rect width="100%" height="100%" fill={`url(#tech-grid-dots-${id})`} opacity="0.4" />
-            <path d="M 0 90 L 90 90 L 115 110 L 360 110" stroke={`url(#tech-trace-grad-${id})`} stroke-width="0.9" fill="none" opacity="0.3" />
+        <!-- 画面感：背面对应微透水印 -->
+        <div class="promo-watermark promo-watermark--back" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d={iconPath} />
           </svg>
         </div>
 
-        <!-- Back Header -->
-        <div class="hud-back-header">
-          <div class="hud-back-tag">
-            <span class="hud-scan-pulse"></span>
-            <span>[SCANNER POD // {siteConfig.aside.telegramWidget?.handle || '@chronoral'}]</span>
-          </div>
-          <span class="hud-crypto-badge">AES-256</span>
-        </div>
-
-        <!-- Back Main Content -->
+        <!-- 背面主体左右网格布局 -->
         <div class="promo-back-grid">
-          <div class="promo-back-console">
+          <!-- 左侧文字说明与快捷按钮 -->
+          <div class="promo-back-left">
             <div class="promo-back-title">{finalConfig.backTitle}</div>
             <div class="promo-back-subtitle">{finalConfig.backSubtitle}</div>
             <div class="promo-cta-action">
-              <span class="promo-uplink-btn">
-                <span class="uplink-dot"></span>
-                <span class="uplink-text">立即加入</span>
-                <span class="uplink-arrow">&nearr;</span>
-              </span>
+              <a
+                href={finalConfig.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="promo-cta-btn"
+                onclick="event.stopPropagation();"
+              >
+                <span>{platformConfigs[platform].ctaText}</span>
+                <span class="cta-arrow">&nearr;</span>
+              </a>
             </div>
           </div>
 
-          <!-- Embedded High-Definition Vector QR Matrix Chamber -->
-          <div class="promo-qr-hud-box">
-            <!-- 4 Corner Reticle Brackets -->
-            <span class="hud-corner-bracket bracket-tl"></span>
-            <span class="hud-corner-bracket bracket-tr"></span>
-            <span class="hud-corner-bracket bracket-bl"></span>
-            <span class="hud-corner-bracket bracket-br"></span>
-
-            <!-- Animated Laser Scanline Effect -->
-            <div class="hud-laser-scanline" aria-hidden="true"></div>
-
-            <!-- Truly Embedded QR Code Container -->
-            <div class="promo-qr-container">
+          <!-- 右侧内嵌高清矢量二维码 -->
+          <div class="promo-qr-chassis">
+            <div class="promo-qr-wrapper">
               <img
                 src={embeddedQrDataUrl}
-                alt={`${finalConfig.title} Embedded Vector QR Code`}
+                alt={`${finalConfig.title} 二维码`}
                 class="promo-qr-img"
                 loading="eager"
                 decoding="sync"
               />
             </div>
-
-            <div class="hud-qr-scan-bar">
-              <span>SCAN TO JOIN</span>
-            </div>
+            <span class="promo-qr-label">扫码加入</span>
           </div>
         </div>
       </div>
@@ -316,54 +221,6 @@ const themesJson = JSON.stringify({
     </div>
   </div>
 </div>
-
-<script is:inline>
-  window.togglePromoTheme = function(btn) {
-    const wrapper = btn.closest('#flip-wrapper');
-    if (!wrapper) return;
-    
-    const platform = wrapper.getAttribute('data-platform');
-    const themesStr = wrapper.getAttribute('data-themes');
-    if (!platform || !themesStr) return;
-
-    try {
-      const themes = JSON.parse(themesStr);
-      const platformThemes = themes[platform];
-      if (!platformThemes || platformThemes.length === 0) return;
-
-      let currentIndex = parseInt(wrapper.getAttribute('data-theme-idx') || '0', 10);
-      currentIndex = (currentIndex + 1) % platformThemes.length;
-      
-      const theme = platformThemes[currentIndex];
-      wrapper.style.setProperty('--promo-bg-gradient', theme.bg);
-      wrapper.style.setProperty('--promo-text-light', theme.textLight);
-      wrapper.style.setProperty('--promo-badge-bg', theme.badgeBg);
-      wrapper.style.setProperty('--promo-badge-text', theme.badgeText);
-      wrapper.setAttribute('data-theme-idx', currentIndex.toString());
-    } catch(e) {
-      console.error('Failed to parse promo themes', e);
-    }
-  };
-
-  document.addEventListener('DOMContentLoaded', () => {
-    document.querySelectorAll('#flip-wrapper').forEach(wrapper => {
-      const platform = wrapper.getAttribute('data-platform');
-      const themesStr = wrapper.getAttribute('data-themes');
-      if (platform && themesStr) {
-        try {
-          const themes = JSON.parse(themesStr);
-          if (themes[platform] && themes[platform].length > 0) {
-            const theme = themes[platform][0];
-            wrapper.style.setProperty('--promo-bg-gradient', theme.bg);
-            wrapper.style.setProperty('--promo-text-light', theme.textLight);
-            wrapper.style.setProperty('--promo-badge-bg', theme.badgeBg);
-            wrapper.style.setProperty('--promo-badge-text', theme.badgeText);
-          }
-        } catch (e) {}
-      }
-    });
-  });
-</script>
 
 <style>
   .promo-widget {
@@ -375,60 +232,37 @@ const themesJson = JSON.stringify({
     box-sizing: border-box !important;
     padding: 0 !important;
     border: none;
-    height: 140px;
-    border-radius: 10px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15), 0 0 1px rgba(0, 242, 254, 0.35);
-    color: #fff;
-    overflow: visible !important;
+    height: 130px;
+    border-radius: 8px;
     margin: 0 !important;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-  }
-
-  .promo-widget:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.3), 0 0 14px rgba(0, 242, 254, 0.4);
-  }
-
-  :global([data-theme="dark"]) .promo-widget {
-    background: transparent;
-    border: none;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4), 0 0 1px rgba(0, 242, 254, 0.4);
+    overflow: visible !important;
+    cursor: pointer;
   }
 
   #flip-wrapper {
-    -webkit-perspective: 1200px;
-    perspective: 1200px;
+    -webkit-perspective: 1000px;
+    perspective: 1000px;
     position: relative;
     width: 100%;
     height: 100%;
-    min-width: 0;
-    min-height: 0;
-    box-sizing: border-box;
-    border-radius: 10px;
-    z-index: 1;
-    background: transparent !important;
-    border: none !important;
-    /* Cyber Defaults */
-    --promo-bg-gradient: linear-gradient(135deg, #0b1a30 0%, #00122e 45%, #05244f 100%);
-    --promo-text-light: #00f2fe;
-    --promo-badge-bg: rgba(0, 242, 254, 0.18);
-    --promo-badge-text: #00f2fe;
+    border-radius: 8px;
+    /* 核心：亮色调清新优雅浅蓝渐变 */
+    --promo-bg-gradient: linear-gradient(135deg, #2481cc 0%, #3598dc 50%, #4aaff6 100%);
+    --promo-card-shadow: 0 4px 16px rgba(36, 129, 204, 0.28);
+    --promo-border-color: rgba(255, 255, 255, 0.45);
+  }
+
+  :global([data-theme="dark"]) #flip-wrapper {
+    --promo-bg-gradient: linear-gradient(135deg, #185a8c 0%, #1a4f78 50%, #1f4263 100%);
+    --promo-card-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+    --promo-border-color: rgba(255, 255, 255, 0.2);
   }
 
   #flip-content {
     position: relative;
     width: 100%;
     height: 100%;
-    min-width: 0;
-    min-height: 0;
-    box-sizing: border-box;
-    -webkit-transform-style: preserve-3d;
-    transform-style: preserve-3d;
-    transition: transform 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
-    will-change: transform;
-    border-radius: 10px;
-    background: transparent !important;
-    border: none !important;
+    border-radius: 8px;
   }
 
   .face {
@@ -436,366 +270,200 @@ const themesJson = JSON.stringify({
     inset: 0 !important;
     width: 100% !important;
     height: 100% !important;
-    max-width: 100% !important;
-    max-height: 100% !important;
     box-sizing: border-box !important;
-    -webkit-backface-visibility: hidden !important;
-    backface-visibility: hidden !important;
-    -webkit-transform-style: preserve-3d;
-    transform-style: preserve-3d;
-    border-radius: 10px;
-    cursor: pointer;
+    border-radius: 8px;
+    background: var(--promo-bg-gradient);
+    border: 1px solid var(--promo-border-color);
+    box-shadow: var(--promo-card-shadow);
+    color: #ffffff;
     overflow: hidden;
-    background-image: var(--promo-bg-gradient);
-    border: 1px solid rgba(0, 242, 254, 0.28);
-    margin: 0 !important;
-    padding: 10px 12px !important;
+    padding: 12px 14px !important;
     display: flex !important;
     flex-direction: column !important;
     justify-content: space-between !important;
+    -webkit-backface-visibility: hidden !important;
+    backface-visibility: hidden !important;
+    transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease, visibility 0.3s ease;
+    will-change: transform, opacity;
   }
 
-  /* Cyber Canvas & Vector Layers */
-  .promo-tech-canvas {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-    z-index: 0;
-    overflow: hidden;
-  }
-
-  .tech-grid-svg {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-  }
-
-  .promo-radar-watermark {
-    position: absolute;
-    right: -24px;
-    bottom: -24px;
-    width: 160px;
-    height: 160px;
-    opacity: 0.38;
-    z-index: 0;
-    pointer-events: none;
-    transform: rotate(-10deg);
-  }
-
-  /* FRONT FACE SPECIFICS */
+  /* 正面板：默认正对用户 (0deg) */
   .front-face {
+    -webkit-transform: rotateY(0deg) !important;
+    transform: rotateY(0deg) !important;
     z-index: 2;
-    transform: rotateY(0deg) translateZ(1px) !important;
-    -webkit-transform: rotateY(0deg) translateZ(1px) !important;
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
   }
 
-  /* Top HUD Bar */
-  .hud-top-bar {
-    position: relative;
-    z-index: 2;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+  /* 背面板：默认背对用户 (-180deg) */
+  .back-face {
+    -webkit-transform: rotateY(-180deg) !important;
+    transform: rotateY(-180deg) !important;
+    z-index: 1;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  /* 悬停或聚焦时：正面翻出 (180deg) 且淡出；背面翻入正向 (0deg) 且显现 */
+  .promo-widget:hover .front-face,
+  .promo-widget:focus-within .front-face,
+  #flip-wrapper:hover .front-face {
+    -webkit-transform: rotateY(180deg) !important;
+    transform: rotateY(180deg) !important;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  .promo-widget:hover .back-face,
+  .promo-widget:focus-within .back-face,
+  #flip-wrapper:hover .back-face {
+    -webkit-transform: rotateY(0deg) !important;
+    transform: rotateY(0deg) !important;
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    z-index: 3;
+  }
+
+  /* 大尺寸画面感半透明矢量水印 */
+  .promo-watermark {
+    position: absolute;
+    right: -18px;
+    bottom: -18px;
+    width: 125px;
+    height: 125px;
+    opacity: 0.13;
+    pointer-events: none;
+    transform: rotate(-12deg);
+    color: #ffffff;
+    z-index: 0;
+  }
+
+  .promo-watermark svg {
     width: 100%;
-    height: 20px;
+    height: 100%;
   }
 
-  .hud-band-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    font-family: monospace, ui-monospace, sans-serif;
-    font-size: 8.5px;
-    font-weight: 700;
-    letter-spacing: 0.8px;
-    color: var(--promo-text-light);
-    opacity: 0.9;
-  }
-
-  .hud-node-dot {
-    width: 4px;
-    height: 4px;
-    border-radius: 50%;
-    background: var(--promo-text-light);
-    box-shadow: 0 0 6px var(--promo-text-light);
-  }
-
-  .hud-waveform-bars {
-    display: flex;
-    align-items: flex-end;
-    gap: 2.5px;
-    height: 12px;
-  }
-
-  .eq-bar {
-    width: 2px;
-    background: var(--promo-text-light);
-    border-radius: 1px;
-    opacity: 0.75;
-    animation: eqBounce 1.2s infinite ease-in-out alternate;
-  }
-
-  .eq-bar-1 { height: 4px; animation-delay: 0.1s; }
-  .eq-bar-2 { height: 10px; animation-delay: 0.3s; }
-  .eq-bar-3 { height: 7px; animation-delay: 0.5s; }
-  .eq-bar-4 { height: 11px; animation-delay: 0.2s; }
-
-  @keyframes eqBounce {
-    0% { height: 3px; opacity: 0.4; }
-    100% { height: 12px; opacity: 1; }
-  }
-
-  .hud-header-controls {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .theme-toggle-btn {
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(0, 242, 254, 0.35);
-    border-radius: 4px;
-    width: 22px;
-    height: 22px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--promo-text-light);
-    cursor: pointer;
-    transition: all 0.3s ease;
-  }
-
-  .theme-toggle-btn:hover {
-    background: rgba(0, 242, 254, 0.25);
-    transform: rotate(90deg);
-    box-shadow: 0 0 8px var(--promo-text-light);
-  }
-
-  .status-pulse-wrapper {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-  }
-
-  .status-pulse-dot {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: #00ff88;
-    box-shadow: 0 0 8px #00ff88;
-    animation: livePulse 1.8s infinite ease-in-out;
-  }
-
-  @keyframes livePulse {
-    0%, 100% { transform: scale(1); opacity: 1; }
-    50% { transform: scale(0.75); opacity: 0.4; }
-  }
-
-  .status-pulse-label {
-    font-family: monospace, ui-monospace, sans-serif;
-    font-size: 8px;
-    font-weight: 700;
-    letter-spacing: 0.6px;
-    color: #00ff88;
-  }
-
-  /* Front Main Body */
-  .promo-main-body {
+  /* FRONT FACE 样式 */
+  .promo-front-body {
     position: relative;
     z-index: 2;
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 0 2px;
   }
 
-  .promo-icon-cyber-wrap {
-    position: relative;
+  .promo-icon-box {
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.22);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 50px;
-    height: 50px;
     flex-shrink: 0;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
   }
 
-  .promo-icon-orbit-ring {
-    position: absolute;
-    inset: -2px;
-    border-radius: 50%;
-    border: 1.5px dashed var(--promo-text-light);
-    opacity: 0.5;
-    animation: orbitRotate 16s infinite linear;
-  }
-
-  @keyframes orbitRotate {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-  }
-
-  .promo-icon-inner-glow {
-    position: absolute;
-    inset: 3px;
-    border-radius: 50%;
-    background: radial-gradient(circle, rgba(0, 242, 254, 0.25) 0%, rgba(0, 0, 0, 0) 70%);
-    box-shadow: inset 0 0 10px rgba(0, 242, 254, 0.4);
-  }
-
-  .promo-icon {
-    color: #ffffff;
-    filter: drop-shadow(0 0 8px var(--promo-text-light));
-    position: relative;
-    z-index: 2;
-  }
-
-  .promo-info-col {
+  .promo-front-info {
     display: flex;
     flex-direction: column;
     justify-content: center;
-    overflow: hidden;
+    min-width: 0;
+    flex: 1;
   }
 
   .promo-title-row {
     display: flex;
     align-items: center;
-    gap: 6px;
-    margin-bottom: 3px;
+    gap: 7px;
+    margin-bottom: 2px;
   }
 
   .promo-title {
-    font-size: 1.25rem;
-    font-weight: 900;
-    letter-spacing: 0.8px;
-    color: #ffffff;
-    text-shadow: 0 0 10px rgba(0, 242, 254, 0.35);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .promo-chip-badge {
-    font-family: monospace, ui-monospace, sans-serif;
-    font-size: 8px;
+    font-size: 1.15rem;
     font-weight: 800;
-    padding: 1px 5px;
-    border-radius: 3px;
-    background: var(--promo-badge-bg);
-    color: var(--promo-badge-text);
-    border: 1px solid rgba(0, 242, 254, 0.35);
-    letter-spacing: 0.8px;
+    letter-spacing: 0.3px;
+    color: #ffffff;
     line-height: 1.2;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
   }
 
-  .promo-desc {
-    font-size: 0.78rem;
+  .promo-badge {
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 1.5px 6px;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.25);
+    border: 1px solid rgba(255, 255, 255, 0.38);
+    color: #ffffff;
+    line-height: 1.2;
+    white-space: nowrap;
+  }
+
+  .promo-subtitle {
+    font-size: 0.76rem;
+    color: rgba(255, 255, 255, 0.92);
     line-height: 1.35;
-    color: rgba(255, 255, 255, 0.82);
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
   }
 
-  /* Bottom Tracker */
-  .hud-bottom-tracker {
+  .promo-front-hint {
     position: relative;
     z-index: 2;
     display: flex;
     align-items: center;
     justify-content: space-between;
+    font-size: 0.72rem;
+    color: rgba(255, 255, 255, 0.88);
     padding-top: 4px;
-    border-top: 1px solid rgba(0, 242, 254, 0.15);
-    font-family: monospace, ui-monospace, sans-serif;
-    font-size: 8px;
-    color: var(--promo-text-light);
-    opacity: 0.85;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
   }
 
-  .hud-tracker-arrow {
-    font-size: 10px;
-    animation: arrowPulse 1.4s infinite ease-in-out;
+  .hint-arrow {
+    transition: transform 0.25s ease;
   }
 
-  @keyframes arrowPulse {
-    0%, 100% { transform: translateX(0); }
-    50% { transform: translateX(3px); }
+  .promo-widget:hover .hint-arrow {
+    transform: translateX(3px);
   }
 
-  /* BACK FACE SPECIFICS: Quantum Scanner Pod */
-  .back-face {
-    z-index: 2;
-    transform: rotateY(180deg) translateZ(1px) !important;
-    -webkit-transform: rotateY(180deg) translateZ(1px) !important;
-  }
-
-  .hud-back-header {
-    position: relative;
-    z-index: 2;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
-    height: 18px;
-  }
-
-  .hud-back-tag {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    font-family: monospace, ui-monospace, sans-serif;
-    font-size: 8px;
-    font-weight: 700;
-    color: var(--promo-text-light);
-  }
-
-  .hud-scan-pulse {
-    width: 5px;
-    height: 5px;
-    border-radius: 50%;
-    background: #00ff88;
-    box-shadow: 0 0 6px #00ff88;
-  }
-
-  .hud-crypto-badge {
-    font-family: monospace, ui-monospace, sans-serif;
-    font-size: 7.5px;
-    font-weight: 700;
-    color: rgba(255, 255, 255, 0.6);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    padding: 0 4px;
-    border-radius: 2px;
-  }
-
+  /* BACK FACE 样式 */
   .promo-back-grid {
     position: relative;
     z-index: 2;
     display: grid !important;
-    grid-template-columns: 1fr 94px !important;
+    grid-template-columns: 1fr 78px !important;
     align-items: center !important;
     gap: 10px !important;
-    width: 100% !important;
-    flex: 1;
-    min-height: 0;
+    height: 100% !important;
   }
 
-  .promo-back-console {
+  .promo-back-left {
     display: flex;
     flex-direction: column;
     justify-content: center;
-    overflow: hidden;
-    text-align: left;
+    min-width: 0;
   }
 
   .promo-back-title {
     font-size: 1.05rem;
-    font-weight: 900;
+    font-weight: 800;
     color: #ffffff;
     margin-bottom: 2px;
-    letter-spacing: 0.5px;
-    text-shadow: 0 0 8px rgba(0, 242, 254, 0.35);
+    line-height: 1.2;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -803,144 +471,69 @@ const themesJson = JSON.stringify({
 
   .promo-back-subtitle {
     font-size: 0.72rem;
+    color: rgba(255, 255, 255, 0.9);
     line-height: 1.35;
-    color: var(--promo-text-light);
-    opacity: 0.92;
     margin-bottom: 8px;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
   }
 
   .promo-cta-action {
     display: flex;
   }
 
-  .promo-uplink-btn {
+  .promo-cta-btn {
     display: inline-flex;
     align-items: center;
-    gap: 5px;
-    padding: 3px 10px;
-    background: linear-gradient(135deg, rgba(0, 242, 254, 0.25) 0%, rgba(0, 114, 255, 0.35) 100%);
-    border: 1px solid var(--promo-text-light);
-    color: #ffffff;
-    font-family: monospace, ui-monospace, sans-serif;
-    font-size: 0.72rem;
-    font-weight: 800;
-    border-radius: 4px;
-    box-shadow: 0 0 10px rgba(0, 242, 254, 0.25);
-    transition: all 0.25s ease;
+    gap: 4px;
+    padding: 3.5px 12px;
+    background: #ffffff;
+    color: #2481cc;
+    font-size: 0.74rem;
+    font-weight: 700;
+    border-radius: 999px;
+    text-decoration: none;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
   }
 
-  .promo-widget:hover .promo-uplink-btn {
-    background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
-    color: #030816;
-    box-shadow: 0 0 14px rgba(0, 242, 254, 0.6);
+  .promo-cta-btn:hover {
     transform: translateY(-1px) scale(1.02);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.22);
   }
 
-  .uplink-dot {
-    width: 4px;
-    height: 4px;
-    border-radius: 50%;
-    background: #00ff88;
+  .cta-arrow {
+    font-size: 0.82rem;
+    font-weight: 800;
+    line-height: 1;
   }
 
-  .uplink-arrow {
-    font-size: 11px;
-    font-weight: 900;
-  }
-
-  /* Embedded QR Chamber */
-  .promo-qr-hud-box {
-    position: relative;
-    width: 94px;
-    height: 94px;
+  /* 内嵌二维码容器 */
+  .promo-qr-chassis {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    background: rgba(0, 0, 0, 0.35);
+    gap: 3px;
+  }
+
+  .promo-qr-wrapper {
+    width: 74px;
+    height: 74px;
+    background: #ffffff;
     border-radius: 6px;
-    border: 1px solid rgba(0, 242, 254, 0.25);
+    padding: 3px;
     box-sizing: border-box;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.18);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
   }
 
-  /* 4 Precision Reticles */
-  .hud-corner-bracket {
-    position: absolute;
-    width: 8px;
-    height: 8px;
-    pointer-events: none;
-    z-index: 5;
-  }
-
-  .bracket-tl {
-    top: -1px;
-    left: -1px;
-    border-top: 2px solid var(--promo-text-light);
-    border-left: 2px solid var(--promo-text-light);
-  }
-
-  .bracket-tr {
-    top: -1px;
-    right: -1px;
-    border-top: 2px solid var(--promo-text-light);
-    border-right: 2px solid var(--promo-text-light);
-  }
-
-  .bracket-bl {
-    bottom: -1px;
-    left: -1px;
-    border-bottom: 2px solid var(--promo-text-light);
-    border-left: 2px solid var(--promo-text-light);
-  }
-
-  .bracket-br {
-    bottom: -1px;
-    right: -1px;
-    border-bottom: 2px solid var(--promo-text-light);
-    border-right: 2px solid var(--promo-text-light);
-  }
-
-  /* Laser Scan Beam */
-  .hud-laser-scanline {
-    position: absolute;
-    top: 4px;
-    left: 4px;
-    right: 4px;
-    height: 1.5px;
-    background: linear-gradient(90deg, transparent 0%, #00f2fe 50%, transparent 100%);
-    box-shadow: 0 0 8px #00f2fe;
-    z-index: 6;
-    pointer-events: none;
-    opacity: 0.85;
-    animation: laserScan 2.2s infinite ease-in-out alternate;
-  }
-
-  @keyframes laserScan {
-    0% { top: 6px; opacity: 0.3; }
-    100% { top: 68px; opacity: 0.95; }
-  }
-
-  .promo-qr-container {
-    width: 72px !important;
-    height: 72px !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    border-radius: 4px !important;
-    background: #ffffff !important;
-    padding: 3px !important;
-    box-shadow: 0 0 12px rgba(0, 0, 0, 0.5) !important;
-    box-sizing: border-box !important;
-    position: relative;
-    z-index: 2;
-    overflow: hidden !important;
-  }
-
-  .promo-qr-container img,
+  .promo-qr-wrapper img,
   .promo-qr-img {
     width: 100% !important;
     height: 100% !important;
@@ -950,22 +543,11 @@ const themesJson = JSON.stringify({
     image-rendering: pixelated;
   }
 
-  .hud-qr-scan-bar {
-    font-family: monospace, ui-monospace, sans-serif;
-    font-size: 7px;
-    font-weight: 800;
-    letter-spacing: 0.6px;
-    color: var(--promo-text-light);
-    margin-top: 3px;
+  .promo-qr-label {
+    font-size: 0.65rem;
+    color: rgba(255, 255, 255, 0.92);
+    font-weight: 600;
     line-height: 1;
-    opacity: 0.9;
-  }
-
-  /* 3D Flip Trigger */
-  .promo-widget:hover #flip-content,
-  .promo-widget:focus-within #flip-content,
-  #flip-wrapper:hover #flip-content {
-    -webkit-transform: rotateY(180deg);
-    transform: rotateY(180deg);
+    letter-spacing: 0.3px;
   }
 </style>
