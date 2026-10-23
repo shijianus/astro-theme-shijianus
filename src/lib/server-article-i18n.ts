@@ -1759,7 +1759,10 @@ export async function translateArticleByExtraction(options: TranslateArticleOpti
   const maskNonDiagramFencedBlocks = (input: string): string => {
     const lines = input.split('\n');
     const output: string[] = [];
-    const diagramLanguages = new Set(['mindmap', 'markmap', 'mermaid']);
+    // `text`/`plaintext` fences are often ASCII flow diagrams or visible
+    // documentation pipelines rather than executable code. Their labels must
+    // remain translatable just like mindmap and Mermaid nodes.
+    const diagramLanguages = new Set(['mindmap', 'markmap', 'mermaid', 'text', 'plaintext', 'ascii']);
     const isClosingFence = (line: string, character: string, length: number) => {
       const pattern = character === '`' ? '`' : '~';
       return new RegExp(`^\\s*${pattern}{${length},}\\s*$`).test(line);
