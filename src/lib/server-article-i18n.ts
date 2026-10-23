@@ -28,6 +28,10 @@ export interface TranslateArticleOptions {
   groqModel?: string;
   scheme?: 'primary' | 'extraction' | 'auto';
   enableOcr?: boolean;
+  /** Keep official-document HTML containers byte-for-byte stable while prose is translated. */
+  preserveHtmlTags?: boolean;
+  /** Maximum body chunk size for providers with small context windows. */
+  chunkSize?: number;
 }
 
 export interface TranslateArticleResult {
@@ -365,6 +369,9 @@ async function callModel(opts: CallModelOptions): Promise<CallModelResult> {
   const { systemPrompt, userMessage, timeoutMs = 90000 } = opts;
 
   // 1. Primary: Google Gemini (multi-model, 21 keys round-robin with auto-health filtering & rate limit cooldown)
+  // Batch jobs may deliberately opt out of the legacy Gemini pool. This is
+  // useful for deterministic provider selection and prevents an exhausted
+  // Gemini rotation from adding avoidable latency before Groq is tried.
   const rawGeminiKeys = process.env.GEMINI_API_KEYS || process.env.GEMINI_API_KEY || '';
   const allGeminiKeys = rawGeminiKeys
     .split(',')
@@ -372,7 +379,7 @@ async function callModel(opts: CallModelOptions): Promise<CallModelResult> {
     .filter(Boolean);
   const candidateGeminiKeys = allGeminiKeys.filter((k) => !badGeminiKeys.has(k));
 
-  if (candidateGeminiKeys.length > 0) {
+  if (process.env.ARTICLE_I18N_SKIP_GEMINI !== 'true' && candidateGeminiKeys.length > 0) {
     const candidateGeminiModels = [
       'gemini-2.5-flash',
     ];
@@ -390,9 +397,12 @@ async function callModel(opts: CallModelOptions): Promise<CallModelResult> {
       for (let kAttempt = 0; kAttempt < maxKeyAttempts; kAttempt++) {
         const gKey = keysToTry[geminiKeyIndex % keysToTry.length];
         geminiKeyIndex++;
+        let timeoutId: ReturnType<typeof setTimeout> | undefined;
         try {
           const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 12000);
+          const configuredGeminiTimeout = Number.parseInt(process.env.ARTICLE_I18N_GEMINI_TIMEOUT_MS || '12000', 10);
+          const geminiTimeout = Number.isFinite(configuredGeminiTimeout) ? Math.max(10000, Math.min(180000, configuredGeminiTimeout)) : 12000;
+          timeoutId = setTimeout(() => controller.abort(), geminiTimeout);
           const url = `https://generativelanguage.googleapis.com/v1beta/models/${gModel}:generateContent?key=${encodeURIComponent(gKey)}`;
           const response = await fetch(url, {
             method: 'POST',
@@ -431,6 +441,7 @@ async function callModel(opts: CallModelOptions): Promise<CallModelResult> {
             }
           }
         } catch (err: any) {
+          if (timeoutId) clearTimeout(timeoutId);
           // Network error, try next key
         }
       }
@@ -438,25 +449,33 @@ async function callModel(opts: CallModelOptions): Promise<CallModelResult> {
   }
 
   // 2. Secondary: Groq (High-speed Fallback)
-  const groqKey = opts.groqApiKey || process.env.GROQ_API_KEY || '';
+  const groqKey = process.env.ARTICLE_I18N_SKIP_GROQ === 'true'
+    ? ''
+    : (opts.groqApiKey || process.env.GROQ_API_KEY || '');
   if (groqKey) {
-    const candidateGroqModels = Array.from(
-      new Set(
-        [
-          'openai/gpt-oss-120b',
-          opts.groqModel,
-          process.env.GROQ_MODEL,
-          'qwen/qwen3.8-27b',
-          'qwen/qwen3.6-27b',
-          'openai/gpt-oss-20b',
-        ].filter(Boolean) as string[],
-      ),
-    );
+    const forcedGroqModel = process.env.ARTICLE_I18N_GROQ_MODEL_ONLY?.trim();
+    const candidateGroqModels = forcedGroqModel
+      ? [forcedGroqModel]
+      : Array.from(
+          new Set(
+            [
+              'openai/gpt-oss-120b',
+              opts.groqModel,
+              process.env.GROQ_MODEL,
+              'qwen/qwen3.8-27b',
+              'qwen/qwen3.6-27b',
+              'openai/gpt-oss-20b',
+            ].filter(Boolean) as string[],
+          ),
+        );
 
     for (const gModel of candidateGroqModels) {
+      let timeoutId: ReturnType<typeof setTimeout> | undefined;
       try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 15000);
+        const configuredGroqTimeout = Number.parseInt(process.env.ARTICLE_I18N_GROQ_TIMEOUT_MS || '15000', 10);
+        const groqTimeout = Number.isFinite(configuredGroqTimeout) ? Math.max(5000, Math.min(120000, configuredGroqTimeout)) : 15000;
+        timeoutId = setTimeout(() => controller.abort(), groqTimeout);
         const estimatedInputTokens = Math.ceil((systemPrompt.length + userMessage.length) / 3);
         const safeMaxTokens = Math.max(1500, Math.min(3600, 7500 - estimatedInputTokens));
         const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -483,9 +502,27 @@ async function callModel(opts: CallModelOptions): Promise<CallModelResult> {
           if (text) {
             return { ok: true, text, provider: 'Chronral-Groq', model: gModel };
           }
+          if (process.env.ARTICLE_I18N_DEBUG_PROVIDER === 'true') {
+            console.warn(`[Article-i18n] Groq ${gModel} returned an empty completion.`);
+          }
+        } else if (process.env.ARTICLE_I18N_DEBUG_PROVIDER === 'true') {
+          const errorText = await response.text().catch(() => '');
+          console.warn(`[Article-i18n] Groq ${gModel} status ${response.status}: ${errorText.slice(0, 240)}`);
         }
-      } catch (err: any) {}
+      } catch (err: any) {
+        if (timeoutId) clearTimeout(timeoutId);
+      }
     }
+  }
+
+  if (process.env.ARTICLE_I18N_GROQ_ONLY === 'true') {
+    return {
+      ok: false,
+      text: '',
+      provider: 'none',
+      model: 'error',
+      error: 'Groq-only mode is enabled and the configured Groq models failed or timed out.',
+    };
   }
 
   // 3. Tertiary: Primary Instance AI
@@ -499,10 +536,39 @@ async function callModel(opts: CallModelOptions): Promise<CallModelResult> {
   const customModel = opts.model || process.env.ARTICLE_AI_I18N_MODEL || process.env.INSTANCE_AI_MODEL || 'kimi-k3-free';
 
   if (customApiKey && !primaryEndpointOffline) {
+    let timeoutId: ReturnType<typeof setTimeout> | undefined;
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), Math.min(timeoutMs, 4000));
+      const hasConfiguredInstanceTimeout = Boolean(process.env.ARTICLE_I18N_INSTANCE_TIMEOUT_MS?.trim());
+      const configuredInstanceTimeout = Number.parseInt(process.env.ARTICLE_I18N_INSTANCE_TIMEOUT_MS || '4000', 10);
+      const instanceTimeout = Number.isFinite(configuredInstanceTimeout)
+        ? (hasConfiguredInstanceTimeout
+          ? Math.max(5000, Math.min(180000, configuredInstanceTimeout))
+          : 4000)
+        : 4000;
+      // Batch/document jobs may deliberately opt into a longer provider timeout.
+      // In that mode the per-operation timeout is a lower-bound request hint,
+      // not a second cap; otherwise the historical 4s fallback remains intact.
+      const effectiveInstanceTimeout = hasConfiguredInstanceTimeout
+        ? instanceTimeout
+        : Math.min(timeoutMs, instanceTimeout);
+      timeoutId = setTimeout(() => controller.abort(), effectiveInstanceTimeout);
       const endpoint = `${customBaseUrl}/chat/completions`;
+      // Instance AI models commonly expose an 8k context window. Sending
+      // max_tokens=8192 together with a non-empty prompt makes the API reject
+      // every request before generation starts. Reserve a small prompt/output
+      // margin and calculate the output budget from the actual request size.
+      const configuredContextTokens = Number.parseInt(process.env.INSTANCE_AI_CONTEXT_TOKENS || '8192', 10);
+      const contextTokens = Number.isFinite(configuredContextTokens)
+        ? Math.max(2048, Math.min(32768, configuredContextTokens))
+        : 8192;
+      const estimatedInputTokens = Math.ceil((systemPrompt.length + userMessage.length) / 3);
+      const configuredOutputCap = Number.parseInt(process.env.INSTANCE_AI_MAX_OUTPUT_TOKENS || '4096', 10);
+      const outputCap = Number.isFinite(configuredOutputCap)
+        ? Math.max(512, Math.min(8192, configuredOutputCap))
+        : 4096;
+      const instanceMaxTokens = Math.max(256, Math.min(outputCap, contextTokens - estimatedInputTokens - 128));
+      const lowReasoningModel = /(?:gpt-oss|deepseek|glm)/i.test(customModel);
       const response = await fetch(endpoint, {
         method: 'POST',
         signal: controller.signal,
@@ -518,7 +584,8 @@ async function callModel(opts: CallModelOptions): Promise<CallModelResult> {
             { role: 'user', content: userMessage },
           ],
           temperature: 0.25,
-          max_tokens: 8192,
+          max_tokens: instanceMaxTokens,
+          ...(lowReasoningModel ? { reasoning_effort: 'low' } : {}),
         }),
       });
       clearTimeout(timeoutId);
@@ -529,10 +596,16 @@ async function callModel(opts: CallModelOptions): Promise<CallModelResult> {
           return { ok: true, text, provider: 'Chronral-Instance', model: customModel };
         }
       } else {
-        primaryEndpointOffline = true;
+        // Keep the endpoint available for request-scoped failures such as an
+        // invalid budget or a transient provider response. Only auth/not-found
+        // responses make it unusable for the current batch.
+        if ([401, 403, 404].includes(response.status)) {
+          primaryEndpointOffline = true;
+        }
       }
     } catch (err: any) {
-      primaryEndpointOffline = true;
+      if (timeoutId) clearTimeout(timeoutId);
+      // Timeouts and network failures are transient; later jobs can retry.
     }
   }
 
@@ -767,7 +840,7 @@ export async function translateFrontmatterOnly(
   const systemPrompt = [
     `You are a precise YAML translator. Translate ONLY the human-readable text values in the given YAML frontmatter into ${localeName}.`,
     `Rules:`,
-    `- Translate ONLY the values of these fields: title, description, category, group, tags (and tag list items), coverAlt.`,
+    `- Translate ONLY the values of these fields: title, description, author, category, group, tags (and tag list items), coverAlt.`,
     `- Do NOT translate or modify: i18nKey, lang, date, updated, cover, images, slug, permalink, abbrlink, externalLink, encrypt, externalEncrypt, externalEncrypts, pinned, sticky, hidden, draft, isAiGenerated, aiTranslatedFrom, wordCount, readingTime, or any field whose value is a URL, number, boolean, or null.`,
     `- Output ONLY the raw YAML block (no --- delimiters, no markdown fences).`,
     `- Preserve the exact YAML structure, indentation, and key order.`,
@@ -852,8 +925,25 @@ export async function translateBodyChunk(
   const localeName = `${targetMeta.english} (${targetMeta.native})`;
   const systemPrompt = compileChunkSystemPrompt(targetLocale, sourceLocale);
 
+  const protectedHtmlTags: string[] = [];
+  const translatableChunk = options.preserveHtmlTags
+    ? chunk.replace(/<[^>]+>/g, (tag) => {
+      const token = `__PROT_HTML_${protectedHtmlTags.length}__`;
+      protectedHtmlTags.push(tag);
+      return token;
+    })
+    : chunk;
+
   const parts: string[] = [];
   parts.push(`Translate Chunk ${chunkIndex + 1} of ${totalChunks} of the article body into ${localeName}.`);
+  if (protectedHtmlTags.length > 0) {
+    parts.push(
+      '',
+      '[PROTECTED HTML TOKENS - COPY EXACTLY, DO NOT TRANSLATE OR REMOVE]:',
+      protectedHtmlTags.map((_, index) => `__PROT_HTML_${index}__`).join(' '),
+      '[END PROTECTED HTML TOKENS]',
+    );
+  }
   if (prevContext && prevContext.trim()) {
     parts.push(
       '',
@@ -862,10 +952,11 @@ export async function translateBodyChunk(
       `[END REFERENCE CONTEXT]`,
     );
   }
-  parts.push('', `[TEXT TO TRANSLATE]:`, chunk, `[END TEXT TO TRANSLATE]`);
+  parts.push('', `[TEXT TO TRANSLATE]:`, translatableChunk, `[END TEXT TO TRANSLATE]`);
   const userMessage = parts.join('\n');
 
-  const MAX_RETRIES = 10;
+  const configuredRetries = Number.parseInt(process.env.ARTICLE_I18N_CHUNK_RETRIES || '10', 10);
+  const MAX_RETRIES = Number.isFinite(configuredRetries) ? Math.max(1, Math.min(10, configuredRetries)) : 10;
   for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
     const result = await callModel({
       systemPrompt,
@@ -880,6 +971,24 @@ export async function translateBodyChunk(
 
     if (result.ok && result.text.trim()) {
       let translated = result.text.trim();
+
+      if (protectedHtmlTags.length > 0) {
+        const missingToken = protectedHtmlTags.findIndex((_, index) => !translated.includes(`__PROT_HTML_${index}__`));
+        if (missingToken !== -1) {
+          if (process.env.ARTICLE_I18N_DEBUG_PROVIDER === 'true') {
+            console.warn(`[Article-i18n] Protected-token response preview: ${translated.slice(0, 1800)}`);
+          }
+          console.warn(`[Article-i18n] ⚠️ Chunk ${chunkIndex + 1}/${totalChunks} dropped protected HTML token ${missingToken}; retrying attempt ${attempt}...`);
+          if (attempt < MAX_RETRIES) {
+            await new Promise((r) => setTimeout(r, 2000));
+            continue;
+          }
+          continue;
+        }
+        protectedHtmlTags.forEach((tag, index) => {
+          translated = translated.replaceAll(`__PROT_HTML_${index}__`, tag);
+        });
+      }
 
       // 1. Strip echoed prompt markers and reference context
       translated = translated.replace(/\[REFERENCE CONTEXT[\s\S]*?\[END REFERENCE CONTEXT\]/gi, '').trim();
@@ -1078,7 +1187,11 @@ export async function translateArticleChunked(options: TranslateArticleOptions):
   await new Promise((r) => setTimeout(r, 1500));
 
   // Step 2: Split body into clean semantic chunks (~3200 chars each)
-  const chunks = splitIntoChunks(rawBody, 3200);
+  const requestedChunkSize = Number(options.chunkSize);
+  const chunkSize = Number.isFinite(requestedChunkSize)
+    ? Math.max(600, Math.min(3200, requestedChunkSize))
+    : 3200;
+  const chunks = splitIntoChunks(rawBody, chunkSize);
   console.log(`[Article-i18n]    Split into ${chunks.length} chunks`);
 
   // Step 3: Translate each chunk sequentially
@@ -1762,62 +1875,213 @@ export async function translateArticleByExtraction(options: TranslateArticleOpti
   let finalBodyTemplate = templatedLines.join('\n');
   console.log(`[Article-i18n] [Scheme 2] Extracted ${textSegments.length} text segments to translate.`);
 
-  // 3. Batch translate segments in chunks of 25 (~1500 chars)
+  // 3. Batch translate segments in a line-oriented protocol. JSON is tempting
+  // here, but translated prose frequently contains quotation marks and model
+  // output can then become invalid JSON even when the translation is correct.
+  // A numbered tab-separated response is equally machine-checkable and keeps
+  // every source segment independently recoverable.
   const translatedSegments: string[] = new Array(textSegments.length);
-  const BATCH_SIZE = 25;
+  const configuredBatchSize = Number.parseInt(process.env.ARTICLE_I18N_EXTRACTION_BATCH_SIZE || '8', 10);
+  const BATCH_SIZE = Number.isFinite(configuredBatchSize)
+    ? Math.max(4, Math.min(16, configuredBatchSize))
+    : 8;
   const targetMeta = LOCALE_NAMES[targetLocale] || { native: targetLocale, english: targetLocale };
+  const extractionConcurrencyRaw = Number.parseInt(process.env.ARTICLE_I18N_EXTRACTION_CONCURRENCY || '3', 10);
+  const extractionConcurrency = Number.isFinite(extractionConcurrencyRaw)
+    ? Math.max(1, Math.min(4, extractionConcurrencyRaw))
+    : 3;
+  const batchJobs = Array.from({ length: Math.ceil(textSegments.length / BATCH_SIZE) }, (_, batchIndex) => ({
+    batchIndex,
+    start: batchIndex * BATCH_SIZE,
+    slice: textSegments.slice(batchIndex * BATCH_SIZE, (batchIndex + 1) * BATCH_SIZE),
+  }));
 
-  for (let b = 0; b < textSegments.length; b += BATCH_SIZE) {
-    const slice = textSegments.slice(b, b + BATCH_SIZE);
-    const batchDict: Record<string, string> = {};
-    slice.forEach((s, idx) => {
-      batchDict[String(idx)] = s;
-    });
+  const parseExtractionBatch = (raw: string, expectedSize: number): Record<string, string> | null => {
+    let clean = raw
+      .replace(/<think>[\s\S]*?(<\/think>|$)/gi, '')
+      .trim();
+    if (clean.startsWith('```')) clean = clean.replace(/^```[a-z]*\r?\n/i, '');
+    if (clean.endsWith('```')) clean = clean.replace(/\r?\n```\s*$/, '');
+    clean = clean.trim();
 
-    const batchPrompt = [
-      `You are a high-precision translation engine. Translate the JSON string values into ${targetMeta.english} / ${targetMeta.native}.`,
-      `Rules:`,
-      `- Preserve all keys ("0", "1", ...) EXACTLY identical.`,
-      `- Do not modify tokens like __PROT_0__, __PROT_1__, etc. Keep them intact.`,
-      `- Output ONLY a strictly valid JSON object matching the input keys.`,
-    ].join('\n');
+    const expectedKeys = Array.from({ length: expectedSize }, (_, index) => String(index));
+    const isComplete = (value: Record<string, string> | null): value is Record<string, string> => Boolean(
+      value && expectedKeys.every((key) => typeof value[key] === 'string' && value[key].trim()),
+    );
 
+    // Accept JSON from a provider that follows the structured prompt, but
+    // require every key before accepting it. Some lightweight models emit a
+    // nearly-valid object with one missing quote (`3":` instead of `"3":`),
+    // so repair that harmless serialization defect before parsing.
+    if (clean.startsWith('{')) {
+      const candidates = [
+        clean,
+        clean.replace(/([,{]\s*)(\d+)"\s*:/g, '$1"$2":'),
+      ];
+      for (const candidate of candidates) {
+        try {
+          const parsed = JSON.parse(candidate);
+          if (parsed && typeof parsed === 'object' && isComplete(parsed)) return parsed;
+        } catch {}
+      }
+
+      // Last JSON recovery path: scan quoted values directly. This handles a
+      // single malformed key while preserving escaped quotes and newlines in
+      // the translated value. It still rejects a partial/truncated batch.
+      const recovered: Record<string, string> = {};
+      const keyPattern = /(?:^|[,\n])\s*"?(\d+)"?\s*:\s*"/g;
+      let keyMatch: RegExpExecArray | null;
+      while ((keyMatch = keyPattern.exec(clean)) !== null) {
+        const key = keyMatch[1];
+        if (!expectedKeys.includes(key)) continue;
+        const valueStart = keyPattern.lastIndex;
+        let valueEnd = -1;
+        let escaped = false;
+        for (let index = valueStart; index < clean.length; index += 1) {
+          const character = clean[index];
+          if (escaped) {
+            escaped = false;
+            continue;
+          }
+          if (character === '\\') {
+            escaped = true;
+            continue;
+          }
+          if (character === '"') {
+            valueEnd = index;
+            break;
+          }
+        }
+        if (valueEnd < 0) break;
+        const encoded = `"${clean.slice(valueStart, valueEnd)}"`;
+        try {
+          recovered[key] = JSON.parse(encoded);
+        } catch {
+          recovered[key] = clean.slice(valueStart, valueEnd)
+            .replace(/\\"/g, '"')
+            .replace(/\\n/g, ' ')
+            .trim();
+        }
+        keyPattern.lastIndex = valueEnd + 1;
+      }
+      if (isComplete(recovered)) return recovered;
+    }
+
+    // The lightweight translation model may obey the numbering but collapse
+    // all records onto one line and replace the requested tab with spaces:
+    // `0 translated text 1 translated text ...`. Parse the expected sequence
+    // by marker boundaries before falling back to the line-oriented parser.
+    const compact: Record<string, string> = {};
+    let cursor = 0;
+    let compactOk = true;
+    for (let index = 0; index < expectedSize; index++) {
+      const marker = new RegExp(`(?:^|\\s)${index}(?:\\s+|\\|\\|\\||:)`, 'g');
+      marker.lastIndex = cursor;
+      const match = marker.exec(clean);
+      if (!match) {
+        compactOk = false;
+        break;
+      }
+      const valueStart = match.index + match[0].length;
+      const nextMarker = index + 1 < expectedSize
+        ? new RegExp(`(?:^|\\s)${index + 1}(?:\\s+|\\|\\||:)`, 'g')
+        : null;
+      const nextMatch = nextMarker ? nextMarker.exec(clean.slice(valueStart)) : null;
+      const valueEnd = nextMatch ? valueStart + nextMatch.index : clean.length;
+      const value = clean.slice(valueStart, valueEnd).trim();
+      if (!value) {
+        compactOk = false;
+        break;
+      }
+      compact[String(index)] = value;
+      cursor = valueEnd;
+    }
+    if (compactOk) return compact;
+
+    const parsed: Record<string, string> = {};
+    let currentKey: string | null = null;
+    for (const line of clean.split(/\r?\n/)) {
+      const match = line.match(/^\s*(\d+)\s*(?:\t|\|\|\||:|\.)\s*(.*)$/);
+      if (match && Number(match[1]) >= 0 && Number(match[1]) < expectedSize) {
+        currentKey = match[1];
+        parsed[currentKey] = match[2].trim();
+      } else if (currentKey !== null && line.trim()) {
+        // Long translations may be visually wrapped by the provider. Join
+        // continuation lines without losing the segment's content.
+        parsed[currentKey] = `${parsed[currentKey]} ${line.trim()}`.trim();
+      }
+    }
+    const complete = Array.from({ length: expectedSize }, (_, index) => String(index))
+      .every((key) => typeof parsed[key] === 'string' && parsed[key].trim());
+    return complete ? parsed : null;
+  };
+
+  const translateExtractionBatch = async (job: typeof batchJobs[number]) => {
+    const modelName = options.model || process.env.INSTANCE_AI_MODEL || '';
+    const useStructuredJson = /(?:gpt-oss|deepseek|glm)/i.test(modelName);
+    const batchPrompt = useStructuredJson
+      ? [
+        `You are a high-precision translation engine. Translate every JSON string value into ${targetMeta.english} / ${targetMeta.native}.`,
+        `Rules:`,
+        `- Preserve all numeric keys exactly and return every key.`,
+        `- Do not omit, summarize, merge, or split values. Keep technical tokens such as __PROT_0__ intact.`,
+        `- Output ONLY one valid JSON object. Do not add Markdown fences or explanations.`,
+      ].join('\n')
+      : [
+        `You are a high-precision translation engine. Translate each numbered line into ${targetMeta.english} / ${targetMeta.native}.`,
+        `Rules:`,
+        `- Return exactly one line for every input item, in the form NUMBER<TAB>TRANSLATION.`,
+        `- Keep each NUMBER unchanged and in the same order. Do not add a preamble, JSON, Markdown fence, or explanation.`,
+        `- Do not omit, summarize, merge, or split items. Keep technical tokens such as __PROT_0__ intact.`,
+        `- Do not insert literal line breaks inside a translated item.`,
+      ].join('\n');
+    const userMessage = useStructuredJson
+      ? JSON.stringify(Object.fromEntries(job.slice.map((source, index) => [String(index), source])), null, 2)
+      : job.slice.map((source, index) => `${index}\t${source.replace(/[\r\n]+/g, ' ')}`).join('\n');
     let translatedBatch: Record<string, string> | null = null;
     for (let attempt = 1; attempt <= 3; attempt++) {
       try {
         const res = await callModel({
           systemPrompt: batchPrompt,
-          userMessage: JSON.stringify(batchDict, null, 2),
+          userMessage,
           apiKey: options.apiKey,
           baseUrl: options.baseUrl,
           model: options.model,
           groqApiKey: options.groqApiKey,
           groqModel: options.groqModel,
-          timeoutMs: 45000,
+          timeoutMs: 60000,
         });
-
         if (res.ok && res.text) {
-          let cleanJson = res.text.trim();
-          if (cleanJson.startsWith('```json')) cleanJson = cleanJson.replace(/^```json\r?\n/, '');
-          else if (cleanJson.startsWith('```')) cleanJson = cleanJson.replace(/^```[a-z]*\r?\n/, '');
-          if (cleanJson.endsWith('```')) cleanJson = cleanJson.replace(/\r?\n```$/, '');
-          cleanJson = cleanJson.trim();
-
-          const parsed = JSON.parse(cleanJson);
-          if (parsed && typeof parsed === 'object') {
-            translatedBatch = parsed;
-            break;
+          translatedBatch = parseExtractionBatch(res.text, job.slice.length);
+          if (translatedBatch) break;
+          if (process.env.ARTICLE_I18N_DEBUG_EXTRACTION === 'true') {
+            console.warn(`[Article-i18n] [Scheme 2] Unparsed batch ${job.batchIndex + 1} response: ${res.text.slice(0, 1200)}`);
           }
+          throw new Error('Provider returned an incomplete numbered batch');
         }
+        throw new Error(res.error || 'Translation provider returned no output');
       } catch (err: any) {
-        console.warn(`[Article-i18n] [Scheme 2] Batch ${b / BATCH_SIZE + 1} attempt ${attempt} failed: ${err.message}`);
-        await new Promise((r) => setTimeout(r, 2000));
+        console.warn(`[Article-i18n] [Scheme 2] Batch ${job.batchIndex + 1} attempt ${attempt} failed: ${err.message}`);
+        if (attempt < 3) await new Promise((r) => setTimeout(r, 2000));
       }
     }
+    return { ...job, translatedBatch };
+  };
 
-    slice.forEach((s, idx) => {
-      const trans = translatedBatch?.[String(idx)];
-      translatedSegments[b + idx] = (trans && typeof trans === 'string' && trans.trim()) ? trans.trim() : s;
+  const batchResults: Array<Awaited<ReturnType<typeof translateExtractionBatch>>> = new Array(batchJobs.length);
+  let nextBatch = 0;
+  const workers = Array.from({ length: Math.min(extractionConcurrency, batchJobs.length) }, async () => {
+    while (nextBatch < batchJobs.length) {
+      const index = nextBatch++;
+      batchResults[index] = await translateExtractionBatch(batchJobs[index]);
+    }
+  });
+  await Promise.all(workers);
+
+  for (const result of batchResults) {
+    result.slice.forEach((source, index) => {
+      const trans = result.translatedBatch?.[String(index)];
+      translatedSegments[result.start + index] = (trans && trans.trim()) ? trans.trim() : source;
     });
   }
 
