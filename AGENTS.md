@@ -6110,7 +6110,7 @@
   1. 验证 Post 页面与官方文档类型隔离（`heroType: 'official'` vs `'post'`）；
   2. 验证多语言自适应字号阶梯、标题黄金居中（偏移仅 17.7px）、版本与水波纹间距（+21.2px / 移动端 +30.4px）0 重叠全绿通过。
 
-### Task 80: 优化 #categoryBar 细线分割画风与 #flip-content 科技全息卡片及完整 QR-Code 内嵌 (`e93b7bc`)
+### Task 80: 优化 #categoryBar 细线分割画风与 #flip-content 科技全息卡片及完整 QR-Code 内嵌 (`fb1d504`)
 - [x] **优化 #categoryBar 线条粗细与画风同步 (`src/components/theme/HomeFeed.astro`, `src/styles/final-pass.css`, `src/styles/global.css`)**：
   1. 彻底解决亮色调下分类导航条线条过粗、浓重深蓝描边割裂问题：将边框由粗重 `1px solid var(--home-blue-card-border)`（`rgba(66, 90, 239, 0.32)`）重构为纯净优雅的 `1px solid var(--card-border) !important;`；
   2. 统一步骤与下方 `.recent-post-item` 的精致 UI 画风：边框厚度严格锁定 1px，圆角收敛为一致的 `var(--radius-md, 8px)`，背景与阴影完全与全站卡片系统统一；
@@ -6129,6 +6129,11 @@
   2. 验证 2：科技画布 SVG、雷达罗盘水印、状态脉冲呼吸灯、全息徽标、HUD 取景框 100% 存在；
   3. 验证 3：二维码配置为 `object-fit: contain`，悬停触发 3D 翻转后尺寸 > 72px 完整可见无损展示；
   4. 验证 4：深色模式（Dark Mode）与全视口自适应 100% 通过。
+- [x] **生产端 (Cloudflare Pages) 全量上线与真实链路端到端实机验证通过 (`scripts/verify-live-category-and-flip.mjs`)**：
+  1. 通过 Wrangler 部署至 Cloudflare Pages 生产边缘节点（部署实例：`https://54aff0d7.shijianus-blog.pages.dev`，生产主域 `https://blog.epocanvas.com` 同步全网生效）；
+  2. 真实无头浏览器实机请求生产主域名 HTTP 200 OK，线上 `#category-bar` 证实为 1px 细线分割与 8px 圆角；
+  3. 线上 `#card-telegram` 真实悬停触发 3D 翻转，全息科技元素完整呈现，群组二维码完整内嵌（`object-fit: contain`）且尺寸 74x74px 完美露出无裁剪；
+  4. 截取并保存真实生产环境审计证据至 `scripts/audit_screenshots/live-category-bar-and-flip.png`。
 
 
 
