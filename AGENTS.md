@@ -6110,7 +6110,7 @@
   1. 验证 Post 页面与官方文档类型隔离（`heroType: 'official'` vs `'post'`）；
   2. 验证多语言自适应字号阶梯、标题黄金居中（偏移仅 17.7px）、版本与水波纹间距（+21.2px / 移动端 +30.4px）0 重叠全绿通过。
 
-### Task 80: 优化 #categoryBar 细线分割画风、#flip-content 科技全息卡片彻底重构与纯矢量内嵌 QR-Code (`3a67ac5`)
+### Task 80: 优化 #categoryBar 细线分割画风、#flip-content 科技全息卡片彻底重构与纯矢量内嵌 QR-Code (`c713ac3`)
 - [x] **优化 #categoryBar 线条粗细与画风同步 (`src/components/theme/HomeFeed.astro`, `src/styles/final-pass.css`, `src/styles/global.css`)**：
   1. 彻底解决亮色调下分类导航条线条过粗、浓重深蓝描边割裂问题：将边框由粗重 `1px solid var(--home-blue-card-border)`（`rgba(66, 90, 239, 0.32)`）重构为纯净优雅的 `1px solid var(--card-border) !important;`；
   2. 统一步骤与下方 `.recent-post-item` 的精致 UI 画风：边框厚度严格锁定 1px，圆角收敛为一致的 `var(--radius-md, 8px)`，背景与阴影完全与全站卡片系统统一；
@@ -6130,11 +6130,12 @@
 - [x] **深度 3D 空间翻折动效与零闪烁保障**：
   1. 配置 `perspective: 1200px`、`transform-style: preserve-3d`、`will-change: transform`，正面与背面在 3D 空间具有立体位移，翻转动效采用物理弹性回弹 `cubic-bezier(0.34, 1.56, 0.64, 1)`；
   2. 彻底杜绝扁平直接倒置，正反交替自然顺畅。
-- [x] **本地与生产端全流程端到端 Playwright 验证全绿 (`scripts/verify-category-and-flip.mjs` & `scripts/verify-live-category-and-flip.mjs`)**：
-  1. 验证 1：亮色模式下 `#category-bar` 1px 细线与 8px 圆角严格通过；
-  2. 验证 2：正反面全新 HUD 科技要素、跳动音频频谱、激光扫描线、全息双环 100% 存在；
-  3. 验证 3：二维码验证为真正内嵌（`isEmbeddedDataUrl: true`，`src.startsWith('data:image/')`）；
-  4. 验证 4：3D 翻转动画与可见性测试通过（尺寸 66x66 ~ 74x74px 完美露出无损识别）。
+- [x] **本地与生产端 (https://blog.epocanvas.com) 全流程端到端 Playwright 验证全绿 (`scripts/verify-category-and-flip.mjs` & `scripts/verify-live-category-and-flip.mjs`)**：
+  1. 验证 1：亮色模式下生产端 `#category-bar` 1px 细线（`borderWidth: '1px'`）与 8px 圆角（`borderRadius: '8px'`）严格通过，与下方 `.recent-post-item` 完全统一；
+  2. 验证 2：正反面全新 HUD 科技要素（`techCanvas`、`radarWatermark`、`hudTopBar`、`waveformBars`、`orbitRing`、`pulseDot`、`laserScanline`、`uplinkBtn`）100% 存在；
+  3. 验证 3：生产端二维码验证为真正内嵌（`isEmbeddedDataUrl: true`，`qrSrcPrefix: 'data:image/png;base64,iVBORw0K'`，零网络延迟与无外部依赖）；
+  4. 验证 4：生产端 3D 翻转动画与可见性测试通过（尺寸 65.97px x 65.99px 完整无损露出展示）；
+  5. 验证 5：自动化截图实机归档至 `scripts/audit_screenshots/live-category-bar-and-flip.png`，生产端响应状态码 200 OK，控制台 0 报错。
 
 
 
