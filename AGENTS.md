@@ -6154,6 +6154,22 @@
   3. 生产端内嵌二维码验证：`isQrEmbeddedDataUrl: true`，`qrSize: { width: 68, height: 68 }`；
   4. 生产端交互验证：`backTransform: 'matrix(1, 0, 0, 1, 0, 0)'`（完全正对视口），`ctaText: '立即直达 ↗'`。
 
+### Task 82: 翻转动效降速至0.85s平滑缓动、高光折纸飞机立体SVG与通透天蓝配色升级 (`9a36a70`)
+- [x] **降低翻转速度与贝塞尔动效曲线优化 (`src/components/theme/PromoWidgetCard.astro`)**：
+  1. 将 3D 翻转总时长由 0.6s 从容延展至 **0.85s**，动画过渡调整为高级平滑的 `cubic-bezier(0.25, 1, 0.35, 1)` 缓动曲线；
+  2. 正反面显隐延迟精调为 `transition-delay: 0.2s`，转至侧面时无缝平滑交接，手感沉稳从容、丝滑准确，毫无抽搐突兀感。
+- [x] **彻底根除 SVG 灰蒙蒙与画面感全面升级 (`src/components/theme/PromoWidgetCard.astro`)**：
+  1. **Logo 徽章舱重塑**：采用纯净雪白圆形浮雕底托（`box-shadow: 0 4px 14px rgba(20, 60, 160, 0.22)`），中心内嵌双色折面高清立体纸飞机（线性渐变 `#2563eb` -> `#38bdf8` 与透光折角深蓝阴影），对比度饱满鲜明，彻底摆脱单色发灰；
+  2. **高光折翼纸飞机矢量大水印**：采用专属 `<linearGradient>` 多层折翼矢量 SVG（迎光面 `stop-opacity: 0.36` -> `0.18`，背光面 `0.22` -> `0.02`），在卡片右侧呈现微光拂过机翼的剔透通透画面感；
+  3. **通透饱和浅蓝渐变体系**：注入顶光与逆光双层微光辐射层（`radial-gradient`）融合现代活力天蓝（`#3b66f5` -> `#2f81f7` -> `#38bdf8`），高饱和、高明度，与安知鱼主题蓝及全站亮色调完美适配。
+- [x] **严格遵守禁止推送 remote repo 准则与 Cloudflare Pages 部署**：
+  1. 绝对未推送 `origin`（remote repo），仅推送并同步 `cf` 远端；
+  2. 通过 Wrangler 全量编译并部署至 Cloudflare Pages 生产边缘节点（`https://589771c3.shijianus-blog.pages.dev`）。
+- [x] **生产环境 (https://blog.epocanvas.com) Playwright 实机全链路实测全绿并截图归档 (`scripts/verify-live-clean-flip.mjs`)**：
+  1. 生产端最新正面实机截图归档：`scripts/audit_screenshots/live_front_vivid.png`；
+  2. 生产端最新背面实机截图归档：`scripts/audit_screenshots/live_back_vivid.png`（0.85s 平滑翻转，背面完全正向呈现，零镜面倒置，二维码 100% 完整无损）；
+  3. 生产端客观指标全量达标：`cardHeight: 126px`，`isQrEmbeddedDataUrl: true`，`frontOpacityOnHover: 0`，`backOpacityOnHover: 1`，`backTransform: 'matrix(1, 0, 0, 1, 0, 0)'`。
+
 
 
 
