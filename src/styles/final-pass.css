@@ -9680,7 +9680,7 @@ body[data-type='home'] #random-banner::after {
   content: none !important;
 }
 
-/* 5. Target: id="categoryBar" / id="category-bar" / .category-bar 首页分类导航条 (透明可见后方背景，保留蓝色本色，零模糊) */
+/* 5. Target: id="categoryBar" / id="category-bar" / .category-bar 首页分类导航条 (同步 recent-post-item 细线风格，统一采用 1px var(--card-border) 细线分割与 rounded-xl 圆角) */
 #categoryBar,
 body[data-type='home'] #categoryBar {
   background: transparent !important;
@@ -9699,12 +9699,13 @@ body[data-type='home'] #categoryBar {
 .category-bar,
 body[data-type='home'] #category-bar,
 body[data-type='home'] .category-bar {
-  background: var(--home-blue-card-bg) !important;
+  background: var(--card-bg) !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
-  border: 1px solid var(--home-blue-card-border) !important;
+  border: 1px solid var(--card-border) !important;
   border-radius: var(--radius-md, 8px) !important;
-  box-shadow: var(--home-blue-card-shadow) !important;
+  box-shadow: var(--card-box-shadow, 0 1px 3px 0 rgba(0, 0, 0, 0.05)) !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
 
 #category-bar #catalog-bar,
@@ -9717,12 +9718,14 @@ body[data-type='home'] .category-bar {
 #category-bar .catalog-list-item a,
 #category-bar .category-bar-next,
 #category-bar .catalog-more {
-  background: var(--home-blue-sub-bg) !important;
+  background: var(--secondbg, rgba(0, 0, 0, 0.03)) !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
-  border: 1px solid var(--home-blue-sub-border) !important;
-  border-radius: var(--radius-full, 9999px) !important;
+  border: 1px solid var(--card-border) !important;
+  border-radius: 8px !important;
   color: var(--font-color) !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
 
@@ -9734,6 +9737,7 @@ body[data-type='home'] .category-bar {
   color: #ffffff !important;
   border-color: var(--theme-main, #425aef) !important;
   box-shadow: 0 4px 12px rgba(66, 90, 239, 0.25) !important;
+  transform: translateY(-1px) !important;
 }
 
 /* 6. Target: 侧边栏全量卡片 (.card-categories, .card-recent-post, .card-tags, .card-webinfo 等) */

@@ -133,30 +133,71 @@ const themesJson = JSON.stringify({
       
       <!-- Front Face -->
       <div class="face front-face" onclick={finalConfig.href && finalConfig.href !== '#' ? `window.open("${finalConfig.href}", "_blank")` : undefined}>
-        <!-- Theme Toggle Button (stops propagation to avoid opening link) -->
+        <!-- Cybernetic Grid & Circuit Matrix SVG Background -->
+        <div class="promo-tech-canvas" aria-hidden="true">
+          <svg class="tech-grid-svg" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <pattern id={`tech-grid-dots-${id}`} width="18" height="18" patternUnits="userSpaceOnUse">
+                <circle cx="2" cy="2" r="0.75" fill="rgba(255, 255, 255, 0.22)" />
+              </pattern>
+              <linearGradient id={`tech-trace-grad-${id}`} x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="rgba(255, 255, 255, 0)" />
+                <stop offset="35%" stop-color="rgba(255, 255, 255, 0.35)" />
+                <stop offset="70%" stop-color="rgba(137, 247, 254, 0.45)" />
+                <stop offset="100%" stop-color="rgba(255, 255, 255, 0)" />
+              </linearGradient>
+            </defs>
+            <rect width="100%" height="100%" fill={`url(#tech-grid-dots-${id})`} opacity="0.8" />
+            <path d="M 0 32 L 65 32 L 90 56 L 180 56 L 205 82 L 340 82" stroke={`url(#tech-trace-grad-${id})`} stroke-width="1.2" fill="none" />
+            <path d="M 130 12 L 165 12 L 185 32 L 270 32" stroke={`url(#tech-trace-grad-${id})`} stroke-width="0.8" fill="none" opacity="0.6" />
+            <circle cx="90" cy="56" r="2" fill="rgba(137, 247, 254, 0.85)" />
+            <circle cx="180" cy="56" r="2" fill="rgba(137, 247, 254, 0.85)" />
+          </svg>
+          <div class="hud-crosshair hud-ch-tl">+</div>
+          <div class="hud-crosshair hud-ch-br">+</div>
+          <div class="hud-tag hud-tag-bottom">[SECURE CHANNEL // ENCRYPTED]</div>
+        </div>
+
+        <!-- Theme Toggle Button (Mode chip) -->
         <button class="theme-toggle-btn" aria-label="切换色调" onclick="event.stopPropagation(); window.togglePromoTheme(this)">
-          <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"></path>
+          <svg viewBox="0 0 24 24" width="15" height="15" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3" />
+            <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
           </svg>
         </button>
 
-        <!-- Artistic Background Watermark Icon -->
-        <div class="promo-watermark">
-          <svg viewBox="0 0 24 24" fill="currentColor">
-            <path d={iconPath} />
+        <!-- High-Tech Radar Compass & Watermark Vector Art -->
+        <div class="promo-radar-watermark" aria-hidden="true">
+          <svg viewBox="0 0 160 160" width="160" height="160" fill="none" stroke="currentColor">
+            <circle cx="80" cy="80" r="72" stroke="rgba(255,255,255,0.12)" stroke-width="1" stroke-dasharray="4 4" />
+            <circle cx="80" cy="80" r="54" stroke="rgba(255,255,255,0.18)" stroke-width="1" />
+            <circle cx="80" cy="80" r="36" stroke="rgba(255,255,255,0.10)" stroke-width="1" stroke-dasharray="2 3" />
+            <line x1="80" y1="4" x2="80" y2="156" stroke="rgba(255,255,255,0.14)" stroke-width="0.8" />
+            <line x1="4" y1="80" x2="156" y2="80" stroke="rgba(255,255,255,0.14)" stroke-width="0.8" />
+            <path d="M 80 80 L 132 46" stroke="rgba(137,247,254,0.4)" stroke-width="1.2" />
+            <g transform="translate(48, 48) scale(2.6)" fill="rgba(255,255,255,0.14)">
+              <path d={iconPath} />
+            </g>
           </svg>
         </div>
 
         <div class="promo-content">
-          <div class="promo-icon">
-            <svg viewBox="0 0 24 24" width="42" height="42" fill="currentColor">
-              <path d={iconPath} />
-            </svg>
+          <!-- Holographic Cyber Orb with Glow Ring -->
+          <div class="promo-icon-cyber-wrap">
+            <div class="promo-icon-ring"></div>
+            <div class="promo-icon">
+              <svg viewBox="0 0 24 24" width="34" height="34" fill="currentColor">
+                <path d={iconPath} />
+              </svg>
+            </div>
           </div>
           <div class="promo-text">
             <div class="promo-title-wrapper">
               <span class="promo-title">{finalConfig.title}</span>
-              <span class="promo-badge">OFFICIAL</span>
+              <div class="promo-status-badge">
+                <span class="status-pulse-dot"></span>
+                <span class="promo-badge">ONLINE</span>
+              </div>
             </div>
             <div class="promo-subtitle">{finalConfig.subtitle}</div>
           </div>
@@ -165,8 +206,21 @@ const themesJson = JSON.stringify({
 
       <!-- Back Face -->
       <div class="back face back-face" onclick={finalConfig.href && finalConfig.href !== '#' ? `window.open("${finalConfig.href}", "_blank")` : undefined}>
+        <!-- Cyber Tech Mesh Background -->
+        <div class="promo-tech-canvas" aria-hidden="true">
+          <svg class="tech-grid-svg" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+            <rect width="100%" height="100%" fill={`url(#tech-grid-dots-${id})`} opacity="0.6" />
+            <path d="M 0 75 L 70 75 L 95 95 L 340 95" stroke={`url(#tech-trace-grad-${id})`} stroke-width="1" fill="none" opacity="0.4" />
+          </svg>
+          <div class="hud-tag hud-tag-top">[COMM MATRIX // 256-BIT]</div>
+        </div>
+
         <div class="promo-back-grid">
           <div class="promo-back-info">
+            <div class="promo-back-channel-tag">
+              <span class="channel-dot"></span>
+              <span>{siteConfig.aside.telegramWidget?.handle || '@chronoral'}</span>
+            </div>
             <div class="promo-back-title">{finalConfig.backTitle}</div>
             <div class="promo-back-subtitle">{finalConfig.backSubtitle}</div>
             <div class="promo-cta-wrapper">
@@ -176,8 +230,26 @@ const themesJson = JSON.stringify({
               </span>
             </div>
           </div>
-          <div class="promo-qr-container">
-            <img src={finalConfig.qrImage} alt={`${finalConfig.title} QR Code`} style={`transform: scale(${qrScale}) translate(${qrOffsetX}, ${qrOffsetY});`} />
+
+          <!-- Embedded Complete QR Matrix with Cyber HUD Reticle -->
+          <div class="promo-qr-hud-box">
+            <span class="hud-corner-bracket bracket-tl"></span>
+            <span class="hud-corner-bracket bracket-tr"></span>
+            <span class="hud-corner-bracket bracket-bl"></span>
+            <span class="hud-corner-bracket bracket-br"></span>
+            <div class="promo-qr-container">
+              <img
+                src={finalConfig.qrImage}
+                alt={`${finalConfig.title} QR Code`}
+                class="promo-qr-img"
+                loading="eager"
+                decoding="async"
+                style={isCropEnabled ? `transform: scale(${qrScale}) translate(${qrOffsetX}, ${qrOffsetY});` : undefined}
+              />
+            </div>
+            <div class="hud-qr-scan-bar">
+              <span>扫码直连</span>
+            </div>
           </div>
         </div>
       </div>
@@ -284,7 +356,8 @@ const themesJson = JSON.stringify({
     box-sizing: border-box;
     -webkit-transform-style: preserve-3d;
     transform-style: preserve-3d;
-    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: transform 0.65s cubic-bezier(0.34, 1.56, 0.64, 1);
+    will-change: transform;
     border-radius: 8px;
   }
   
@@ -308,44 +381,100 @@ const themesJson = JSON.stringify({
     padding: 0 !important;
   }
 
+  /* Cybernetic Background Canvas & HUD */
+  .promo-tech-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+  }
+
+  .tech-grid-svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .hud-crosshair {
+    position: absolute;
+    font-family: monospace, ui-monospace, sans-serif;
+    font-size: 11px;
+    line-height: 1;
+    color: var(--promo-text-light);
+    opacity: 0.45;
+    pointer-events: none;
+  }
+
+  .hud-ch-tl {
+    top: 6px;
+    left: 8px;
+  }
+
+  .hud-ch-br {
+    bottom: 6px;
+    right: 8px;
+  }
+
+  .hud-tag {
+    position: absolute;
+    font-family: monospace, ui-monospace, monospace;
+    font-size: 7.5px;
+    letter-spacing: 0.8px;
+    color: var(--promo-text-light);
+    opacity: 0.55;
+    pointer-events: none;
+  }
+
+  .hud-tag-bottom {
+    bottom: 6px;
+    left: 18px;
+  }
+
+  .hud-tag-top {
+    top: 6px;
+    left: 14px;
+  }
+
   .theme-toggle-btn {
     position: absolute;
     top: 8px;
     right: 8px;
-    background: rgba(255, 255, 255, 0.15);
-    border: 1px solid rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
     border-radius: 6px;
-    width: 28px;
-    height: 28px;
+    width: 26px;
+    height: 26px;
     display: flex;
     align-items: center;
     justify-content: center;
     color: #fff;
     cursor: pointer;
     z-index: 10;
-    transition: all 0.3s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
   
   .theme-toggle-btn:hover {
-    background: rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.28);
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.4);
     transform: rotate(90deg);
   }
 
-  .promo-watermark {
+  .promo-radar-watermark {
     position: absolute;
-    right: -25px;
-    bottom: -25px;
-    width: 130px;
-    height: 130px;
-    opacity: 0.12;
+    right: -28px;
+    bottom: -28px;
+    width: 156px;
+    height: 156px;
+    opacity: 0.35;
     z-index: 0;
     pointer-events: none;
-    transform: rotate(-15deg);
-  }
-
-  .promo-watermark svg {
-    width: 100%;
-    height: 100%;
+    transform: rotate(-10deg);
   }
   
   .front-face {
@@ -353,27 +482,52 @@ const themesJson = JSON.stringify({
     align-items: center !important;
     justify-content: flex-start !important;
     z-index: 2;
-    transform: rotateY(0deg) !important;
-    -webkit-transform: rotateY(0deg) !important;
+    transform: rotateY(0deg) translateZ(1px) !important;
+    -webkit-transform: rotateY(0deg) translateZ(1px) !important;
   }
   
   .promo-content {
     display: flex;
     align-items: center;
-    padding: 0 1.2rem;
-    gap: 1rem;
+    padding: 0 1.15rem;
+    gap: 0.95rem;
     width: 100%;
     min-width: 0;
     box-sizing: border-box;
     z-index: 2;
   }
   
+  .promo-icon-cyber-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    flex-shrink: 0;
+  }
+
+  .promo-icon-ring {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 1.5px solid rgba(255, 255, 255, 0.35);
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0) 70%);
+    box-shadow: 0 0 12px rgba(137, 247, 254, 0.4), inset 0 0 8px rgba(255, 255, 255, 0.2);
+    pointer-events: none;
+  }
+
   .promo-icon {
     display: flex;
     align-items: center;
     justify-content: center;
-    flex-shrink: 0;
-    filter: drop-shadow(0 4px 6px rgba(0,0,0,0.15));
+    color: #ffffff;
+    filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.35));
+    transition: transform 0.3s ease;
+  }
+
+  .promo-widget:hover .promo-icon {
+    transform: scale(1.06);
   }
   
   .promo-text {
@@ -387,64 +541,93 @@ const themesJson = JSON.stringify({
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    margin-bottom: 0.3rem;
+    margin-bottom: 0.25rem;
   }
 
   .promo-title {
     font-weight: 800;
-    font-size: 1.2rem;
+    font-size: 1.18rem;
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
     letter-spacing: 0.5px;
     color: #fff;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    text-shadow: 0 2px 4px rgba(0,0,0,0.25);
+  }
+
+  .promo-status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 0.12rem 0.45rem;
+    border-radius: 4px;
+    background: var(--promo-badge-bg);
+    border: 1px solid rgba(255, 255, 255, 0.22);
+  }
+
+  .status-pulse-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #00ff88;
+    box-shadow: 0 0 8px #00ff88;
+    animation: pulseGlow 2s infinite ease-in-out;
+  }
+
+  @keyframes pulseGlow {
+    0%, 100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.4;
+      transform: scale(0.8);
+    }
   }
 
   .promo-badge {
-    font-size: 0.6rem;
+    font-size: 0.62rem;
     font-weight: 700;
-    padding: 0.1rem 0.4rem;
-    border-radius: 4px;
-    background: var(--promo-badge-bg);
     color: var(--promo-badge-text);
-    letter-spacing: 0.5px;
-    border: 1px solid rgba(255,255,255,0.2);
+    letter-spacing: 0.6px;
+    line-height: 1;
   }
   
   .promo-subtitle {
-    font-size: 0.8rem;
+    font-size: 0.78rem;
     opacity: 0.95;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
-    line-height: 1.4;
+    line-height: 1.38;
     font-weight: 400;
     color: var(--promo-text-light);
-    text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    text-shadow: 0 1px 2px rgba(0,0,0,0.15);
   }
 
   .back-face {
-    -webkit-transform: rotateY(180deg) !important;
-    transform: rotateY(180deg) !important;
+    -webkit-transform: rotateY(180deg) translateZ(1px) !important;
+    transform: rotateY(180deg) translateZ(1px) !important;
     background-image: var(--promo-bg-gradient) !important; 
-    display: block !important; /* using grid internally */
+    display: block !important;
   }
   
   .promo-back-grid {
     display: grid !important;
-    grid-template-columns: 1fr 80px !important; /* Strictly left-right */
+    grid-template-columns: 1fr 92px !important;
     align-items: center !important;
-    gap: 1rem !important;
+    gap: 0.75rem !important;
     width: 100% !important;
     height: 100% !important;
-    padding: 0.8rem 1rem !important;
+    padding: 0.7rem 0.95rem !important;
     box-sizing: border-box !important;
-    background: rgba(0, 0, 0, 0.25);
+    background: rgba(0, 0, 0, 0.28);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
     border-radius: 8px;
+    position: relative;
+    z-index: 2;
   }
 
   .promo-back-info {
@@ -456,11 +639,30 @@ const themesJson = JSON.stringify({
     text-align: left;
   }
 
+  .promo-back-channel-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-family: monospace, ui-monospace, sans-serif;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--promo-text-light);
+    opacity: 0.9;
+    margin-bottom: 0.2rem;
+  }
+
+  .channel-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: #00ff88;
+  }
+
   .promo-back-title {
     font-size: 1.05rem;
     font-weight: 800;
-    margin-bottom: 0.3rem;
-    color: var(--promo-text-light);
+    margin-bottom: 0.2rem;
+    color: #ffffff;
     text-shadow: 0 1px 2px rgba(0,0,0,0.3);
     white-space: nowrap;
     overflow: hidden;
@@ -468,10 +670,10 @@ const themesJson = JSON.stringify({
   }
 
   .promo-back-subtitle {
-    font-size: 0.75rem;
-    color: #fff;
-    opacity: 0.9;
-    margin-bottom: 0.6rem;
+    font-size: 0.72rem;
+    color: var(--promo-text-light);
+    opacity: 0.95;
+    margin-bottom: 0.5rem;
     line-height: 1.3;
     display: -webkit-box;
     -webkit-line-clamp: 2;
@@ -484,44 +686,108 @@ const themesJson = JSON.stringify({
   }
 
   .promo-cta-btn {
-    display: inline-block;
-    padding: 0.25rem 0.7rem;
-    background: linear-gradient(to right, #fff, var(--promo-text-light));
-    color: #111;
-    font-size: 0.7rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 0.22rem 0.68rem;
+    background: linear-gradient(135deg, #ffffff, var(--promo-text-light));
+    color: #0b1329;
+    font-size: 0.68rem;
     font-weight: 700;
-    border-radius: 6px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+    border-radius: 5px;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.25);
     transition: transform 0.2s ease, box-shadow 0.2s ease;
   }
 
   .promo-widget:hover .promo-cta-btn {
-    transform: scale(1.05) translateY(-1px);
-    box-shadow: 0 6px 8px rgba(0,0,0,0.3);
+    transform: translateY(-1px) scale(1.04);
+    box-shadow: 0 4px 12px rgba(0, 198, 255, 0.4);
+  }
+
+  /* Embedded QR Matrix with Cyber HUD Reticle */
+  .promo-qr-hud-box {
+    position: relative;
+    width: 92px;
+    height: 92px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .hud-corner-bracket {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    pointer-events: none;
+    z-index: 5;
+  }
+
+  .bracket-tl {
+    top: -1px;
+    left: 4px;
+    border-top: 2px solid var(--promo-text-light);
+    border-left: 2px solid var(--promo-text-light);
+  }
+
+  .bracket-tr {
+    top: -1px;
+    right: 4px;
+    border-top: 2px solid var(--promo-text-light);
+    border-right: 2px solid var(--promo-text-light);
+  }
+
+  .bracket-bl {
+    bottom: 12px;
+    left: 4px;
+    border-bottom: 2px solid var(--promo-text-light);
+    border-left: 2px solid var(--promo-text-light);
+  }
+
+  .bracket-br {
+    bottom: 12px;
+    right: 4px;
+    border-bottom: 2px solid var(--promo-text-light);
+    border-right: 2px solid var(--promo-text-light);
   }
 
   .promo-qr-container {
-    width: 80px !important;
-    height: 80px !important;
+    width: 82px !important;
+    height: 82px !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
-    border-radius: 8px;
-    background: #fff; 
-    padding: 3px; 
-    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-    overflow: hidden;
-    box-sizing: border-box;
+    border-radius: 6px !important;
+    background: #ffffff !important; 
+    padding: 4px !important; 
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35) !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
+    position: relative;
+    z-index: 2;
   }
 
-  .promo-qr-container img {
+  .promo-qr-container img,
+  .promo-qr-img {
     width: 100% !important;
     height: 100% !important;
-    object-fit: cover !important;
+    object-fit: contain !important;
     object-position: center !important;
     transform-origin: center !important;
-    border-radius: 4px;
+    border-radius: 3px !important;
     display: block !important;
+  }
+
+  .hud-qr-scan-bar {
+    font-family: monospace, ui-monospace, sans-serif;
+    font-size: 7.5px;
+    font-weight: 700;
+    letter-spacing: 0.6px;
+    color: var(--promo-text-light);
+    margin-top: 2px;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.4);
+    opacity: 0.9;
+    line-height: 1;
   }
 
   .promo-widget:hover #flip-content,

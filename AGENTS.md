@@ -6110,6 +6110,26 @@
   1. 验证 Post 页面与官方文档类型隔离（`heroType: 'official'` vs `'post'`）；
   2. 验证多语言自适应字号阶梯、标题黄金居中（偏移仅 17.7px）、版本与水波纹间距（+21.2px / 移动端 +30.4px）0 重叠全绿通过。
 
+### Task 80: 优化 #categoryBar 细线分割画风与 #flip-content 科技全息卡片及完整 QR-Code 内嵌 (`e93b7bc`)
+- [x] **优化 #categoryBar 线条粗细与画风同步 (`src/components/theme/HomeFeed.astro`, `src/styles/final-pass.css`, `src/styles/global.css`)**：
+  1. 彻底解决亮色调下分类导航条线条过粗、浓重深蓝描边割裂问题：将边框由粗重 `1px solid var(--home-blue-card-border)`（`rgba(66, 90, 239, 0.32)`）重构为纯净优雅的 `1px solid var(--card-border) !important;`；
+  2. 统一步骤与下方 `.recent-post-item` 的精致 UI 画风：边框厚度严格锁定 1px，圆角收敛为一致的 `var(--radius-md, 8px)`，背景与阴影完全与全站卡片系统统一；
+  3. 规范内部分类按钮（`.catalog-list-item a`、`.category-bar-next`、`.catalog-more`）：去除多余浓蓝线框，采用 1px 细线分割与柔和背景，悬停与激活态保持灵动高亮。
+- [x] **#flip-content 整体 UI 画风科技感与画面感全面升级 (`src/components/theme/PromoWidgetCard.astro`)**：
+  1. **科技感背景图层 (Cybernetic Canvas)**：注入专属 Tech Mesh 矢量 SVG，包含点阵矩阵网格、纳米电路光流折线（Circuit Glow Traces）、HUD 十字准心（`+`）与微型加密通道标牌（`[SECURE CHANNEL // ENCRYPTED]`）；
+  2. **画面感同心雷达与矢量水印**：在右下角融合科技罗盘雷达刻度环（Concentric Radar Rings with Angle Crosshairs）与高画质半透明主图标矢量水印，视觉层次立体丰富；
+  3. **美化好的 SVG 图标与全息晶圆徽标**：正面主图标升级为发光全息晶圆徽标（Cyber Hologram Badge），配备 `promo-icon-ring` 轨道光环与电光阴影；
+  4. **呼吸状态指示灯**：标题旁注入实时跳动闪烁的绿色脉冲呼吸灯（`status-pulse-dot`），实时显示 `ONLINE` 状态。
+- [x] **3D 翻转时内嵌完整无裁剪 QR-Code 与顺畅翻转动画保障**：
+  1. **完整内嵌二维码**：将二维码 `img` 严格配置为 `object-fit: contain !important;` 并内嵌于纯白高对比 HUD 取景框（`.promo-qr-container`）中，确保二维码 4 个角标与群组标识 100% 完整展示，绝无边缘裁切，手机秒扫秒识别；
+  2. **全息 HUD 扫描取景框**：配备 4 角科技扫描括号标（`hud-corner-bracket`）与底部扫描状态条；
+  3. **3D 硬件加速与零闪烁翻转**：配置 `perspective: 1000px`、`transform-style: preserve-3d`、`will-change: transform`，正背面精确匹配 `rotateY(0deg) translateZ(1px)` 与 `rotateY(180deg) translateZ(1px)`，配合物理弹性缓动 `cubic-bezier(0.34, 1.56, 0.64, 1)`，翻转动画丝滑流畅。
+- [x] **端到端自动化测试验证全量通过 (`scripts/verify-category-and-flip.mjs`)**：
+  1. 验证 1：亮色模式下 `#category-bar` 严格保持 1px 细线（`barBorderWidth === '1px'`），圆角与文章卡片一致（`8px`），彻底消除深蓝粗线；
+  2. 验证 2：科技画布 SVG、雷达罗盘水印、状态脉冲呼吸灯、全息徽标、HUD 取景框 100% 存在；
+  3. 验证 3：二维码配置为 `object-fit: contain`，悬停触发 3D 翻转后尺寸 > 72px 完整可见无损展示；
+  4. 验证 4：深色模式（Dark Mode）与全视口自适应 100% 通过。
+
 
 
 

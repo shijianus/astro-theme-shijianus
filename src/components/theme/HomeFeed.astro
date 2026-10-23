@@ -37,10 +37,13 @@ const isLastPage = currentPage >= lastPage;
   data-feed-pages={lastPage}
   data-is-last-page={isLastPage ? 'true' : 'false'}
 >
-  <div id="categoryBar">
-    <div class="category-bar" id="category-bar">
-      <div id="catalog-bar">
-        <div id="catalog-list">
+  <div id="categoryBar" class="categoryBar mb-4">
+    <div
+      class="category-bar group relative rounded-xl overflow-hidden bg-[var(--card-bg)] flex items-center border border-[var(--card-border)] shadow-xs transition-all duration-300"
+      id="category-bar"
+    >
+      <div id="catalog-bar" class="w-full flex items-center gap-2.5">
+        <div id="catalog-list" class="flex items-center gap-2 overflow-x-auto py-1 px-1">
           <div class="catalog-list-item is-active"><a href="/">{categoryRail.homeLabel}</a></div>
           {categories.map((item) => (
             <div class="catalog-list-item">
