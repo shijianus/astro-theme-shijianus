@@ -118,6 +118,103 @@ try {
   console.error('Failed to generate embedded QR code', e);
   embeddedQrDataUrl = finalConfig.qrImage || '';
 }
+
+// 天文长曝光旋转同心星轨算法 (Celestial Pole Star Trails)
+function arcPath(cx: number, cy: number, r: number, startDeg: number, endDeg: number) {
+  const startRad = (startDeg * Math.PI) / 180;
+  const endRad = (endDeg * Math.PI) / 180;
+  const x1 = cx + r * Math.cos(startRad);
+  const y1 = cy + r * Math.sin(startRad);
+  const x2 = cx + r * Math.cos(endRad);
+  const y2 = cy + r * Math.sin(endRad);
+  const largeArc = Math.abs(endDeg - startDeg) > 180 ? 1 : 0;
+  const sweep = endDeg > startDeg ? 1 : 0;
+  return `M ${x1.toFixed(1)} ${y1.toFixed(1)} A ${r.toFixed(1)} ${r.toFixed(1)} 0 ${largeArc} ${sweep} ${x2.toFixed(1)} ${y2.toFixed(1)}`;
+}
+
+// 正面 32 轨多级星等长曝光星轨群 (天极出框位于右上 cx: 340, cy: -40)
+const frontStarTrails = (() => {
+  const cx = 340;
+  const cy = -40;
+  const count = 32;
+  const items = [];
+  for (let i = 0; i < count; i++) {
+    const r = 50 + i * (380 / count);
+    const s = 100 + ((i * 17) % 24);
+    const e = 188 + ((i * 23) % 36);
+    const isMajor = (i % 7 === 0);
+    const isMedium = (i % 3 === 0 && !isMajor);
+    
+    let strokeWidth = 0.55;
+    let opacity = 0.18;
+    let color = '#7dd3fc';
+    
+    if (isMajor) {
+      strokeWidth = 1.35;
+      opacity = 0.65;
+      color = '#ffffff';
+    } else if (isMedium) {
+      strokeWidth = 0.85;
+      opacity = 0.4;
+      color = '#bae6fd';
+    } else if (i % 2 === 0) {
+      strokeWidth = 0.6;
+      opacity = 0.26;
+      color = '#38bdf8';
+    }
+    
+    const d = arcPath(cx, cy, r, s, e);
+    const isDashed = (i % 5 === 2);
+    const dashArray = isDashed ? '36 9 18 6' : undefined;
+    
+    let nucleus: { x: number; y: number; r: number; opacity: number } | null = null;
+    if (isMajor || i === 11 || i === 19 || i === 27) {
+      const angle = s + (e - s) * 0.62;
+      const rad = (angle * Math.PI) / 180;
+      const sx = cx + r * Math.cos(rad);
+      const sy = cy + r * Math.sin(rad);
+      if (sx >= 5 && sx <= 315 && sy >= 5 && sy <= 109) {
+        nucleus = {
+          x: Number(sx.toFixed(1)),
+          y: Number(sy.toFixed(1)),
+          r: Number((strokeWidth * 0.9).toFixed(1)),
+          opacity: Math.min(1, opacity + 0.35)
+        };
+      }
+    }
+
+    items.push({
+      d,
+      color,
+      strokeWidth,
+      opacity,
+      isMajor,
+      dashArray,
+      nucleus
+    });
+  }
+  return items;
+})();
+
+// 背面 16 轨微光星轨群
+const backStarTrails = (() => {
+  const cx = 340;
+  const cy = -40;
+  const count = 16;
+  const items = [];
+  for (let i = 0; i < count; i++) {
+    const r = 70 + i * (350 / count);
+    const s = 105 + ((i * 15) % 20);
+    const e = 180 + ((i * 20) % 30);
+    const isBright = (i % 4 === 0);
+    const strokeWidth = isBright ? 1.0 : 0.6;
+    const opacity = isBright ? 0.32 : 0.16;
+    const color = isBright ? '#e0f2fe' : '#7dd3fc';
+    const d = arcPath(cx, cy, r, s, e);
+    items.push({ d, strokeWidth, opacity, color });
+  }
+  return items;
+})();
 ---
 
 <div class:list={['card-widget promo-widget', className]} id={id}>
@@ -125,30 +222,115 @@ try {
     <div id="flip-content">
       
       <!-- ============================================== -->
-      <!-- FRONT FACE: 方案A 极光流体天蓝 + 破空航线电波正面 -->
+      <!-- FRONT FACE: 方案A 极光流体天蓝 + 真实天文长曝光星轨正面 -->
       <!-- ============================================== -->
       <div
         class="face front-face"
         onclick={finalConfig.href && finalConfig.href !== '#' ? `window.open("${finalConfig.href}", "_blank")` : undefined}
       >
-        <!-- 画面感升维：破空虚线航迹、广播同心电波与星轨节点 (Aurora & Flight Trail) -->
+        <!-- 画面感升维：真实天文长曝光同心星轨、四角十字衍射星芒、流星划痕与破空纸飞机 -->
         <div class="promo-scene-art promo-watermark" aria-hidden="true">
           <svg viewBox="0 0 320 114" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <!-- 航迹主线 (带虚线航迹) -->
-            <path d="M-10 110 C70 95, 150 65, 255 18" stroke="rgba(255,255,255,0.26)" stroke-width="1.8" stroke-dasharray="4 4" />
-            <path d="M10 125 C90 110, 170 80, 275 32" stroke="rgba(255,255,255,0.16)" stroke-width="1.2" />
-            <!-- 无线电发射同心波纹 -->
-            <circle cx="282" cy="24" r="16" stroke="rgba(255,255,255,0.24)" stroke-width="1.2" />
-            <circle cx="282" cy="24" r="34" stroke="rgba(255,255,255,0.16)" stroke-width="1" />
-            <circle cx="282" cy="24" r="52" stroke="rgba(255,255,255,0.08)" stroke-width="0.8" />
-            <!-- 发光星轨与信号节点 -->
-            <circle cx="282" cy="24" r="3.2" fill="#ffffff" opacity="0.85" />
-            <circle cx="215" cy="38" r="2.2" fill="#ffffff" opacity="0.6" />
-            <circle cx="165" cy="62" r="1.6" fill="#ffffff" opacity="0.45" />
-            <circle cx="250" cy="72" r="2.5" fill="#ffffff" opacity="0.5" />
-            <circle cx="295" cy="68" r="1.8" fill="#ffffff" opacity="0.4" />
-            <!-- 破空远景领航微型纸飞机 -->
-            <path d="M274 20 L294 10 L287 28 L283 23 Z" fill="#ffffff" opacity="0.55" />
+            <defs>
+              <linearGradient id="promo-meteor-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#ffffff" stop-opacity="0"/>
+                <stop offset="70%" stop-color="#bae6fd" stop-opacity="0.5"/>
+                <stop offset="100%" stop-color="#ffffff" stop-opacity="0.95"/>
+              </linearGradient>
+              <linearGradient id="plane-body-grad" x1="20" y1="70" x2="180" y2="180" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#ffffff" />
+                <stop offset="100%" stop-color="#e0edff" />
+              </linearGradient>
+              <linearGradient id="plane-fold-grad" x1="40" y1="110" x2="150" y2="180" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#93c5fd" />
+                <stop offset="100%" stop-color="#60a5fa" />
+              </linearGradient>
+              <linearGradient id="plane-under-grad" x1="70" y1="130" x2="120" y2="190" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#3b82f6" />
+                <stop offset="100%" stop-color="#1d4ed8" />
+              </linearGradient>
+              <filter id="plane-shadow" x="-40%" y="-40%" width="180%" height="180%">
+                <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="rgba(2, 44, 120, 0.45)" />
+              </filter>
+            </defs>
+
+            <!-- 1. 天文长曝光同心星轨群 (Long Exposure Star Trails) -->
+            {frontStarTrails.map((trail) => (
+              <Fragment>
+                {trail.isMajor && (
+                  <path
+                    d={trail.d}
+                    fill="none"
+                    stroke={trail.color}
+                    stroke-width={trail.strokeWidth * 2.2}
+                    opacity={trail.opacity * 0.28}
+                    stroke-linecap="round"
+                    filter="blur(1px)"
+                  />
+                )}
+                <path
+                  d={trail.d}
+                  fill="none"
+                  stroke={trail.color}
+                  stroke-width={trail.strokeWidth}
+                  opacity={trail.opacity}
+                  stroke-linecap="round"
+                  stroke-dasharray={trail.dashArray}
+                />
+                {trail.nucleus && (
+                  <circle
+                    cx={trail.nucleus.x}
+                    cy={trail.nucleus.y}
+                    r={trail.nucleus.r}
+                    fill="#ffffff"
+                    opacity={trail.nucleus.opacity}
+                  />
+                )}
+              </Fragment>
+            ))}
+
+            <!-- 2. 天文望远镜四角十字衍射星芒 (Diffraction Spikes) -->
+            <g transform="translate(188, 76)" opacity="0.92">
+              <path d="M 0 -7 Q 0 0 7 0 Q 0 0 0 7 Q 0 0 -7 0 Q 0 0 0 -7 Z" fill="#ffffff" />
+              <circle cx="0" cy="0" r="1.96" fill="#ffffff" />
+              <circle cx="0" cy="0" r="11.2" fill="#ffffff" opacity="0.35" filter="blur(1px)" />
+            </g>
+            <g transform="translate(136, 24)" opacity="0.8">
+              <path d="M 0 -4.6 Q 0 0 4.6 0 Q 0 0 0 4.6 Q 0 0 -4.6 0 Q 0 0 0 -4.6 Z" fill="#bae6fd" />
+              <circle cx="0" cy="0" r="1.28" fill="#ffffff" />
+              <circle cx="0" cy="0" r="7.36" fill="#bae6fd" opacity="0.35" filter="blur(1px)" />
+            </g>
+            <g transform="translate(270, 86)" opacity="0.72">
+              <path d="M 0 -4 Q 0 0 4 0 Q 0 0 0 4 Q 0 0 -4 0 Q 0 0 0 -4 Z" fill="#e0f2fe" />
+              <circle cx="0" cy="0" r="1.12" fill="#ffffff" />
+              <circle cx="0" cy="0" r="6.4" fill="#e0f2fe" opacity="0.35" filter="blur(1px)" />
+            </g>
+            <g transform="translate(218, 98)" opacity="0.58">
+              <path d="M 0 -3.2 Q 0 0 3.2 0 Q 0 0 0 3.2 Q 0 0 -3.2 0 Q 0 0 0 -3.2 Z" fill="#7dd3fc" />
+              <circle cx="0" cy="0" r="0.89" fill="#ffffff" />
+              <circle cx="0" cy="0" r="5.12" fill="#7dd3fc" opacity="0.35" filter="blur(1px)" />
+            </g>
+
+            <!-- 3. 彗星流光划痕 (Shooting Meteor Trail) -->
+            <path d="M 125 14 L 182 50" stroke="url(#promo-meteor-grad)" stroke-width="1.6" stroke-linecap="round" />
+            <circle cx="182" cy="50" r="1.6" fill="#ffffff" />
+            <circle cx="182" cy="50" r="4.2" fill="#38bdf8" opacity="0.6" filter="blur(1px)" />
+
+            <!-- 4. 纸飞机破空切线航迹虚线与光晕 -->
+            <path d="M 170 66 C 198 48, 222 34, 236 25" fill="none" stroke="rgba(255, 255, 255, 0.55)" stroke-width="1.2" stroke-dasharray="3 3" stroke-linecap="round" />
+
+            <!-- 5. 右侧领航穿行 3D 折纸飞机 -->
+            <g transform="translate(230, 16) rotate(15)">
+              <circle cx="20" cy="20" r="22" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="1" stroke-dasharray="3 3"/>
+              <circle cx="20" cy="20" r="17" fill="rgba(255, 255, 255, 0.12)" />
+              <svg x="5" y="5" width="30" height="30" viewBox="14 68 168 118" fill="none" style="overflow: visible;">
+                <g filter="url(#plane-shadow)">
+                  <polygon points="175,76 22,126 84,148" fill="url(#plane-body-grad)" />
+                  <polygon points="175,76 84,148 108,184" fill="url(#plane-fold-grad)" />
+                  <polygon points="84,148 108,184 100,154" fill="url(#plane-under-grad)" opacity="0.9" />
+                </g>
+              </svg>
+            </g>
           </svg>
         </div>
 
@@ -178,15 +360,29 @@ try {
         class="face back-face"
         onclick={finalConfig.href && finalConfig.href !== '#' ? `window.open("${finalConfig.href}", "_blank")` : undefined}
       >
-        <!-- 画面感：背面对应微透电波底纹 -->
+        <!-- 画面感：背面对应微透天文星轨底纹与十字星芒 -->
         <div class="promo-scene-art promo-scene-art--back promo-watermark promo-watermark--back" aria-hidden="true">
           <svg viewBox="0 0 320 114" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="282" cy="24" r="16" stroke="rgba(255,255,255,0.2)" stroke-width="1.2" />
-            <circle cx="282" cy="24" r="34" stroke="rgba(255,255,255,0.12)" stroke-width="1" />
-            <circle cx="282" cy="24" r="52" stroke="rgba(255,255,255,0.06)" stroke-width="0.8" />
-            <circle cx="282" cy="24" r="3" fill="#ffffff" opacity="0.6" />
-            <circle cx="215" cy="38" r="2" fill="#ffffff" opacity="0.4" />
-            <circle cx="165" cy="62" r="1.5" fill="#ffffff" opacity="0.3" />
+            {backStarTrails.map((trail) => (
+              <path
+                d={trail.d}
+                fill="none"
+                stroke={trail.color}
+                stroke-width={trail.strokeWidth}
+                opacity={trail.opacity}
+                stroke-linecap="round"
+              />
+            ))}
+            <g transform="translate(120, 26)" opacity="0.65">
+              <path d="M 0 -4 Q 0 0 4 0 Q 0 0 0 4 Q 0 0 -4 0 Q 0 0 0 -4 Z" fill="#bae6fd" />
+              <circle cx="0" cy="0" r="1.12" fill="#ffffff" />
+              <circle cx="0" cy="0" r="6.4" fill="#bae6fd" opacity="0.35" filter="blur(1px)" />
+            </g>
+            <g transform="translate(285, 82)" opacity="0.55">
+              <path d="M 0 -3.5 Q 0 0 3.5 0 Q 0 0 0 3.5 Q 0 0 -3.5 0 Q 0 0 0 -3.5 Z" fill="#e0f2fe" />
+              <circle cx="0" cy="0" r="0.98" fill="#ffffff" />
+              <circle cx="0" cy="0" r="5.6" fill="#e0f2fe" opacity="0.35" filter="blur(1px)" />
+            </g>
           </svg>
         </div>
 
