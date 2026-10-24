@@ -6226,6 +6226,25 @@
   2. 全量编译通过 Wrangler 部署至 Cloudflare Pages 生产边缘节点；
   3. 通过 Playwright 在真实生产域名 `https://blog.epocanvas.com/` 进行实机正面与翻转背面全链路审计。
 
+### Task 87: SVG 充分动态化与 3D 折纸飞机、天文星流与深空探测舱形象化重塑 (`f529de8`)
+- [x] **极度逼真形象的 3D 折纸飞机重塑**：
+  1. 彻底淘汰简易色块与方向失真图形，构建严格指向右上天极（破空 45°）的真实 3D 折叠纸飞机；
+  2. 采用纯白主受光翼面（`#ffffff` -> `#e0f2fe`）、侧翼展折柔光面（`#bae6fd` -> `#93c5fd`）、机腹深色下沉三角龙骨暗面（`#3b82f6` -> `#1d4ed8`）与尾部内折阴影（`#1e40af`），真实再现折纸的厚度与光影；
+  3. 注入贯穿机脊的纯白锋刃高光线（`plane-spine-glow`）与机鼻尖端耀斑光点，形象栩栩如生。
+- [x] **天体摄影级星轨充分动态化 (Stellar Dynamic Animations)**：
+  1. **星轨流光流动**：运用 CSS keyframes 为 32 轨多级星轨注入分层流光（`trail-flow-major` 14s、`trail-flow-medium` 20s、`trail-drift` 28s），真实再现地球自转与延时摄影下星河流转的震撼动态；
+  2. **多相呼吸十字星芒**：4 处深空十字衍射星芒采用 3.2s~5s 错相呼吸脉动（`twinkle-1` ~ `twinkle-4`），光芒灵动闪烁；
+  3. **深空微流星周期划破天际**：`promo-meteor` 周期性（7s）沿抛物线呼啸掠过星空并渐隐；
+  4. **纸飞机轻盈物理悬浮与喷气推进航迹**：`plane-flight-rig` 4.2s 气流浮动，机尾喷气虚线 `stream-jet` 匀速向前推进。
+- [x] **左侧 Telegram Icon 组件形象化重塑**：
+  1. 升级为立体深空微光探测舱，外圈搭载 18s 慢速旋转雷达刻度环（`podRadarRotate`）与 3.2s 扩散呼吸波纹（`podPulseWave`）；
+  2. 内部 Telegram 纸飞机增强立体明暗面与微阴影，悬停时触发微冲刺微动。
+- [x] **多端推送管理与 Cloudflare 部署**：
+  1. 严格禁止推送 remote repo (`origin`)，严格仅推送到 `cf` 远端；
+  2. Wrangler 部署至 Cloudflare Pages 生产边缘节点；
+  3. Playwright 实机全链路审计 `https://blog.epocanvas.com/`，确保 0 报错与视觉证据链归档。
+
+
 
 
 
