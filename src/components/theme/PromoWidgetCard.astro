@@ -109,7 +109,7 @@ try {
     margin: 1,
     width: 256,
     color: {
-      dark: '#1d4ed8',
+      dark: '#0369a1',
       light: '#ffffff'
     },
     errorCorrectionLevel: 'M'
@@ -125,18 +125,30 @@ try {
     <div id="flip-content">
       
       <!-- ============================================== -->
-      <!-- FRONT FACE: 亮色调清新透亮浅蓝正面            -->
+      <!-- FRONT FACE: 方案A 极光流体天蓝 + 破空航线电波正面 -->
       <!-- ============================================== -->
       <div
         class="face front-face"
         onclick={finalConfig.href && finalConfig.href !== '#' ? `window.open("${finalConfig.href}", "_blank")` : undefined}
       >
-        <!-- 画面感：纯净高清官方立体折纸飞机矢量大水印 -->
-        <div class="promo-watermark" aria-hidden="true">
-          <svg viewBox="0 0 240 240" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M98 175c-3.8 0-3.2-1.5-4.5-5.2L82 132.2 152.8 88" fill="#ffffff" opacity="0.14" />
-            <path d="M98 175c3 0 4.3-1.4 6-3l16-15.5-20-12" fill="#ffffff" opacity="0.09" />
-            <path d="M100 144.5l48.4 35.7c5.6 3.1 9.6 1.5 11-5.2l19.5-92c2-8.3-3.2-12-8.6-9.6L24.8 111c-8 3.2-8 7.7-1.4 9.7l37.4 11.7 86.8-54.8c4.1-2.5 7.8-1.2 4.7 1.6" fill="#ffffff" opacity="0.22" />
+        <!-- 画面感升维：破空虚线航迹、广播同心电波与星轨节点 (Aurora & Flight Trail) -->
+        <div class="promo-scene-art promo-watermark" aria-hidden="true">
+          <svg viewBox="0 0 320 114" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- 航迹主线 (带虚线航迹) -->
+            <path d="M-10 110 C70 95, 150 65, 255 18" stroke="rgba(255,255,255,0.26)" stroke-width="1.8" stroke-dasharray="4 4" />
+            <path d="M10 125 C90 110, 170 80, 275 32" stroke="rgba(255,255,255,0.16)" stroke-width="1.2" />
+            <!-- 无线电发射同心波纹 -->
+            <circle cx="282" cy="24" r="16" stroke="rgba(255,255,255,0.24)" stroke-width="1.2" />
+            <circle cx="282" cy="24" r="34" stroke="rgba(255,255,255,0.16)" stroke-width="1" />
+            <circle cx="282" cy="24" r="52" stroke="rgba(255,255,255,0.08)" stroke-width="0.8" />
+            <!-- 发光星轨与信号节点 -->
+            <circle cx="282" cy="24" r="3.2" fill="#ffffff" opacity="0.85" />
+            <circle cx="215" cy="38" r="2.2" fill="#ffffff" opacity="0.6" />
+            <circle cx="165" cy="62" r="1.6" fill="#ffffff" opacity="0.45" />
+            <circle cx="250" cy="72" r="2.5" fill="#ffffff" opacity="0.5" />
+            <circle cx="295" cy="68" r="1.8" fill="#ffffff" opacity="0.4" />
+            <!-- 破空远景领航微型纸飞机 -->
+            <path d="M274 20 L294 10 L287 28 L283 23 Z" fill="#ffffff" opacity="0.55" />
           </svg>
         </div>
 
@@ -166,12 +178,15 @@ try {
         class="face back-face"
         onclick={finalConfig.href && finalConfig.href !== '#' ? `window.open("${finalConfig.href}", "_blank")` : undefined}
       >
-        <!-- 画面感：背面对应微透水印 -->
-        <div class="promo-watermark promo-watermark--back" aria-hidden="true">
-          <svg viewBox="0 0 240 240" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M98 175c-3.8 0-3.2-1.5-4.5-5.2L82 132.2 152.8 88" fill="#ffffff" opacity="0.14" />
-            <path d="M98 175c3 0 4.3-1.4 6-3l16-15.5-20-12" fill="#ffffff" opacity="0.09" />
-            <path d="M100 144.5l48.4 35.7c5.6 3.1 9.6 1.5 11-5.2l19.5-92c2-8.3-3.2-12-8.6-9.6L24.8 111c-8 3.2-8 7.7-1.4 9.7l37.4 11.7 86.8-54.8c4.1-2.5 7.8-1.2 4.7 1.6" fill="#ffffff" opacity="0.22" />
+        <!-- 画面感：背面对应微透电波底纹 -->
+        <div class="promo-scene-art promo-scene-art--back promo-watermark promo-watermark--back" aria-hidden="true">
+          <svg viewBox="0 0 320 114" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="282" cy="24" r="16" stroke="rgba(255,255,255,0.2)" stroke-width="1.2" />
+            <circle cx="282" cy="24" r="34" stroke="rgba(255,255,255,0.12)" stroke-width="1" />
+            <circle cx="282" cy="24" r="52" stroke="rgba(255,255,255,0.06)" stroke-width="0.8" />
+            <circle cx="282" cy="24" r="3" fill="#ffffff" opacity="0.6" />
+            <circle cx="215" cy="38" r="2" fill="#ffffff" opacity="0.4" />
+            <circle cx="165" cy="62" r="1.5" fill="#ffffff" opacity="0.3" />
           </svg>
         </div>
 
@@ -238,20 +253,21 @@ try {
     width: 100%;
     height: 100%;
     border-radius: 8px;
-    /* 核心：通透、饱满、清新的现代亮色天空蓝渐变体系 */
+    /* 核心：方案A 极光四阶多色域流体渐变 (皇家宝蓝 -> 电光蓝 -> 晴空蓝 -> 湖绿青) */
     --promo-bg-gradient: 
-      radial-gradient(circle at 18% 18%, rgba(255, 255, 255, 0.28), transparent 30%),
-      radial-gradient(circle at 85% 82%, rgba(255, 255, 255, 0.16), transparent 28%),
-      linear-gradient(135deg, #2b73f8 0%, #1ea1f2 100%);
-    --promo-card-shadow: 0 8px 24px -4px rgba(30, 161, 242, 0.35), 0 2px 6px rgba(0, 0, 0, 0.04);
-    --promo-border-color: rgba(255, 255, 255, 0.45);
+      radial-gradient(circle at 10% 12%, rgba(255, 255, 255, 0.35) 0%, transparent 40%),
+      radial-gradient(circle at 92% 82%, rgba(6, 182, 212, 0.45) 0%, transparent 45%),
+      linear-gradient(135deg, #1d4ed8 0%, #2563eb 38%, #0284c7 72%, #06b6d4 100%);
+    --promo-card-shadow: 0 10px 25px -5px rgba(2, 132, 199, 0.38), 0 2px 6px rgba(0, 0, 0, 0.05);
+    --promo-border-color: rgba(255, 255, 255, 0.48);
   }
 
   :global([data-theme="dark"]) #flip-wrapper {
     --promo-bg-gradient: 
-      radial-gradient(circle at 18% 18%, rgba(255, 255, 255, 0.12), transparent 28%),
-      linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #1d4ed8 100%);
-    --promo-card-shadow: 0 10px 24px -6px rgba(0, 0, 0, 0.5);
+      radial-gradient(circle at 10% 12%, rgba(255, 255, 255, 0.15) 0%, transparent 40%),
+      radial-gradient(circle at 92% 82%, rgba(6, 182, 212, 0.25) 0%, transparent 45%),
+      linear-gradient(135deg, #0f172a 0%, #1e3a8a 38%, #1d4ed8 72%, #0369a1 100%);
+    --promo-card-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.6), 0 2px 6px rgba(0, 0, 0, 0.4);
     --promo-border-color: rgba(255, 255, 255, 0.22);
   }
 
@@ -328,21 +344,23 @@ try {
     transition-delay: 0.15s;
   }
 
-  /* 官方折纸飞机大水印 */
+  /* 方案A 破空航线与广播电波全景场景 (Aurora & Flight Trail) */
+  .promo-scene-art,
   .promo-watermark {
-    position: absolute;
-    right: -16px;
-    bottom: -20px;
-    width: 126px;
-    height: 126px;
-    pointer-events: none;
-    transform: rotate(-10deg);
-    z-index: 1;
+    position: absolute !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    pointer-events: none !important;
+    z-index: 1 !important;
+    overflow: hidden !important;
   }
 
+  .promo-scene-art svg,
   .promo-watermark svg {
-    width: 100%;
-    height: 100%;
+    width: 100% !important;
+    height: 100% !important;
+    display: block !important;
   }
 
   /* FRONT FACE 样式 */
@@ -473,7 +491,7 @@ try {
     gap: 4px;
     padding: 3px 12px;
     background: #ffffff;
-    color: #1d4ed8;
+    color: #0369a1;
     font-size: 0.75rem;
     font-weight: 700;
     border-radius: 999px;
@@ -485,8 +503,8 @@ try {
 
   .promo-cta-btn:hover {
     transform: translateY(-1px) scale(1.02);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.22);
-    color: #1e40af;
+    box-shadow: 0 4px 12px rgba(3, 105, 161, 0.25);
+    color: #0284c7;
   }
 
   .cta-arrow {
@@ -509,7 +527,7 @@ try {
     border-radius: 6px;
     padding: 3px;
     box-sizing: border-box;
-    box-shadow: 0 4px 12px rgba(10, 40, 110, 0.2);
+    box-shadow: 0 4px 12px rgba(3, 105, 161, 0.25);
     display: flex;
     align-items: center;
     justify-content: center;
