@@ -6244,6 +6244,20 @@
   2. Wrangler 部署至 Cloudflare Pages 生产边缘节点；
   3. Playwright 实机全链路审计 `https://blog.epocanvas.com/`，确保 0 报错与视觉证据链归档。
 
+### Task 88: 经典官方 Telegram 纸飞机 3D 精准重塑与纯净星轨（彻底取缔突兀流星）(`0c06234`)
+- [x] **纠偏并重构官方标准 Telegram 3D 纸飞机几何形象**：
+  1. 彻底淘汰自画扁平失真三角与肥大机身，完全基于官方经典比例（Dart 飞镖构型，机鼻 `166,75`、尾梢 `24.8,111`、中腹折痕 `100,144.5` 与折叠龙骨 `98,175`）精准矢量构筑；
+  2. 采用纯白主受光翼面（`tg-main-wing`）、柔光淡蓝下展翼（`tg-side-wing`）、深邃宝蓝立体下折腹鳍（`tg-fin-shade`）与机脊贯穿高光线（`tg-crease-light`），100% 还原 Telegram 灵魂形象与立体折纸质感。
+- [x] **全面清除突兀流星，回归纯净天文星轨天象**：
+  1. 彻底清除 `.promo-meteor` 划痕、渐变与流星动画，消除其对同心圆天体摄影轨迹的视觉破坏与抢戏；
+  2. 保留纯粹典雅的 32 轨多级同心长曝光星流与 3 处柔和呼吸的四角十字衍射星芒，再现纯净静谧的深空天体摄影美学；
+  3. 搭配纯净推进航线 `stream-jet` 与 `tg-plane-flight-rig` 4.2s 气流浮动，整体 UI 空灵通透。
+- [x] **严格执行 Git Commit 规范与禁止推送 remote repo 铁律**：
+  1. 严禁向 remote repo (`origin`) 推送任何代码，仅允许推送并部署至 `cf` 远端；
+  2. 全量静态编译并通过 Wrangler 部署至 Cloudflare Pages 生产边缘节点。
+- [x] **生产环境 (https://blog.epocanvas.com) Playwright 实机全链路实测与客观证据链归档**。
+
+
 
 
 
