@@ -132,29 +132,22 @@ function arcPath(cx: number, cy: number, r: number, startDeg: number, endDeg: nu
   return `M ${x1.toFixed(1)} ${y1.toFixed(1)} A ${r.toFixed(1)} ${r.toFixed(1)} 0 ${largeArc} ${sweep} ${x2.toFixed(1)} ${y2.toFixed(1)}`;
 }
 
-// 纯净天文同心星轨群 A (天极中心 cx: 330, cy: -35，360 度圆周分布，顺滑无顿挫自转)
+// 纯净天文同心星轨群 A (天极中心 cx: 330, cy: -35，长曝光连贯同心大弧线，顺滑无顿挫自转)
 const frontStarTrailsA = [
-  { r: 60, s: 70, span: 45, sw: 0.8, op: 0.42, c: '#ffffff' },
-  { r: 85, s: 125, span: 55, sw: 0.6, op: 0.32, c: '#bae6fd' },
-  { r: 105, s: 75, span: 60, sw: 1.1, op: 0.55, c: '#ffffff' },
-  { r: 120, s: 155, span: 42, sw: 0.5, op: 0.28, c: '#7dd3fc' },
-  { r: 145, s: 90, span: 65, sw: 0.75, op: 0.38, c: '#e0f2fe' },
-  { r: 165, s: 55, span: 52, sw: 1.15, op: 0.58, c: '#ffffff' },
-  { r: 185, s: 115, span: 68, sw: 0.6, op: 0.3, c: '#38bdf8' },
-  { r: 210, s: 80, span: 58, sw: 0.9, op: 0.42, c: '#bae6fd' },
-  { r: 235, s: 100, span: 62, sw: 0.6, op: 0.28, c: '#7dd3fc' },
-  { r: 260, s: 65, span: 72, sw: 1.0, op: 0.48, c: '#ffffff' },
-  { r: 290, s: 110, span: 52, sw: 0.5, op: 0.24, c: '#38bdf8' },
-  { r: 320, s: 75, span: 65, sw: 0.8, op: 0.32, c: '#bae6fd' },
-  { r: 350, s: 92, span: 58, sw: 0.55, op: 0.22, c: '#e0f2fe' },
-  { r: 385, s: 105, span: 50, sw: 0.45, op: 0.18, c: '#7dd3fc' },
-  { r: 75, s: 230, span: 50, sw: 0.7, op: 0.38, c: '#ffffff' },
-  { r: 115, s: 210, span: 60, sw: 0.9, op: 0.48, c: '#bae6fd' },
-  { r: 155, s: 245, span: 65, sw: 0.6, op: 0.32, c: '#7dd3fc' },
-  { r: 195, s: 205, span: 55, sw: 1.1, op: 0.52, c: '#ffffff' },
-  { r: 245, s: 255, span: 68, sw: 0.75, op: 0.38, c: '#e0f2fe' },
-  { r: 295, s: 225, span: 58, sw: 0.5, op: 0.22, c: '#38bdf8' },
-  { r: 340, s: 265, span: 52, sw: 0.7, op: 0.28, c: '#bae6fd' }
+  { r: 50, s: 40, span: 130, sw: 0.7, op: 0.35, c: '#ffffff' },
+  { r: 80, s: 110, span: 140, sw: 0.6, op: 0.3, c: '#bae6fd' },
+  { r: 110, s: 60, span: 150, sw: 0.8, op: 0.45, c: '#ffffff' },
+  { r: 140, s: 130, span: 145, sw: 0.5, op: 0.25, c: '#7dd3fc' },
+  { r: 175, s: 80, span: 155, sw: 0.7, op: 0.35, c: '#e0f2fe' },
+  { r: 210, s: 150, span: 140, sw: 0.55, op: 0.28, c: '#38bdf8' },
+  { r: 250, s: 70, span: 160, sw: 0.75, op: 0.4, c: '#ffffff' },
+  { r: 290, s: 120, span: 150, sw: 0.5, op: 0.22, c: '#bae6fd' },
+  { r: 340, s: 90, span: 155, sw: 0.6, op: 0.26, c: '#e0f2fe' },
+  { r: 70, s: 230, span: 135, sw: 0.65, op: 0.32, c: '#ffffff' },
+  { r: 125, s: 220, span: 145, sw: 0.75, op: 0.38, c: '#bae6fd' },
+  { r: 190, s: 240, span: 150, sw: 0.55, op: 0.26, c: '#7dd3fc' },
+  { r: 265, s: 235, span: 155, sw: 0.7, op: 0.32, c: '#ffffff' },
+  { r: 325, s: 250, span: 140, sw: 0.5, op: 0.2, c: '#38bdf8' }
 ].map(a => ({
   d: arcPath(330, -35, a.r, a.s, a.s + a.span),
   strokeWidth: a.sw,
@@ -162,21 +155,21 @@ const frontStarTrailsA = [
   color: a.c
 }));
 
-// 纯净天文同心星轨群 B (形成长曝光深邃差速视差)
+// 纯净天文同心星轨群 B (长曝光深邃差速视差连贯星轨)
 const frontStarTrailsB = [
-  { r: 70, s: 105, span: 40, sw: 0.65, op: 0.35, c: '#e0f2fe' },
-  { r: 95, s: 50, span: 48, sw: 0.85, op: 0.45, c: '#ffffff' },
-  { r: 130, s: 135, span: 58, sw: 0.55, op: 0.26, c: '#38bdf8' },
-  { r: 150, s: 70, span: 62, sw: 0.95, op: 0.5, c: '#ffffff' },
-  { r: 175, s: 100, span: 50, sw: 0.6, op: 0.3, c: '#bae6fd' },
-  { r: 220, s: 140, span: 66, sw: 0.75, op: 0.36, c: '#e0f2fe' },
-  { r: 275, s: 85, span: 60, sw: 0.85, op: 0.4, c: '#ffffff' },
-  { r: 330, s: 125, span: 54, sw: 0.5, op: 0.22, c: '#7dd3fc' },
-  { r: 85, s: 260, span: 45, sw: 0.6, op: 0.32, c: '#bae6fd' },
-  { r: 140, s: 190, span: 55, sw: 0.9, op: 0.46, c: '#ffffff' },
-  { r: 180, s: 280, span: 60, sw: 0.55, op: 0.28, c: '#7dd3fc' },
-  { r: 230, s: 215, span: 64, sw: 0.8, op: 0.38, c: '#e0f2fe' },
-  { r: 285, s: 270, span: 56, sw: 0.6, op: 0.26, c: '#bae6fd' }
+  { r: 65, s: 85, span: 130, sw: 0.6, op: 0.3, c: '#e0f2fe' },
+  { r: 95, s: 30, span: 140, sw: 0.75, op: 0.4, c: '#ffffff' },
+  { r: 130, s: 110, span: 145, sw: 0.55, op: 0.26, c: '#38bdf8' },
+  { r: 160, s: 50, span: 155, sw: 0.8, op: 0.42, c: '#ffffff' },
+  { r: 200, s: 90, span: 140, sw: 0.6, op: 0.3, c: '#bae6fd' },
+  { r: 240, s: 130, span: 150, sw: 0.7, op: 0.35, c: '#e0f2fe' },
+  { r: 280, s: 75, span: 155, sw: 0.75, op: 0.38, c: '#ffffff' },
+  { r: 330, s: 115, span: 145, sw: 0.5, op: 0.22, c: '#7dd3fc' },
+  { r: 85, s: 250, span: 135, sw: 0.6, op: 0.28, c: '#bae6fd' },
+  { r: 145, s: 200, span: 145, sw: 0.75, op: 0.36, c: '#ffffff' },
+  { r: 180, s: 270, span: 150, sw: 0.55, op: 0.26, c: '#7dd3fc' },
+  { r: 230, s: 215, span: 155, sw: 0.7, op: 0.34, c: '#e0f2fe' },
+  { r: 305, s: 260, span: 145, sw: 0.55, op: 0.24, c: '#bae6fd' }
 ].map(a => ({
   d: arcPath(330, -35, a.r, a.s, a.s + a.span),
   strokeWidth: a.sw,
@@ -184,21 +177,21 @@ const frontStarTrailsB = [
   color: a.c
 }));
 
-// 背面 13 轨极简连续星轨
+// 背面极简连贯星轨
 const backStarTrails = [
-  { r: 70, s: 90, span: 55, sw: 0.6, op: 0.24, c: '#e0f2fe' },
-  { r: 105, s: 120, span: 60, sw: 0.8, op: 0.3, c: '#bae6fd' },
-  { r: 145, s: 80, span: 50, sw: 0.5, op: 0.2, c: '#7dd3fc' },
-  { r: 185, s: 110, span: 65, sw: 0.7, op: 0.26, c: '#ffffff' },
-  { r: 230, s: 75, span: 70, sw: 0.5, op: 0.18, c: '#38bdf8' },
-  { r: 280, s: 100, span: 60, sw: 0.6, op: 0.22, c: '#bae6fd' },
-  { r: 330, s: 85, span: 55, sw: 0.45, op: 0.16, c: '#e0f2fe' },
-  { r: 85, s: 250, span: 50, sw: 0.55, op: 0.22, c: '#bae6fd' },
-  { r: 125, s: 220, span: 60, sw: 0.75, op: 0.28, c: '#ffffff' },
-  { r: 165, s: 260, span: 55, sw: 0.5, op: 0.2, c: '#7dd3fc' },
-  { r: 210, s: 210, span: 65, sw: 0.65, op: 0.24, c: '#e0f2fe' },
-  { r: 260, s: 245, span: 58, sw: 0.45, op: 0.16, c: '#38bdf8' },
-  { r: 310, s: 230, span: 52, sw: 0.55, op: 0.18, c: '#bae6fd' }
+  { r: 70, s: 60, span: 140, sw: 0.6, op: 0.24, c: '#e0f2fe' },
+  { r: 105, s: 100, span: 145, sw: 0.75, op: 0.3, c: '#bae6fd' },
+  { r: 145, s: 70, span: 150, sw: 0.5, op: 0.2, c: '#7dd3fc' },
+  { r: 185, s: 110, span: 140, sw: 0.7, op: 0.26, c: '#ffffff' },
+  { r: 230, s: 65, span: 155, sw: 0.5, op: 0.18, c: '#38bdf8' },
+  { r: 280, s: 95, span: 150, sw: 0.6, op: 0.22, c: '#bae6fd' },
+  { r: 330, s: 80, span: 145, sw: 0.45, op: 0.16, c: '#e0f2fe' },
+  { r: 85, s: 240, span: 135, sw: 0.55, op: 0.22, c: '#bae6fd' },
+  { r: 125, s: 210, span: 145, sw: 0.7, op: 0.28, c: '#ffffff' },
+  { r: 165, s: 250, span: 150, sw: 0.5, op: 0.2, c: '#7dd3fc' },
+  { r: 210, s: 200, span: 155, sw: 0.65, op: 0.24, c: '#e0f2fe' },
+  { r: 260, s: 240, span: 145, sw: 0.45, op: 0.16, c: '#38bdf8' },
+  { r: 310, s: 220, span: 140, sw: 0.55, op: 0.18, c: '#bae6fd' }
 ].map(a => ({
   d: arcPath(330, -35, a.r, a.s, a.s + a.span),
   strokeWidth: a.sw,
@@ -221,31 +214,6 @@ const backStarTrails = [
         <!-- 画面感升维：纯净天文旋转同心星轨 (0 随机滑动杂星，0 十字光刺) -->
         <div class="promo-scene-art promo-watermark" aria-hidden="true">
           <svg viewBox="0 0 320 114" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <!-- 官方标准 3D Telegram 纸飞机专属立体光影渐变与高反差投影 -->
-              <linearGradient id="hero-tg-body" x1="20" y1="110" x2="175" y2="75" gradientUnits="userSpaceOnUse">
-                <stop offset="0%" stop-color="#ffffff" />
-                <stop offset="70%" stop-color="#ffffff" />
-                <stop offset="100%" stop-color="#f0f7ff" />
-              </linearGradient>
-              <linearGradient id="hero-tg-keel" x1="82" y1="132" x2="152" y2="88" gradientUnits="userSpaceOnUse">
-                <stop offset="0%" stop-color="#2563eb" />
-                <stop offset="100%" stop-color="#1d4ed8" />
-              </linearGradient>
-              <linearGradient id="hero-tg-flap" x1="98" y1="175" x2="120" y2="140" gradientUnits="userSpaceOnUse">
-                <stop offset="0%" stop-color="#60a5fa" />
-                <stop offset="100%" stop-color="#2563eb" />
-              </linearGradient>
-              <linearGradient id="hero-tg-underwing" x1="100" y1="144" x2="148" y2="180" gradientUnits="userSpaceOnUse">
-                <stop offset="0%" stop-color="#93c5fd" />
-                <stop offset="100%" stop-color="#60a5fa" />
-              </linearGradient>
-              <filter id="hero-plane-shadow" x="-40%" y="-40%" width="180%" height="180%">
-                <feDropShadow dx="-2" dy="6" stdDeviation="4" flood-color="rgba(15, 23, 42, 0.42)" />
-                <feDropShadow dx="1" dy="2" stdDeviation="2" flood-color="rgba(2, 44, 120, 0.3)" />
-              </filter>
-            </defs>
-
             <!-- 纯净天文旋转星轨群 A (42s 连续天体旋转，0 随机杂星，0 虚线滑动) -->
             <g class="celestial-wheel-a">
               {frontStarTrailsA.map((trail) => (
@@ -276,31 +244,25 @@ const backStarTrails = [
           </svg>
         </div>
 
-        <!-- 极度醒目、一眼必识、绝对清晰立体的 3D Telegram 纸飞机 (昂首翱翔，高反差浮雕质感) -->
+        <!-- 权威开源 Telegram 官方立体折纸飞机 (Wikimedia Commons 3-Tone Shaded 真实物理光影与官方折痕) -->
         <div class="promo-hero-plane" aria-hidden="true">
-          <svg width="68" height="68" viewBox="10 65 175 125" fill="none" style="overflow: visible; filter: url(#hero-plane-shadow);">
-            <!-- 1. 折叠机腹内层三角 (深邃群青蓝) -->
-            <path d="M98 175c-3.8 0-3.2-1.5-4.5-5.2L82 132.2 152.8 88" fill="url(#hero-tg-keel)" />
-            <!-- 2. 中腹折叠小角 (天青宝蓝) -->
-            <path d="M98 175c3 0 4.3-1.4 6-3l16-15.5-20-12" fill="url(#hero-tg-flap)" />
-            <!-- 3. 主折纸机身大翼面 (纯白挺拔破空主翼) -->
-            <path d="M100 144.5l48.4 35.7c5.6 3.1 9.6 1.5 11-5.2l19.5-92c2-8.3-3.2-12-8.6-9.6L24.8 111c-8 3.2-8 7.7-1.4 9.7l37.4 11.7 86.8-54.8c4.1-2.5 7.8-1.2 4.7 1.6" fill="url(#hero-tg-body)" />
-            <!-- 4. 下折副翼立体阴影层 -->
-            <path d="M100 144.5 L 148.4 180.2 C 154 183.3 158 181.7 159.4 175 L 178.9 83 C 180.9 74.7 175.7 71 170.3 73.4 L 62.2 122.7 Z" fill="url(#hero-tg-underwing)" opacity="0.3" />
-            <!-- 5. 机脊纯白极锐折线 -->
-            <path d="M62.2 122.7 L 170.3 73.4" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round" />
-            <!-- 6. 机尖破空耀斑微亮点 -->
-            <circle cx="178.9" cy="83" r="2.2" fill="#ffffff" />
+          <svg width="74" height="74" viewBox="48 60 135 115" style="overflow: visible; filter: drop-shadow(0 8px 16px rgba(15, 23, 42, 0.45)) drop-shadow(0 2px 4px rgba(2, 44, 120, 0.35));">
+            <!-- 1. 下折底翼 (天青浅蓝底面) -->
+            <path d="M81.229,128.772l14.237,39.406s1.78,3.687,3.686,3.687,30.255-29.492,30.255-29.492l31.525-60.89L81.737,118.6Z" fill="#bae6fd"/>
+            <!-- 2. 机腹中脊 (亮海蓝立体折角) -->
+            <path d="M100.106,138.878l-2.733,29.046s-1.144,8.9,7.754,0,17.415-15.763,17.415-15.763" fill="#60a5fa"/>
+            <!-- 3. 主翼面 (官方纯白挺拔折纸，负空间内切弧度完全忠实官方) -->
+            <path d="M81.486,130.178,52.2,120.636s-3.5-1.42-2.373-4.64c.232-.664.7-1.229,2.1-2.2,6.489-4.523,120.106-45.36,120.106-45.36s3.208-1.081,5.1-.362a2.766,2.766,0,0,1,1.885,2.055,9.357,9.357,0,0,1,.254,2.585c-.009.752-.1,1.449-.169,2.542-.692,11.165-21.4,94.493-21.4,94.493s-1.239,4.876-5.678,5.043A8.13,8.13,0,0,1,146.1,172.5c-8.711-7.493-38.819-27.727-45.472-32.177a1.27,1.27,0,0,1-.546-.9c-.093-.469.417-1.05.417-1.05s52.426-46.6,53.821-51.492c.108-.379-.3-.566-.848-.4-3.482,1.281-63.844,39.4-70.506,43.607A3.21,3.21,0,0,1,81.486,130.178Z" fill="#ffffff"/>
           </svg>
         </div>
 
         <!-- 正面主体布局：立体深空微光探测舱 + 形象化 3D 纸飞机 -->
         <div class="promo-front-body">
           <div class="promo-icon-emblem">
-            <svg class="promo-icon-plane" width="24" height="24" viewBox="14 68 168 118" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M98 175c-3.8 0-3.2-1.5-4.5-5.2L82 132.2 152.8 88" fill="rgba(255,255,255,0.78)" />
-              <path d="M98 175c3 0 4.3-1.4 6-3l16-15.5-20-12" fill="rgba(255,255,255,0.52)" />
-              <path d="M100 144.5l48.4 35.7c5.6 3.1 9.6 1.5 11-5.2l19.5-92c2-8.3-3.2-12-8.6-9.6L24.8 111c-8 3.2-8 7.7-1.4 9.7l37.4 11.7 86.8-54.8c4.1-2.5 7.8-1.2 4.7 1.6" fill="#ffffff" />
+            <svg class="promo-icon-plane" width="24" height="24" viewBox="48 60 135 115" xmlns="http://www.w3.org/2000/svg">
+              <path d="M81.229,128.772l14.237,39.406s1.78,3.687,3.686,3.687,30.255-29.492,30.255-29.492l31.525-60.89L81.737,118.6Z" fill="#bae6fd"/>
+              <path d="M100.106,138.878l-2.733,29.046s-1.144,8.9,7.754,0,17.415-15.763,17.415-15.763" fill="#60a5fa"/>
+              <path d="M81.486,130.178,52.2,120.636s-3.5-1.42-2.373-4.64c.232-.664.7-1.229,2.1-2.2,6.489-4.523,120.106-45.36,120.106-45.36s3.208-1.081,5.1-.362a2.766,2.766,0,0,1,1.885,2.055,9.357,9.357,0,0,1,.254,2.585c-.009.752-.1,1.449-.169,2.542-.692,11.165-21.4,94.493-21.4,94.493s-1.239,4.876-5.678,5.043A8.13,8.13,0,0,1,146.1,172.5c-8.711-7.493-38.819-27.727-45.472-32.177a1.27,1.27,0,0,1-.546-.9c-.093-.469.417-1.05.417-1.05s52.426-46.6,53.821-51.492c.108-.379-.3-.566-.848-.4-3.482,1.281-63.844,39.4-70.506,43.607A3.21,3.21,0,0,1,81.486,130.178Z" fill="#ffffff"/>
             </svg>
           </div>
           <div class="promo-front-info">
@@ -552,16 +514,19 @@ const backStarTrails = [
   /* 核心动态化动效体系 (Celestial Astronomy & 3D Flight)    */
   /* ======================================================== */
 
-  /* 1. 纯净天文长曝光同心星轨顺滑天体旋转 (围绕天极 330px, -35px) */
+  /* 1. 纯净天文长曝光同心星轨顺滑天体旋转 (围绕天极 330px, -35px，精准锁定 viewBox 坐标系) */
   .celestial-wheel-a {
+    transform-box: view-box;
     transform-origin: 330px -35px;
     animation: spinCelestialA 42s linear infinite;
   }
   .celestial-wheel-b {
+    transform-box: view-box;
     transform-origin: 330px -35px;
     animation: spinCelestialB 64s linear infinite;
   }
   .celestial-wheel-back {
+    transform-box: view-box;
     transform-origin: 330px -35px;
     animation: spinCelestialA 50s linear infinite;
   }
@@ -575,11 +540,11 @@ const backStarTrails = [
     to { transform: rotate(360deg); }
   }
 
-  /* 2. 极度醒目 3D Telegram 纸飞机悬浮微动与交互 (清晰挺拔、高反差浮雕质感) */
+  /* 2. 官方权威 Telegram 立体折纸飞机悬浮微动与交互 */
   .promo-hero-plane {
     position: absolute;
     right: 18px;
-    top: 22px;
+    top: 20px;
     z-index: 5;
     pointer-events: none;
     animation: heroPlaneFloat 4.2s ease-in-out infinite;
@@ -590,7 +555,7 @@ const backStarTrails = [
       transform: translateY(0) rotate(0deg);
     }
     50% {
-      transform: translateY(-3.5px) rotate(1.8deg);
+      transform: translateY(-3.5px) rotate(1.5deg);
     }
   }
 

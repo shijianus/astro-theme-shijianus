@@ -6299,6 +6299,21 @@
   3. 通过 Wrangler 部署到 Cloudflare Pages 生产边缘节点；
   4. Playwright 在真实生产域名 `https://blog.epocanvas.com/` 进行实机正面与反面全链路审计，出示完整真实视觉证据链。
 
+### Task 92: 完全采纳官方权威开源 Telegram 3 层立体分色纸飞机、消除手写几何形变、SVG 坐标锁定与连贯长曝光星轨流转 (`701fef4`)
+- [x] **根除手写几何形变，全量替换为权威开源 Telegram 官方立体折纸矢量**：
+  1. 遵照用户铁律要求，严禁 AI 闭门手写计算纸飞机几何点位；从权威开源库 (Wikimedia Commons / Telegram Official Vector) 提取正统 3 层立体分色折纸飞机 (`viewBox="48 60 135 115"`)；
+  2. 纯白挺拔折纸主翼（`#ffffff`），搭配天青浅蓝底面（`#bae6fd`）与深邃海蓝机腹龙骨折角（`#60a5fa`），内嵌官方经典负空间内切弧线与双层高反差物理漫射阴影；
+  3. 同步重构左侧圆环探测舱徽标 (`.promo-icon-emblem`)，主次纸飞机形象 100% 官方正统一致，任何人一眼秒认！
+- [x] **连贯长曝光同心星轨与 SVG 坐标系精准锁定**：
+  1. 将原本短促的弧线升级为 130° ~ 160° 长曝光连贯天体星轨，彻底消除由于圆角端点（stroke-linecap="round"）进出视野而偶现的孤立点状错觉；
+  2. 在 CSS 中为 `.celestial-wheel-a`、`.celestial-wheel-b` 与 `.celestial-wheel-back` 显式注入 `transform-box: view-box;`，将旋转中心精准锁定在 SVG 原生天极坐标 (330px, -35px)，彻底根除浏览器坐标漂移与星轨运动脱节问题；
+  3. 双层慢速差速自转（42s / 64s），背景极致纯净典雅。
+- [x] **严格遵守准则与交付铁律**：
+  1. **本对话绝对禁止向 remote repo (`origin`) 推送，仅推送到 `cf`**；
+  2. 单步 commit 并打印 Hash；
+  3. 通过 Wrangler 部署到 Cloudflare Pages 生产边缘节点；
+  4. Playwright 在真实生产域名 `https://blog.epocanvas.com/` 进行实机正面与反面全链路审计，出示完整真实视觉证据链。
+
 
 
 
