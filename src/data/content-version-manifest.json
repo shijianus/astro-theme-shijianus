@@ -994,5 +994,215 @@
     "version": "v0.0.1",
     "pubDate": "2026-09-18",
     "updatedDate": "2026-09-18"
+  },
+  "docs/standards/activity-level.zh-CN.md": {
+    "contentHash": "7168168cebf70ea3868b6c9c76ced9c6b3d201195cb6b308cf9bd7a3f4302cd0",
+    "version": "v1.2.2",
+    "pubDate": "2026-10-17",
+    "updatedDate": "2026-10-23"
+  },
+  "docs/standards/content-authoring.zh-CN.md": {
+    "contentHash": "93c23d319ae63b7173d26386d86c5d56a1fdd2ee6f0793158959d5ad6057ae37",
+    "version": "v1.0.1",
+    "pubDate": "2026-10-19",
+    "updatedDate": "2026-10-23"
+  },
+  "docs/standards/content-density.zh-CN.md": {
+    "contentHash": "780d74331b7c59127826c21eef6aaff4244138632883f719ac53dc30e4beb3b8",
+    "version": "v1.1.2",
+    "pubDate": "2026-10-17",
+    "updatedDate": "2026-10-23"
+  },
+  "docs/standards/document-lifecycle.zh-CN.md": {
+    "contentHash": "4c8b2cfd9b982b7591bc9e820df5276bc84d5f538d3f58ce1a06ac92d48148b0",
+    "version": "v1.0.1",
+    "pubDate": "2026-10-19",
+    "updatedDate": "2026-10-23"
+  },
+  "docs/standards/content-authoring.de.md": {
+    "contentHash": "f5c86f5637dd07194797ccb2a6eaa7858a353d6d793e4850415c9b8714e9f2fe",
+    "version": "v1.0.0",
+    "pubDate": "2026-10-19",
+    "updatedDate": "2026-10-19"
+  },
+  "docs/standards/content-authoring.en.md": {
+    "contentHash": "782a04b7557924a01423dd0ada8d3cce212f4c90e0940ce07f5800a9ebbe575a",
+    "version": "v1.0.0",
+    "pubDate": "2026-10-19",
+    "updatedDate": "2026-10-19"
+  },
+  "docs/standards/content-authoring.es.md": {
+    "contentHash": "88edf7559544fb6a6abe2809f1792e16ba21c5347e9eeffbcb4b7bab5c6c8529",
+    "version": "v1.0.0",
+    "pubDate": "2026-10-19",
+    "updatedDate": "2026-10-19"
+  },
+  "docs/standards/content-authoring.fr.md": {
+    "contentHash": "474f355a140dab160c4391857c0e179c714d5a44044e814fd6c59039587ad00d",
+    "version": "v1.0.0",
+    "pubDate": "2026-10-19",
+    "updatedDate": "2026-10-19"
+  },
+  "docs/standards/document-lifecycle.de.md": {
+    "contentHash": "cdac820c292485d5039575ea44173a73df703b57440c1cab93ee8d23d856121b",
+    "version": "v1.0.0",
+    "pubDate": "2026-10-19",
+    "updatedDate": "2026-10-19"
+  },
+  "docs/standards/document-lifecycle.en.md": {
+    "contentHash": "8045350054263d20a4f646a5719699d17854831fa8a6f0f87f062edc0f68bb0d",
+    "version": "v1.0.0",
+    "pubDate": "2026-10-19",
+    "updatedDate": "2026-10-19"
+  },
+  "docs/standards/document-lifecycle.es.md": {
+    "contentHash": "cbf000ed6dc16277278c5f4b2402f30e89d0933d4c561a9b768dd109cd21f8f2",
+    "version": "v1.0.0",
+    "pubDate": "2026-10-19",
+    "updatedDate": "2026-10-19"
+  },
+  "docs/standards/document-lifecycle.fr.md": {
+    "contentHash": "622e20d9a906d8b5ba89a6d26f8782ec60f70efaf36eb582f174798b496a2150",
+    "version": "v1.0.0",
+    "pubDate": "2026-10-19",
+    "updatedDate": "2026-10-19"
+  },
+  "docs/standards/index.zh-CN.md": {
+    "contentHash": "0749d2f82f1f21565816fd4223e36e1ad63f9a6e18c28011b666033e652fbba2",
+    "version": "v2.7.1",
+    "pubDate": "2026-10-17",
+    "updatedDate": "2026-10-20"
+  },
+  "docs/standards/status.zh-CN.md": {
+    "contentHash": "c14b00b2440919d687ab247132647ea3110e54f0a5f6c70c7dec566dfd404b77",
+    "version": "v1.0.1",
+    "pubDate": "2026-10-17",
+    "updatedDate": "2026-10-17"
+  },
+  "docs/standards/version.de.md": {
+    "contentHash": "c1008f62e825772738abf38202b7732cba815579236d4c57c846a4fc449df61d",
+    "version": "v1.0.1",
+    "pubDate": "2026-10-17",
+    "updatedDate": "2026-10-17"
+  },
+  "docs/standards/version.en.md": {
+    "contentHash": "d67538987ea27c65b4e90d2ff27f294d301caaf684147af8bc0813cb731df28c",
+    "version": "v1.0.1",
+    "pubDate": "2026-10-17",
+    "updatedDate": "2026-10-17"
+  },
+  "docs/standards/version.es.md": {
+    "contentHash": "a8dfbb4f74bde6129f6e8c621b295b7bad0827b7d5e44e14dc16e716d56df215",
+    "version": "v1.0.1",
+    "pubDate": "2026-10-17",
+    "updatedDate": "2026-10-17"
+  },
+  "docs/standards/version.fr.md": {
+    "contentHash": "c41d3dec89c55403dba352f0f4c646b382d1ae732ec8af2e106595e208635bf2",
+    "version": "v1.0.1",
+    "pubDate": "2026-10-17",
+    "updatedDate": "2026-10-17"
+  },
+  "docs/standards/version.zh-CN.md": {
+    "contentHash": "f0b142d19aab1a241da2dd9ee303fd98ba9b0e75348f6080d4a536d71dfb2efd",
+    "version": "v1.0.1",
+    "pubDate": "2026-10-17",
+    "updatedDate": "2026-10-17"
+  },
+  "docs/standards/status.en.md": {
+    "contentHash": "325f54d8c38bf08ba6f2f30388dc3dc2c118bfffc85fddcd4c01e1a9fae10347",
+    "version": "v1.0.1",
+    "pubDate": "2026-10-17",
+    "updatedDate": "2026-10-17"
+  },
+  "docs/standards/status.de.md": {
+    "contentHash": "71a331209f261ab20ea6d7ab33300e62e27b1520078f96e263a49a19e243e69a",
+    "version": "v1.0.1",
+    "pubDate": "2026-10-17",
+    "updatedDate": "2026-10-17"
+  },
+  "docs/standards/activity-level.de.md": {
+    "contentHash": "4d2fa11da4f6c6ffcd19cb1d4300990b98f61f5ddc10c5d5d8b03b447a25e850",
+    "version": "v1.2.1",
+    "pubDate": "2026-10-17",
+    "updatedDate": "2026-10-18"
+  },
+  "docs/standards/activity-level.en.md": {
+    "contentHash": "8e1ffbce99047bcc0152d38ba44962a84ed79c12e42f41dd3092b22eeb5b4f50",
+    "version": "v1.2.1",
+    "pubDate": "2026-10-17",
+    "updatedDate": "2026-10-18"
+  },
+  "docs/standards/activity-level.es.md": {
+    "contentHash": "27d8fedd2d6c028576b4799f4da21d4c608375fecac288c9ea4e4f046be1dd71",
+    "version": "v1.2.1",
+    "pubDate": "2026-10-17",
+    "updatedDate": "2026-10-18"
+  },
+  "docs/standards/activity-level.fr.md": {
+    "contentHash": "4a186f7027f91414c9a52137429c5b3d3d22d0f0c4b9dd662c7ba9e590fdd5f0",
+    "version": "v1.2.1",
+    "pubDate": "2026-10-17",
+    "updatedDate": "2026-10-18"
+  },
+  "docs/standards/content-density.de.md": {
+    "contentHash": "169b5846898f19479616be6fe476b2cd9f51c4c61b5ba75dc9a7b88451013938",
+    "version": "v1.1.1",
+    "pubDate": "2026-10-17",
+    "updatedDate": "2026-10-18"
+  },
+  "docs/standards/content-density.en.md": {
+    "contentHash": "6ae19ba952ac7a8b35b78371e0a2b5c824c24c73acf1eeec3abaad28df7c8990",
+    "version": "v1.1.1",
+    "pubDate": "2026-10-17",
+    "updatedDate": "2026-10-18"
+  },
+  "docs/standards/content-density.es.md": {
+    "contentHash": "ac3cf4d69befc0c6bf883276f33ed550d71b4d8af61bcebb5cfd70570e7330b9",
+    "version": "v1.1.1",
+    "pubDate": "2026-10-17",
+    "updatedDate": "2026-10-18"
+  },
+  "docs/standards/content-density.fr.md": {
+    "contentHash": "0fa753ca5fd761dee8b3a325ded175bad31e4eb4de31e936f28b78cab868446e",
+    "version": "v1.1.1",
+    "pubDate": "2026-10-17",
+    "updatedDate": "2026-10-18"
+  },
+  "docs/standards/index.de.md": {
+    "contentHash": "3746932eee05e22213870146b9f35ef344b4d44a927b16bfe8b03ad0830c18ae",
+    "version": "v2.7.1",
+    "pubDate": "2026-10-17",
+    "updatedDate": "2026-10-20"
+  },
+  "docs/standards/index.en.md": {
+    "contentHash": "7b4d02154a160e8f14e4b5e28fccfe31b1410af8d610cc99979f4a26decd7a8f",
+    "version": "v2.7.1",
+    "pubDate": "2026-10-17",
+    "updatedDate": "2026-10-20"
+  },
+  "docs/standards/index.es.md": {
+    "contentHash": "65f518363e47262a983f460f98415807c002e6f30ca20fcc60598177c4c17dff",
+    "version": "v2.7.1",
+    "pubDate": "2026-10-17",
+    "updatedDate": "2026-10-20"
+  },
+  "docs/standards/index.fr.md": {
+    "contentHash": "452f83d15baa33b5f580299be12f1b4ba502bd9f675e374c273d7fae053fea95",
+    "version": "v2.7.1",
+    "pubDate": "2026-10-17",
+    "updatedDate": "2026-10-20"
+  },
+  "docs/standards/status.es.md": {
+    "contentHash": "a72478b12cda63f829de45f9cffb036ac58e0c541e190e69d2351bfdcec44907",
+    "version": "v1.0.1",
+    "pubDate": "2026-10-17",
+    "updatedDate": "2026-10-17"
+  },
+  "docs/standards/status.fr.md": {
+    "contentHash": "28553f4fd85a34087e0645b252759fc42bdf25eec7e7858ba6839a0cc4f2d6a5",
+    "version": "v1.0.1",
+    "pubDate": "2026-10-17",
+    "updatedDate": "2026-10-17"
   }
 }

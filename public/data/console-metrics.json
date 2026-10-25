@@ -1,12 +1,12 @@
 {
   "ok": true,
-  "generatedAt": "2026-10-21T23:44:56.113Z",
+  "generatedAt": "2026-10-25T03:14:20.755Z",
   "stats": {
     "posts": 30,
     "totalWords": 100922,
     "readingMinutes": 461,
     "avgWordsPerPost": 3364,
-    "uptimeDays": 1024,
+    "uptimeDays": 1028,
     "recentPostCount30d": 0,
     "activeStatus": "Status 0",
     "activeLevel": "Lv.0",
@@ -3075,21 +3075,21 @@
       "displayDate": "2026/10/22",
       "level": 0,
       "posts": [],
-      "isFuture": true
+      "isFuture": false
     },
     {
       "date": "2026-10-23",
       "displayDate": "2026/10/23",
       "level": 0,
       "posts": [],
-      "isFuture": true
+      "isFuture": false
     },
     {
       "date": "2026-10-24",
       "displayDate": "2026/10/24",
       "level": 0,
       "posts": [],
-      "isFuture": true
+      "isFuture": false
     }
   ],
   "posts": [
