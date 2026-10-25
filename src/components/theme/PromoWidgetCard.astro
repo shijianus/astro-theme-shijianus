@@ -118,6 +118,86 @@ try {
   console.error('Failed to generate embedded QR code', e);
   embeddedQrDataUrl = finalConfig.qrImage || '';
 }
+
+// 天文长曝光旋转同心星轨算法 (Celestial Pole Star Trails)
+function arcPath(cx: number, cy: number, r: number, startDeg: number, endDeg: number) {
+  const startRad = (startDeg * Math.PI) / 180;
+  const endRad = (endDeg * Math.PI) / 180;
+  const x1 = cx + r * Math.cos(startRad);
+  const y1 = cy + r * Math.sin(startRad);
+  const x2 = cx + r * Math.cos(endRad);
+  const y2 = cy + r * Math.sin(endRad);
+  const largeArc = Math.abs(endDeg - startDeg) > 180 ? 1 : 0;
+  const sweep = endDeg > startDeg ? 1 : 0;
+  return `M ${x1.toFixed(1)} ${y1.toFixed(1)} A ${r.toFixed(1)} ${r.toFixed(1)} 0 ${largeArc} ${sweep} ${x2.toFixed(1)} ${y2.toFixed(1)}`;
+}
+
+// 纯净天文同心星轨群 A (天极中心 cx: 330, cy: -35，长曝光连贯同心大弧线，顺滑无顿挫自转)
+const frontStarTrailsA = [
+  { r: 50, s: 40, span: 130, sw: 0.7, op: 0.35, c: '#ffffff' },
+  { r: 80, s: 110, span: 140, sw: 0.6, op: 0.3, c: '#bae6fd' },
+  { r: 110, s: 60, span: 150, sw: 0.8, op: 0.45, c: '#ffffff' },
+  { r: 140, s: 130, span: 145, sw: 0.5, op: 0.25, c: '#7dd3fc' },
+  { r: 175, s: 80, span: 155, sw: 0.7, op: 0.35, c: '#e0f2fe' },
+  { r: 210, s: 150, span: 140, sw: 0.55, op: 0.28, c: '#38bdf8' },
+  { r: 250, s: 70, span: 160, sw: 0.75, op: 0.4, c: '#ffffff' },
+  { r: 290, s: 120, span: 150, sw: 0.5, op: 0.22, c: '#bae6fd' },
+  { r: 340, s: 90, span: 155, sw: 0.6, op: 0.26, c: '#e0f2fe' },
+  { r: 70, s: 230, span: 135, sw: 0.65, op: 0.32, c: '#ffffff' },
+  { r: 125, s: 220, span: 145, sw: 0.75, op: 0.38, c: '#bae6fd' },
+  { r: 190, s: 240, span: 150, sw: 0.55, op: 0.26, c: '#7dd3fc' },
+  { r: 265, s: 235, span: 155, sw: 0.7, op: 0.32, c: '#ffffff' },
+  { r: 325, s: 250, span: 140, sw: 0.5, op: 0.2, c: '#38bdf8' }
+].map(a => ({
+  d: arcPath(330, -35, a.r, a.s, a.s + a.span),
+  strokeWidth: a.sw,
+  opacity: a.op,
+  color: a.c
+}));
+
+// 纯净天文同心星轨群 B (长曝光深邃差速视差连贯星轨)
+const frontStarTrailsB = [
+  { r: 65, s: 85, span: 130, sw: 0.6, op: 0.3, c: '#e0f2fe' },
+  { r: 95, s: 30, span: 140, sw: 0.75, op: 0.4, c: '#ffffff' },
+  { r: 130, s: 110, span: 145, sw: 0.55, op: 0.26, c: '#38bdf8' },
+  { r: 160, s: 50, span: 155, sw: 0.8, op: 0.42, c: '#ffffff' },
+  { r: 200, s: 90, span: 140, sw: 0.6, op: 0.3, c: '#bae6fd' },
+  { r: 240, s: 130, span: 150, sw: 0.7, op: 0.35, c: '#e0f2fe' },
+  { r: 280, s: 75, span: 155, sw: 0.75, op: 0.38, c: '#ffffff' },
+  { r: 330, s: 115, span: 145, sw: 0.5, op: 0.22, c: '#7dd3fc' },
+  { r: 85, s: 250, span: 135, sw: 0.6, op: 0.28, c: '#bae6fd' },
+  { r: 145, s: 200, span: 145, sw: 0.75, op: 0.36, c: '#ffffff' },
+  { r: 180, s: 270, span: 150, sw: 0.55, op: 0.26, c: '#7dd3fc' },
+  { r: 230, s: 215, span: 155, sw: 0.7, op: 0.34, c: '#e0f2fe' },
+  { r: 305, s: 260, span: 145, sw: 0.55, op: 0.24, c: '#bae6fd' }
+].map(a => ({
+  d: arcPath(330, -35, a.r, a.s, a.s + a.span),
+  strokeWidth: a.sw,
+  opacity: a.op,
+  color: a.c
+}));
+
+// 背面极简连贯星轨
+const backStarTrails = [
+  { r: 70, s: 60, span: 140, sw: 0.6, op: 0.24, c: '#e0f2fe' },
+  { r: 105, s: 100, span: 145, sw: 0.75, op: 0.3, c: '#bae6fd' },
+  { r: 145, s: 70, span: 150, sw: 0.5, op: 0.2, c: '#7dd3fc' },
+  { r: 185, s: 110, span: 140, sw: 0.7, op: 0.26, c: '#ffffff' },
+  { r: 230, s: 65, span: 155, sw: 0.5, op: 0.18, c: '#38bdf8' },
+  { r: 280, s: 95, span: 150, sw: 0.6, op: 0.22, c: '#bae6fd' },
+  { r: 330, s: 80, span: 145, sw: 0.45, op: 0.16, c: '#e0f2fe' },
+  { r: 85, s: 240, span: 135, sw: 0.55, op: 0.22, c: '#bae6fd' },
+  { r: 125, s: 210, span: 145, sw: 0.7, op: 0.28, c: '#ffffff' },
+  { r: 165, s: 250, span: 150, sw: 0.5, op: 0.2, c: '#7dd3fc' },
+  { r: 210, s: 200, span: 155, sw: 0.65, op: 0.24, c: '#e0f2fe' },
+  { r: 260, s: 240, span: 145, sw: 0.45, op: 0.16, c: '#38bdf8' },
+  { r: 310, s: 220, span: 140, sw: 0.55, op: 0.18, c: '#bae6fd' }
+].map(a => ({
+  d: arcPath(330, -35, a.r, a.s, a.s + a.span),
+  strokeWidth: a.sw,
+  opacity: a.op,
+  color: a.c
+}));
 ---
 
 <div class:list={['card-widget promo-widget', className]} id={id}>
@@ -125,36 +205,42 @@ try {
     <div id="flip-content">
       
       <!-- ============================================== -->
-      <!-- FRONT FACE: 极光流体天蓝 + 纸飞机专属破空气动航迹 -->
+      <!-- FRONT FACE: 方案A 极光流体天蓝 + 动态长曝光星轨正面 -->
       <!-- ============================================== -->
       <div
         class="face front-face"
         onclick={finalConfig.href && finalConfig.href !== '#' ? `window.open("${finalConfig.href}", "_blank")` : undefined}
       >
-        <!-- 画面感升维：纸飞机专属破空气流风道与动态进气航迹 (Aero Streamlines & Marching Contrail) -->
+        <!-- 画面感升维：纯净天文旋转同心星轨 (0 随机滑动杂星，0 十字光刺) -->
         <div class="promo-scene-art promo-watermark" aria-hidden="true">
           <svg viewBox="0 0 320 114" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <!-- 1. 顶部高空气动微风流线 (Breeze Streamlines) -->
-            <path d="M 15 16 C 95 12, 185 18, 260 10" stroke="#ffffff" stroke-width="0.8" opacity="0.3" stroke-linecap="round" class="promo-aero-breeze" />
-            <path d="M 50 24 C 125 22, 195 26, 255 20" stroke="#bae6fd" stroke-width="0.6" opacity="0.22" stroke-linecap="round" />
+            <!-- 纯净天文旋转星轨群 A (42s 连续天体旋转，0 随机杂星，0 虚线滑动) -->
+            <g class="celestial-wheel-a">
+              {frontStarTrailsA.map((trail) => (
+                <path
+                  d={trail.d}
+                  fill="none"
+                  stroke={trail.color}
+                  stroke-width={trail.strokeWidth}
+                  opacity={trail.opacity}
+                  stroke-linecap="round"
+                />
+              ))}
+            </g>
 
-            <!-- 2. 纸飞机专属超音速破空气动尾流束 (严格位于文字右侧与下缘，不遮挡任何文字) -->
-            <path d="M 190 74 C 210 70, 228 62, 246 52" stroke="#ffffff" stroke-width="1.8" opacity="0.65" stroke-linecap="round" class="promo-aero-slipstream" />
-            <path d="M 180 84 C 205 80, 226 70, 244 56" stroke="#7dd3fc" stroke-width="1.2" opacity="0.45" stroke-linecap="round" class="promo-aero-slipstream promo-aero-slipstream--2" />
-            <path d="M 170 94 C 198 90, 222 78, 242 60" stroke="#bae6fd" stroke-width="0.8" opacity="0.3" stroke-linecap="round" class="promo-aero-slipstream promo-aero-slipstream--3" />
-
-            <!-- 3. 底部动态破空虚线航迹 (紧贴底部优雅延伸，与副标题保持清晰垂直间距) -->
-            <path
-              d="M 20 114 C 70 110, 140 108, 188 94 C 218 82, 235 68, 246 54"
-              stroke="#ffffff"
-              stroke-width="1.5"
-              opacity="0.75"
-              stroke-linecap="round"
-              class="promo-aero-wake"
-            />
-            <!-- 航迹起航微光基点与机腹气流交汇点 -->
-            <circle cx="20" cy="114" r="3" fill="#ffffff" opacity="0.8" />
-            <circle cx="246" cy="54" r="3" fill="#bae6fd" opacity="0.8" />
+            <!-- 纯净天文旋转星轨群 B (64s 差速双层深邃星空视差) -->
+            <g class="celestial-wheel-b">
+              {frontStarTrailsB.map((trail) => (
+                <path
+                  d={trail.d}
+                  fill="none"
+                  stroke={trail.color}
+                  stroke-width={trail.strokeWidth}
+                  opacity={trail.opacity}
+                  stroke-linecap="round"
+                />
+              ))}
+            </g>
           </svg>
         </div>
 
@@ -196,12 +282,21 @@ try {
         class="face back-face"
         onclick={finalConfig.href && finalConfig.href !== '#' ? `window.open("${finalConfig.href}", "_blank")` : undefined}
       >
-        <!-- 画面感：背面对应温和破空流线微风底纹 (Clean Atmospheric Streamlines) -->
+        <!-- 画面感：背面对应微透天文同心星轨底纹 (0 闪烁杂星，0 十字光刺) -->
         <div class="promo-scene-art promo-scene-art--back promo-watermark promo-watermark--back" aria-hidden="true">
           <svg viewBox="0 0 320 114" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M 20 22 C 90 18, 160 26, 230 16" stroke="#ffffff" stroke-width="0.7" opacity="0.22" stroke-linecap="round" />
-            <path d="M 10 70 C 80 66, 150 72, 220 62" stroke="#bae6fd" stroke-width="0.6" opacity="0.18" stroke-linecap="round" />
-            <path d="M 40 102 C 100 98, 170 104, 240 94" stroke="#7dd3fc" stroke-width="0.5" opacity="0.14" stroke-linecap="round" />
+            <g class="celestial-wheel-back">
+              {backStarTrails.map((trail) => (
+                <path
+                  d={trail.d}
+                  fill="none"
+                  stroke={trail.color}
+                  stroke-width={trail.strokeWidth}
+                  opacity={trail.opacity}
+                  stroke-linecap="round"
+                />
+              ))}
+            </g>
           </svg>
         </div>
 
@@ -416,58 +511,33 @@ try {
   }
 
   /* ======================================================== */
-  /* 核心动态化动效体系 (Aerodynamic Flight & Contrail Motion) */
+  /* 核心动态化动效体系 (Celestial Astronomy & 3D Flight)    */
   /* ======================================================== */
 
-  /* 1. 动态破空进气虚线航迹流动动效 (Marching Flight Trajectory) */
-  .promo-aero-wake {
-    stroke-dasharray: 4 5;
-    animation: marchAeroWake 2.2s linear infinite;
+  /* 1. 纯净天文长曝光同心星轨顺滑天体旋转 (围绕天极 330px, -35px，精准锁定 viewBox 坐标系) */
+  .celestial-wheel-a {
+    transform-box: view-box;
+    transform-origin: 330px -35px;
+    animation: spinCelestialA 42s linear infinite;
   }
-  @keyframes marchAeroWake {
-    to {
-      stroke-dashoffset: -32;
-    }
+  .celestial-wheel-b {
+    transform-box: view-box;
+    transform-origin: 330px -35px;
+    animation: spinCelestialB 64s linear infinite;
   }
-
-  /* 2. 纸飞机专属破空超音速尾流束脉冲呼吸动效 (Aero Slipstream Pulse) */
-  .promo-aero-slipstream {
-    animation: slipstreamPulse 3s ease-in-out infinite;
-  }
-  .promo-aero-slipstream--2 {
-    animation-delay: -1s;
-  }
-  .promo-aero-slipstream--3 {
-    animation-delay: -2s;
-  }
-  @keyframes slipstreamPulse {
-    0%, 100% {
-      opacity: 0.25;
-      stroke-dashoffset: 0;
-    }
-    50% {
-      opacity: 0.65;
-      stroke-dashoffset: -20;
-    }
+  .celestial-wheel-back {
+    transform-box: view-box;
+    transform-origin: 330px -35px;
+    animation: spinCelestialA 50s linear infinite;
   }
 
-  /* 3. 顶部微风平滑滑翔动效 (Breeze Glide) */
-  .promo-aero-breeze {
-    stroke-dasharray: 60 120;
-    animation: breezeGlide 3.2s linear infinite;
+  @keyframes spinCelestialA {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
   }
-  @keyframes breezeGlide {
-    0% {
-      stroke-dashoffset: 120;
-      opacity: 0.15;
-    }
-    50% {
-      opacity: 0.55;
-    }
-    100% {
-      stroke-dashoffset: -120;
-      opacity: 0.15;
-    }
+  @keyframes spinCelestialB {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
   }
 
   /* 2. 官方权威 Telegram 立体折纸飞机悬浮微动与交互 */
