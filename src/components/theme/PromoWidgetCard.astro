@@ -118,7 +118,6 @@ try {
   console.error('Failed to generate embedded QR code', e);
   embeddedQrDataUrl = finalConfig.qrImage || '';
 }
-
 ---
 
 <div class:list={['card-widget promo-widget', className]} id={id}>
@@ -126,26 +125,36 @@ try {
     <div id="flip-content">
       
       <!-- ============================================== -->
-      <!-- FRONT FACE: 方案A 极光流体天蓝 + 超音速破空航迹与空间广播电波 -->
+      <!-- FRONT FACE: 极光流体天蓝 + 纸飞机专属破空气动航迹 -->
       <!-- ============================================== -->
       <div
         class="face front-face"
         onclick={finalConfig.href && finalConfig.href !== '#' ? `window.open("${finalConfig.href}", "_blank")` : undefined}
       >
-        <!-- 核心背景：超音速破空航迹流光 (与官方纸飞机完美呼应，避开文字排版区) -->
+        <!-- 画面感升维：纸飞机专属破空气流风道与动态进气航迹 (Aero Streamlines & Marching Contrail) -->
         <div class="promo-scene-art promo-watermark" aria-hidden="true">
           <svg viewBox="0 0 320 114" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <!-- 1. 破空主航迹线：从左下自然上扬，沿文字底部优雅接入机尾 -->
-            <path class="contrail-primary" d="M -10 108 C 50 106, 120 104, 180 98 C 220 94, 252 82, 274 66" 
-                  stroke="#ffffff" stroke-width="1.8" stroke-linecap="round" opacity="0.65" />
-            <!-- 2. 伴飞副气流线 (天青微光) -->
-            <path class="contrail-secondary" d="M 15 112 C 75 110, 140 108, 195 102 C 230 96, 258 84, 278 62" 
-                  stroke="#bae6fd" stroke-width="1.0" stroke-linecap="round" opacity="0.4" />
-            <!-- 3. 高空平流层风洞微气流 (位于顶部空白区) -->
-            <path class="wind-stream" d="M 120 14 Q 220 8, 330 18" stroke="#ffffff" stroke-width="0.8" opacity="0.3" stroke-linecap="round" stroke-dasharray="25 60" />
-            <path class="wind-stream" d="M 160 22 Q 240 16, 320 24" stroke="#7dd3fc" stroke-width="0.6" opacity="0.25" stroke-linecap="round" stroke-dasharray="20 40" />
-            <!-- 4. 尾流微型翼尖涡流环 -->
-            <ellipse cx="258" cy="74" rx="10" ry="5" transform="rotate(-15 258 74)" stroke="#bae6fd" stroke-width="0.8" stroke-dasharray="3 3" opacity="0.35" />
+            <!-- 1. 顶部高空气动微风流线 (Breeze Streamlines) -->
+            <path d="M 15 16 C 95 12, 185 18, 260 10" stroke="#ffffff" stroke-width="0.8" opacity="0.3" stroke-linecap="round" class="promo-aero-breeze" />
+            <path d="M 50 24 C 125 22, 195 26, 255 20" stroke="#bae6fd" stroke-width="0.6" opacity="0.22" stroke-linecap="round" />
+
+            <!-- 2. 纸飞机专属超音速破空气动尾流束 (严格位于文字右侧与下缘，不遮挡任何文字) -->
+            <path d="M 190 74 C 210 70, 228 62, 246 52" stroke="#ffffff" stroke-width="1.8" opacity="0.65" stroke-linecap="round" class="promo-aero-slipstream" />
+            <path d="M 180 84 C 205 80, 226 70, 244 56" stroke="#7dd3fc" stroke-width="1.2" opacity="0.45" stroke-linecap="round" class="promo-aero-slipstream promo-aero-slipstream--2" />
+            <path d="M 170 94 C 198 90, 222 78, 242 60" stroke="#bae6fd" stroke-width="0.8" opacity="0.3" stroke-linecap="round" class="promo-aero-slipstream promo-aero-slipstream--3" />
+
+            <!-- 3. 底部动态破空虚线航迹 (紧贴底部优雅延伸，与副标题保持清晰垂直间距) -->
+            <path
+              d="M 20 114 C 70 110, 140 108, 188 94 C 218 82, 235 68, 246 54"
+              stroke="#ffffff"
+              stroke-width="1.5"
+              opacity="0.75"
+              stroke-linecap="round"
+              class="promo-aero-wake"
+            />
+            <!-- 航迹起航微光基点与机腹气流交汇点 -->
+            <circle cx="20" cy="114" r="3" fill="#ffffff" opacity="0.8" />
+            <circle cx="246" cy="54" r="3" fill="#bae6fd" opacity="0.8" />
           </svg>
         </div>
 
@@ -187,12 +196,12 @@ try {
         class="face back-face"
         onclick={finalConfig.href && finalConfig.href !== '#' ? `window.open("${finalConfig.href}", "_blank")` : undefined}
       >
-        <!-- 画面感：背面对应微透广播电波底纹 (以二维码为中心向外发散) -->
+        <!-- 画面感：背面对应温和破空流线微风底纹 (Clean Atmospheric Streamlines) -->
         <div class="promo-scene-art promo-scene-art--back promo-watermark promo-watermark--back" aria-hidden="true">
           <svg viewBox="0 0 320 114" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="260" cy="57" r="42" stroke="#ffffff" stroke-width="1.0" stroke-dasharray="10 8" opacity="0.25" />
-            <circle cx="260" cy="57" r="75" stroke="#bae6fd" stroke-width="0.8" stroke-dasharray="14 10" opacity="0.18" />
-            <circle cx="260" cy="57" r="115" stroke="#7dd3fc" stroke-width="0.5" opacity="0.12" />
+            <path d="M 20 22 C 90 18, 160 26, 230 16" stroke="#ffffff" stroke-width="0.7" opacity="0.22" stroke-linecap="round" />
+            <path d="M 10 70 C 80 66, 150 72, 220 62" stroke="#bae6fd" stroke-width="0.6" opacity="0.18" stroke-linecap="round" />
+            <path d="M 40 102 C 100 98, 170 104, 240 94" stroke="#7dd3fc" stroke-width="0.5" opacity="0.14" stroke-linecap="round" />
           </svg>
         </div>
 
@@ -407,40 +416,58 @@ try {
   }
 
   /* ======================================================== */
-  /* 核心动态化动效体系 (Aerodynamic Contrail & Radio Waves)  */
+  /* 核心动态化动效体系 (Aerodynamic Flight & Contrail Motion) */
   /* ======================================================== */
 
-  /* 1. 破空超音速航迹流光 (Aerodynamic Contrail Stream) */
-  .contrail-primary {
-    stroke-dasharray: 8 6;
-    animation: streamFlow 1.6s linear infinite;
+  /* 1. 动态破空进气虚线航迹流动动效 (Marching Flight Trajectory) */
+  .promo-aero-wake {
+    stroke-dasharray: 4 5;
+    animation: marchAeroWake 2.2s linear infinite;
   }
-  .contrail-secondary {
-    stroke-dasharray: 5 7;
-    animation: streamFlow 1.2s linear infinite;
-  }
-  @keyframes streamFlow {
-    from { stroke-dashoffset: 28; }
-    to { stroke-dashoffset: 0; }
+  @keyframes marchAeroWake {
+    to {
+      stroke-dashoffset: -32;
+    }
   }
 
-  /* 2. 平流层高空气流微动 */
-  .wind-stream {
-    animation: windDrift 6s ease-in-out infinite alternate;
+  /* 2. 纸飞机专属破空超音速尾流束脉冲呼吸动效 (Aero Slipstream Pulse) */
+  .promo-aero-slipstream {
+    animation: slipstreamPulse 3s ease-in-out infinite;
   }
-  @keyframes windDrift {
-    from { transform: translateX(0); }
-    to { transform: translateX(8px); }
+  .promo-aero-slipstream--2 {
+    animation-delay: -1s;
+  }
+  .promo-aero-slipstream--3 {
+    animation-delay: -2s;
+  }
+  @keyframes slipstreamPulse {
+    0%, 100% {
+      opacity: 0.25;
+      stroke-dashoffset: 0;
+    }
+    50% {
+      opacity: 0.65;
+      stroke-dashoffset: -20;
+    }
   }
 
-  /* 3. 背面二维码广播微透脉冲 */
-  .back-pulse {
-    animation: backPulse 4s ease-in-out infinite;
-    transform-origin: 260px 57px;
+  /* 3. 顶部微风平滑滑翔动效 (Breeze Glide) */
+  .promo-aero-breeze {
+    stroke-dasharray: 60 120;
+    animation: breezeGlide 3.2s linear infinite;
   }
-  @keyframes backPulse {
-    0%, 100% { transform: scale(1); opacity: 0.25; }
-    50% { transform: scale(1.05); opacity: 0.45; }
+  @keyframes breezeGlide {
+    0% {
+      stroke-dashoffset: 120;
+      opacity: 0.15;
+    }
+    50% {
+      opacity: 0.55;
+    }
+    100% {
+      stroke-dashoffset: -120;
+      opacity: 0.15;
+    }
   }
 
   /* 2. 官方权威 Telegram 立体折纸飞机悬浮微动与交互 */
