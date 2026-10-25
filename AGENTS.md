@@ -6314,7 +6314,7 @@
   3. 通过 Wrangler 部署到 Cloudflare Pages 生产边缘节点；
   4. Playwright 在真实生产域名 `https://blog.epocanvas.com/` 进行实机正面与反面全链路审计，出示完整真实视觉证据链。
 
-### Task 93: 全量淘汰空洞星轨、重构破空气动航迹 (Aerodynamic Contrail) 与超音速喷气尾流体系 (`62af9b4`)
+### Task 93: 全量淘汰空洞星轨、重构破空气动航迹 (Aerodynamic Contrail) 与超音速喷气尾流体系 (`8cd4b37`)
 - [x] **根除“星轨不够实在/形象”的痛点，彻底拥抱纸飞机物理航迹与空气动力学**：
   1. 彻底淘汰与纸飞机不匹配的天文同心圆旋转星轨，清除 80 余行冗余三角函数代码；
   2. 引入极度具象、实在、生动的【破空气动航迹体系】：
@@ -6326,7 +6326,7 @@
   1. 背面采用温和低调的破空微风流线，为二维码与立即直达按钮提供高对比、高质感的展示舞台。
 - [x] **严格遵守准则与交付铁律**：
   1. **本对话绝对禁止向 remote repo (`origin`) 推送，仅推送到 `cf`**；
-  2. 单步 commit 并打印 Hash；
+  2. 单步 commit 并打印 Hash (`8cd4b37`)；
   3. 通过 Wrangler 部署到 Cloudflare Pages 生产边缘节点；
   4. Playwright 在真实生产域名 `https://blog.epocanvas.com/` 进行实机正面与反面全链路审计，出示完整真实视觉证据链。
 
