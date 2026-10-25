@@ -6330,7 +6330,7 @@
   3. 通过 Wrangler 部署到 Cloudflare Pages 生产边缘节点；
   4. Playwright 在真实生产域名 `https://blog.epocanvas.com/` 进行实机正面与反面全链路审计，出示完整真实视觉证据链。
 
-### Task 94: 回退文件至 031bc25 官方开源立体折纸飞机与长曝光星轨状态（文件回退，Commit 向前推进）
+### Task 94: 回退文件至 031bc25 官方开源立体折纸飞机与长曝光星轨状态（文件回退，Commit 向前推进） (`fd75080`)
 - [x] **遵照用户核心指令，精准回退文件至 031bc25**：
   1. 彻底清除放飞自写的气动航迹与尾流，恢复 `src/components/theme/PromoWidgetCard.astro` 与 `public/data/console-metrics.json` 至 `031bc25` 状态；
   2. 保持权威开源 Telegram 3 层立体分色折纸飞机矢量（Wikimedia Commons / Telegram Official Vector）；
@@ -6338,7 +6338,7 @@
   4. 遵照“文件回退，commit向前发展”原则，不 rewind git 历史，向前提交新 commit。
 - [x] **严格遵守准则与交付铁律**：
   1. **本对话绝对禁止向 remote repo (`origin`) 推送，仅推送到 `cf`**；
-  2. 单步 commit 并打印 Hash；
+  2. 单步 commit 并打印 Hash (`fd75080`)；
   3. 本地全量静态构建验证（`npm run build:static`）；
   4. 通过 Wrangler 部署到 Cloudflare Pages 生产边缘节点；
   5. Playwright 在真实生产域名 `https://blog.epocanvas.com/` 进行实机全链路审计，出示完整真实视觉证据链。
