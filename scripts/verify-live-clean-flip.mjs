@@ -14,36 +14,31 @@ import { chromium } from 'playwright';
   const url = 'https://blog.epocanvas.com/?v=' + Date.now();
   console.log(`Navigating to ${url}...`);
   await page.goto(url, { waitUntil: 'networkidle', timeout: 30000 });
-  await page.waitForTimeout(2000);
+  await page.waitForTimeout(2500);
 
   const flipWrapper = page.locator('#flip-wrapper');
   await flipWrapper.scrollIntoViewIfNeeded();
 
-  // 1. 截取生产端正面卡片第一帧 (验证官方标准 3D Telegram 纸飞机 + 纯净星轨，无突兀流星)
-  await flipWrapper.screenshot({ path: 'scratch/live_pure_star_front_1.png' });
-  console.log('Saved scratch/live_pure_star_front_1.png');
+  // 1. 截取生产端正面卡片 (验证 3D 飞镖纸飞机 + 42 颗真实随机深空星野，绝对无黑线/杂线)
+  await flipWrapper.screenshot({ path: 'scratch/live_masterpiece_front.png' });
+  console.log('Saved scratch/live_masterpiece_front.png');
 
-  // 2. 等待动画推进 1.5 秒后截取第二帧 (验证同心星流流动、十字星芒多相呼吸与飞机微浮动)
-  await page.waitForTimeout(1500);
-  await flipWrapper.screenshot({ path: 'scratch/live_pure_star_front_2.png' });
-  console.log('Saved scratch/live_pure_star_front_2.png');
-
-  // 3. 悬停触发翻转并等待 0.85s 从容动画稳定
+  // 2. 悬停触发翻转并等待 0.85s 丝滑动画稳定
   await flipWrapper.hover();
-  await page.waitForTimeout(1000);
-  await flipWrapper.screenshot({ path: 'scratch/live_pure_star_back.png' });
-  console.log('Saved scratch/live_pure_star_back.png');
+  await page.waitForTimeout(1200);
+  await flipWrapper.screenshot({ path: 'scratch/live_masterpiece_back.png' });
+  console.log('Saved scratch/live_masterpiece_back.png');
 
-  // 4. 页面全景截图
-  await page.screenshot({ path: 'scratch/live_pure_star_page.png' });
-  console.log('Saved scratch/live_pure_star_page.png');
+  // 3. 页面全景截图 (右侧侧边栏整体视觉)
+  await page.screenshot({ path: 'scratch/live_masterpiece_fullpage.png' });
+  console.log('Saved scratch/live_masterpiece_fullpage.png');
 
-  // 5. 检查控制台报错
+  // 4. 检查控制台报错
   console.log('Console Errors count:', consoleErrors.length);
   if (consoleErrors.length > 0) {
     console.log('Console Errors:', consoleErrors);
   }
 
   await browser.close();
-  console.log('Live pure star verification finished successfully.');
+  console.log('Live production verification finished successfully.');
 })();
