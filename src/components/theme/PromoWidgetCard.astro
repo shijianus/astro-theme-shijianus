@@ -119,15 +119,6 @@ try {
   embeddedQrDataUrl = finalConfig.qrImage || '';
 }
 
-// 确定性伪随机数生成器 (保证 SSG 构建一致性且具备绝对自然的星野分布)
-function createCelestialRNG(seed = 42) {
-  let s = seed;
-  return function() {
-    s = (s * 9301 + 49297) % 233280;
-    return s / 233280;
-  };
-}
-
 // 天文长曝光旋转同心星轨算法 (Celestial Pole Star Trails)
 function arcPath(cx: number, cy: number, r: number, startDeg: number, endDeg: number) {
   const startRad = (startDeg * Math.PI) / 180;
@@ -141,81 +132,79 @@ function arcPath(cx: number, cy: number, r: number, startDeg: number, endDeg: nu
   return `M ${x1.toFixed(1)} ${y1.toFixed(1)} A ${r.toFixed(1)} ${r.toFixed(1)} 0 ${largeArc} ${sweep} ${x2.toFixed(1)} ${y2.toFixed(1)}`;
 }
 
-// 1. 自然随机散落的深空微恒星群 (48 颗多相独立闪烁，彻底告别死板静态与怪异滑动)
-const randomStars = (() => {
-  const rng = createCelestialRNG(88);
-  const stars = [];
-  const colors = ['#ffffff', '#ffffff', '#bae6fd', '#e0f2fe', '#7dd3fc'];
-  for (let i = 0; i < 48; i++) {
-    const x = 6 + rng() * 304;
-    const y = 6 + rng() * 102;
-    const isTextZone = (x > 50 && x < 185 && y > 25 && y < 85);
-    const opacity = isTextZone ? (0.1 + rng() * 0.15) : (0.2 + rng() * 0.55);
-    const r = Number((0.45 + rng() * 0.7).toFixed(1));
-    const color = colors[Math.floor(rng() * colors.length)];
-    const twGroup = `twinkle-phase-${(i % 6) + 1}`;
-    stars.push({
-      x: Number(x.toFixed(1)),
-      y: Number(y.toFixed(1)),
-      r,
-      opacity: Number(opacity.toFixed(2)),
-      color,
-      twGroup
-    });
-  }
-  return stars;
-})();
+// 纯净天文同心星轨群 A (天极中心 cx: 330, cy: -35，360 度圆周分布，顺滑无顿挫自转)
+const frontStarTrailsA = [
+  { r: 60, s: 70, span: 45, sw: 0.8, op: 0.42, c: '#ffffff' },
+  { r: 85, s: 125, span: 55, sw: 0.6, op: 0.32, c: '#bae6fd' },
+  { r: 105, s: 75, span: 60, sw: 1.1, op: 0.55, c: '#ffffff' },
+  { r: 120, s: 155, span: 42, sw: 0.5, op: 0.28, c: '#7dd3fc' },
+  { r: 145, s: 90, span: 65, sw: 0.75, op: 0.38, c: '#e0f2fe' },
+  { r: 165, s: 55, span: 52, sw: 1.15, op: 0.58, c: '#ffffff' },
+  { r: 185, s: 115, span: 68, sw: 0.6, op: 0.3, c: '#38bdf8' },
+  { r: 210, s: 80, span: 58, sw: 0.9, op: 0.42, c: '#bae6fd' },
+  { r: 235, s: 100, span: 62, sw: 0.6, op: 0.28, c: '#7dd3fc' },
+  { r: 260, s: 65, span: 72, sw: 1.0, op: 0.48, c: '#ffffff' },
+  { r: 290, s: 110, span: 52, sw: 0.5, op: 0.24, c: '#38bdf8' },
+  { r: 320, s: 75, span: 65, sw: 0.8, op: 0.32, c: '#bae6fd' },
+  { r: 350, s: 92, span: 58, sw: 0.55, op: 0.22, c: '#e0f2fe' },
+  { r: 385, s: 105, span: 50, sw: 0.45, op: 0.18, c: '#7dd3fc' },
+  { r: 75, s: 230, span: 50, sw: 0.7, op: 0.38, c: '#ffffff' },
+  { r: 115, s: 210, span: 60, sw: 0.9, op: 0.48, c: '#bae6fd' },
+  { r: 155, s: 245, span: 65, sw: 0.6, op: 0.32, c: '#7dd3fc' },
+  { r: 195, s: 205, span: 55, sw: 1.1, op: 0.52, c: '#ffffff' },
+  { r: 245, s: 255, span: 68, sw: 0.75, op: 0.38, c: '#e0f2fe' },
+  { r: 295, s: 225, span: 58, sw: 0.5, op: 0.22, c: '#38bdf8' },
+  { r: 340, s: 265, span: 52, sw: 0.7, op: 0.28, c: '#bae6fd' }
+].map(a => ({
+  d: arcPath(330, -35, a.r, a.s, a.s + a.span),
+  strokeWidth: a.sw,
+  opacity: a.op,
+  color: a.c
+}));
 
-// 2. 长曝光平滑连续同心星轨群 (22 轨自然非均匀圆弧，平滑静谧光晕，绝无虚线怪异滑动)
-const frontStarTrails = (() => {
-  const rng = createCelestialRNG(108);
-  const cx = 345;
-  const cy = -45;
-  const count = 22;
-  const items = [];
-  for (let i = 0; i < count; i++) {
-    const r = 52 + i * 14.5 + (rng() * 3 - 1.5);
-    const s = 95 + rng() * 20;
-    const span = 60 + rng() * 35;
-    const e = s + span;
-    
-    const randMag = rng();
-    const isMajor = randMag > 0.82;
-    const strokeWidth = isMajor ? 0.95 : (randMag > 0.5 ? 0.6 : 0.4);
-    const opacity = isMajor ? 0.65 : (randMag > 0.5 ? 0.32 : 0.16);
-    const color = isMajor ? '#ffffff' : (randMag > 0.5 ? '#bae6fd' : (i % 2 === 0 ? '#38bdf8' : '#7dd3fc'));
+// 纯净天文同心星轨群 B (形成长曝光深邃差速视差)
+const frontStarTrailsB = [
+  { r: 70, s: 105, span: 40, sw: 0.65, op: 0.35, c: '#e0f2fe' },
+  { r: 95, s: 50, span: 48, sw: 0.85, op: 0.45, c: '#ffffff' },
+  { r: 130, s: 135, span: 58, sw: 0.55, op: 0.26, c: '#38bdf8' },
+  { r: 150, s: 70, span: 62, sw: 0.95, op: 0.5, c: '#ffffff' },
+  { r: 175, s: 100, span: 50, sw: 0.6, op: 0.3, c: '#bae6fd' },
+  { r: 220, s: 140, span: 66, sw: 0.75, op: 0.36, c: '#e0f2fe' },
+  { r: 275, s: 85, span: 60, sw: 0.85, op: 0.4, c: '#ffffff' },
+  { r: 330, s: 125, span: 54, sw: 0.5, op: 0.22, c: '#7dd3fc' },
+  { r: 85, s: 260, span: 45, sw: 0.6, op: 0.32, c: '#bae6fd' },
+  { r: 140, s: 190, span: 55, sw: 0.9, op: 0.46, c: '#ffffff' },
+  { r: 180, s: 280, span: 60, sw: 0.55, op: 0.28, c: '#7dd3fc' },
+  { r: 230, s: 215, span: 64, sw: 0.8, op: 0.38, c: '#e0f2fe' },
+  { r: 285, s: 270, span: 56, sw: 0.6, op: 0.26, c: '#bae6fd' }
+].map(a => ({
+  d: arcPath(330, -35, a.r, a.s, a.s + a.span),
+  strokeWidth: a.sw,
+  opacity: a.op,
+  color: a.c
+}));
 
-    const d = arcPath(cx, cy, r, s, e);
-    items.push({
-      d,
-      color,
-      strokeWidth,
-      opacity,
-      isMajor
-    });
-  }
-  return items;
-})();
-
-// 3. 背面 16 轨连续平滑星轨
-const backStarTrails = (() => {
-  const cx = 345;
-  const cy = -45;
-  const count = 16;
-  const items = [];
-  for (let i = 0; i < count; i++) {
-    const r = 68 + i * 22;
-    const s = 105 + ((i * 15) % 20);
-    const e = 180 + ((i * 20) % 30);
-    const isBright = (i % 4 === 0);
-    const strokeWidth = isBright ? 0.85 : 0.5;
-    const opacity = isBright ? 0.35 : 0.18;
-    const color = isBright ? '#e0f2fe' : '#7dd3fc';
-    const d = arcPath(cx, cy, r, s, e);
-    items.push({ d, strokeWidth, opacity, color, isBright });
-  }
-  return items;
-})();
+// 背面 13 轨极简连续星轨
+const backStarTrails = [
+  { r: 70, s: 90, span: 55, sw: 0.6, op: 0.24, c: '#e0f2fe' },
+  { r: 105, s: 120, span: 60, sw: 0.8, op: 0.3, c: '#bae6fd' },
+  { r: 145, s: 80, span: 50, sw: 0.5, op: 0.2, c: '#7dd3fc' },
+  { r: 185, s: 110, span: 65, sw: 0.7, op: 0.26, c: '#ffffff' },
+  { r: 230, s: 75, span: 70, sw: 0.5, op: 0.18, c: '#38bdf8' },
+  { r: 280, s: 100, span: 60, sw: 0.6, op: 0.22, c: '#bae6fd' },
+  { r: 330, s: 85, span: 55, sw: 0.45, op: 0.16, c: '#e0f2fe' },
+  { r: 85, s: 250, span: 50, sw: 0.55, op: 0.22, c: '#bae6fd' },
+  { r: 125, s: 220, span: 60, sw: 0.75, op: 0.28, c: '#ffffff' },
+  { r: 165, s: 260, span: 55, sw: 0.5, op: 0.2, c: '#7dd3fc' },
+  { r: 210, s: 210, span: 65, sw: 0.65, op: 0.24, c: '#e0f2fe' },
+  { r: 260, s: 245, span: 58, sw: 0.45, op: 0.16, c: '#38bdf8' },
+  { r: 310, s: 230, span: 52, sw: 0.55, op: 0.18, c: '#bae6fd' }
+].map(a => ({
+  d: arcPath(330, -35, a.r, a.s, a.s + a.span),
+  strokeWidth: a.sw,
+  opacity: a.op,
+  color: a.c
+}));
 ---
 
 <div class:list={['card-widget promo-widget', className]} id={id}>
@@ -229,67 +218,37 @@ const backStarTrails = (() => {
         class="face front-face"
         onclick={finalConfig.href && finalConfig.href !== '#' ? `window.open("${finalConfig.href}", "_blank")` : undefined}
       >
-        <!-- 画面感升维：纯净动态长曝光同心星流、呼吸十字衍射星芒、官方标准 3D 纸飞机 -->
+        <!-- 画面感升维：纯净天文旋转同心星轨 (0 随机滑动杂星，0 十字光刺) -->
         <div class="promo-scene-art promo-watermark" aria-hidden="true">
           <svg viewBox="0 0 320 114" fill="none" xmlns="http://www.w3.org/2000/svg">
             <defs>
-              <!-- 官方标准 3D Telegram 纸飞机专属纯净光影渐变 (纯白大翼面 + 通透淡蓝展翼 + 纯净宝蓝龙骨，0黑斑) -->
-              <linearGradient id="p-wing-main" x1="24.8" y1="111" x2="166" y2="75" gradientUnits="userSpaceOnUse">
+              <!-- 官方标准 3D Telegram 纸飞机专属立体光影渐变与高反差投影 -->
+              <linearGradient id="hero-tg-body" x1="20" y1="110" x2="175" y2="75" gradientUnits="userSpaceOnUse">
                 <stop offset="0%" stop-color="#ffffff" />
                 <stop offset="70%" stop-color="#ffffff" />
                 <stop offset="100%" stop-color="#f0f7ff" />
               </linearGradient>
-              <linearGradient id="p-wing-side" x1="60" y1="120" x2="166" y2="75" gradientUnits="userSpaceOnUse">
-                <stop offset="0%" stop-color="#93c5fd" />
-                <stop offset="55%" stop-color="#bae6fd" />
-                <stop offset="100%" stop-color="#e0f2fe" />
-              </linearGradient>
-              <linearGradient id="p-keel-clean" x1="80" y1="130" x2="120" y2="175" gradientUnits="userSpaceOnUse">
-                <stop offset="0%" stop-color="#3b82f6" />
+              <linearGradient id="hero-tg-keel" x1="82" y1="132" x2="152" y2="88" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#2563eb" />
                 <stop offset="100%" stop-color="#1d4ed8" />
               </linearGradient>
-              <linearGradient id="p-keel-inner" x1="82" y1="132" x2="105" y2="175" gradientUnits="userSpaceOnUse">
-                <stop offset="0%" stop-color="#2563eb" />
-                <stop offset="100%" stop-color="#1e40af" />
+              <linearGradient id="hero-tg-flap" x1="98" y1="175" x2="120" y2="140" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#60a5fa" />
+                <stop offset="100%" stop-color="#2563eb" />
               </linearGradient>
-              <linearGradient id="p-spine-light" x1="24.8" y1="111" x2="166" y2="75" gradientUnits="userSpaceOnUse">
-                <stop offset="0%" stop-color="#ffffff" stop-opacity="0.95" />
-                <stop offset="85%" stop-color="#ffffff" stop-opacity="1" />
-                <stop offset="100%" stop-color="#ffffff" stop-opacity="0.6" />
+              <linearGradient id="hero-tg-underwing" x1="100" y1="144" x2="148" y2="180" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#93c5fd" />
+                <stop offset="100%" stop-color="#60a5fa" />
               </linearGradient>
-              <!-- 纯净大气软蓝漫射投影 (彻底杜绝深重黑边) -->
-              <filter id="p-shadow" x="-30%" y="-30%" width="160%" height="160%">
-                <feDropShadow dx="-2" dy="4" stdDeviation="3.5" flood-color="rgba(2, 44, 120, 0.28)" />
+              <filter id="hero-plane-shadow" x="-40%" y="-40%" width="180%" height="180%">
+                <feDropShadow dx="-2" dy="6" stdDeviation="4" flood-color="rgba(15, 23, 42, 0.42)" />
+                <feDropShadow dx="1" dy="2" stdDeviation="2" flood-color="rgba(2, 44, 120, 0.3)" />
               </filter>
             </defs>
 
-            <!-- 1. 48 颗多阶随机恒星，每颗拥有独立相位与闪烁周期 (有机闪烁，彻底告别死板与怪异滑动) -->
-            {randomStars.map((star) => (
-              <circle
-                class={star.twGroup}
-                cx={star.x}
-                cy={star.y}
-                r={star.r}
-                fill={star.color}
-                opacity={star.opacity}
-              />
-            ))}
-
-            <!-- 2. 长曝光平滑连续星轨 (纯净连续弧线，绝无滑动虚线循环) -->
-            {frontStarTrails.map((trail) => (
-              <Fragment>
-                {trail.isMajor && (
-                  <path
-                    class="trail-glow-aura"
-                    d={trail.d}
-                    fill="none"
-                    stroke={trail.color}
-                    stroke-width={trail.strokeWidth * 2.2}
-                    opacity={trail.opacity * 0.3}
-                    stroke-linecap="round"
-                    filter="blur(1.2px)"
-                  />
-                )}
+            <!-- 纯净天文旋转星轨群 A (42s 连续天体旋转，0 随机杂星，0 虚线滑动) -->
+            <g class="celestial-wheel-a">
+              {frontStarTrailsA.map((trail) => (
                 <path
                   d={trail.d}
                   fill="none"
@@ -298,54 +257,40 @@ const backStarTrails = (() => {
                   opacity={trail.opacity}
                   stroke-linecap="round"
                 />
-              </Fragment>
-            ))}
-
-            <!-- 3. 动态【真实漫游与深空呼吸】的核心大亮星 (告别死寂站桩！) -->
-            <!-- 亮星 1: 伴随星芒自转与呼吸绽放 -->
-            <g class="celestial-beacon-1" transform="translate(196, 72)">
-              <g class="beacon-spike-rotate">
-                <path d="M 0 -8 Q 0 0 8 0 Q 0 0 0 8 Q 0 0 -8 0 Q 0 0 0 -8 Z" fill="#ffffff" />
-              </g>
-              <circle cx="0" cy="0" r="1.8" fill="#ffffff" />
-              <circle class="beacon-glow-pulse" cx="0" cy="0" r="10" fill="#ffffff" opacity="0.35" filter="blur(1.5px)" />
+              ))}
             </g>
 
-            <!-- 亮星 2: 沿天极圆弧做微漫游漂移 -->
-            <g class="celestial-orbit-star" transform-origin="345px -45px">
-              <g transform="translate(142, 22)">
-                <path class="beacon-spike-pulse" d="M 0 -5 Q 0 0 5 0 Q 0 0 0 5 Q 0 0 -5 0 Q 0 0 0 -5 Z" fill="#bae6fd" />
-                <circle cx="0" cy="0" r="1.4" fill="#ffffff" />
-                <circle class="beacon-glow-pulse" cx="0" cy="0" r="7" fill="#bae6fd" opacity="0.35" filter="blur(1.2px)" />
-              </g>
+            <!-- 纯净天文旋转星轨群 B (64s 差速双层深邃星空视差) -->
+            <g class="celestial-wheel-b">
+              {frontStarTrailsB.map((trail) => (
+                <path
+                  d={trail.d}
+                  fill="none"
+                  stroke={trail.color}
+                  stroke-width={trail.strokeWidth}
+                  opacity={trail.opacity}
+                  stroke-linecap="round"
+                />
+              ))}
             </g>
+          </svg>
+        </div>
 
-            <!-- 亮星 3: 右下深空呼吸星 -->
-            <g class="celestial-beacon-3" transform="translate(282, 86)">
-              <path class="beacon-spike-pulse-alt" d="M 0 -4.5 Q 0 0 4.5 0 Q 0 0 0 4.5 Q 0 0 -4.5 0 Q 0 0 0 -4.5 Z" fill="#e0f2fe" />
-              <circle cx="0" cy="0" r="1.2" fill="#ffffff" />
-              <circle class="beacon-glow-pulse" cx="0" cy="0" r="6" fill="#e0f2fe" opacity="0.3" filter="blur(1px)" />
-            </g>
-
-            <!-- 4. 醒目、一眼必识的 3D Telegram 纸飞机 (52px，昂首翱翔，0 黑斑) -->
-            <g class="tg-plane-flight-rig">
-              <svg width="52" height="52" viewBox="0 0 170 170" fill="none" style="overflow: visible;">
-                <g filter="url(#p-shadow)" transform="rotate(-8 85 85)">
-                  <!-- 1. 折叠机腹内层三角 (折纸深层，纯净群青蓝，0黑斑) -->
-                  <path d="M98 175c-3.8 0-3.2-1.5-4.5-5.2L82 132.2 152.8 88" fill="url(#p-keel-inner)" />
-                  <!-- 2. 中腹折叠小角 (纯净宝蓝) -->
-                  <path d="M98 175c3 0 4.3-1.4 6-3l16-15.5-20-12" fill="url(#p-keel-clean)" />
-                  <!-- 3. 右展翼面 (下展副翼) -->
-                  <polygon points="166,75 100,144.5 148.4,180.2" fill="url(#p-wing-side)" />
-                  <!-- 4. 左主翼面 (主受光翼面) -->
-                  <polygon points="166,75 24.8,111 100,144.5" fill="url(#p-wing-main)" />
-                  <!-- 5. 机脊贯穿锋刃高光线 -->
-                  <line x1="24.8" y1="111" x2="166" y2="75" stroke="url(#p-spine-light)" stroke-width="1.8" stroke-linecap="round" />
-                  <!-- 6. 机尖破空耀斑微光点 -->
-                  <circle cx="166" cy="75" r="2.2" fill="#ffffff" />
-                </g>
-              </svg>
-            </g>
+        <!-- 极度醒目、一眼必识、绝对清晰立体的 3D Telegram 纸飞机 (昂首翱翔，高反差浮雕质感) -->
+        <div class="promo-hero-plane" aria-hidden="true">
+          <svg width="68" height="68" viewBox="10 65 175 125" fill="none" style="overflow: visible; filter: url(#hero-plane-shadow);">
+            <!-- 1. 折叠机腹内层三角 (深邃群青蓝) -->
+            <path d="M98 175c-3.8 0-3.2-1.5-4.5-5.2L82 132.2 152.8 88" fill="url(#hero-tg-keel)" />
+            <!-- 2. 中腹折叠小角 (天青宝蓝) -->
+            <path d="M98 175c3 0 4.3-1.4 6-3l16-15.5-20-12" fill="url(#hero-tg-flap)" />
+            <!-- 3. 主折纸机身大翼面 (纯白挺拔破空主翼) -->
+            <path d="M100 144.5l48.4 35.7c5.6 3.1 9.6 1.5 11-5.2l19.5-92c2-8.3-3.2-12-8.6-9.6L24.8 111c-8 3.2-8 7.7-1.4 9.7l37.4 11.7 86.8-54.8c4.1-2.5 7.8-1.2 4.7 1.6" fill="url(#hero-tg-body)" />
+            <!-- 4. 下折副翼立体阴影层 -->
+            <path d="M100 144.5 L 148.4 180.2 C 154 183.3 158 181.7 159.4 175 L 178.9 83 C 180.9 74.7 175.7 71 170.3 73.4 L 62.2 122.7 Z" fill="url(#hero-tg-underwing)" opacity="0.3" />
+            <!-- 5. 机脊纯白极锐折线 -->
+            <path d="M62.2 122.7 L 170.3 73.4" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round" />
+            <!-- 6. 机尖破空耀斑微亮点 -->
+            <circle cx="178.9" cy="83" r="2.2" fill="#ffffff" />
           </svg>
         </div>
 
@@ -375,28 +320,20 @@ const backStarTrails = (() => {
         class="face back-face"
         onclick={finalConfig.href && finalConfig.href !== '#' ? `window.open("${finalConfig.href}", "_blank")` : undefined}
       >
-        <!-- 画面感：背面对应微透天文星轨底纹与十字星芒 -->
+        <!-- 画面感：背面对应微透天文同心星轨底纹 (0 闪烁杂星，0 十字光刺) -->
         <div class="promo-scene-art promo-scene-art--back promo-watermark promo-watermark--back" aria-hidden="true">
           <svg viewBox="0 0 320 114" fill="none" xmlns="http://www.w3.org/2000/svg">
-            {backStarTrails.map((trail) => (
-              <path
-                d={trail.d}
-                fill="none"
-                stroke={trail.color}
-                stroke-width={trail.strokeWidth}
-                opacity={trail.opacity}
-                stroke-linecap="round"
-              />
-            ))}
-            <g class="celestial-beacon-2" transform="translate(120, 26)">
-              <path class="beacon-spike-pulse" d="M 0 -4 Q 0 0 4 0 Q 0 0 0 4 Q 0 0 -4 0 Q 0 0 0 -4 Z" fill="#bae6fd" />
-              <circle cx="0" cy="0" r="1.12" fill="#ffffff" />
-              <circle class="beacon-glow-pulse" cx="0" cy="0" r="6.4" fill="#bae6fd" opacity="0.35" filter="blur(1px)" />
-            </g>
-            <g class="celestial-beacon-3" transform="translate(285, 82)">
-              <path class="beacon-spike-pulse-alt" d="M 0 -3.5 Q 0 0 3.5 0 Q 0 0 0 3.5 Q 0 0 -3.5 0 Q 0 0 0 -3.5 Z" fill="#e0f2fe" />
-              <circle cx="0" cy="0" r="0.98" fill="#ffffff" />
-              <circle class="beacon-glow-pulse" cx="0" cy="0" r="5.6" fill="#e0f2fe" opacity="0.35" filter="blur(1px)" />
+            <g class="celestial-wheel-back">
+              {backStarTrails.map((trail) => (
+                <path
+                  d={trail.d}
+                  fill="none"
+                  stroke={trail.color}
+                  stroke-width={trail.strokeWidth}
+                  opacity={trail.opacity}
+                  stroke-linecap="round"
+                />
+              ))}
             </g>
           </svg>
         </div>
@@ -612,98 +549,54 @@ const backStarTrails = (() => {
   }
 
   /* ======================================================== */
-  /* 核心动态化动效体系 (Stellar & Flight Dynamic Animations) */
+  /* 核心动态化动效体系 (Celestial Astronomy & 3D Flight)    */
   /* ======================================================== */
 
-  /* 1. 6 组完全错相的深空有机微星独立呼吸 (彻底告别滑动虚线循环) */
-  .twinkle-phase-1 { animation: twPulse 2.1s ease-in-out infinite; }
-  .twinkle-phase-2 { animation: twPulse 3.4s ease-in-out 0.6s infinite; }
-  .twinkle-phase-3 { animation: twPulse 2.8s ease-in-out 1.2s infinite; }
-  .twinkle-phase-4 { animation: twPulse 4.2s ease-in-out 0.3s infinite; }
-  .twinkle-phase-5 { animation: twPulse 3.1s ease-in-out 1.7s infinite; }
-  .twinkle-phase-6 { animation: twPulse 2.5s ease-in-out 0.9s infinite; }
-
-  @keyframes twPulse {
-    0%, 100% { opacity: 0.18; transform: scale(0.85); }
-    50% { opacity: 0.92; transform: scale(1.3); }
+  /* 1. 纯净天文长曝光同心星轨顺滑天体旋转 (围绕天极 330px, -35px) */
+  .celestial-wheel-a {
+    transform-origin: 330px -35px;
+    animation: spinCelestialA 42s linear infinite;
+  }
+  .celestial-wheel-b {
+    transform-origin: 330px -35px;
+    animation: spinCelestialB 64s linear infinite;
+  }
+  .celestial-wheel-back {
+    transform-origin: 330px -35px;
+    animation: spinCelestialA 50s linear infinite;
   }
 
-  /* 2. 核心大亮星彻底灵动激活：星芒自转、呼吸绽放、轨道漫游 (绝不死板站桩！) */
-  .beacon-spike-rotate {
-    animation: spikeSpin 16s linear infinite;
-    transform-box: fill-box;
-    transform-origin: center;
-  }
-  @keyframes spikeSpin {
-    from { transform: rotate(0deg) scale(0.85); }
-    50% { transform: rotate(180deg) scale(1.22); }
-    to { transform: rotate(360deg) scale(0.85); }
-  }
-
-  .beacon-spike-pulse {
-    animation: spikePulseA 3.6s ease-in-out infinite;
-    transform-box: fill-box;
-    transform-origin: center;
-  }
-  @keyframes spikePulseA {
-    0%, 100% { transform: scale(0.75); opacity: 0.45; }
-    50% { transform: scale(1.25); opacity: 1; }
-  }
-
-  .beacon-spike-pulse-alt {
-    animation: spikePulseB 4.2s ease-in-out 1s infinite;
-    transform-box: fill-box;
-    transform-origin: center;
-  }
-  @keyframes spikePulseB {
-    0%, 100% { transform: scale(0.8); opacity: 0.4; }
-    50% { transform: scale(1.2); opacity: 0.95; }
-  }
-
-  .beacon-glow-pulse {
-    animation: glowBreathing 3s ease-in-out infinite;
-  }
-  @keyframes glowBreathing {
-    0%, 100% { opacity: 0.15; transform: scale(0.8); }
-    50% { opacity: 0.5; transform: scale(1.3); }
-  }
-
-  /* 亮星天体圆周漫游 (围绕天极自然运转，告别死寂站桩) */
-  .celestial-orbit-star {
-    animation: celestialDrift 28s ease-in-out infinite alternate;
-  }
-  @keyframes celestialDrift {
+  @keyframes spinCelestialA {
     from { transform: rotate(0deg); }
-    to { transform: rotate(-8deg); }
+    to { transform: rotate(360deg); }
+  }
+  @keyframes spinCelestialB {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
   }
 
-  /* 连续平滑星轨光迹柔和呼吸 (纯净光流，绝无滑动虚线) */
-  .trail-glow-aura {
-    animation: trailAuraPulse 6s ease-in-out infinite alternate;
-  }
-  @keyframes trailAuraPulse {
-    from { opacity: 0.12; }
-    to { opacity: 0.28; }
-  }
-
-  /* 3. 右侧官方标准 3D Telegram 纸飞机轻盈悬浮动效 */
-  .tg-plane-flight-rig {
-    animation: tgPlaneHover 4.5s ease-in-out infinite;
+  /* 2. 极度醒目 3D Telegram 纸飞机悬浮微动与交互 (清晰挺拔、高反差浮雕质感) */
+  .promo-hero-plane {
+    position: absolute;
+    right: 18px;
+    top: 22px;
+    z-index: 5;
+    pointer-events: none;
+    animation: heroPlaneFloat 4.2s ease-in-out infinite;
     will-change: transform;
-    transform-origin: 248px 34px;
   }
-  @keyframes tgPlaneHover {
+  @keyframes heroPlaneFloat {
     0%, 100% {
-      transform: translate(222px, 14px) rotate(0deg);
+      transform: translateY(0) rotate(0deg);
     }
     50% {
-      transform: translate(224px, 9px) rotate(2.5deg);
+      transform: translateY(-3.5px) rotate(1.8deg);
     }
   }
 
   /* 悬停时纸飞机轻微俯冲加速 */
-  .promo-widget:hover .tg-plane-flight-rig {
-    transform: translate(225px, 6px) rotate(3.5deg) scale(1.04);
+  .promo-widget:hover .promo-hero-plane {
+    transform: translateY(-5px) scale(1.06) rotate(3deg);
     transition: transform 0.4s cubic-bezier(0.25, 1, 0.35, 1);
   }
 
