@@ -120,8 +120,6 @@ try {
 }
 
 ---
-// PromoWidgetCard component
-
 
 <div class:list={['card-widget promo-widget', className]} id={id}>
   <div id="flip-wrapper">
@@ -134,7 +132,7 @@ try {
         class="face front-face"
         onclick={finalConfig.href && finalConfig.href !== '#' ? `window.open("${finalConfig.href}", "_blank")` : undefined}
       >
-        <!-- 核心背景：超音速破空航迹流光 + 空间广播电波脉冲 (与纸飞机完美呼应，避开文字排版区) -->
+        <!-- 核心背景：超音速破空航迹流光 (与官方纸飞机完美呼应，避开文字排版区) -->
         <div class="promo-scene-art promo-watermark" aria-hidden="true">
           <svg viewBox="0 0 320 114" fill="none" xmlns="http://www.w3.org/2000/svg">
             <!-- 1. 破空主航迹线：从左下自然上扬，沿文字底部优雅接入机尾 -->
@@ -143,12 +141,11 @@ try {
             <!-- 2. 伴飞副气流线 (天青微光) -->
             <path class="contrail-secondary" d="M 15 112 C 75 110, 140 108, 195 102 C 230 96, 258 84, 278 62" 
                   stroke="#bae6fd" stroke-width="1.0" stroke-linecap="round" opacity="0.4" />
-            <!-- 3. 以纸飞机为中心向外扩散的同心空间广播电波 (Radio Waves) -->
-            <circle class="pulse-ring-a" cx="275" cy="62" r="36" stroke="#ffffff" stroke-width="1.1" stroke-dasharray="10 8" opacity="0.32" />
-            <circle class="pulse-ring-b" cx="275" cy="62" r="66" stroke="#bae6fd" stroke-width="0.8" stroke-dasharray="14 10" opacity="0.22" />
-            <circle cx="275" cy="62" r="105" stroke="#7dd3fc" stroke-width="0.6" stroke-dasharray="20 14" opacity="0.15" />
-            <!-- 4. 高空气流微波 (平流层气流，位于顶部空白区) -->
-            <path class="wind-stream" d="M 140 16 Q 230 10, 330 20" stroke="#ffffff" stroke-width="0.75" opacity="0.25" stroke-linecap="round" stroke-dasharray="25 50" />
+            <!-- 3. 高空平流层风洞微气流 (位于顶部空白区) -->
+            <path class="wind-stream" d="M 120 14 Q 220 8, 330 18" stroke="#ffffff" stroke-width="0.8" opacity="0.3" stroke-linecap="round" stroke-dasharray="25 60" />
+            <path class="wind-stream" d="M 160 22 Q 240 16, 320 24" stroke="#7dd3fc" stroke-width="0.6" opacity="0.25" stroke-linecap="round" stroke-dasharray="20 40" />
+            <!-- 4. 尾流微型翼尖涡流环 -->
+            <ellipse cx="258" cy="74" rx="10" ry="5" transform="rotate(-15 258 74)" stroke="#bae6fd" stroke-width="0.8" stroke-dasharray="3 3" opacity="0.35" />
           </svg>
         </div>
 
@@ -427,32 +424,23 @@ try {
     to { stroke-dashoffset: 0; }
   }
 
-  /* 2. 空间广播微透电波脉冲 (Radio Pulse Ripple) */
-  .pulse-ring-a {
-    animation: pulseA 3.2s ease-in-out infinite;
-    transform-origin: 275px 62px;
-  }
-  .pulse-ring-b {
-    animation: pulseB 3.2s ease-in-out infinite;
-    transform-origin: 275px 62px;
-    animation-delay: 1.6s;
-  }
-  @keyframes pulseA {
-    0%, 100% { transform: scale(1); opacity: 0.32; }
-    50% { transform: scale(1.06); opacity: 0.52; }
-  }
-  @keyframes pulseB {
-    0%, 100% { transform: scale(1); opacity: 0.22; }
-    50% { transform: scale(1.06); opacity: 0.38; }
-  }
-
-  /* 3. 平流层高空气流微动 */
+  /* 2. 平流层高空气流微动 */
   .wind-stream {
     animation: windDrift 6s ease-in-out infinite alternate;
   }
   @keyframes windDrift {
     from { transform: translateX(0); }
     to { transform: translateX(8px); }
+  }
+
+  /* 3. 背面二维码广播微透脉冲 */
+  .back-pulse {
+    animation: backPulse 4s ease-in-out infinite;
+    transform-origin: 260px 57px;
+  }
+  @keyframes backPulse {
+    0%, 100% { transform: scale(1); opacity: 0.25; }
+    50% { transform: scale(1.05); opacity: 0.45; }
   }
 
   /* 2. 官方权威 Telegram 立体折纸飞机悬浮微动与交互 */
