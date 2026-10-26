@@ -119,10 +119,10 @@ try {
   embeddedQrDataUrl = finalConfig.qrImage || '';
 }
 
-// 天文长曝光同心星轨真实算法 (Astrophotography Celestial Pole Star Trails)
-// 北天极中心 (Polaris 源泉锚点)：cx: 285, cy: 18
-const CELESTIAL_POLE_X = 285;
-const CELESTIAL_POLE_Y = 18;
+// 天文长曝光同心星轨真实算法 (Astrophotography Celestial Star Trails)
+// 旋转中心置于视区右上外侧 (cx: 345, cy: -45)，消除人造圆心靶心感，仅展现辽阔天幕的大同心圆弧线
+const CELESTIAL_POLE_X = 345;
+const CELESTIAL_POLE_Y = -45;
 
 function arcPath(cx: number, cy: number, r: number, startDeg: number, endDeg: number) {
   const startRad = (startDeg * Math.PI) / 180;
@@ -136,22 +136,21 @@ function arcPath(cx: number, cy: number, r: number, startDeg: number, endDeg: nu
   return `M ${x1.toFixed(1)} ${y1.toFixed(1)} A ${r.toFixed(1)} ${r.toFixed(1)} 0 ${largeArc} ${sweep} ${x2.toFixed(1)} ${y2.toFixed(1)}`;
 }
 
-// 真实天文同心星轨群 A (依据真实视星等与光谱色温分级：织女星纯白、天鹅座暖黄、深空浅蓝天体自转)
+// 真实天文同心星轨群 A (依据真实视星等与光谱色温分级：0.6px ~ 1.25px，纯白、浅天青蓝与淡黄暖星交织)
 const frontStarTrailsA = [
-  // 北天极内圈微动光环 (源泉微光层)
-  { r: 12, s: 0, span: 270, sw: 0.8, op: 0.4, c: '#ffffff' },
-  { r: 24, s: 45, span: 220, sw: 0.6, op: 0.3, c: '#bae6fd' },
-  // 极区致密同心圆圈
-  { r: 42, s: 70, span: 190, sw: 0.9, op: 0.45, c: '#ffffff' },
-  { r: 64, s: 130, span: 180, sw: 0.65, op: 0.3, c: '#7dd3fc' },
-  { r: 88, s: 35, span: 200, sw: 1.1, op: 0.5, c: '#ffffff' }, // 1等主星织女星轨迹
-  { r: 114, s: 105, span: 185, sw: 0.85, op: 0.38, c: '#fef08a' }, // G型黄色恒星光谱
-  { r: 142, s: 50, span: 195, sw: 0.7, op: 0.32, c: '#bae6fd' },
-  { r: 172, s: 125, span: 180, sw: 1.3, op: 0.55, c: '#ffffff' }, // 1等主星天狼星轨迹
-  { r: 206, s: 75, span: 185, sw: 0.75, op: 0.3, c: '#7dd3fc' },
-  { r: 242, s: 140, span: 170, sw: 1.0, op: 0.42, c: '#e0f2fe' },
-  { r: 282, s: 90, span: 175, sw: 0.65, op: 0.25, c: '#bae6fd' },
-  { r: 326, s: 135, span: 165, sw: 0.8, op: 0.3, c: '#ffffff' }
+  { r: 75, s: 70, span: 145, sw: 0.7, op: 0.35, c: '#ffffff' },
+  { r: 105, s: 110, span: 140, sw: 0.6, op: 0.28, c: '#bae6fd' },
+  { r: 135, s: 55, span: 155, sw: 1.1, op: 0.48, c: '#ffffff' }, // 1等主星织女星
+  { r: 168, s: 125, span: 145, sw: 0.65, op: 0.26, c: '#7dd3fc' },
+  { r: 205, s: 80, span: 150, sw: 0.85, op: 0.36, c: '#fef08a' }, // G型黄色恒星光谱
+  { r: 245, s: 135, span: 140, sw: 1.25, op: 0.52, c: '#ffffff' }, // 1等主星天狼星
+  { r: 288, s: 70, span: 155, sw: 0.75, op: 0.32, c: '#bae6fd' },
+  { r: 335, s: 115, span: 145, sw: 0.9, op: 0.38, c: '#e0f2fe' },
+  { r: 385, s: 85, span: 150, sw: 0.6, op: 0.24, c: '#7dd3fc' },
+  // 仰角低空大弧线
+  { r: 120, s: 220, span: 140, sw: 0.75, op: 0.34, c: '#ffffff' },
+  { r: 185, s: 235, span: 145, sw: 0.65, op: 0.28, c: '#bae6fd' },
+  { r: 265, s: 225, span: 150, sw: 1.0, op: 0.42, c: '#ffffff' }
 ].map(a => ({
   d: arcPath(CELESTIAL_POLE_X, CELESTIAL_POLE_Y, a.r, a.s, a.s + a.span),
   strokeWidth: a.sw,
@@ -161,16 +160,15 @@ const frontStarTrailsA = [
 
 // 真实天文同心星轨群 B (深邃星空差速视差层)
 const frontStarTrailsB = [
-  { r: 32, s: 200, span: 170, sw: 0.6, op: 0.25, c: '#bae6fd' },
-  { r: 54, s: 240, span: 180, sw: 0.8, op: 0.35, c: '#ffffff' },
-  { r: 76, s: 185, span: 175, sw: 0.65, op: 0.28, c: '#7dd3fc' },
-  { r: 100, s: 225, span: 185, sw: 0.95, op: 0.4, c: '#ffffff' },
-  { r: 128, s: 250, span: 170, sw: 0.7, op: 0.3, c: '#fef9c3' },
-  { r: 158, s: 195, span: 180, sw: 0.75, op: 0.32, c: '#bae6fd' },
-  { r: 190, s: 235, span: 175, sw: 1.1, op: 0.46, c: '#ffffff' },
-  { r: 224, s: 210, span: 170, sw: 0.7, op: 0.28, c: '#7dd3fc' },
-  { r: 262, s: 245, span: 165, sw: 0.85, op: 0.34, c: '#e0f2fe' },
-  { r: 304, s: 220, span: 160, sw: 0.6, op: 0.22, c: '#bae6fd' }
+  { r: 90, s: 95, span: 140, sw: 0.6, op: 0.25, c: '#bae6fd' },
+  { r: 150, s: 40, span: 150, sw: 0.8, op: 0.36, c: '#ffffff' },
+  { r: 188, s: 105, span: 145, sw: 0.65, op: 0.28, c: '#7dd3fc' },
+  { r: 225, s: 65, span: 155, sw: 0.95, op: 0.4, c: '#ffffff' },
+  { r: 268, s: 120, span: 140, sw: 0.7, op: 0.3, c: '#fef9c3' },
+  { r: 312, s: 80, span: 150, sw: 0.75, op: 0.32, c: '#bae6fd' },
+  { r: 360, s: 110, span: 145, sw: 0.55, op: 0.22, c: '#7dd3fc' },
+  { r: 160, s: 210, span: 140, sw: 0.7, op: 0.3, c: '#bae6fd' },
+  { r: 235, s: 245, span: 145, sw: 0.85, op: 0.35, c: '#ffffff' }
 ].map(a => ({
   d: arcPath(CELESTIAL_POLE_X, CELESTIAL_POLE_Y, a.r, a.s, a.s + a.span),
   strokeWidth: a.sw,
@@ -178,16 +176,15 @@ const frontStarTrailsB = [
   color: a.c
 }));
 
-// 背面极简连贯星轨 (同天极枢轴，低对比度护航二维码)
+// 背面极简连贯星轨 (低对比度同轴大弧线，保护二维码清晰度)
 const backStarTrails = [
-  { r: 42, s: 60, span: 180, sw: 0.7, op: 0.26, c: '#ffffff' },
-  { r: 80, s: 110, span: 170, sw: 0.6, op: 0.22, c: '#bae6fd' },
-  { r: 125, s: 45, span: 185, sw: 0.8, op: 0.28, c: '#ffffff' },
-  { r: 170, s: 130, span: 175, sw: 0.55, op: 0.18, c: '#7dd3fc' },
-  { r: 220, s: 80, span: 170, sw: 0.7, op: 0.24, c: '#e0f2fe' },
-  { r: 270, s: 120, span: 165, sw: 0.5, op: 0.16, c: '#bae6fd' },
-  { r: 60, s: 230, span: 160, sw: 0.6, op: 0.2, c: '#bae6fd' },
-  { r: 145, s: 210, span: 170, sw: 0.7, op: 0.25, c: '#ffffff' }
+  { r: 85, s: 75, span: 140, sw: 0.65, op: 0.24, c: '#ffffff' },
+  { r: 135, s: 105, span: 145, sw: 0.55, op: 0.2, c: '#bae6fd' },
+  { r: 185, s: 60, span: 150, sw: 0.75, op: 0.26, c: '#ffffff' },
+  { r: 240, s: 115, span: 140, sw: 0.5, op: 0.18, c: '#7dd3fc' },
+  { r: 300, s: 80, span: 145, sw: 0.65, op: 0.22, c: '#e0f2fe' },
+  { r: 150, s: 220, span: 140, sw: 0.6, op: 0.22, c: '#bae6fd' },
+  { r: 220, s: 235, span: 145, sw: 0.7, op: 0.25, c: '#ffffff' }
 ].map(a => ({
   d: arcPath(CELESTIAL_POLE_X, CELESTIAL_POLE_Y, a.r, a.s, a.s + a.span),
   strokeWidth: a.sw,
@@ -237,10 +234,6 @@ const backStarTrails = [
                 />
               ))}
             </g>
-
-            <!-- 北天极真实源泉枢轴：北极星 Polaris (固定中心，自带柔和弥散星辉) -->
-            <circle cx="285" cy="18" r="2.2" fill="#ffffff" class="polaris-star" />
-            <circle cx="285" cy="18" r="5.5" fill="#38bdf8" opacity="0.35" />
           </svg>
         </div>
 
@@ -297,9 +290,6 @@ const backStarTrails = [
                 />
               ))}
             </g>
-            <!-- 背面微光北极星源泉 -->
-            <circle cx="285" cy="18" r="1.8" fill="#ffffff" class="polaris-star" opacity="0.6" />
-            <circle cx="285" cy="18" r="4.5" fill="#38bdf8" opacity="0.2" />
           </svg>
         </div>
 
@@ -517,25 +507,21 @@ const backStarTrails = [
   /* 核心动态化动效体系 (Celestial Astronomy & 3D Flight)    */
   /* ======================================================== */
 
-  /* 1. 真实天文长曝光同心星轨顺滑天体旋转 (围绕北极星源泉 285px 18px，精准锁定 viewBox 坐标系) */
+  /* 1. 真实天文长曝光同心星轨顺滑天体旋转 (旋转轴心置于视区外 345px -45px，精准锁定 viewBox 坐标系) */
   .celestial-wheel-a {
     transform-box: view-box;
-    transform-origin: 285px 18px;
+    transform-origin: 345px -45px;
     animation: spinCelestialA 48s linear infinite;
   }
   .celestial-wheel-b {
     transform-box: view-box;
-    transform-origin: 285px 18px;
+    transform-origin: 345px -45px;
     animation: spinCelestialB 72s linear infinite;
   }
   .celestial-wheel-back {
     transform-box: view-box;
-    transform-origin: 285px 18px;
+    transform-origin: 345px -45px;
     animation: spinCelestialA 56s linear infinite;
-  }
-
-  .polaris-star {
-    filter: drop-shadow(0 0 3px #ffffff) drop-shadow(0 0 7px #38bdf8);
   }
 
   @keyframes spinCelestialA {
