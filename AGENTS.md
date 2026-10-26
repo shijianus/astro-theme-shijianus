@@ -6343,7 +6343,7 @@
   4. 通过 Wrangler 部署到 Cloudflare Pages 生产边缘节点；
   5. Playwright 在真实生产域名 `https://blog.epocanvas.com/` 进行实机全链路审计，出示完整真实视觉证据链。
 
-### Task 95: 真实天文星轨深度重构：北极星源泉枢轴 (Polaris Hub) 具象化、视星等与恒星光谱色温分级
+### Task 95: 真实天文星轨深度重构：北极星源泉枢轴 (Polaris Hub) 具象化、视星等与恒星光谱色温分级 (`de80d1b`)
 - [x] **深入汲取真实天文长曝光摄影机理与开源社区技巧，重构星轨“源泉”与“圆圈”真实度**：
   1. **北天极源泉枢轴 (Polaris Hub) 真实显化**：
      - 将天极旋转中心由原本视区外（330, -35）精准移至右上构图黄金位置 `(cx: 285, cy: 18)`；
@@ -6356,7 +6356,7 @@
      - 旋转轴与正面严格一致，同心星轨低调护航二维码与点击操作。
 - [x] **严格遵守准则与交付铁律**：
   1. **本对话绝对禁止向 remote repo (`origin`) 推送，仅推送到 `cf`**；
-  2. 单步 commit 并打印 Hash；
+  2. 单步 commit 并打印 Hash (`de80d1b`)；
   3. 本地全量静态构建验证（`npm run build:static`）；
   4. 通过 Wrangler 部署到 Cloudflare Pages 生产边缘节点；
   5. Playwright 在真实生产域名 `https://blog.epocanvas.com/` 进行实机全链路审计，出示完整真实视觉证据链。
