@@ -136,13 +136,13 @@ function arcPath(cx: number, cy: number, r: number, startDeg: number, endDeg: nu
   return `M ${x1.toFixed(1)} ${y1.toFixed(1)} A ${r.toFixed(1)} ${r.toFixed(1)} 0 ${largeArc} ${sweep} ${x2.toFixed(1)} ${y2.toFixed(1)}`;
 }
 
-// 1. Tier 1: 极细深空星尘同心光轨底幕 (Micro Star-Dust Trails, 58条密织微弧线, 构筑浩瀚天幕真丝质感与通透星亮)
+// 1. Tier 1: 极细深空星尘同心光轨底幕 (Micro Star-Dust Trails, 58条密织微弧线, 构筑浩瀚天幕真丝质感)
 const microColors = ['#ffffff', '#bae6fd', '#7dd3fc', '#e0f2fe', '#fed7aa'];
 const frontMicroTrails: Array<{ d: string; strokeWidth: number; opacity: number; color: string }> = [];
 for (let r = 40; r <= 440; r += 7) {
   const s = ((r * 23) % 360);
   const span = 200 + ((r * 11) % 95);
-  const sw = Number((0.36 + (r % 4) * 0.08).toFixed(2));
+  const sw = Number((0.35 + (r % 4) * 0.08).toFixed(2));
   const op = Number((0.15 + ((r * 31) % 18) / 100).toFixed(2));
   frontMicroTrails.push({
     d: arcPath(CELESTIAL_POLE_X, CELESTIAL_POLE_Y, r, s, s + span),
@@ -152,13 +152,13 @@ for (let r = 40; r <= 440; r += 7) {
   });
 }
 
-// 2. Tier 2: 中等视星等恒星光谱弧线 (Mid-magnitude Spectral Trails, 18条色彩分级高透光星轨)
+// 2. Tier 2: 中等视星等恒星光谱弧线 (Mid-magnitude Spectral Trails, 18条色彩分级星轨)
 const spectralPalette = [
-  { c: '#ffffff', glow: '#bae6fd' }, // A型纯白
-  { c: '#93c5fd', glow: '#38bdf8' }, // B型天青蓝
-  { c: '#fde047', glow: '#f59e0b' }, // G型金黄 (五车二)
-  { c: '#fdba74', glow: '#ea580c' }, // K型暖橙 (大角星)
-  { c: '#67e8f9', glow: '#0284c7' }  // 深空电光蓝
+  { c: '#ffffff', glow: '#93c5fd' }, // A型纯白
+  { c: '#bae6fd', glow: '#38bdf8' }, // B型天青蓝
+  { c: '#fef08a', glow: '#f59e0b' }, // G型金黄 (五车二)
+  { c: '#fed7aa', glow: '#ea580c' }, // K型暖橙 (大角星)
+  { c: '#7dd3fc', glow: '#0284c7' }  // 深空电光蓝
 ];
 const frontMidTrails: Array<{ d: string; strokeWidth: number; opacity: number; color: string }> = [];
 for (let i = 0; i < 18; i++) {
@@ -166,7 +166,7 @@ for (let i = 0; i < 18; i++) {
   const s = (i * 53) % 360;
   const span = 195 + (i * 17) % 80;
   const sw = Number((0.75 + (i % 3) * 0.18).toFixed(2));
-  const op = Number((0.45 + (i % 4) * 0.10).toFixed(2));
+  const op = Number((0.42 + (i % 4) * 0.08).toFixed(2));
   const p = spectralPalette[i % spectralPalette.length];
   frontMidTrails.push({
     d: arcPath(CELESTIAL_POLE_X, CELESTIAL_POLE_Y, r, s, s + span),
@@ -176,13 +176,13 @@ for (let i = 0; i < 18; i++) {
   });
 }
 
-// 3. Tier 3: 5条一等亮主星辉光层 (Alpha Stars with Optical Bloom + Glowing Star Heads + Diamond Flares)
+// 3. Tier 3: 5条一等亮主星辉光层 (Alpha Stars with Optical Bloom + Glowing Star Heads + Diffraction Spikes)
 const alphaStarDefs = [
-  { r: 85, s: 65, span: 245, sw: 1.5, op: 0.96, c: '#ffffff', glowC: '#38bdf8', flare: true },  // 天狼星 / 织女星
-  { r: 145, s: 105, span: 230, sw: 1.4, op: 0.92, c: '#fef08a', glowC: '#f59e0b', flare: true }, // 五车二 (金色)
-  { r: 215, s: 45, span: 250, sw: 1.6, op: 0.98, c: '#ffffff', glowC: '#60a5fa', flare: true },  // 参宿七 (蓝白)
-  { r: 290, s: 90, span: 235, sw: 1.45, op: 0.92, c: '#fed7aa', glowC: '#f97316', flare: true }, // 大角星 (暖橙)
-  { r: 370, s: 35, span: 240, sw: 1.5, op: 0.92, c: '#e0f2fe', glowC: '#0284c7', flare: false }  // 参宿四外轨
+  { r: 85, s: 65, span: 245, sw: 1.4, op: 1.0, c: '#ffffff', glowC: '#38bdf8', flareSize: 7.5 }, // 天狼星 / 织女星
+  { r: 145, s: 105, span: 230, sw: 1.3, op: 0.95, c: '#fef08a', glowC: '#eab308', flareSize: 6.5 }, // 五车二 (金色)
+  { r: 215, s: 45, span: 250, sw: 1.55, op: 1.0, c: '#ffffff', glowC: '#60a5fa', flareSize: 8.0 },  // 参宿七 (蓝白)
+  { r: 290, s: 90, span: 235, sw: 1.35, op: 0.95, c: '#fed7aa', glowC: '#f97316', flareSize: 6.5 },  // 大角星 (暖橙)
+  { r: 370, s: 35, span: 240, sw: 1.45, op: 0.98, c: '#e0f2fe', glowC: '#0284c7', flareSize: 7.0 }   // 参宿四外轨
 ];
 const frontAlphaTrails = alphaStarDefs.map(t => {
   const headRad = ((t.s + t.span) * Math.PI) / 180;
@@ -196,24 +196,24 @@ const frontAlphaTrails = alphaStarDefs.map(t => {
   };
 });
 
-// 4. 深空微星噪点 / 静态星尘散点 (Static Deep Space Star Dust, 16颗微星璀璨散点)
+// 4. 深空微星噪点 / 静态星尘散点 (Static Deep Space Star Dust, 16颗高亮微星与微闪)
 const staticStars = [
-  { x: 28, y: 18, r: 0.8, op: 0.55 },
-  { x: 55, y: 88, r: 1.0, op: 0.65 },
-  { x: 82, y: 32, r: 0.7, op: 0.45 },
-  { x: 115, y: 96, r: 0.9, op: 0.5 },
-  { x: 140, y: 15, r: 1.1, op: 0.7 },
-  { x: 172, y: 78, r: 0.75, op: 0.45 },
-  { x: 198, y: 24, r: 0.95, op: 0.55 },
-  { x: 226, y: 92, r: 0.85, op: 0.5 },
-  { x: 254, y: 38, r: 1.0, op: 0.6 },
-  { x: 278, y: 84, r: 0.7, op: 0.4 },
-  { x: 302, y: 18, r: 0.85, op: 0.5 },
-  { x: 42, y: 64, r: 0.75, op: 0.45 },
-  { x: 95, y: 52, r: 0.9, op: 0.55 },
-  { x: 160, y: 44, r: 0.8, op: 0.48 },
-  { x: 212, y: 66, r: 0.9, op: 0.52 },
-  { x: 285, y: 55, r: 0.75, op: 0.42 }
+  { x: 28, y: 18, r: 1.1, op: 0.75, twinkle: 'promo-twinkle-a' },
+  { x: 55, y: 88, r: 1.2, op: 0.8, twinkle: 'promo-twinkle-b' },
+  { x: 82, y: 32, r: 0.8, op: 0.55, twinkle: '' },
+  { x: 115, y: 96, r: 1.0, op: 0.65, twinkle: 'promo-twinkle-a' },
+  { x: 140, y: 15, r: 1.3, op: 0.85, twinkle: 'promo-twinkle-b' },
+  { x: 172, y: 78, r: 0.85, op: 0.6, twinkle: '' },
+  { x: 198, y: 24, r: 1.1, op: 0.75, twinkle: 'promo-twinkle-a' },
+  { x: 226, y: 92, r: 0.9, op: 0.6, twinkle: '' },
+  { x: 254, y: 38, r: 1.25, op: 0.82, twinkle: 'promo-twinkle-b' },
+  { x: 278, y: 84, r: 0.8, op: 0.5, twinkle: '' },
+  { x: 302, y: 18, r: 1.0, op: 0.7, twinkle: 'promo-twinkle-a' },
+  { x: 42, y: 64, r: 0.85, op: 0.55, twinkle: '' },
+  { x: 95, y: 52, r: 1.1, op: 0.72, twinkle: 'promo-twinkle-b' },
+  { x: 160, y: 44, r: 0.95, op: 0.65, twinkle: '' },
+  { x: 212, y: 66, r: 1.0, op: 0.68, twinkle: 'promo-twinkle-a' },
+  { x: 285, y: 55, r: 0.85, op: 0.55, twinkle: '' }
 ];
 
 // 背面极简连贯星轨 (低对比度同轴大弧线，保护二维码清晰度)
@@ -248,38 +248,37 @@ const backStarTrails = [
         <div class="promo-scene-art promo-watermark" aria-hidden="true">
           <svg viewBox="0 0 320 114" fill="none" xmlns="http://www.w3.org/2000/svg">
             <defs>
-              <!-- 镜头光学高斯漫反射发光 (双层多级漫射核) -->
+              <!-- 镜头光学高斯漫反射发光 (Multi-tier Astrophotography Optical Bloom) -->
               <filter id="promoStarBloom" x="-35%" y="-35%" width="170%" height="170%">
-                <feGaussianBlur in="SourceGraphic" stdDeviation="2.2" result="blur1" />
-                <feGaussianBlur in="SourceGraphic" stdDeviation="1.0" result="blur2" />
+                <feGaussianBlur in="SourceGraphic" stdDeviation="2.4" result="broadGlow" />
+                <feGaussianBlur in="SourceGraphic" stdDeviation="0.9" result="coreGlow" />
                 <feMerge>
-                  <feMergeNode in="blur1" />
-                  <feMergeNode in="blur2" />
+                  <feMergeNode in="broadGlow" />
+                  <feMergeNode in="coreGlow" />
                   <feMergeNode in="SourceGraphic" />
                 </feMerge>
               </filter>
-              <!-- 领航亮星高能热核日冕晕 (放大日冕半径并增强高光白热度) -->
+              <!-- 领航亮星热核光晕 (Stellar Core Corona) -->
               <radialGradient id="starCoronaGlow" cx="50%" cy="50%" r="50%">
                 <stop offset="0%" stop-color="#ffffff" stop-opacity="1" />
-                <stop offset="20%" stop-color="#ffffff" stop-opacity="0.95" />
-                <stop offset="45%" stop-color="#bae6fd" stop-opacity="0.85" />
-                <stop offset="75%" stop-color="#38bdf8" stop-opacity="0.45" />
+                <stop offset="25%" stop-color="#bae6fd" stop-opacity="0.9" />
+                <stop offset="60%" stop-color="#38bdf8" stop-opacity="0.45" />
                 <stop offset="100%" stop-color="#38bdf8" stop-opacity="0" />
               </radialGradient>
               <!-- 北天极极星枢纽光斑 (Polaris Celestial Pivot) -->
               <radialGradient id="polarisCoreGlow" cx="50%" cy="50%" r="50%">
                 <stop offset="0%" stop-color="#ffffff" stop-opacity="1" />
-                <stop offset="25%" stop-color="#bae6fd" stop-opacity="0.9" />
-                <stop offset="60%" stop-color="#38bdf8" stop-opacity="0.5" />
+                <stop offset="30%" stop-color="#93c5fd" stop-opacity="0.65" />
+                <stop offset="65%" stop-color="#38bdf8" stop-opacity="0.3" />
                 <stop offset="100%" stop-color="#0284c7" stop-opacity="0" />
               </radialGradient>
             </defs>
 
-            <!-- 静态深空微弱星尘散点 (明度与微晕提升) -->
+            <!-- 静态深空璀璨星野 (Static Deep Space Star Dust + Twinkle) -->
             <g class="promo-static-dust">
               {staticStars.map(s => (
-                <g>
-                  <circle cx={s.x} cy={s.y} r={Number((s.r * 1.8).toFixed(1))} fill="#ffffff" opacity={Number((s.op * 0.35).toFixed(2))} filter="url(#promoStarBloom)" />
+                <g class={s.twinkle}>
+                  <circle cx={s.x} cy={s.y} r={Number((s.r * 1.8).toFixed(1))} fill="#38bdf8" opacity={Number((s.op * 0.35).toFixed(2))} filter="url(#promoStarBloom)" />
                   <circle cx={s.x} cy={s.y} r={s.r} fill="#ffffff" opacity={s.op} />
                 </g>
               ))}
@@ -301,7 +300,7 @@ const backStarTrails = [
                 ))}
               </g>
 
-              <!-- Tier 2: 中等视星等恒星光谱弧线 (18条色彩分级高透光星轨) -->
+              <!-- Tier 2: 中等视星等恒星光谱弧线 (18条色彩分级星轨) -->
               <g class="tier-mid-trails">
                 {frontMidTrails.map((trail) => (
                   <path
@@ -315,54 +314,73 @@ const backStarTrails = [
                 ))}
               </g>
 
-              <!-- Tier 3: 5条一等亮主星辉光层 (带 Super Bloom 滤镜漫射底轮廓与纯白高亮核心) -->
+              <!-- Tier 3: 5条一等亮主星辉光层 (带三层 Bloom 发散漫射底轮廓与纯白高亮核心) -->
               <g class="tier-alpha-trails" filter="url(#promoStarBloom)">
+                <!-- 广域柔和漫射外晕 -->
                 {frontAlphaTrails.map((trail) => (
                   <path
                     d={trail.d}
                     fill="none"
                     stroke={trail.glowC}
-                    stroke-width={Number((trail.sw * 2.8).toFixed(1))}
-                    opacity={Number((trail.op * 0.62).toFixed(2))}
+                    stroke-width={Number((trail.sw * 3.2).toFixed(1))}
+                    opacity={Number((trail.op * 0.32).toFixed(2))}
                     stroke-linecap="round"
                   />
                 ))}
+                <!-- 明亮彩色光晕环 -->
                 {frontAlphaTrails.map((trail) => (
                   <path
                     d={trail.d}
                     fill="none"
-                    stroke={trail.c}
+                    stroke={trail.glowC}
+                    stroke-width={Number((trail.sw * 1.9).toFixed(1))}
+                    opacity={Number((trail.op * 0.58).toFixed(2))}
+                    stroke-linecap="round"
+                  />
+                ))}
+                <!-- 纯白白热高亮核心 -->
+                {frontAlphaTrails.map((trail) => (
+                  <path
+                    d={trail.d}
+                    fill="none"
+                    stroke="#ffffff"
                     stroke-width={trail.sw}
-                    opacity={1.0}
+                    opacity={trail.op}
                     stroke-linecap="round"
                   />
                 ))}
               </g>
 
-              <!-- Tier 4: 恒星璀璨领航星核光斑 + 钻石微十字星芒 (Alpha Star Heads & Diamond Flares) -->
+              <!-- Tier 4: 恒星璀璨领航星核光斑 + 四角十字衍射星芒 (Alpha Star Heads with Diffraction Flare) -->
               <g class="tier-alpha-heads">
-                {frontAlphaTrails.map((trail) => (
-                  <g>
-                    <!-- 日冕大光晕 -->
-                    <circle cx={trail.hx} cy={trail.hy} r="5.2" fill="url(#starCoronaGlow)" />
-                    <!-- 纯白强核 -->
-                    <circle cx={trail.hx} cy={trail.hy} r="1.3" fill="#ffffff" />
-                    <!-- 钻石微十字星芒 -->
-                    {trail.flare && (
-                      <g opacity="0.85">
-                        <line x1={trail.hx - 4.5} y1={trail.hy} x2={trail.hx + 4.5} y2={trail.hy} stroke="#ffffff" stroke-width="0.55" />
-                        <line x1={trail.hx} y1={trail.hy - 4.5} x2={trail.hx} y2={trail.hy + 4.5} stroke="#ffffff" stroke-width="0.55" />
-                      </g>
-                    )}
-                  </g>
-                ))}
+                {frontAlphaTrails.map((trail) => {
+                  const sz = trail.flareSize;
+                  const half = Number((sz * 0.16).toFixed(1));
+                  return (
+                    <g transform={`translate(${trail.hx}, ${trail.hy})`}>
+                      <!-- 外层漫射光晕圈 -->
+                      <circle cx="0" cy="0" r={Number((sz * 0.65).toFixed(1))} fill="url(#starCoronaGlow)" />
+                      <!-- 纯白热核 -->
+                      <circle cx="0" cy="0" r="1.3" fill="#ffffff" />
+                      <!-- 四角十字衍射星芒 -->
+                      <polygon
+                        points={`0,-${sz} ${half},-${half} ${sz},0 ${half},${half} 0,${sz} -${half},${half} -${sz},0 -${half},-${half}`}
+                        fill="#ffffff"
+                        opacity="0.9"
+                        filter="url(#promoStarBloom)"
+                      />
+                    </g>
+                  );
+                })}
               </g>
 
               <!-- Tier 5: 北天极极星微光枢纽 (Polaris Celestial Pivot) -->
-              <circle cx={CELESTIAL_POLE_X} cy={CELESTIAL_POLE_Y} r="12" fill="url(#polarisCoreGlow)" opacity="0.75" />
-              <circle cx={CELESTIAL_POLE_X} cy={CELESTIAL_POLE_Y} r="2.2" fill="#ffffff" />
-              <line x1={CELESTIAL_POLE_X - 6} y1={CELESTIAL_POLE_Y} x2={CELESTIAL_POLE_X + 6} y2={CELESTIAL_POLE_Y} stroke="#ffffff" stroke-width="0.7" opacity="0.85" />
-              <line x1={CELESTIAL_POLE_X} y1={CELESTIAL_POLE_Y - 6} x2={CELESTIAL_POLE_X} y2={CELESTIAL_POLE_Y + 6} stroke="#ffffff" stroke-width="0.7" opacity="0.85" />
+              <circle cx={CELESTIAL_POLE_X} cy={CELESTIAL_POLE_Y} r="11" fill="url(#polarisCoreGlow)" />
+              <circle cx={CELESTIAL_POLE_X} cy={CELESTIAL_POLE_Y} r="1.8" fill="#ffffff" />
+              <!-- 极星十字微星芒 -->
+              <g transform={`translate(${CELESTIAL_POLE_X}, ${CELESTIAL_POLE_Y})`}>
+                <polygon points="0,-8 1.2,-1.2 8,0 1.2,1.2 0,8 -1.2,1.2 -8,0 -1.2,-1.2" fill="#ffffff" opacity="0.8" />
+              </g>
             </g>
           </svg>
         </div>
@@ -654,6 +672,22 @@ const backStarTrails = [
   @keyframes spinCelestialSidereal {
     from { transform: rotate(0deg); }
     to { transform: rotate(360deg); }
+  }
+
+  /* 2. 深空繁星呼吸微闪 (Deep Space Starlight Shimmer & Twinkle) */
+  .promo-twinkle-a {
+    animation: promoStarTwinkle 3.6s ease-in-out infinite alternate;
+  }
+  .promo-twinkle-b {
+    animation: promoStarTwinkle 4.8s ease-in-out infinite alternate 1.5s;
+  }
+  @keyframes promoStarTwinkle {
+    0% {
+      opacity: 0.35;
+    }
+    100% {
+      opacity: 1;
+    }
   }
 
   /* 2. 官方权威 Telegram 立体折纸飞机悬浮微动与交互 */
