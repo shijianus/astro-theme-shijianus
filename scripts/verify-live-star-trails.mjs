@@ -6,7 +6,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const TARGET_URLS = [
-  'https://4c030591.shijianus-blog.pages.dev/',
+  'https://1bfa27c2.shijianus-blog.pages.dev/',
   'https://blog.epocanvas.com/'
 ];
 
@@ -74,7 +74,7 @@ const TARGET_URLS = [
       if (liveData.hasUnifiedVault && liveData.hasBloom) {
         console.log(`✅ Production deployment ACTIVE on ${url}!`);
         await card.scrollIntoViewIfNeeded();
-        const screenshotPath = path.join(__dirname, `../dist/live-production-${url.includes('4c030591') ? 'preview' : 'domain'}.png`);
+        const screenshotPath = path.join(__dirname, `../dist/live-production-${url.includes('pages.dev') ? 'preview' : 'domain'}.png`);
         await card.screenshot({ path: screenshotPath });
         console.log(`✅ Captured live screenshot: ${screenshotPath}`);
       } else {
