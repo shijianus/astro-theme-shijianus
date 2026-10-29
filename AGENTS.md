@@ -6361,18 +6361,20 @@
   4. 通过 Wrangler 部署到 Cloudflare Pages 生产边缘节点；
   5. Playwright 在真实生产域名 `https://blog.epocanvas.com/` 进行实机全链路审计，出示完整真实视觉证据链。
 
-### Task 96: 彻底隐去中心圆点、天极枢轴移至视区外、宏大真实同心大弧线星轨重构
-- [x] **遵照用户核心指令，彻底移除中心点与紧凑同心靶心圈**：
-  1. 彻底删除画面中所有人造圆心锚点与光晕（清除 `.polaris-star` 及所有 `<circle cx="..." ...>` 元素）；
-  2. 将旋转天极轴心置于卡片视区右上外侧 `(cx: 345, cy: -45)`，最小星轨半径提升至 75px（最大 385px），卡片内仅展现辽阔宏大的大同心圆弧线；
-  3. 保留真实天文长曝光的视星等阶梯（0.6px ~ 1.25px）与恒星光谱色温（钻石白、浅天青蓝、淡黄暖星），杜绝生硬机械工程感与靶心视觉；
-  4. 旋转锁定 `transform-box: view-box; transform-origin: 345px -45px;`，双层差速顺滑天球流转。
-- [x] **严格遵守准则与交付铁律**：
-  1. **本对话绝对禁止向 remote repo (`origin`) 推送，仅推送到 `cf`**；
-  2. 单步 commit 并打印 Hash；
-  3. 本地全量静态构建验证（`npm run build:static`）；
-  4. 通过 Wrangler 部署到 Cloudflare Pages 生产边缘节点；
-  5. Playwright 在真实生产域名 `https://blog.epocanvas.com/` 进行实机全链路审计，出示完整真实视觉证据链。
+### Task 97: 天文级长曝光星轨（Celestial Star Trails）拟真度全维度重构、多层视星等密集天幕、镜头 Bloom 辉光与物理统一天球自转 (`2ebcfc8`)
+- [x] **根除假象 7 大病灶，重构真实天文摄影级星轨天幕**：
+  1. 统一物理天球自转（`spinCelestialSidereal 75s`）：彻底消除 48s vs 72s 双层差速导致的同心圆交错撕裂，完全遵循恒星日天体力学；
+  2. 构筑多层视星等密集阶梯：注入 Tier 1（58 条超细深空星尘轨，0.32px~0.45px）、Tier 2（18 条中星等光谱弧线，O/B/A/G/K 蓝/白/黄/橙色温）、Tier 3（5 条一等亮星双层发光轨）；
+  3. 引入镜头光学高斯发散辉光（`feGaussianBlur` Bloom Filter）：外层 2.4px 柔和漫射晕 + 内层 1.2px 纯白白热光核；
+  4. 领航恒星璀璨星核（Alpha Star Heads）与天极锚点（Polaris Pivot）：在亮星轨终点处点缀日冕状光斑，天极处赋予极星微光辐射；
+  5. 深空夜幕极光底质（Deep Celestial Aurora Night）：融合深空绀青夜幕与极光天青，大幅提升白热星轨与彩色星晕的对比度与立体纵深；
+  6. 前景文字文字阴影强化（`text-shadow: 0 1px 3px rgba(0, 0, 0, 0.35)`），确保繁星夜幕下字迹挺拔清晰；
+  7. 3D 翻转交互与背面二维码保持 100% 连贯性与清晰度。
+- [x] **全流程端到端自动化审计与实机视觉验收**：
+  1. 编写并执行 E2E 测试套件（`scripts/verify-star-trails.mjs`），结构指标断言（58 条微轨、18 条中轨、10 条亮星轨、5 个星核、16 个星尘散点、Bloom 滤镜）全部 100% PASS；
+  2. 针对浅色与深色模式截取高分辨率视网膜实机渲染图，进行逐像素视觉审计；
+  3. 生产端 Cloudflare Pages 全量编译部署与真实链路（`https://blog.epocanvas.com/`）实机核验。
+
 
 
 

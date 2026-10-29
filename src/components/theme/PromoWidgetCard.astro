@@ -120,9 +120,9 @@ try {
 }
 
 // 天文长曝光同心星轨真实算法 (Astrophotography Celestial Star Trails)
-// 旋转中心置于视区右上外侧 (cx: 345, cy: -45)，消除人造圆心靶心感，仅展现辽阔天幕的大同心圆弧线
-const CELESTIAL_POLE_X = 345;
-const CELESTIAL_POLE_Y = -45;
+// 旋转中心置于视区右上外侧 (cx: 330, cy: -35)，锁定北天极 Polaris 视坐标
+const CELESTIAL_POLE_X = 330;
+const CELESTIAL_POLE_Y = -35;
 
 function arcPath(cx: number, cy: number, r: number, startDeg: number, endDeg: number) {
   const startRad = (startDeg * Math.PI) / 180;
@@ -136,55 +136,95 @@ function arcPath(cx: number, cy: number, r: number, startDeg: number, endDeg: nu
   return `M ${x1.toFixed(1)} ${y1.toFixed(1)} A ${r.toFixed(1)} ${r.toFixed(1)} 0 ${largeArc} ${sweep} ${x2.toFixed(1)} ${y2.toFixed(1)}`;
 }
 
-// 真实天文同心星轨群 A (依据真实视星等与光谱色温分级：0.6px ~ 1.25px，纯白、浅天青蓝与淡黄暖星交织)
-const frontStarTrailsA = [
-  { r: 75, s: 70, span: 145, sw: 0.7, op: 0.35, c: '#ffffff' },
-  { r: 105, s: 110, span: 140, sw: 0.6, op: 0.28, c: '#bae6fd' },
-  { r: 135, s: 55, span: 155, sw: 1.1, op: 0.48, c: '#ffffff' }, // 1等主星织女星
-  { r: 168, s: 125, span: 145, sw: 0.65, op: 0.26, c: '#7dd3fc' },
-  { r: 205, s: 80, span: 150, sw: 0.85, op: 0.36, c: '#fef08a' }, // G型黄色恒星光谱
-  { r: 245, s: 135, span: 140, sw: 1.25, op: 0.52, c: '#ffffff' }, // 1等主星天狼星
-  { r: 288, s: 70, span: 155, sw: 0.75, op: 0.32, c: '#bae6fd' },
-  { r: 335, s: 115, span: 145, sw: 0.9, op: 0.38, c: '#e0f2fe' },
-  { r: 385, s: 85, span: 150, sw: 0.6, op: 0.24, c: '#7dd3fc' },
-  // 仰角低空大弧线
-  { r: 120, s: 220, span: 140, sw: 0.75, op: 0.34, c: '#ffffff' },
-  { r: 185, s: 235, span: 145, sw: 0.65, op: 0.28, c: '#bae6fd' },
-  { r: 265, s: 225, span: 150, sw: 1.0, op: 0.42, c: '#ffffff' }
-].map(a => ({
-  d: arcPath(CELESTIAL_POLE_X, CELESTIAL_POLE_Y, a.r, a.s, a.s + a.span),
-  strokeWidth: a.sw,
-  opacity: a.op,
-  color: a.c
-}));
+// 1. Tier 1: 极细深空星尘同心光轨底幕 (Micro Star-Dust Trails, 58条密织微弧线, 构筑浩瀚天幕真丝质感)
+const microColors = ['#ffffff', '#bae6fd', '#7dd3fc', '#e0f2fe', '#fed7aa'];
+const frontMicroTrails: Array<{ d: string; strokeWidth: number; opacity: number; color: string }> = [];
+for (let r = 40; r <= 440; r += 7) {
+  const s = ((r * 23) % 360);
+  const span = 200 + ((r * 11) % 95);
+  const sw = Number((0.32 + (r % 4) * 0.08).toFixed(2));
+  const op = Number((0.11 + ((r * 31) % 16) / 100).toFixed(2));
+  frontMicroTrails.push({
+    d: arcPath(CELESTIAL_POLE_X, CELESTIAL_POLE_Y, r, s, s + span),
+    strokeWidth: sw,
+    opacity: op,
+    color: microColors[r % microColors.length]
+  });
+}
 
-// 真实天文同心星轨群 B (深邃星空差速视差层)
-const frontStarTrailsB = [
-  { r: 90, s: 95, span: 140, sw: 0.6, op: 0.25, c: '#bae6fd' },
-  { r: 150, s: 40, span: 150, sw: 0.8, op: 0.36, c: '#ffffff' },
-  { r: 188, s: 105, span: 145, sw: 0.65, op: 0.28, c: '#7dd3fc' },
-  { r: 225, s: 65, span: 155, sw: 0.95, op: 0.4, c: '#ffffff' },
-  { r: 268, s: 120, span: 140, sw: 0.7, op: 0.3, c: '#fef9c3' },
-  { r: 312, s: 80, span: 150, sw: 0.75, op: 0.32, c: '#bae6fd' },
-  { r: 360, s: 110, span: 145, sw: 0.55, op: 0.22, c: '#7dd3fc' },
-  { r: 160, s: 210, span: 140, sw: 0.7, op: 0.3, c: '#bae6fd' },
-  { r: 235, s: 245, span: 145, sw: 0.85, op: 0.35, c: '#ffffff' }
-].map(a => ({
-  d: arcPath(CELESTIAL_POLE_X, CELESTIAL_POLE_Y, a.r, a.s, a.s + a.span),
-  strokeWidth: a.sw,
-  opacity: a.op,
-  color: a.c
-}));
+// 2. Tier 2: 中等视星等恒星光谱弧线 (Mid-magnitude Spectral Trails, 18条色彩分级星轨)
+const spectralPalette = [
+  { c: '#ffffff', glow: '#93c5fd' }, // A型纯白
+  { c: '#bae6fd', glow: '#38bdf8' }, // B型天青蓝
+  { c: '#fef08a', glow: '#f59e0b' }, // G型金黄 (五车二)
+  { c: '#fed7aa', glow: '#ea580c' }, // K型暖橙 (大角星)
+  { c: '#7dd3fc', glow: '#0284c7' }  // 深空电光蓝
+];
+const frontMidTrails: Array<{ d: string; strokeWidth: number; opacity: number; color: string }> = [];
+for (let i = 0; i < 18; i++) {
+  const r = 55 + i * 21;
+  const s = (i * 53) % 360;
+  const span = 195 + (i * 17) % 80;
+  const sw = Number((0.7 + (i % 3) * 0.16).toFixed(2));
+  const op = Number((0.32 + (i % 4) * 0.08).toFixed(2));
+  const p = spectralPalette[i % spectralPalette.length];
+  frontMidTrails.push({
+    d: arcPath(CELESTIAL_POLE_X, CELESTIAL_POLE_Y, r, s, s + span),
+    strokeWidth: sw,
+    opacity: op,
+    color: p.c
+  });
+}
+
+// 3. Tier 3: 5条一等亮主星辉光层 (Alpha Stars with Optical Bloom + Glowing Star Heads)
+const alphaStarDefs = [
+  { r: 85, s: 65, span: 245, sw: 1.35, op: 0.88, c: '#ffffff', glowC: '#38bdf8' }, // 天狼星 / 织女星
+  { r: 145, s: 105, span: 230, sw: 1.25, op: 0.82, c: '#fef08a', glowC: '#eab308' }, // 五车二 (金色)
+  { r: 215, s: 45, span: 250, sw: 1.5, op: 0.92, c: '#ffffff', glowC: '#60a5fa' },  // 参宿七 (蓝白)
+  { r: 290, s: 90, span: 235, sw: 1.3, op: 0.82, c: '#fed7aa', glowC: '#f97316' },  // 大角星 (暖橙)
+  { r: 370, s: 35, span: 240, sw: 1.4, op: 0.85, c: '#e0f2fe', glowC: '#0284c7' }   // 参宿四外轨
+];
+const frontAlphaTrails = alphaStarDefs.map(t => {
+  const headRad = ((t.s + t.span) * Math.PI) / 180;
+  const hx = Number((CELESTIAL_POLE_X + t.r * Math.cos(headRad)).toFixed(1));
+  const hy = Number((CELESTIAL_POLE_Y + t.r * Math.sin(headRad)).toFixed(1));
+  return {
+    ...t,
+    d: arcPath(CELESTIAL_POLE_X, CELESTIAL_POLE_Y, t.r, t.s, t.s + t.span),
+    hx,
+    hy
+  };
+});
+
+// 4. 深空微星噪点 / 静态星尘散点 (Static Deep Space Star Dust, 16颗微星)
+const staticStars = [
+  { x: 28, y: 18, r: 0.7, op: 0.35 },
+  { x: 55, y: 88, r: 0.85, op: 0.4 },
+  { x: 82, y: 32, r: 0.6, op: 0.28 },
+  { x: 115, y: 96, r: 0.75, op: 0.32 },
+  { x: 140, y: 15, r: 0.9, op: 0.45 },
+  { x: 172, y: 78, r: 0.65, op: 0.3 },
+  { x: 198, y: 24, r: 0.8, op: 0.38 },
+  { x: 226, y: 92, r: 0.7, op: 0.32 },
+  { x: 254, y: 38, r: 0.85, op: 0.42 },
+  { x: 278, y: 84, r: 0.6, op: 0.25 },
+  { x: 302, y: 18, r: 0.75, op: 0.35 },
+  { x: 42, y: 64, r: 0.65, op: 0.3 },
+  { x: 95, y: 52, r: 0.8, op: 0.36 },
+  { x: 160, y: 44, r: 0.7, op: 0.32 },
+  { x: 212, y: 66, r: 0.75, op: 0.34 },
+  { x: 285, y: 55, r: 0.65, op: 0.28 }
+];
 
 // 背面极简连贯星轨 (低对比度同轴大弧线，保护二维码清晰度)
 const backStarTrails = [
-  { r: 85, s: 75, span: 140, sw: 0.65, op: 0.24, c: '#ffffff' },
-  { r: 135, s: 105, span: 145, sw: 0.55, op: 0.2, c: '#bae6fd' },
-  { r: 185, s: 60, span: 150, sw: 0.75, op: 0.26, c: '#ffffff' },
-  { r: 240, s: 115, span: 140, sw: 0.5, op: 0.18, c: '#7dd3fc' },
-  { r: 300, s: 80, span: 145, sw: 0.65, op: 0.22, c: '#e0f2fe' },
-  { r: 150, s: 220, span: 140, sw: 0.6, op: 0.22, c: '#bae6fd' },
-  { r: 220, s: 235, span: 145, sw: 0.7, op: 0.25, c: '#ffffff' }
+  { r: 85, s: 75, span: 160, sw: 0.55, op: 0.18, c: '#ffffff' },
+  { r: 135, s: 105, span: 170, sw: 0.5, op: 0.16, c: '#bae6fd' },
+  { r: 185, s: 60, span: 175, sw: 0.65, op: 0.2, c: '#ffffff' },
+  { r: 240, s: 115, span: 165, sw: 0.45, op: 0.15, c: '#7dd3fc' },
+  { r: 300, s: 80, span: 170, sw: 0.55, op: 0.18, c: '#e0f2fe' },
+  { r: 150, s: 220, span: 160, sw: 0.5, op: 0.16, c: '#bae6fd' },
+  { r: 220, s: 235, span: 165, sw: 0.6, op: 0.18, c: '#ffffff' }
 ].map(a => ({
   d: arcPath(CELESTIAL_POLE_X, CELESTIAL_POLE_Y, a.r, a.s, a.s + a.span),
   strokeWidth: a.sw,
@@ -204,35 +244,107 @@ const backStarTrails = [
         class="face front-face"
         onclick={finalConfig.href && finalConfig.href !== '#' ? `window.open("${finalConfig.href}", "_blank")` : undefined}
       >
-        <!-- 画面感升维：真实天文长曝光同心星轨 (北极星源泉枢轴 + 视星等与光谱色温分级) -->
+        <!-- 画面感升维：真实天文长曝光同心星轨 (北极星天球枢轴 + 视星等与光谱色温分级 + 镜头Bloom光晕) -->
         <div class="promo-scene-art promo-watermark" aria-hidden="true">
           <svg viewBox="0 0 320 114" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <!-- 真实天文旋转星轨群 A (主天球同心旋转，织女星/天狼星分级大弧线) -->
-            <g class="celestial-wheel-a">
-              {frontStarTrailsA.map((trail) => (
-                <path
-                  d={trail.d}
-                  fill="none"
-                  stroke={trail.color}
-                  stroke-width={trail.strokeWidth}
-                  opacity={trail.opacity}
-                  stroke-linecap="round"
-                />
+            <defs>
+              <!-- 镜头光学高斯漫反射发光 (Astrophotography Optical Bloom) -->
+              <filter id="promoStarBloom" x="-25%" y="-25%" width="150%" height="150%">
+                <feGaussianBlur in="SourceGraphic" stdDeviation="1.6" result="blur" />
+                <feMerge>
+                  <feMergeNode in="blur" />
+                  <feMergeNode in="SourceGraphic" />
+                </feMerge>
+              </filter>
+              <!-- 领航亮星热核光晕 (Stellar Core Corona) -->
+              <radialGradient id="starCoronaGlow" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stop-color="#ffffff" stop-opacity="1" />
+                <stop offset="25%" stop-color="#bae6fd" stop-opacity="0.8" />
+                <stop offset="60%" stop-color="#38bdf8" stop-opacity="0.3" />
+                <stop offset="100%" stop-color="#38bdf8" stop-opacity="0" />
+              </radialGradient>
+              <!-- 北天极极星枢纽光斑 (Polaris Celestial Pivot) -->
+              <radialGradient id="polarisCoreGlow" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stop-color="#ffffff" stop-opacity="0.95" />
+                <stop offset="35%" stop-color="#7dd3fc" stop-opacity="0.5" />
+                <stop offset="100%" stop-color="#0284c7" stop-opacity="0" />
+              </radialGradient>
+            </defs>
+
+            <!-- 静态深空微弱星尘散点 (Static Deep Space Star Dust) -->
+            <g class="promo-static-dust">
+              {staticStars.map(s => (
+                <circle cx={s.x} cy={s.y} r={s.r} fill="#ffffff" opacity={s.op} />
               ))}
             </g>
 
-            <!-- 真实天文旋转星轨群 B (深邃星空差速双层视差) -->
-            <g class="celestial-wheel-b">
-              {frontStarTrailsB.map((trail) => (
-                <path
-                  d={trail.d}
-                  fill="none"
-                  stroke={trail.color}
-                  stroke-width={trail.strokeWidth}
-                  opacity={trail.opacity}
-                  stroke-linecap="round"
-                />
-              ))}
+            <!-- 统一天球物理角速度自转系统 (单一恒星日公转周期，无差速几何矛盾) -->
+            <g class="celestial-vault-unified">
+              <!-- Tier 1: 极细深空星尘同心光轨底幕 (58条微弧线，构筑致密真丝天幕) -->
+              <g class="tier-micro-trails">
+                {frontMicroTrails.map((trail) => (
+                  <path
+                    d={trail.d}
+                    fill="none"
+                    stroke={trail.color}
+                    stroke-width={trail.strokeWidth}
+                    opacity={trail.opacity}
+                    stroke-linecap="round"
+                  />
+                ))}
+              </g>
+
+              <!-- Tier 2: 中等视星等恒星光谱弧线 (18条色彩分级星轨) -->
+              <g class="tier-mid-trails">
+                {frontMidTrails.map((trail) => (
+                  <path
+                    d={trail.d}
+                    fill="none"
+                    stroke={trail.color}
+                    stroke-width={trail.strokeWidth}
+                    opacity={trail.opacity}
+                    stroke-linecap="round"
+                  />
+                ))}
+              </g>
+
+              <!-- Tier 3: 5条一等亮主星辉光层 (带 Bloom 滤镜漫射底轮廓与纯白高亮核心) -->
+              <g class="tier-alpha-trails" filter="url(#promoStarBloom)">
+                {frontAlphaTrails.map((trail) => (
+                  <path
+                    d={trail.d}
+                    fill="none"
+                    stroke={trail.glowC}
+                    stroke-width={Number((trail.sw * 2.3).toFixed(1))}
+                    opacity={Number((trail.op * 0.42).toFixed(2))}
+                    stroke-linecap="round"
+                  />
+                ))}
+                {frontAlphaTrails.map((trail) => (
+                  <path
+                    d={trail.d}
+                    fill="none"
+                    stroke={trail.c}
+                    stroke-width={trail.sw}
+                    opacity={trail.op}
+                    stroke-linecap="round"
+                  />
+                ))}
+              </g>
+
+              <!-- Tier 4: 恒星璀璨领航星核光斑 (Alpha Star Heads) -->
+              <g class="tier-alpha-heads">
+                {frontAlphaTrails.map((trail) => (
+                  <g>
+                    <circle cx={trail.hx} cy={trail.hy} r="3.6" fill="url(#starCoronaGlow)" />
+                    <circle cx={trail.hx} cy={trail.hy} r="1.1" fill="#ffffff" />
+                  </g>
+                ))}
+              </g>
+
+              <!-- Tier 5: 北天极极星微光枢纽 (Polaris Celestial Pivot) -->
+              <circle cx={CELESTIAL_POLE_X} cy={CELESTIAL_POLE_Y} r="7" fill="url(#polarisCoreGlow)" />
+              <circle cx={CELESTIAL_POLE_X} cy={CELESTIAL_POLE_Y} r="1.5" fill="#ffffff" />
             </g>
           </svg>
         </div>
@@ -356,21 +468,23 @@ const backStarTrails = [
     width: 100%;
     height: 100%;
     border-radius: 8px;
-    /* 核心：方案A 极光四阶多色域流体渐变 (皇家宝蓝 -> 电光蓝 -> 晴空蓝 -> 湖绿青) */
+    /* 核心：深空夜幕极光底质 (Deep Celestial Aurora Night: 皇家宝蓝 -> 电光蓝 -> 晴空蓝 -> 湖绿青 + 右上深空极轴) */
     --promo-bg-gradient: 
-      radial-gradient(circle at 10% 12%, rgba(255, 255, 255, 0.35) 0%, transparent 40%),
-      radial-gradient(circle at 92% 82%, rgba(6, 182, 212, 0.45) 0%, transparent 45%),
-      linear-gradient(135deg, #1d4ed8 0%, #2563eb 38%, #0284c7 72%, #06b6d4 100%);
-    --promo-card-shadow: 0 10px 25px -5px rgba(2, 132, 199, 0.38), 0 2px 6px rgba(0, 0, 0, 0.05);
-    --promo-border-color: rgba(255, 255, 255, 0.48);
+      radial-gradient(circle at 98% 0%, rgba(56, 189, 248, 0.42) 0%, rgba(14, 165, 233, 0.18) 42%, transparent 75%),
+      radial-gradient(circle at 12% 85%, rgba(6, 182, 212, 0.32) 0%, transparent 50%),
+      radial-gradient(circle at 10% 12%, rgba(255, 255, 255, 0.22) 0%, transparent 35%),
+      linear-gradient(135deg, #0b1736 0%, #132e6b 32%, #0284c7 72%, #06b6d4 100%);
+    --promo-card-shadow: 0 10px 25px -5px rgba(2, 132, 199, 0.42), 0 2px 6px rgba(0, 0, 0, 0.08);
+    --promo-border-color: rgba(255, 255, 255, 0.45);
   }
 
   :global([data-theme="dark"]) #flip-wrapper {
     --promo-bg-gradient: 
-      radial-gradient(circle at 10% 12%, rgba(255, 255, 255, 0.15) 0%, transparent 40%),
-      radial-gradient(circle at 92% 82%, rgba(6, 182, 212, 0.25) 0%, transparent 45%),
-      linear-gradient(135deg, #0f172a 0%, #1e3a8a 38%, #1d4ed8 72%, #0369a1 100%);
-    --promo-card-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.6), 0 2px 6px rgba(0, 0, 0, 0.4);
+      radial-gradient(circle at 98% 0%, rgba(56, 189, 248, 0.3) 0%, rgba(14, 165, 233, 0.12) 42%, transparent 75%),
+      radial-gradient(circle at 12% 85%, rgba(6, 182, 212, 0.2) 0%, transparent 50%),
+      radial-gradient(circle at 10% 12%, rgba(255, 255, 255, 0.12) 0%, transparent 35%),
+      linear-gradient(135deg, #060c18 0%, #0d1e44 32%, #1e3a8a 70%, #0284c7 100%);
+    --promo-card-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.65), 0 2px 6px rgba(0, 0, 0, 0.4);
     --promo-border-color: rgba(255, 255, 255, 0.22);
   }
 
@@ -507,28 +621,19 @@ const backStarTrails = [
   /* 核心动态化动效体系 (Celestial Astronomy & 3D Flight)    */
   /* ======================================================== */
 
-  /* 1. 真实天文长曝光同心星轨顺滑天体旋转 (旋转轴心置于视区外 345px -45px，精准锁定 viewBox 坐标系) */
-  .celestial-wheel-a {
+  /* 1. 真实天文长曝光同心星轨顺滑天体旋转 (旋转轴心置于北天极 330px -35px，统一恒星日公转周期) */
+  .celestial-vault-unified {
     transform-box: view-box;
-    transform-origin: 345px -45px;
-    animation: spinCelestialA 48s linear infinite;
-  }
-  .celestial-wheel-b {
-    transform-box: view-box;
-    transform-origin: 345px -45px;
-    animation: spinCelestialB 72s linear infinite;
+    transform-origin: 330px -35px;
+    animation: spinCelestialSidereal 75s linear infinite;
   }
   .celestial-wheel-back {
     transform-box: view-box;
-    transform-origin: 345px -45px;
-    animation: spinCelestialA 56s linear infinite;
+    transform-origin: 330px -35px;
+    animation: spinCelestialSidereal 75s linear infinite;
   }
 
-  @keyframes spinCelestialA {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-  }
-  @keyframes spinCelestialB {
+  @keyframes spinCelestialSidereal {
     from { transform: rotate(0deg); }
     to { transform: rotate(360deg); }
   }
@@ -579,7 +684,7 @@ const backStarTrails = [
     letter-spacing: 0.2px;
     color: #ffffff;
     line-height: 1.2;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
   }
 
   .promo-badge {
@@ -602,7 +707,7 @@ const backStarTrails = [
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
   }
 
   /* BACK FACE 样式 */
