@@ -404,7 +404,7 @@ export const siteConfig = {
     primary: [
       {
         label: '文章',
-        href: '/archives/',
+        href: '/standards/', // 默认解耦导航到"工程标准"说明文档，避免与子菜单“全部文章 (/archives/)”冲突；站长可在配置中自由自定义
         description: 'ART',
         icon: 'book',
         children: [
@@ -415,7 +415,7 @@ export const siteConfig = {
       },
       {
         label: '友邻',
-        href: '/friends/',
+        href: '/status/', // 默认解耦导航到"站点状态"说明页面，承载重构与服务进度；站长可在配置中自由自定义
         description: 'FRD',
         icon: 'link',
         children: [
@@ -426,7 +426,7 @@ export const siteConfig = {
       },
       {
         label: '工坊',
-        href: '/lab/',
+        href: '/roadmap/', // 默认解耦导航到"专案路线图"官方规划文档；站长可在配置中自由自定义
         description: 'LAB',
         icon: 'flask',
         children: [
@@ -437,16 +437,12 @@ export const siteConfig = {
       },
       {
         label: '关于',
-        href: '/about/',
+        href: '/about/', // 默认导航到关于与站点说明；站长可在配置中自由自定义
         description: 'ABT',
         icon: 'circle-info',
         children: [
           { label: '关于作者', href: '/about/', description: '作者与站点说明', icon: 'user' },
           { label: '请喝咖啡', href: '/support/', description: '赞赏与支援名录', icon: 'mug-hot' },
-          { label: '站点状态', href: '/status/', description: '查看当前重构进度', icon: 'chart-bar' },
-          { label: '專案路線圖', href: '/roadmap/', description: '已落地、差異與後續工作', icon: 'compass' },
-          { label: '社群政策', href: '/community/', description: '公约、隐私与使用规范', icon: 'book' },
-          { label: '工程标准', href: '/standards/', description: '系统指标与架构规范', icon: 'book' },
         ],
       },
     ] satisfies SiteNavItem[],
@@ -700,7 +696,7 @@ export const siteConfig = {
           { label: '隐私说明', href: '/community/privacy-and-data/' },
           { label: '使用条款', href: '/community/terms-of-use/' },
           { label: '版权说明', href: '/community/content-license/' },
-          { label: '赞赏与退款说明', href: '/community/support-and-refunds/' },
+          { label: '社群政策', href: '/community/' },
         ] satisfies SiteNavItem[],
       },
       {
