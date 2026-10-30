@@ -6404,7 +6404,7 @@
   2. 自动化 E2E 测试套件（`scripts/verify-nav-decoupling.mjs`）100% 通过（桌面端主按钮跳转、子菜单悬浮展开与尺寸规整、移动端侧滑抽屉、页脚协议直达全部验证通过）；
   3. Wrangler Pages 部署至生产边缘节点并完成真实生产域名实机全链路审计。
 
-### Task 101: "关于"主标题作者自述官方文档完善与全景 4 项矩阵（方案 B）落地 (`8a46821`)
+### Task 101: "关于"主标题作者自述官方文档完善与全景 4 项矩阵（方案 B）落地 (`d9949ec`)
 - [x] **作者自述官方文档创作与路由构建**：
   1. 编写官方文档《EpoCanvas 創作者自述與建站說明：在秩序中生長，把寫作當作軟體工程》（`docs/about.md`），深入闡述建站初衷、拒絕噪聲的閱讀秩序、零 Mock 假數據、從 Hexo 到 Astro 6 + React 19 + Tailwind 4 獨立島架構與 Cloudflare 邊緣矩陣演進；
   2. 建立專屬官方文檔頁面 `src/pages/about/site.astro`（映射至 `/about/site/`），採用 `StandardsHero` + TOC 粘性卡片 + 官方元數據徽章；
