@@ -6404,6 +6404,26 @@
   2. 自动化 E2E 测试套件（`scripts/verify-nav-decoupling.mjs`）100% 通过（桌面端主按钮跳转、子菜单悬浮展开与尺寸规整、移动端侧滑抽屉、页脚协议直达全部验证通过）；
   3. Wrangler Pages 部署至生产边缘节点并完成真实生产域名实机全链路审计。
 
+### Task 101: "关于"主标题作者自述官方文档完善与全景 4 项矩阵（方案 B）落地 (`8a46821`)
+- [x] **作者自述官方文档创作与路由构建**：
+  1. 编写官方文档《EpoCanvas 創作者自述與建站說明：在秩序中生長，把寫作當作軟體工程》（`docs/about.md`），深入闡述建站初衷、拒絕噪聲的閱讀秩序、零 Mock 假數據、從 Hexo 到 Astro 6 + React 19 + Tailwind 4 獨立島架構與 Cloudflare 邊緣矩陣演進；
+  2. 建立專屬官方文檔頁面 `src/pages/about/site.astro`（映射至 `/about/site/`），採用 `StandardsHero` + TOC 粘性卡片 + 官方元數據徽章；
+  3. 重構 `src/pages/about/index.astro` 承載經典視覺化個人儀表盤（`/about/`），實現儀表盤與自述文檔清晰分工。
+- [x] **"关于"主标题与全景 4 项子菜单（方案 B）落地**：
+  1. 将主导航 "关于" 主标题（`site-page-shell`）默认 `href` 解耦映射至作者自述官方文档 `/about/site/`，彻底消除父子同级冲突；
+  2. 落地方案 B 4 项子菜单矩阵：
+     - `关于作者` (`/about/`，個人畫像與生活狀態)
+     - `关于本站` (`/about/site/`，建站理念與架構自述)
+     - `版本规范` (`/version/`，版本演進與架構分層)
+     - `请喝咖啡` (`/support/`，贊賞與支援名錄)
+  3. 完善 `src/lib/client-locale.ts` 多語言字典與 `SiteHeader.tsx` 圖標兜底對應；
+  4. 驗證懸浮子菜單寬度 450px 居中對稱，與導航右側無碰撞，移動端抽屜完美鏡像。
+- [x] **本地全量構建、E2E 審計與生產邊緣部署核驗**：
+  1. 本地 Astro 307 頁面全量構建通過（0 報錯）；
+  2. 現代化無頭瀏覽器 E2E 測試套件（`scripts/verify-about-manifesto.mjs`）100% 通過；
+  3. Wrangler Pages 部署至生產邊緣節點並完成真實生產域名實機全鏈路審計。
+
+
 
 
 

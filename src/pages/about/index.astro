@@ -1,9 +1,9 @@
 ---
 import { getCollection } from 'astro:content';
-import AboutDashboard from '../components/theme/AboutDashboard.astro';
-import BlogLayout from '../layouts/BlogLayout.astro';
-import { getPublicPosts } from '../lib/content';
-import { createSidebarData } from '../lib/theme';
+import AboutDashboard from '../../components/theme/AboutDashboard.astro';
+import BlogLayout from '../../layouts/BlogLayout.astro';
+import { getPublicPosts } from '../../lib/content';
+import { createSidebarData } from '../../lib/theme';
 
 const posts = getPublicPosts(await getCollection('posts'));
 const sidebarData = createSidebarData(posts);

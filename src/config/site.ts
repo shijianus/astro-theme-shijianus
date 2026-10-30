@@ -437,11 +437,13 @@ export const siteConfig = {
       },
       {
         label: '关于',
-        href: '/about/', // 默认导航到关于与站点说明；站长可在配置中自由自定义
+        href: '/about/site/', // 默认解耦导航到"作者自述与建站说明"官方文档；站长可在配置中自由自定义
         description: 'ABT',
         icon: 'circle-info',
         children: [
-          { label: '关于作者', href: '/about/', description: '作者与站点说明', icon: 'user' },
+          { label: '关于作者', href: '/about/', description: '作者画像与生活状态', icon: 'user' },
+          { label: '关于本站', href: '/about/site/', description: '建站理念与架构自述', icon: 'circle-info' },
+          { label: '版本规范', href: '/version/', description: '版本演进与架构分层', icon: 'compass' },
           { label: '请喝咖啡', href: '/support/', description: '赞赏与支援名录', icon: 'mug-hot' },
         ],
       },
