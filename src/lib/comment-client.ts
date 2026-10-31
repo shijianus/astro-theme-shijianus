@@ -19,6 +19,7 @@ export type CommentIdentity = {
   timezone?: string;
   location?: string;
   showLocation?: boolean;
+  coverBg?: string;
 };
 
 export type CommentQuote = {
@@ -653,6 +654,7 @@ export async function updateAuthProfile(updates: {
   timezone?: string;
   location?: string;
   showLocation?: boolean;
+  coverBg?: string;
 }): Promise<{ ok: boolean; user?: CommentIdentity; error?: string }> {
   try {
     const current = readCommentIdentity();
@@ -678,6 +680,7 @@ export async function updateAuthProfile(updates: {
             avatar: data.user.avatar ?? current?.avatar ?? '',
             website: data.user.website ?? current?.website ?? '',
             bio: data.user.bio ?? current?.bio ?? '',
+            coverBg: updates.coverBg !== undefined ? updates.coverBg : (data.user.coverBg ?? current?.coverBg ?? ''),
             timezone: updates.timezone !== undefined ? updates.timezone : (data.user.timezone ?? current?.timezone ?? ''),
             location: updates.location !== undefined ? updates.location : (data.user.location ?? current?.location ?? ''),
             showLocation: updates.showLocation !== undefined ? updates.showLocation : (current?.showLocation ?? true),
@@ -696,6 +699,7 @@ export async function updateAuthProfile(updates: {
         avatar: updates.avatar !== undefined ? updates.avatar : current.avatar,
         website: updates.website !== undefined ? updates.website : current.website,
         bio: updates.bio !== undefined ? updates.bio : current.bio,
+        coverBg: updates.coverBg !== undefined ? updates.coverBg : current.coverBg,
         timezone: updates.timezone !== undefined ? updates.timezone : current.timezone,
         location: updates.location !== undefined ? updates.location : current.location,
         showLocation: updates.showLocation !== undefined ? updates.showLocation : (current.showLocation ?? true),

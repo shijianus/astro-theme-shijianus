@@ -68,8 +68,9 @@ async function verifyLiveMoments() {
       throw new Error('未正确渲染 QQ 空间个性化封面大图 background-image');
     }
 
-    const weatherPill = await page.$eval('.space-weather-pill', (el) => el.textContent.trim());
-    console.log(`  -> 空间天气状态: ${weatherPill}`);
+    const weatherPill = await page.$('.space-weather-pill');
+    if (weatherPill) throw new Error('生产端不应再展示 .space-weather-pill 占位符');
+    console.log('  -> 占位符清理断言通过: 天气药丸已清除');
 
     const crownBadge = await page.$('.owner-crown-badge');
     if (!crownBadge) throw new Error('未找到站长专属皇冠徽标 .owner-crown-badge');
@@ -81,30 +82,30 @@ async function verifyLiveMoments() {
       throw new Error('未显示空间主人 · SVIP 徽章');
     }
 
-    // 2. 验证 QQ 空间子导航栏与互动
-    console.log('[Prod E2E 2] 验证 QQ 空间子导航栏与踩一踩足迹互动...');
+    // 2. 验证 QQ 空间子导航栏与互动清理
+    console.log('[Prod E2E 2] 验证 QQ 空间子导航栏与假交互清理...');
     const subnavLinks = await page.$$('.qzone-subnav-bar .subnav-item');
     console.log(`  -> 生产端子导航项数量: ${subnavLinks.length}`);
     if (subnavLinks.length < 4) throw new Error('子导航项少于 4 个');
     const subnavTexts = await Promise.all(subnavLinks.map((el) => el.textContent()));
     console.log(`  -> 子导航项目: ${subnavTexts.map((s) => s.trim()).join(' | ')}`);
 
-    // 检查空间装扮切换按钮
-    const btnToggleSkin = await page.$('#btn-toggle-skin');
-    if (!btnToggleSkin) throw new Error('生产端未找到空间装扮按钮 #btn-toggle-skin');
+    // 检查空间装扮切换按钮已移除
+    const btnToggleSkin = await page.$('#btn-toggle-skin, .space-skin-switcher-wrap');
+    if (btnToggleSkin) throw new Error('生产端不应再展示空间装扮按钮 #btn-toggle-skin');
 
-    // 检查踩一踩按钮与足迹
-    const btnFootprint = await page.$('#btn-quick-footprint');
-    if (!btnFootprint) throw new Error('生产端未找到踩一踩按钮 #btn-quick-footprint');
-    const footprintText = await page.$eval('#qzone-footprint-counter', (el) => el.textContent.trim());
-    console.log(`  -> 空间足迹指标: ${footprintText}`);
+    // 检查假踩一踩按钮与假足迹指标已移除
+    const btnFootprint = await page.$('#btn-quick-footprint, #qzone-footprint-counter');
+    if (btnFootprint) throw new Error('生产端不应再展示假踩一踩按钮或假足迹计数器');
+    console.log('  -> 假足迹按钮与假计数器清理验证通过');
 
-    // 检查说说寄语展台
-    console.log('[Prod E2E 2.1] 检查 QQ 空间说说寄语展台...');
+    // 检查说说寄语展台与“说说动态 · 聚合时间流”无意义占位符已移除
+    console.log('[Prod E2E 2.1] 检查无意义占位符清理...');
     const sayWidget = await page.$('.qzone-say-widget');
-    if (!sayWidget) throw new Error('生产端未找到说说寄语展台 .qzone-say-widget');
-    const sayTitle = await page.$eval('.say-title', (el) => el.textContent.trim());
-    console.log(`  -> 主人说说展台标题: "${sayTitle}"`);
+    if (sayWidget) throw new Error('生产端不应再展示 .qzone-say-widget 占位符');
+    const streamTitleWrap = await page.$('.stream-title-wrap');
+    if (streamTitleWrap) throw new Error('生产端不应再展示“说说动态 · 聚合时间流”占位符');
+    console.log('  -> .qzone-say-widget 与 .stream-title-wrap 彻底移除断言通过');
 
     // 3. 验证去冗余（传送门与频道分类完全移除）
     console.log('[Prod E2E 3] 验证冗余组件已彻底清理...');
@@ -115,8 +116,8 @@ async function verifyLiveMoments() {
     if (channelTabs) throw new Error('生产端不应再展示旧版频道或分类过滤指示器');
     console.log('  -> 冗余清理验证通过：传送门与动态分类标签已清除');
 
-    // 4. 验证真实友链说说聚合与文档站友链剔除
-    console.log('[Prod E2E 4] 验证真实独立博友动态聚合与非个人博客文档站剔除...');
+    // 4. 验证真实说说与文档站友链剔除
+    console.log('[Prod E2E 4] 验证真实说说渲染与文档站友链剔除...');
     const authors = await page.$$eval('.moment-card', (cards) =>
       cards.map((c) => c.getAttribute('data-author'))
     );
@@ -126,11 +127,13 @@ async function verifyLiveMoments() {
     if (hasAstro || hasCloudflare) {
       throw new Error('生产端仍残留 Astro / Cloudflare 等非个人独立博客文档站！');
     }
-    const hasAnzhiyu = authors.some((a) => a.includes('安知鱼'));
-    console.log(`  -> 独立博友动态存在性: 安知鱼=${hasAnzhiyu}`);
-    if (!hasAnzhiyu) {
-      throw new Error('生产端未成功聚合真实博友动态（如安知鱼）');
+
+    // 检查说说卡片底部的点赞头像流 (杜绝硬编码假头像)
+    const fakeGeekAvatar = await page.$('.likes-avatar[src*="seed=geek"], .likes-avatar[src*="seed=cosmos"], .likes-avatar[src*="seed=voyager"]');
+    if (fakeGeekAvatar) {
+      throw new Error('生产端严禁在说说卡片中硬编码展示 seed=geek/cosmos/voyager 假头像！');
     }
+    console.log('  -> 假点赞头像队列清除验证通过');
 
     // 5. 关键验证：详情界面直接加载到页面内 (In-Page View)，杜绝单独弹窗！
     console.log('[Prod E2E 5] 关键验证：生产端页面内加载说说详情 (去弹窗架构审计)...');

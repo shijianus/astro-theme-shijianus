@@ -23,44 +23,12 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
       style={settings.coverBg ? `background-image: url('${settings.coverBg}'); background-size: cover; background-position: center;` : undefined}
     >
       <div class="space-cover-glow"></div>
-
-      <!-- 右上角工具：实时天气状态与空间装扮切换 (QQ空间个性化装扮) -->
-      <div class="space-cover-top-tools">
-        <div class="space-weather-pill" id="space-weather-pill">
-          <span class="weather-icon" id="weather-icon">☀️</span>
-          <span class="weather-text" id="weather-text">{settings.weather || '今日晴 · 空间全速运行中'}</span>
-        </div>
-
-        <div class="space-skin-switcher-wrap">
-          <button id="btn-toggle-skin" class="btn-toggle-skin" type="button" title="更换QQ空间装扮背景">
-            <span>🎨 装扮空间</span>
-          </button>
-          <div id="skin-dropdown-menu" class="skin-dropdown-menu hidden">
-            <div class="skin-menu-title">空间装扮风格</div>
-            <button type="button" class="skin-opt-btn is-active" data-skin="cyber">
-              <span class="skin-dot dot-cyber"></span>
-              <span>极客数码 (默认)</span>
-            </button>
-            <button type="button" class="skin-opt-btn" data-skin="galaxy">
-              <span class="skin-dot dot-galaxy"></span>
-              <span>幻彩星河</span>
-            </button>
-            <button type="button" class="skin-opt-btn" data-skin="amber">
-              <span class="skin-dot dot-amber"></span>
-              <span>暖阳生活</span>
-            </button>
-            <button type="button" class="skin-opt-btn" data-skin="ocean">
-              <span class="skin-dot dot-ocean"></span>
-              <span>碧海晴空</span>
-            </button>
-          </div>
-        </div>
-      </div>
     </div>
 
     <div class="qzone-profile-bar">
       <div class="profile-avatar-wrapper">
         <img
+          id="qzone-hero-avatar"
           class="profile-avatar"
           src={friendsConfig.siteInfo.avatar}
           alt={friendsConfig.siteInfo.name}
@@ -71,18 +39,18 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
 
       <div class="profile-meta">
         <div class="profile-name-row">
-          <h1 class="profile-name">{friendsConfig.siteInfo.name}</h1>
+          <h1 class="profile-name" id="qzone-hero-name">{friendsConfig.siteInfo.name}</h1>
           <span class="qzone-vip-badge">空间主人 · SVIP</span>
           <span class="qzone-level-badge">Lv.8 极客造物主</span>
           <span class="qzone-radar-pill">
             <span class="radar-ping"></span>
-            <span>{settings.statusText || '实时在线 · 专注重构中'}</span>
+            <span id="qzone-hero-status">{settings.statusText || '实时在线 · 专注重构中'}</span>
           </span>
         </div>
-        <p class="profile-bio">{settings.signature || friendsConfig.siteInfo.desc}</p>
+        <p class="profile-bio" id="qzone-hero-bio">{settings.signature || friendsConfig.siteInfo.desc}</p>
       </div>
 
-      <!-- 空间核心指标数据盒 -->
+      <!-- 空间核心指标数据盒 (真实数据驱动) -->
       <div class="qzone-stats-grid">
         <div class="space-stat-item">
           <span class="stat-number is-accent">{ownerMomentsCount}</span>
@@ -99,10 +67,6 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
         <div class="space-stat-item">
           <span class="stat-number is-pink" id="total-likes-counter">{totalLikes}</span>
           <span class="stat-label">❤️ 获赞总计</span>
-        </div>
-        <div class="space-stat-item">
-          <span class="stat-number is-teal" id="qzone-footprint-counter">2,842</span>
-          <span class="stat-label">👣 空间足迹</span>
         </div>
       </div>
     </div>
@@ -127,43 +91,6 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
           <span class="subnav-text">友人帐</span>
         </a>
       </div>
-      <div class="subnav-tools">
-        <button id="btn-quick-footprint" class="qzone-action-pill-btn footprint-btn" type="button" title="给空间主人留下一枚足迹">
-          <span class="btn-emoji">🐾</span>
-          <span>踩一踩</span>
-        </button>
-        <button id="btn-sync-friends-radar" class="sync-radar-btn" type="button" title="从边缘探测友邻最新动态">
-          <span class="sync-icon">🔄</span>
-          <span class="sync-btn-text">探测友邻更新</span>
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- QQ 空间说说寄语与踩一踩展台 (新鲜事与互动留痕) -->
-  <div class="qzone-say-widget theme-card">
-    <div class="say-widget-left">
-      <div class="say-avatar-wrap">
-        <img src={friendsConfig.siteInfo.avatar} alt={friendsConfig.siteInfo.name} class="say-avatar" />
-        <span class="say-online-dot"></span>
-      </div>
-      <div class="say-text-box">
-        <div class="say-prompt-row">
-          <span class="say-title">💬 有什么新鲜事想告诉大家？</span>
-          <span class="say-owner-tag">空间主人寄语</span>
-        </div>
-        <p class="say-quote">{settings.signature || '欢迎来到我的数字空间！记录生活切片、偶拾架构灵感。访客可自由在下方说说评论、点赞互动～'}</p>
-      </div>
-    </div>
-    <div class="say-widget-actions">
-      <button id="btn-widget-footprint" class="say-action-btn footprint-action-btn" type="button" title="给空间主人留下一枚足迹">
-        <span class="say-action-icon">🐾</span>
-        <span>踩一踩</span>
-      </button>
-      <a href="/guestbook/" class="say-action-btn is-outline" title="前往交流板留言">
-        <span class="say-action-icon">💌</span>
-        <span>交流板</span>
-      </a>
     </div>
   </div>
 
@@ -172,13 +99,6 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
     <!-- 视图 A：说说动态瀑布流 (完整瀑布式加载) -->
     <div id="moments-stream-view" class="moments-stream-view">
       <div class="moments-stream-header theme-card">
-        <div class="stream-title-wrap">
-          <h2 class="stream-title">
-            <span class="stream-title-icon">💬</span>
-            <span>说说动态 · 聚合时间流</span>
-          </h2>
-          <p class="stream-subtitle">站长原声与友邻分享实时汇聚 · 点击说说直接就地查看图文详情与留言</p>
-        </div>
         <div class="moments-search-input-wrap">
           <svg class="search-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
@@ -197,6 +117,8 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
             data-cat={item.category}
             data-title={item.title.toLowerCase()}
             data-author={item.author.toLowerCase()}
+            data-summary={(item.summary || '').toLowerCase()}
+            data-tags={(item.tags || []).join(' ').toLowerCase()}
             data-is-owner={item.isOwner ? 'true' : 'false'}
             data-origin={item.origin || ''}
             data-origin-api={item.originApi || ''}
@@ -297,14 +219,10 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
               </div>
             )}
 
-            <!-- QQ 空间式“觉得很赞”互动头像流 -->
+            <!-- QQ 空间式“觉得很赞”互动头像流 (真实 D1 数据渲染，严禁假头像) -->
             <div class="moment-likes-preview" id={`likes-preview-${item.id}`}>
               <span class="likes-preview-heart">❤️</span>
-              <div class="likes-avatar-stack" id={`likes-stack-${item.id}`}>
-                <img class="likes-avatar" src="https://api.dicebear.com/7.x/identicon/svg?seed=geek" alt="赞者" />
-                <img class="likes-avatar" src="https://api.dicebear.com/7.x/identicon/svg?seed=cosmos" alt="赞者" />
-                <img class="likes-avatar" src="https://api.dicebear.com/7.x/identicon/svg?seed=voyager" alt="赞者" />
-              </div>
+              <div class="likes-avatar-stack" id={`likes-stack-${item.id}`}></div>
               <span class="likes-preview-text" id={`likes-text-${item.id}`}>
                 {item.likes > 0 ? `${item.likes} 人觉得很赞` : '快来给说说点个赞吧'}
               </span>
@@ -699,7 +617,9 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
       cards.forEach((card) => {
         const title = card.dataset.title || '';
         const author = card.dataset.author || '';
-        const queryMatch = (!searchQuery || title.includes(searchQuery) || author.includes(searchQuery));
+        const summary = card.dataset.summary || '';
+        const tags = card.dataset.tags || '';
+        const queryMatch = (!searchQuery || title.includes(searchQuery) || author.includes(searchQuery) || summary.includes(searchQuery) || tags.includes(searchQuery));
 
         if (queryMatch) {
           card.style.display = '';
@@ -742,12 +662,56 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
       });
     }
 
-    // 3. 点赞微动效与持久化 (QQ 空间赞者头像队列联动)
+    // 渲染点赞者真实头像队列 (来自 Cloudflare D1 边缘数据库真实记录)
+    function renderLikersStack(container, likers, count) {
+      if (!container) return;
+      container.innerHTML = '';
+      if (!Array.isArray(likers) || likers.length === 0) return;
+      likers.slice(0, 8).forEach((l) => {
+        const img = document.createElement('img');
+        img.className = 'likes-avatar';
+        img.src = l.authorAvatar || computeVisitorAvatar(l.authorName);
+        img.alt = l.authorName || '赞者';
+        img.title = `${l.authorName || '热心博友'} 觉得很赞`;
+        container.appendChild(img);
+      });
+    }
+
+    // 动态拉取 Cloudflare D1 全站说说统计数据 (真实点赞数与评论数)
+    function loadMomentsD1Stats() {
+      fetch('/api/comments?action=moments_stats')
+        .then((res) => res.json())
+        .then((data) => {
+          if (data && data.ok && data.stats) {
+            let totalLikes = 0;
+            for (const [rawId, stat] of Object.entries(data.stats)) {
+              totalLikes += (stat.likesCount || 0);
+              const card = document.querySelector(`.moment-card[data-id="${rawId}"]`);
+              if (card) {
+                const countEl = card.querySelector('.like-count');
+                if (countEl) countEl.textContent = String(stat.likesCount || 0);
+                const commentBadge = document.getElementById(`comment-count-${rawId}`);
+                if (commentBadge) commentBadge.textContent = String(stat.commentCount || 0);
+                const likesText = document.getElementById(`likes-text-${rawId}`);
+                if (likesText) {
+                  likesText.textContent = (stat.likesCount || 0) > 0 ? `${stat.likesCount} 人觉得很赞` : '快来给说说点个赞吧';
+                }
+              }
+            }
+            const totalLikesEl = document.getElementById('total-likes-counter');
+            if (totalLikesEl) totalLikesEl.textContent = String(totalLikes);
+          }
+        })
+        .catch(() => {});
+    }
+
+    loadMomentsD1Stats();
+
+    // 3. 点赞微动效与真实 D1 持久化 (QQ 空间赞者头像队列联动)
     document.querySelectorAll('.moment-like-btn').forEach((btn) => {
       const id = btn.dataset.momentId;
       const key = `moment_liked_${id}`;
       const countEl = btn.querySelector('.like-count');
-      const totalLikesCounter = document.getElementById('total-likes-counter');
       const stackEl = document.getElementById(`likes-stack-${id}`);
       const likesTextEl = document.getElementById(`likes-text-${id}`);
       let isLiked = localStorage.getItem(key) === 'true';
@@ -756,88 +720,62 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
         btn.classList.add('is-liked');
       }
 
-      btn.addEventListener('click', () => {
-        let currentLikes = parseInt(countEl?.textContent || '0', 10);
-        let totalCount = parseInt(totalLikesCounter?.textContent || '0', 10);
+      btn.addEventListener('click', async () => {
+        const savedName = localStorage.getItem('shijianus_comment_author_name') || '';
+        const savedEmail = localStorage.getItem('shijianus_comment_author_email') || '';
+        const authorIdentity = savedEmail || savedName || 'visitor';
+        const userAvatarUrl = computeVisitorAvatar(authorIdentity);
 
-        if (isLiked) {
-          currentLikes = Math.max(0, currentLikes - 1);
-          totalCount = Math.max(0, totalCount - 1);
-          isLiked = false;
-          localStorage.setItem(key, 'false');
-          btn.classList.remove('is-liked');
-          showToast('已取消点赞');
+        try {
+          const res = await fetch('/api/comments', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              action: 'moment_like',
+              slug: id,
+              authorName: savedName || '热心博友',
+              authorAvatar: userAvatarUrl,
+            }),
+          });
+          const data = await res.json();
+          if (data && data.ok) {
+            isLiked = Boolean(data.liked);
+            localStorage.setItem(key, isLiked ? 'true' : 'false');
+            if (isLiked) {
+              btn.classList.add('is-liked');
+              const heart = btn.querySelector('.like-heart');
+              if (heart) {
+                heart.classList.add('heart-burst');
+                setTimeout(() => heart.classList.remove('heart-burst'), 600);
+              }
+              showToast('感谢您的点赞支持！❤️');
+            } else {
+              btn.classList.remove('is-liked');
+              showToast('已取消点赞');
+            }
 
-          const myAvatar = document.getElementById(`my-like-avatar-${id}`);
-          if (myAvatar) myAvatar.remove();
-          if (likesTextEl) {
-            likesTextEl.textContent = currentLikes > 0 ? `${currentLikes} 人觉得很赞` : '快来给说说点个赞吧';
+            const realCount = typeof data.likesCount === 'number' ? data.likesCount : 0;
+            if (countEl) countEl.textContent = String(realCount);
+            if (likesTextEl) {
+              likesTextEl.textContent = realCount > 0 ? `${realCount} 人觉得很赞` : '快来给说说点个赞吧';
+            }
+            if (stackEl && Array.isArray(data.likers)) {
+              renderLikersStack(stackEl, data.likers, realCount);
+            }
+            loadMomentsD1Stats();
+
+            // 同步详情页内的赞状态（如果当前正在查看详情）
+            if (currentActiveMomentId === id && inpageLikeCount && inpageLikeBtn) {
+              inpageLikeCount.textContent = String(realCount);
+              if (isLiked) {
+                inpageLikeBtn.classList.add('is-liked');
+              } else {
+                inpageLikeBtn.classList.remove('is-liked');
+              }
+            }
           }
-        } else {
-          currentLikes += 1;
-          totalCount += 1;
-          isLiked = true;
-          localStorage.setItem(key, 'true');
-          btn.classList.add('is-liked');
-
-          const heart = btn.querySelector('.like-heart');
-          if (heart) {
-            heart.classList.add('heart-burst');
-            setTimeout(() => heart.classList.remove('heart-burst'), 600);
-          }
-          showToast('感谢您的点赞支持！❤️');
-
-          // 反代与后端点赞打通 (如果是友邻动态，通过 /api/cross-comment 跨站送达；如果是站长原生，调用 /api/comments)
-          const cardEl = document.querySelector(`.moment-card[data-id="${id}"]`);
-          const isOwnerCard = cardEl?.dataset.isOwner === 'true';
-          const originApiCard = cardEl?.dataset.originApi;
-          if (!isOwnerCard && originApiCard && !originApiCard.includes('blog.epocanvas.com')) {
-            fetch('/api/cross-comment', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                action: 'like',
-                targetApi: originApiCard,
-                slug: id,
-                fromSite: window.location.origin,
-              }),
-            }).catch(() => {});
-          } else {
-            fetch('/api/comments', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                action: 'reaction',
-                slug: `moment_${id}`,
-                reaction: '👍',
-              }),
-            }).catch(() => {});
-          }
-
-          if (stackEl) {
-            const authorIdentity = localStorage.getItem('shijianus_comment_author_email') || localStorage.getItem('shijianus_comment_author_name') || 'visitor';
-            const userAvatarUrl = computeVisitorAvatar(authorIdentity);
-            const myAvatar = document.createElement('img');
-            myAvatar.className = 'likes-avatar is-my-like';
-            myAvatar.src = userAvatarUrl;
-            myAvatar.alt = '我';
-            myAvatar.id = `my-like-avatar-${id}`;
-            stackEl.prepend(myAvatar);
-          }
-          if (likesTextEl) likesTextEl.textContent = `${currentLikes} 人觉得很赞`;
-        }
-
-        if (countEl) countEl.textContent = String(currentLikes);
-        if (totalLikesCounter) totalLikesCounter.textContent = String(totalCount);
-
-        // 同步详情页内的赞状态（如果当前正在查看详情）
-        if (currentActiveMomentId === id && inpageLikeCount && inpageLikeBtn) {
-          inpageLikeCount.textContent = String(currentLikes);
-          if (isLiked) {
-            inpageLikeBtn.classList.add('is-liked');
-          } else {
-            inpageLikeBtn.classList.remove('is-liked');
-          }
+        } catch (err) {
+          console.error('Like failed', err);
         }
       });
     });
@@ -918,126 +856,49 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
 
     document.querySelectorAll('.moment-quick-comment-form').forEach(initCommentForm);
 
-    // 6. QQ 空间式踩一踩与足迹互动
-    const footprintCounter = document.getElementById('qzone-footprint-counter');
-    let footprintCount = parseInt(localStorage.getItem('qzone_footprint_count') || '2842', 10);
-    if (footprintCounter) footprintCounter.textContent = footprintCount.toLocaleString();
+    // 6. 空间 Hero 与“账号中心”的“个人资料/状态”实时双向同步 (原生持久化打通)
+    function syncHeroProfile() {
+      let identity = null;
+      try {
+        const raw = localStorage.getItem('shijianus-comment-account');
+        if (raw) identity = JSON.parse(raw);
+      } catch {}
 
-    function triggerFootprint(btnEl) {
-      footprintCount += 1;
-      localStorage.setItem('qzone_footprint_count', String(footprintCount));
-      if (footprintCounter) footprintCounter.textContent = footprintCount.toLocaleString();
+      let statusObj = null;
+      try {
+        const raw = localStorage.getItem('shijianus-user-status');
+        if (raw) statusObj = JSON.parse(raw);
+      } catch {}
 
-      if (btnEl) {
-        const rect = btnEl.getBoundingClientRect();
-        const floater = document.createElement('div');
-        floater.className = 'qzone-floating-paw';
-        floater.textContent = '🐾 +1 踩了踩';
-        floater.style.left = `${rect.left + rect.width / 2}px`;
-        floater.style.top = `${rect.top}px`;
-        document.body.appendChild(floater);
-        setTimeout(() => floater.remove(), 1200);
-      }
+      const heroAvatar = document.getElementById('qzone-hero-avatar');
+      const heroName = document.getElementById('qzone-hero-name');
+      const heroBio = document.getElementById('qzone-hero-bio');
+      const heroStatus = document.getElementById('qzone-hero-status');
+      const spaceCover = document.getElementById('qzone-space-cover');
 
-      showToast('🐾 你悄悄踩了踩空间主人的小窝，留下了一枚专属足迹！');
-    }
-
-    const btnQuickFootprint = document.getElementById('btn-quick-footprint');
-    const btnWidgetFootprint = document.getElementById('btn-widget-footprint');
-    if (btnQuickFootprint) btnQuickFootprint.addEventListener('click', () => triggerFootprint(btnQuickFootprint));
-    if (btnWidgetFootprint) btnWidgetFootprint.addEventListener('click', () => triggerFootprint(btnWidgetFootprint));
-
-    // 7. QQ 空间装扮皮肤主题切换
-    const skinPresets = {
-      cyber: {
-        cover: '/media/shijianus/geek-cover.jpg',
-        name: '极客数码 (默认)',
-      },
-      galaxy: {
-        cover: 'https://images.unsplash.com/photo-1506703719100-a0f3a48c0f86?w=1600&auto=format&fit=crop&q=80',
-        name: '幻彩星河',
-      },
-      amber: {
-        cover: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1600&auto=format&fit=crop&q=80',
-        name: '暖阳生活',
-      },
-      ocean: {
-        cover: 'https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=1600&auto=format&fit=crop&q=80',
-        name: '碧海晴空',
-      },
-    };
-
-    const btnToggleSkin = document.getElementById('btn-toggle-skin');
-    const skinMenu = document.getElementById('skin-dropdown-menu');
-    const spaceCover = document.getElementById('qzone-space-cover');
-
-    if (btnToggleSkin && skinMenu) {
-      btnToggleSkin.addEventListener('click', (e) => {
-        e.stopPropagation();
-        skinMenu.classList.toggle('hidden');
-      });
-
-      document.addEventListener('click', () => {
-        if (!skinMenu.classList.contains('hidden')) {
-          skinMenu.classList.add('hidden');
+      if (identity) {
+        if (identity.avatar && heroAvatar) heroAvatar.src = identity.avatar;
+        if (identity.name && heroName) heroName.textContent = identity.name;
+        if (identity.bio && heroBio) heroBio.textContent = identity.bio;
+        if (identity.coverBg && spaceCover) {
+          spaceCover.style.backgroundImage = `url('${identity.coverBg}')`;
         }
-      });
+      }
 
-      document.querySelectorAll('.skin-opt-btn').forEach((btn) => {
-        btn.addEventListener('click', (e) => {
-          e.stopPropagation();
-          const skinKey = btn.dataset.skin;
-          const preset = skinPresets[skinKey];
-          if (!preset) return;
-
-          document.querySelectorAll('.skin-opt-btn').forEach((b) => b.classList.remove('is-active'));
-          btn.classList.add('is-active');
-
-          if (spaceCover) {
-            spaceCover.style.backgroundImage = `url('${preset.cover}')`;
-          }
-          localStorage.setItem('qzone_space_skin', skinKey);
-          skinMenu.classList.add('hidden');
-          showToast(`已更换空间装扮：${preset.name} ✨`);
-        });
-      });
-
-      // 初始化读取装扮皮肤
-      const savedSkin = localStorage.getItem('qzone_space_skin');
-      if (savedSkin && skinPresets[savedSkin]) {
-        const preset = skinPresets[savedSkin];
-        if (spaceCover) spaceCover.style.backgroundImage = `url('${preset.cover}')`;
-        document.querySelectorAll('.skin-opt-btn').forEach((b) => {
-          if (b.dataset.skin === savedSkin) b.classList.add('is-active');
-          else b.classList.remove('is-active');
-        });
+      if (statusObj && statusObj.text && heroStatus) {
+        const prefix = statusObj.emoji ? `${statusObj.emoji} ` : '';
+        heroStatus.textContent = `${prefix}${statusObj.text}`;
       }
     }
 
-    // 8. 动态实时时间与问候语
-    const weatherTextEl = document.getElementById('weather-text');
-    const weatherIconEl = document.getElementById('weather-icon');
-    function updateLiveTimeStatus() {
-      const hour = new Date().getHours();
-      let icon = '☀️';
-      let text = '今日晴 · 空间全速运行中';
-      if (hour >= 0 && hour < 6) {
-        icon = '🌙';
-        text = '深夜静谧 · 沉思时刻';
-      } else if (hour >= 6 && hour < 12) {
-        icon = '🌅';
-        text = '清晨微光 · 灵感启航';
-      } else if (hour >= 12 && hour < 18) {
-        icon = '☀️';
-        text = '午后晴朗 · 高效编码';
-      } else {
-        icon = '🌆';
-        text = '暮色霞光 · 漫游花园';
+    syncHeroProfile();
+    window.addEventListener('shijianus:comment-account-change', syncHeroProfile);
+    window.addEventListener('shijianus:user-status-change', syncHeroProfile);
+    window.addEventListener('storage', (e) => {
+      if (e.key === 'shijianus-comment-account' || e.key === 'shijianus-user-status') {
+        syncHeroProfile();
       }
-      if (weatherIconEl) weatherIconEl.textContent = icon;
-      if (weatherTextEl) weatherTextEl.textContent = text;
-    }
-    updateLiveTimeStatus();
+    });
 
     // 5. QQ 空间式评论楼层与异步 D1 / 跨站主权路由联动
     const loadedCommentsMap = new Map();
@@ -1110,6 +971,20 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
         // 更新卡片上的留言计数
         const countBadge = document.getElementById(`comment-count-${momentId}`);
         if (countBadge) countBadge.textContent = String(comments.length);
+
+        // 同步拉取到的真实 D1 点赞队列与获赞数
+        if (data && Array.isArray(data.likers)) {
+          const stackEl = document.getElementById(`likes-stack-${momentId}`);
+          renderLikersStack(stackEl, data.likers, data.likesCount);
+        }
+        if (data && typeof data.likesCount === 'number') {
+          const countEl = card?.querySelector('.like-count');
+          if (countEl) countEl.textContent = String(data.likesCount);
+          const likesText = document.getElementById(`likes-text-${momentId}`);
+          if (likesText) {
+            likesText.textContent = data.likesCount > 0 ? `${data.likesCount} 人觉得很赞` : '快来给说说点个赞吧';
+          }
+        }
 
         renderCommentsList(momentId, comments);
       } catch (err) {
@@ -1769,123 +1644,6 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
     background: radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.3) 0%, transparent 60%);
   }
 
-  .space-cover-top-tools {
-    position: absolute;
-    top: 1rem;
-    right: 1.5rem;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    z-index: 10;
-  }
-
-  .space-weather-pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 6px 14px;
-    border-radius: 20px;
-    background: rgba(0, 0, 0, 0.45);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    color: #fff;
-    font-size: 0.8rem;
-    font-weight: 600;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-  }
-
-  .space-skin-switcher-wrap {
-    position: relative;
-  }
-
-  .btn-toggle-skin {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 6px 14px;
-    border-radius: 20px;
-    background: rgba(0, 0, 0, 0.45);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    color: #fff;
-    font-size: 0.8rem;
-    font-weight: 700;
-    border: 1px solid rgba(255, 255, 255, 0.25);
-    cursor: pointer;
-    transition: all 0.2s ease;
-  }
-
-  .btn-toggle-skin:hover {
-    background: rgba(66, 90, 239, 0.85);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
-  }
-
-  .skin-dropdown-menu {
-    position: absolute;
-    top: calc(100% + 8px);
-    right: 0;
-    width: 170px;
-    background: var(--card-bg, #fff);
-    border: 1px solid var(--border-color, rgba(66, 90, 239, 0.2));
-    border-radius: 10px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-    backdrop-filter: blur(14px);
-    padding: 6px;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    z-index: 100;
-    animation: fadeIn 0.15s ease;
-  }
-
-  .skin-menu-title {
-    font-size: 0.72rem;
-    font-weight: 800;
-    color: var(--text-secondary, #64748b);
-    padding: 4px 8px;
-    border-bottom: 1px solid rgba(66, 90, 239, 0.1);
-    margin-bottom: 2px;
-  }
-
-  .skin-opt-btn {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 6px 10px;
-    border: none;
-    background: transparent;
-    border-radius: 6px;
-    font-size: 0.82rem;
-    font-weight: 700;
-    color: var(--font-color);
-    cursor: pointer;
-    text-align: left;
-    transition: background 0.15s;
-  }
-
-  .skin-opt-btn:hover {
-    background: rgba(66, 90, 239, 0.1);
-    color: var(--theme-main, #425aef);
-  }
-
-  .skin-opt-btn.is-active {
-    background: rgba(66, 90, 239, 0.15);
-    color: var(--theme-main, #425aef);
-    font-weight: 850;
-  }
-
-  .skin-dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-  }
-
-  .dot-cyber { background: #425aef; }
-  .dot-galaxy { background: #8b5cf6; }
-  .dot-amber { background: #f59e0b; }
-  .dot-ocean { background: #00b4d8; }
-
   .qzone-profile-bar {
     padding: 0 2rem 1.5rem;
     display: grid;
@@ -2097,183 +1855,6 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
     box-shadow: 0 4px 12px rgba(66, 90, 239, 0.3);
   }
 
-  .sync-radar-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 6px 14px;
-    border-radius: 20px;
-    background: rgba(66, 90, 239, 0.08);
-    border: 1px solid rgba(66, 90, 239, 0.2);
-    color: var(--theme-main, #425aef);
-    font-size: 0.85rem;
-    font-weight: 750;
-    cursor: pointer;
-    transition: all 0.25s ease;
-  }
-
-  .sync-radar-btn:hover {
-    background: var(--theme-main, #425aef);
-    color: #fff;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 14px rgba(66, 90, 239, 0.35);
-  }
-
-  .sync-radar-btn.is-syncing .sync-icon {
-    animation: spin 0.8s linear infinite;
-  }
-
-  @keyframes spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-  }
-
-  .subnav-tools {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .qzone-action-pill-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    padding: 6px 14px;
-    border-radius: 20px;
-    background: rgba(245, 158, 11, 0.12);
-    border: 1px solid rgba(245, 158, 11, 0.3);
-    color: #d97706;
-    font-size: 0.85rem;
-    font-weight: 800;
-    cursor: pointer;
-    transition: all 0.2s ease;
-  }
-
-  .qzone-action-pill-btn:hover {
-    background: #f59e0b;
-    color: #fff;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.35);
-  }
-
-  /* QQ 空间说说寄语与踩一踩展台 */
-  .qzone-say-widget {
-    padding: 1.25rem 1.75rem;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1.5rem;
-    flex-wrap: wrap;
-    background: linear-gradient(135deg, rgba(66, 90, 239, 0.04) 0%, var(--card-bg, #fff) 100%);
-    border-left: 4px solid var(--theme-main, #425aef);
-  }
-
-  .say-widget-left {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    flex: 1;
-    min-width: 280px;
-  }
-
-  .say-avatar-wrap {
-    position: relative;
-    width: 48px;
-    height: 48px;
-    flex-shrink: 0;
-  }
-
-  .say-avatar {
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 2px solid rgba(66, 90, 239, 0.25);
-  }
-
-  .say-online-dot {
-    position: absolute;
-    bottom: 0;
-    right: 0;
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    background: #10b981;
-    border: 2px solid #fff;
-  }
-
-  .say-text-box {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-  }
-
-  .say-prompt-row {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .say-title {
-    font-size: 0.98rem;
-    font-weight: 850;
-    color: var(--font-color);
-  }
-
-  .say-owner-tag {
-    font-size: 0.7rem;
-    font-weight: 800;
-    padding: 1px 6px;
-    border-radius: 4px;
-    background: rgba(245, 158, 11, 0.15);
-    color: #d97706;
-  }
-
-  .say-quote {
-    margin: 0;
-    font-size: 0.88rem;
-    color: var(--text-secondary, #64748b);
-    line-height: 1.5;
-  }
-
-  .say-widget-actions {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-
-  .say-action-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 7px 16px;
-    border-radius: 20px;
-    background: var(--theme-main, #425aef);
-    color: #fff;
-    font-size: 0.85rem;
-    font-weight: 800;
-    border: none;
-    cursor: pointer;
-    text-decoration: none;
-    transition: all 0.2s ease;
-  }
-
-  .say-action-btn:hover {
-    background: #3549d4;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(66, 90, 239, 0.35);
-  }
-
-  .say-action-btn.is-outline {
-    background: transparent;
-    color: var(--theme-main, #425aef);
-    border: 1px solid rgba(66, 90, 239, 0.25);
-  }
-
-  .say-action-btn.is-outline:hover {
-    background: rgba(66, 90, 239, 0.1);
-  }
-
   /* QQ 空间式赞者头像流 */
   .moment-likes-preview {
     display: flex;
@@ -2417,40 +1998,16 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
   }
 
   .moments-stream-header {
-    padding: 1.25rem 1.75rem;
+    padding: 0.85rem 1.25rem;
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 1rem;
-  }
-
-  .stream-title-wrap {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-  }
-
-  .stream-title {
-    margin: 0;
-    font-size: 1.25rem;
-    font-weight: 850;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    color: var(--font-color);
-  }
-
-  .stream-subtitle {
-    margin: 0;
-    font-size: 0.85rem;
-    color: var(--text-secondary, #64748b);
+    justify-content: flex-end;
   }
 
   .moments-search-input-wrap {
     position: relative;
     width: 100%;
-    max-width: 340px;
+    max-width: 360px;
   }
 
   .moments-search-input-wrap .search-icon {

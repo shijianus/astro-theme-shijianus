@@ -23,90 +23,6 @@ export interface SyncedMomentItem {
   liveSynced?: boolean;
 }
 
-// 友邻最新动态基准聚合池（真实独立博友动态）
-const BASE_FEEDS: SyncedMomentItem[] = [
-  {
-    id: 'sync_az_1',
-    author: '安知鱼',
-    authorUrl: 'https://anzhiyu.cpolar.top/',
-    avatar: 'https://img02.anzhiy.cn/wordpress/927429623dc10b992167d49ee4329241.jpg',
-    badge: '🌐 友邻传送',
-    isOwner: false,
-    mood: '🎨 灵感',
-    device: '来自好友「安知鱼」的花园',
-    title: '关于 Hexo 主题色彩与暗黑模式适配的几点新思考',
-    url: 'https://anzhiyu.cpolar.top/',
-    summary: '在多设备自适应的今天，单纯的黑色背景已经不足以支撑高级感，深灰与半透明材质的搭配才是视觉呼吸感的关键。探索了新的色彩对比度算法...',
-    timeAgo: '15分钟前',
-    timestamp: '2026-10-31 18:45',
-    category: 'design',
-    tags: ['UI/UX', '暗黑模式', '色彩科学'],
-    likes: 34,
-    commentCount: 5,
-    liveSynced: false,
-  },
-  {
-    id: 'sync_ak_1',
-    author: 'Akilarの糖果屋',
-    authorUrl: 'https://akilar.top/',
-    avatar: 'https://npm.elemecdn.com/akilar-candyassets/image/siteicon/favicon.png',
-    badge: '🌐 友邻传送',
-    isOwner: false,
-    mood: '🎵 律动',
-    device: '来自好友「Akilar」的花园',
-    title: '在浏览器中使用 Web Audio API 绘制实时声波瀑布',
-    url: 'https://akilar.top/',
-    summary: '音乐不仅是听觉的享受，更是视觉的律动。分享一段仅用纯原生 JS 捕捉音频频谱并渲染在 Canvas 上的轻量方案，不需要引入庞大的第三方音频库。',
-    timeAgo: '5小时前',
-    timestamp: '2026-10-31 14:10',
-    category: 'tech',
-    tags: ['WebAudio', 'Canvas', '动效'],
-    likes: 29,
-    commentCount: 1,
-    liveSynced: false,
-  },
-  {
-    id: 'sync_leo_1',
-    author: 'Leonus',
-    authorUrl: 'https://blog.leonus.cn/',
-    avatar: 'https://q1.qlogo.cn/g?b=qq&nk=990320751&s=640',
-    badge: '🌐 友邻传送',
-    isOwner: false,
-    mood: '🌅 自由',
-    device: '来自好友「Leonus」的随想',
-    title: '秋日骑行记：在城市边缘追逐落日余晖',
-    url: 'https://blog.leonus.cn/',
-    summary: '放下键盘，骑上单车，沿着滨海公路一路向西。风在耳边呼啸，带走了连续多日重构代码的疲惫。生活除了终端和像素，还有金黄色的落日与旷野。',
-    timeAgo: '昨天',
-    timestamp: '2026-10-30 19:12',
-    category: 'life',
-    tags: ['生活记录', '骑行', '摄影'],
-    likes: 41,
-    commentCount: 4,
-    liveSynced: false,
-  },
-  {
-    id: 'sync_xk_1',
-    author: '小康的个人博客',
-    authorUrl: 'https://www.antmoe.com/',
-    avatar: 'https://cdn.jsdelivr.net/gh/sviptzk/StaticFile_HEXO@v3.2.7/butterfly/img/avatar.jpg',
-    badge: '🌐 友邻传送',
-    isOwner: false,
-    mood: '💡 探索',
-    device: '来自好友「小康」的笔记',
-    title: 'Cloudflare D1 边缘数据库在个人博客评论系统中的实践踩坑',
-    url: 'https://www.antmoe.com/',
-    summary: '记录一下最近使用 D1 替代传统 MongoDB / MySQL 的心得。Serverless SQLite 的读性能极为惊艳，但并发写入需注意事务边界与冷启动优化。',
-    timeAgo: '2天前',
-    timestamp: '2026-10-29 14:00',
-    category: 'tech',
-    tags: ['Cloudflare', 'D1', 'Serverless'],
-    likes: 63,
-    commentCount: 6,
-    liveSynced: false,
-  },
-];
-
 export const onRequest: PagesFunction<AppEnv> = async (context) => {
   const { request, env } = context;
 
@@ -137,6 +53,17 @@ export const onRequest: PagesFunction<AppEnv> = async (context) => {
   const action = url.searchParams.get('action') || 'list';
 
   try {
+    let syncedMoments: SyncedMomentItem[] = [];
+    try {
+      const assetRes = await fetch(new URL('/data/friends-moments.json', request.url));
+      if (assetRes.ok) {
+        const parsed = await assetRes.json();
+        syncedMoments = Array.isArray(parsed) ? parsed : (parsed?.items || []);
+      }
+    } catch {
+      // 容错读取
+    }
+
     return jsonResponse(
       request,
       env,
@@ -145,11 +72,11 @@ export const onRequest: PagesFunction<AppEnv> = async (context) => {
         action,
         engine: 'EpoCanvas Cloudflare Edge Moments Sync Pipeline',
         syncedAt: new Date().toISOString(),
-        total: BASE_FEEDS.length,
-        items: BASE_FEEDS,
+        total: syncedMoments.length,
+        items: syncedMoments,
         status: 'synced',
         protocol: 'Fcircle-compatible Edge Pull Pipeline',
-        notice: '友邻朋友圈动态同步成功（已启用边缘缓存与熔断保护）',
+        notice: syncedMoments.length > 0 ? '友邻朋友圈动态同步完成' : '暂无友邻最新外部说说',
       },
       {
         status: 200,

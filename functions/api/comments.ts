@@ -598,6 +598,44 @@ export async function onRequest(context: {
       });
     }
 
+    if (url.searchParams.get('action') === 'moments_stats' || url.searchParams.get('type') === 'moments_stats') {
+      if (env.DB) {
+        await ensureTable(env.DB);
+        const statsRes = await env.DB.prepare(`
+          SELECT 
+            post_slug,
+            SUM(CASE WHEN post_type != 'moment_like' AND status != 'deleted' THEN 1 ELSE 0 END) as comment_count,
+            SUM(CASE WHEN post_type = 'moment_like' AND status = 'published' THEN 1 ELSE 0 END) as likes_count
+          FROM comments 
+          WHERE post_slug LIKE 'moment_%'
+          GROUP BY post_slug
+        `).all<{ post_slug: string; comment_count: number; likes_count: number }>();
+
+        const statsMap: Record<string, { commentCount: number; likesCount: number }> = {};
+        for (const row of statsRes.results || []) {
+          const rawId = row.post_slug.replace(/^moment_/, '');
+          statsMap[rawId] = {
+            commentCount: Number(row.comment_count || 0),
+            likesCount: Number(row.likes_count || 0),
+          };
+        }
+        return jsonResponse(request, env, { ok: true, stats: statsMap });
+      }
+
+      const statsMap: Record<string, { commentCount: number; likesCount: number }> = {};
+      for (const item of memoryFallbackStore.values()) {
+        if (!item.post_slug || !item.post_slug.startsWith('moment_')) continue;
+        const rawId = item.post_slug.replace(/^moment_/, '');
+        if (!statsMap[rawId]) statsMap[rawId] = { commentCount: 0, likesCount: 0 };
+        if (item.post_type === 'moment_like' && item.status === 'published') {
+          statsMap[rawId].likesCount++;
+        } else if (item.status !== 'deleted') {
+          statsMap[rawId].commentCount++;
+        }
+      }
+      return jsonResponse(request, env, { ok: true, stats: statsMap });
+    }
+
     const slug = url.searchParams.get('slug')?.trim();
     const sort = (url.searchParams.get('sort') || 'new').toLowerCase();
     const tagFilter = url.searchParams.get('tag')?.trim();
@@ -641,10 +679,20 @@ export async function onRequest(context: {
 
         const res = await env.DB.prepare(query).bind(...queryParams).all<RawCommentRow>();
         const rows = res.results || [];
+        const isMoment = slug.startsWith('moment_');
+        const commentRows = isMoment ? rows.filter((r) => r.post_type !== 'moment_like') : rows;
+        const likerRows = isMoment ? rows.filter((r) => r.post_type === 'moment_like') : [];
+        const likers = likerRows.map((r) => ({
+          authorName: r.author_name,
+          authorAvatar: r.author_avatar || `https://api.dicebear.com/7.x/identicon/svg?seed=${encodeURIComponent(r.author_name)}`,
+        }));
+
         return jsonResponse(request, env, {
           ok: true,
           sort,
-          comments: rows.map((r) => mapRowToClientComment(r, isAdmin, currentUserId)),
+          comments: commentRows.map((r) => mapRowToClientComment(r, isAdmin, currentUserId)),
+          likesCount: isMoment ? likerRows.length : undefined,
+          likers: isMoment ? likers : undefined,
         });
       } catch (dbErr: any) {
         console.error('[Comments] DB query error:', dbErr);
@@ -671,7 +719,21 @@ export async function onRequest(context: {
       })
       .map((r) => mapRowToClientComment(r, isAdmin, currentUserId));
 
-    return jsonResponse(request, env, { ok: true, sort, comments: list });
+    const isMoment = slug.startsWith('moment_');
+    const commentRows = isMoment ? list.filter((r) => r.postType !== 'moment_like') : list;
+    const likerRows = isMoment ? list.filter((r) => r.postType === 'moment_like') : [];
+    const likers = likerRows.map((r) => ({
+      authorName: r.authorName,
+      authorAvatar: r.authorAvatar || `https://api.dicebear.com/7.x/identicon/svg?seed=${encodeURIComponent(r.authorName)}`,
+    }));
+
+    return jsonResponse(request, env, {
+      ok: true,
+      sort,
+      comments: commentRows,
+      likesCount: isMoment ? likerRows.length : undefined,
+      likers: isMoment ? likers : undefined,
+    });
   }
 
   // ----------------------------------------------------
@@ -1095,6 +1157,105 @@ export async function onRequest(context: {
     item.status = 'deleted';
     syncDevStore('save');
     return jsonResponse(request, env, { ok: true, message: '评论已删除' });
+  }
+
+  // 3.5 说说点赞/取消点赞 (真实写入与持久化至 Cloudflare D1 数据库)
+  if (action === 'moment_like' || (action === 'like' && String(payload.slug || payload.id || '').startsWith('moment_'))) {
+    const rawMomentSlug = String(payload.slug || payload.id || '').trim();
+    const momentSlug = rawMomentSlug.startsWith('moment_') ? rawMomentSlug : `moment_${rawMomentSlug}`;
+    const authUser = sessionToken ? await getUserBySessionToken(sessionToken, env) : null;
+
+    const authorName = String(authUser?.name || payload.author_name || payload.authorName || '热心博友').trim().slice(0, 40);
+    const authorAvatar = String(authUser?.avatar || payload.author_avatar || payload.authorAvatar || '').trim();
+    const likerIdentifier = authUser ? authUser.id : `${authorName}_${clientIp}`;
+    const simpleHash = Math.abs(likerIdentifier.split('').reduce((a, b) => ((a << 5) - a) + b.charCodeAt(0), 0)).toString(36);
+    const likeRecordId = `mlike_${momentSlug}_${simpleHash}`;
+
+    if (env.DB) {
+      await ensureTable(env.DB);
+      const existing = await env.DB.prepare(
+        `SELECT id FROM comments WHERE id = ? AND post_type = 'moment_like'`
+      ).bind(likeRecordId).first();
+
+      let isLiked = false;
+      if (existing) {
+        await env.DB.prepare(`DELETE FROM comments WHERE id = ?`).bind(likeRecordId).run();
+        isLiked = false;
+      } else {
+        await env.DB.prepare(`
+          INSERT INTO comments (id, post_slug, post_type, author_id, author_name, author_avatar, message, status, likes_count, ip, created_at)
+          VALUES (?, ?, 'moment_like', ?, ?, ?, '👍 点赞了说说', 'published', 1, ?, CURRENT_TIMESTAMP)
+        `).bind(likeRecordId, momentSlug, likerIdentifier, authorName, authorAvatar, clientIp).run();
+        isLiked = true;
+      }
+
+      const countRow = await env.DB.prepare(
+        `SELECT COUNT(*) as count FROM comments WHERE post_slug = ? AND post_type = 'moment_like' AND status = 'published'`
+      ).bind(momentSlug).first<{ count: number }>();
+      const realLikesCount = countRow?.count ?? 0;
+
+      const likersRows = await env.DB.prepare(`
+        SELECT author_name, author_avatar FROM comments 
+        WHERE post_slug = ? AND post_type = 'moment_like' AND status = 'published'
+        ORDER BY created_at DESC LIMIT 10
+      `).bind(momentSlug).all<{ author_name: string; author_avatar: string }>();
+
+      const realLikers = (likersRows.results || []).map((r) => ({
+        authorName: r.author_name,
+        authorAvatar: r.author_avatar || `https://api.dicebear.com/7.x/identicon/svg?seed=${encodeURIComponent(r.author_name)}`,
+      }));
+
+      return jsonResponse(request, env, {
+        ok: true,
+        liked: isLiked,
+        likesCount: realLikesCount,
+        likers: realLikers,
+        message: isLiked ? '点赞已记录至数据库！❤️' : '已取消点赞',
+      });
+    }
+
+    // In-memory fallback
+    const existing = memoryFallbackStore.get(likeRecordId);
+    let isLiked = false;
+    if (existing) {
+      memoryFallbackStore.delete(likeRecordId);
+      isLiked = false;
+    } else {
+      memoryFallbackStore.set(likeRecordId, {
+        id: likeRecordId,
+        post_slug: momentSlug,
+        post_type: 'moment_like',
+        author_id: likerIdentifier,
+        author_name: authorName,
+        author_avatar: authorAvatar,
+        message: '👍 点赞了说说',
+        status: 'published',
+        likes_count: 1,
+        created_at: new Date().toISOString(),
+      } as any);
+      isLiked = true;
+    }
+    syncDevStore('save');
+
+    const total = Array.from(memoryFallbackStore.values()).filter(
+      (c) => c.post_slug === momentSlug && c.post_type === 'moment_like' && c.status === 'published'
+    ).length;
+
+    const memoryLikers = Array.from(memoryFallbackStore.values())
+      .filter((c) => c.post_slug === momentSlug && c.post_type === 'moment_like' && c.status === 'published')
+      .slice(-10)
+      .map((c) => ({
+        authorName: c.author_name,
+        authorAvatar: c.author_avatar || `https://api.dicebear.com/7.x/identicon/svg?seed=${encodeURIComponent(c.author_name)}`,
+      }));
+
+    return jsonResponse(request, env, {
+      ok: true,
+      liked: isLiked,
+      likesCount: total,
+      likers: memoryLikers,
+      message: isLiked ? '点赞已记录至数据库！❤️' : '已取消点赞',
+    });
   }
 
   // 4. LIKE / REACTION (Strictly verify session/admin token; visitors rejected)

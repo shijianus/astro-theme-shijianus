@@ -10,8 +10,8 @@ device: "Arch Linux · Neovim"
 category: "tech"
 tags: ["架构设计", "去中心化", "Cloudflare"]
 pinned: false
-likes: 45
-commentCount: 4
+likes: 0
+commentCount: 0
 images:
   - "https://images.unsplash.com/photo-1542838132-92c53300491e?w=800&auto=format&fit=crop&q=80"
 ---

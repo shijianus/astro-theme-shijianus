@@ -1,10 +1,10 @@
 {
   "ok": true,
   "engine": "EpoCanvas Moments Federation Pipeline v3.0",
-  "syncedAt": "2026-10-31T22:18:47.413Z",
-  "total": 7,
+  "syncedAt": "2026-10-31T22:57:36.461Z",
+  "total": 4,
   "masterCount": 3,
-  "friendCount": 4,
+  "friendCount": 1,
   "liveCount": 1,
   "items": [
     {
@@ -33,8 +33,8 @@
         "QQ空间模式",
         "主题联盟"
       ],
-      "likes": 68,
-      "commentCount": 3,
+      "likes": 0,
+      "commentCount": 0,
       "origin": "https://blog.epocanvas.com",
       "originUrl": "https://blog.epocanvas.com/moments/#moment-m_20261031_01",
       "originApi": "https://blog.epocanvas.com/api/comments",
@@ -65,8 +65,8 @@
         "主题契约",
         "极客生活"
       ],
-      "likes": 52,
-      "commentCount": 2,
+      "likes": 0,
+      "commentCount": 0,
       "origin": "https://blog.epocanvas.com",
       "originUrl": "https://blog.epocanvas.com/moments/#moment-m_20261031_02",
       "originApi": "https://blog.epocanvas.com/api/comments",
@@ -96,43 +96,12 @@
         "去中心化",
         "Cloudflare"
       ],
-      "likes": 45,
-      "commentCount": 4,
+      "likes": 0,
+      "commentCount": 0,
       "origin": "https://blog.epocanvas.com",
       "originUrl": "https://blog.epocanvas.com/moments/#moment-m_20261030_03",
       "originApi": "https://blog.epocanvas.com/api/comments",
       "pinned": false
-    },
-    {
-      "id": "sync_安知鱼_fallback",
-      "author": "安知鱼",
-      "authorUrl": "https://anzhiyu.cpolar.top/",
-      "avatar": "https://img02.anzhiy.cn/wordpress/927429623dc10b992167d49ee4329241.jpg",
-      "badge": "🌐 友邻传送",
-      "isOwner": false,
-      "mood": "🎨 灵感",
-      "device": "来自「安知鱼」的花园 · MacBook Pro",
-      "title": "关于 Hexo 主题色彩与暗黑模式适配的几点新思考",
-      "url": "/moments/#moment-sync_安知鱼_fallback",
-      "summary": "在多设备自适应的今天，单纯的黑色背景已经不足以支撑高级感，深灰与半透明材质搭配才是呼吸感的关键。色彩对比度算法优化让暗黑模式更具温度与深度。",
-      "content": "在多设备自适应的今天，单纯的黑色背景已经不足以支撑高级感，深灰与半透明材质搭配才是呼吸感的关键。色彩对比度算法优化让暗黑模式更具温度与深度。",
-      "images": [
-        "https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?w=800&auto=format&fit=crop&q=80",
-        "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800&auto=format&fit=crop&q=80"
-      ],
-      "timeAgo": "近期更新",
-      "timestamp": "2026-10-31 18:45",
-      "category": "design",
-      "tags": [
-        "友链动态",
-        "design"
-      ],
-      "likes": 25,
-      "commentCount": 0,
-      "origin": "https://anzhiyu.cpolar.top/",
-      "originUrl": "https://anzhiyu.cpolar.top/",
-      "originApi": "https://anzhiyu.cpolar.top/api/comments",
-      "liveSynced": false
     },
     {
       "id": "sync_Akilarの糖果屋_215d440/",
@@ -160,72 +129,12 @@
         "友链动态",
         "tech"
       ],
-      "likes": 19,
+      "likes": 29,
       "commentCount": 0,
       "origin": "https://akilar.top/",
       "originUrl": "https://akilar.top/posts/c215d440/",
       "originApi": "https://akilar.top/api/comments",
       "liveSynced": true
-    },
-    {
-      "id": "sync_Leonus_fallback",
-      "author": "Leonus",
-      "authorUrl": "https://blog.leonus.cn/",
-      "avatar": "https://q1.qlogo.cn/g?b=qq&nk=990320751&s=640",
-      "badge": "🌐 友邻传送",
-      "isOwner": false,
-      "mood": "🌅 自由",
-      "device": "来自「Leonus」的随想 · iPhone 16 Pro",
-      "title": "秋日骑行记：在城市边缘追逐落日余晖",
-      "url": "/moments/#moment-sync_Leonus_fallback",
-      "summary": "放下键盘，骑上单车，沿着滨海公路一路向西。生活除了终端和像素，还有金黄色的落日与旷野。晚风吹拂过发梢，所有的重构压力在此刻烟消云散。",
-      "content": "放下键盘，骑上单车，沿着滨海公路一路向西。生活除了终端和像素，还有金黄色的落日与旷野。晚风吹拂过发梢，所有的重构压力在此刻烟消云散。",
-      "images": [
-        "https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=800&auto=format&fit=crop&q=80"
-      ],
-      "timeAgo": "近期更新",
-      "timestamp": "2026-10-30 19:12",
-      "category": "life",
-      "tags": [
-        "友链动态",
-        "life"
-      ],
-      "likes": 25,
-      "commentCount": 0,
-      "origin": "https://blog.leonus.cn/",
-      "originUrl": "https://blog.leonus.cn/",
-      "originApi": "https://blog.leonus.cn/api/comments",
-      "liveSynced": false
-    },
-    {
-      "id": "sync_小康的个人博客_fallback",
-      "author": "小康的个人博客",
-      "authorUrl": "https://www.antmoe.com/",
-      "avatar": "https://cdn.jsdelivr.net/gh/sviptzk/StaticFile_HEXO@v3.2.7/butterfly/img/avatar.jpg",
-      "badge": "🌐 友邻传送",
-      "isOwner": false,
-      "mood": "💡 探索",
-      "device": "来自「小康」的笔记 · Linux Desktop",
-      "title": "Cloudflare D1 边缘数据库在个人博客中的实践踩坑",
-      "url": "/moments/#moment-sync_小康的个人博客_fallback",
-      "summary": "记录一下最近使用 D1 替代传统 MongoDB 的心得。Serverless SQLite 的读性能极为惊艳，在博客应用中能带来零冷启动的毫秒级体验。",
-      "content": "记录一下最近使用 D1 替代传统 MongoDB 的心得。Serverless SQLite 的读性能极为惊艳，在博客应用中能带来零冷启动的毫秒级体验。",
-      "images": [
-        "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=800&auto=format&fit=crop&q=80"
-      ],
-      "timeAgo": "近期更新",
-      "timestamp": "2026-10-30 15:30",
-      "category": "tech",
-      "tags": [
-        "友链动态",
-        "tech"
-      ],
-      "likes": 25,
-      "commentCount": 0,
-      "origin": "https://www.antmoe.com/",
-      "originUrl": "https://www.antmoe.com/",
-      "originApi": "https://www.antmoe.com/api/comments",
-      "liveSynced": false
     }
   ],
   "solution": "全网同规：Markdown 存储 + 构建时清单互联 + 边缘跨站路由评论聚合"

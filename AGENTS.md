@@ -6691,6 +6691,26 @@
   1. 通过 Wrangler 部署至生产边缘节点（部署别名 `https://1d6757a8.shijianus-blog.pages.dev/moments/`）；
   2. 针对生产真实域名 `https://blog.epocanvas.com/moments/` 执行无头浏览器全链路 E2E 审计 (`scripts/verify-prod-moments.mjs`)，HTTP 200，UI、反代、去弹窗页面内详情与画廊全量通过 (`deadc84`)。
 
+### Task 115: 朋友圈 (/moments/) 冗余占位符清除、Hero 与账号中心资料/状态双向同步、真实 D1 数据持久化与零伪造交付
+- [x] **彻底清除冗余占位符与无用交互按钮**：
+  1. 彻底移除 `class="qzone-say-widget theme-card"` 说说寄语展台，杜绝空占屏幕版面；
+  2. 移除流标题中的 `"说说动态 · 聚合时间流"` 占位大标题与副标题，搜索栏紧凑化靠右优雅排布；
+  3. 彻底移除空间 Hero 封面中的 `.space-weather-pill`（天气药丸）与 `.space-skin-switcher-wrap`（装扮皮肤下拉菜单）；
+  4. 彻底移除子导航栏中的假按钮与虚假计数器（`btn-quick-footprint` 假足迹按钮与 `2,842` 硬编码假计数器、`btn-sync-friends-radar`）。
+- [x] **空间 Hero (`qzone-space-hero`) 与“账号中心”个人资料/状态真实双向同步**：
+  1. 空间 Hero 的头像（`#qzone-hero-avatar`）、昵称（`#qzone-hero-name`）、简介（`#qzone-hero-bio`）、封面背景（`#qzone-space-cover`）与实时在线状态（`#qzone-hero-status`）全量打通 `readCommentIdentity()`（`shijianus-comment-account`）与 `readUserStatus()`（`shijianus-user-status`）；
+  2. 动态监听 `shijianus:comment-account-change`、`shijianus:user-status-change` 以及 `storage` 事件，在账号中心或顶栏修改资料/状态后瞬间响应同步至空间 Hero；
+  3. 账号中心个人资料设置增设“空间封面背景 / 壁纸 URL (`coverBg`)”，优先使用个人设置的背景，留空优雅平滑回退至配置文件默认打底大图。
+- [x] **杜绝一切虚假数据、假点赞与假友邻，交互全量写入与读取 Cloudflare D1 边缘数据库**：
+  1. 彻底清除说说卡片中写死的假点赞头像队列（`seed=geek`、`seed=cosmos`、`seed=voyager`）以及写死的点赞/评论数字；
+  2. 彻底清除同步流水线中的虚假保底数据（`defaultItem` 与 Unsplash 假图生成），仅当博友真实发布且订阅源成功抓取时才加入聚合流；
+  3. 在 `functions/api/comments.ts` 实现真实说说统计接口（`GET /api/comments?action=moments_stats`），实时从 D1 `comments` 数据库聚合计算每条说说的真实获赞数与留言数，并计算全站获赞总计（`#total-likes-counter`）；
+  4. 实现真实说说点赞/取消点赞持久化（`POST /api/comments` 的 `action: 'moment_like'`），原子写入/删除 D1 `comments` 表（`post_type = 'moment_like'`），并实时返回真实的点赞者头像流（`likers`），杜绝 403 访客权限报错；
+  5. 卡片与详情页点赞、取消点赞与发评 100% 同步 D1 数据库。
+- [x] **全自动化 E2E 验证套件更新与本地 100% 全绿审计**：
+  1. 更新 `scripts/verify-moments-space.mjs`，断言占位符与假按钮彻底移除、验证 Hero 与账号中心资料/状态双向同步、验证真实 D1 说说点赞与赞者头像队列动态渲染；
+  2. 本地 E2E 测试 100% 全量通过。
+
 
 
 

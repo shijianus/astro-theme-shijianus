@@ -338,6 +338,7 @@ export function ThemeOverlays({
     website: '',
     avatar: '',
     bio: '',
+    coverBg: '',
     timezone: '',
     location: '',
     showLocation: true,
@@ -1075,6 +1076,7 @@ export function ThemeOverlays({
         website: next?.website ?? '',
         avatar: next?.avatar ?? '',
         bio: next?.bio ?? '',
+        coverBg: next?.coverBg ?? '',
         timezone: autoTz,
         location: autoLoc,
         showLocation: next?.showLocation !== false,
@@ -1107,6 +1109,7 @@ export function ThemeOverlays({
         website: next?.website ?? '',
         avatar: next?.avatar ?? '',
         bio: next?.bio ?? '',
+        coverBg: next?.coverBg ?? '',
         timezone: next?.timezone || prev.timezone,
         location: next?.location || prev.location,
         showLocation: next?.showLocation !== false,
@@ -1630,6 +1633,7 @@ export function ThemeOverlays({
           avatar: accountForm.avatar,
           website: accountForm.website.trim(),
           bio: safeBio,
+          coverBg: accountForm.coverBg.trim(),
           timezone: accountForm.timezone.trim(),
           location: accountForm.location.trim(),
           showLocation: accountForm.showLocation,
@@ -1650,6 +1654,7 @@ export function ThemeOverlays({
           website: normaliseWebsite(accountForm.website.trim()),
           avatar: normaliseAvatar(accountForm.avatar.trim()),
           bio: safeBio,
+          coverBg: accountForm.coverBg.trim(),
           timezone: accountForm.timezone.trim(),
           location: accountForm.location.trim(),
           role: 'reader',
@@ -2386,6 +2391,25 @@ export function ThemeOverlays({
                             setAccountForm((prev) => ({ ...prev, bio: val }));
                           }}
                           placeholder={t('profile.field.bioPlaceholder')}
+                        />
+                      </div>
+                    </label>
+
+                    <label className="account-field account-field--full">
+                      <div className="account-field-label-row flex items-center justify-between">
+                        <span>空间封面背景 / 壁纸 URL</span>
+                      </div>
+                      <div className="account-field-control">
+                        <ImageIcon className="account-field-icon" />
+                        <input
+                          type="text"
+                          name="coverBg"
+                          value={accountForm.coverBg}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setAccountForm((prev) => ({ ...prev, coverBg: val }));
+                          }}
+                          placeholder="例如 /media/shijianus/geek-cover.jpg 或图片 URL（留空则使用默认背景）"
                         />
                       </div>
                     </label>

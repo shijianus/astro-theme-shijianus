@@ -13,7 +13,7 @@
     "likes": "https://blog.epocanvas.com/api/comments",
     "crossComment": "https://blog.epocanvas.com/api/cross-comment"
   },
-  "updatedAt": "2026-10-31T22:18:27.377Z",
+  "updatedAt": "2026-10-31T22:57:16.443Z",
   "total": 3,
   "moments": [
     {
@@ -42,8 +42,8 @@
         "QQ空间模式",
         "主题联盟"
       ],
-      "likes": 68,
-      "commentCount": 3,
+      "likes": 0,
+      "commentCount": 0,
       "origin": "https://blog.epocanvas.com",
       "originUrl": "https://blog.epocanvas.com/moments/#moment-m_20261031_01",
       "originApi": "https://blog.epocanvas.com/api/comments",
@@ -74,8 +74,8 @@
         "主题契约",
         "极客生活"
       ],
-      "likes": 52,
-      "commentCount": 2,
+      "likes": 0,
+      "commentCount": 0,
       "origin": "https://blog.epocanvas.com",
       "originUrl": "https://blog.epocanvas.com/moments/#moment-m_20261031_02",
       "originApi": "https://blog.epocanvas.com/api/comments",
@@ -105,8 +105,8 @@
         "去中心化",
         "Cloudflare"
       ],
-      "likes": 45,
-      "commentCount": 4,
+      "likes": 0,
+      "commentCount": 0,
       "origin": "https://blog.epocanvas.com",
       "originUrl": "https://blog.epocanvas.com/moments/#moment-m_20261030_03",
       "originApi": "https://blog.epocanvas.com/api/comments",

@@ -178,8 +178,8 @@ function loadLocalMarkdownMoments() {
         timestamp: meta.date || (meta.pubDate ? new Date(meta.pubDate).toISOString().slice(0, 16).replace('T', ' ') : '近期'),
         category: meta.category || 'thought',
         tags: meta.tags || ['站长原声', 'Markdown'],
-        likes: typeof meta.likes === 'number' ? meta.likes : 45,
-        commentCount: typeof meta.commentCount === 'number' ? meta.commentCount : 2,
+        likes: typeof meta.likes === 'number' ? meta.likes : 0,
+        commentCount: typeof meta.commentCount === 'number' ? meta.commentCount : 0,
         origin: SITE_INFO.url,
         originUrl: `${SITE_INFO.url}/moments/#moment-${momentId}`,
         originApi: `${SITE_INFO.url}/api/comments`,
@@ -340,38 +340,10 @@ async function syncFriendsMoments() {
       }
     }
 
-    // 若网络均不可达，优雅启用保底数据，杜绝白屏
-    if (!captured) {
-      const momentId = `sync_${friend.name.replace(/\s+/g, '_')}_fallback`;
-      captured = {
-        id: momentId,
-        author: friend.name,
-        authorUrl: friend.url,
-        avatar: friend.avatar,
-        badge: friend.badge,
-        isOwner: false,
-        mood: friend.mood,
-        device: friend.device || `来自好友「${friend.name}」的花园`,
-        title: friend.defaultItem.title,
-        url: `/moments/#moment-${momentId}`,
-        summary: friend.defaultItem.summary,
-        content: friend.defaultItem.summary,
-        images: friend.images || [],
-        timeAgo: '近期更新',
-        timestamp: friend.defaultItem.timestamp,
-        category: friend.category,
-        tags: ['友链动态', friend.category],
-        likes: 25,
-        commentCount: 0,
-        origin: friend.url,
-        originUrl: friend.url,
-        originApi: `${friend.url}api/comments`,
-        liveSynced: false,
-      };
-      console.log(`     ℹ️ 使用已缓存动态记录: 《${captured.title}》`);
+    // 严禁捏造虚假动态与假交互数据，仅当博友真实发布并成功抓取时才加入动态流
+    if (captured) {
+      syncedFriendMoments.push(captured);
     }
-
-    syncedFriendMoments.push(captured);
   }
 
   // 4. 合并站长与友邻动态

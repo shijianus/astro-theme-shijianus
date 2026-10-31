@@ -79,10 +79,31 @@ function createServer() {
         }
 
         if (req.method === 'GET') {
+          if (parsedUrl.searchParams.get('action') === 'moments_stats') {
+            res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+            res.end(JSON.stringify({
+              ok: true,
+              stats: {
+                'm_20261031_01': { commentCount: 1, likesCount: 2 },
+                'm_20261031_02': { commentCount: 0, likesCount: 1 },
+                'm_20261030_03': { commentCount: 0, likesCount: 0 },
+              },
+            }));
+            return;
+          }
+
           const slug = parsedUrl.searchParams.get('slug') || '';
           const comments = Array.from(testCommentsDb.values()).filter((c) => c.postSlug === slug);
           res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
-          res.end(JSON.stringify({ ok: true, comments }));
+          res.end(JSON.stringify({
+            ok: true,
+            comments,
+            likesCount: 2,
+            likers: [
+              { authorName: '赛博旅人', authorAvatar: 'https://api.dicebear.com/7.x/identicon/svg?seed=cyber' },
+              { authorName: '代码行者', authorAvatar: 'https://api.dicebear.com/7.x/identicon/svg?seed=coder' },
+            ],
+          }));
           return;
         }
 
@@ -92,6 +113,21 @@ function createServer() {
           req.on('end', () => {
             try {
               const data = JSON.parse(body);
+              if (data.action === 'moment_like') {
+                res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+                res.end(JSON.stringify({
+                  ok: true,
+                  liked: true,
+                  likesCount: 3,
+                  likers: [
+                    { authorName: data.authorName || '热心博友', authorAvatar: data.authorAvatar || 'https://api.dicebear.com/7.x/identicon/svg?seed=liker' },
+                    { authorName: '赛博旅人', authorAvatar: 'https://api.dicebear.com/7.x/identicon/svg?seed=cyber' },
+                  ],
+                  message: '点赞已记录至数据库！❤️',
+                }));
+                return;
+              }
+
               const newComment = {
                 id: `cmt_${Date.now()}`,
                 postSlug: data.slug,
@@ -241,23 +277,12 @@ async function runVerification() {
       throw new Error('未正确渲染 QQ 空间个性化封面大图 background-image');
     }
 
-    // 检查空间天气与状态 (支持动态时间自适应)
-    const weatherPill = await page.$eval('.space-weather-pill', (el) => el.textContent.trim());
-    console.log(`  -> 空间天气状态: ${weatherPill}`);
-    if (!weatherPill || weatherPill.length < 3) {
-      throw new Error('空间天气与运行状态文字异常');
-    }
-
-    // 检查空间装扮切换按钮与下拉菜单
-    const btnToggleSkin = await page.$('#btn-toggle-skin');
-    if (!btnToggleSkin) throw new Error('未找到空间装扮皮肤切换按钮 #btn-toggle-skin');
-    await btnToggleSkin.click();
-    await page.waitForTimeout(100);
-    const skinMenuVisible = await page.$eval('#skin-dropdown-menu', (el) => !el.classList.contains('hidden'));
-    console.log(`  -> 空间装扮下拉菜单展开状态: ${skinMenuVisible}`);
-    if (!skinMenuVisible) throw new Error('点击装扮按钮未能展开装扮风格菜单');
-    // 点击关闭
-    await btnToggleSkin.click();
+    // 检查空间天气与装扮切换按钮已彻底移除 (杜绝无意义占位符)
+    const weatherPill = await page.$('.space-weather-pill');
+    if (weatherPill) throw new Error('不应再展示 .space-weather-pill 占位符');
+    const btnToggleSkin = await page.$('#btn-toggle-skin, .space-skin-switcher-wrap');
+    if (btnToggleSkin) throw new Error('不应再展示空间装扮切换按钮 #btn-toggle-skin');
+    console.log('  -> 占位符清理断言通过: 天气药丸与装扮切换按钮已彻底移除');
 
     // 检查站长专属皇冠与 SVIP 空间主人徽章
     const crownBadge = await page.$('.owner-crown-badge');
@@ -275,47 +300,65 @@ async function runVerification() {
     const levelText = await levelBadge.textContent();
     console.log(`  -> 站长空间等级: ${levelText}`);
 
-    // 检查站长头像是否同步为实际站长头像 (/media/shijianus/avatar.jpg)
+    // 检查站长头像与在线状态
     const masterAvatarSrc = await page.$eval('.profile-avatar', (el) => el.getAttribute('src') || '');
     console.log(`  -> 站长头像同步状态: ${masterAvatarSrc}`);
     if (!masterAvatarSrc.includes('shijianus/avatar.jpg') && !masterAvatarSrc.includes('avatar')) {
       throw new Error('站长头像未同步实际状态');
     }
 
-    // 检查实时在线状态 pill
     const radarPill = await page.$eval('.qzone-radar-pill', (el) => el.textContent.trim());
     console.log(`  -> 在线状态: ${radarPill}`);
     if (!radarPill.includes('实时在线') || !radarPill.includes('专注重构中')) {
       throw new Error('未正确同步实际在线状态');
     }
 
-    // 检查 QQ 空间子导航栏与踩一踩互动
-    console.log('[E2E 3] 检查 QQ 空间子导航栏与踩一踩足迹互动...');
+    // 测试 Hero 与账号中心个人资料及状态实时双向同步
+    console.log('[E2E 2.1] 测试 Hero 与账号中心个人资料及状态实时同步...');
+    await page.evaluate(() => {
+      localStorage.setItem('shijianus-comment-account', JSON.stringify({
+        name: '测试站长·极客',
+        avatar: 'https://api.dicebear.com/7.x/identicon/svg?seed=newmaster',
+        bio: '这是通过账号中心同步的新个人简介！',
+        coverBg: '/media/shijianus/geek-cover.jpg',
+      }));
+      localStorage.setItem('shijianus-user-status', JSON.stringify({
+        emoji: '🚀',
+        text: '极客闭关测试中',
+      }));
+      window.dispatchEvent(new CustomEvent('shijianus:comment-account-change'));
+      window.dispatchEvent(new CustomEvent('shijianus:user-status-change'));
+    });
+    await page.waitForTimeout(200);
+
+    const updatedHeroName = await page.$eval('#qzone-hero-name', (el) => el.textContent.trim());
+    const updatedHeroBio = await page.$eval('#qzone-hero-bio', (el) => el.textContent.trim());
+    const updatedHeroStatus = await page.$eval('#qzone-hero-status', (el) => el.textContent.trim());
+    console.log(`  -> 同步后Hero: 昵称="${updatedHeroName}", 简介="${updatedHeroBio}", 状态="${updatedHeroStatus}"`);
+    if (updatedHeroName !== '测试站长·极客' || !updatedHeroStatus.includes('极客闭关测试中')) {
+      throw new Error('Hero 未能与账号中心个人资料/状态完成实时同步');
+    }
+
+    // 检查 QQ 空间子导航栏
+    console.log('[E2E 3] 检查 QQ 空间子导航栏 (已清除假足迹按钮与假计数器)...');
     const subnavLinks = await page.$$('.qzone-subnav-bar .subnav-item');
     console.log(`  -> 子导航项数量: ${subnavLinks.length}`);
     if (subnavLinks.length < 4) throw new Error('子导航项少于 4 个');
     const subnavTexts = await Promise.all(subnavLinks.map((el) => el.textContent()));
     console.log(`  -> 子导航文案: ${subnavTexts.map((s) => s.trim()).join(' | ')}`);
 
-    // 测试踩一踩按钮与足迹浮动微动效
-    const btnFootprint = await page.$('#btn-quick-footprint');
-    if (!btnFootprint) throw new Error('未找到导航栏踩一踩按钮 #btn-quick-footprint');
-    const initFootprints = await page.$eval('#qzone-footprint-counter', (el) => el.textContent.trim());
-    await btnFootprint.click();
-    await page.waitForTimeout(150);
-    const updatedFootprints = await page.$eval('#qzone-footprint-counter', (el) => el.textContent.trim());
-    console.log(`  -> 空间足迹计数: ${initFootprints} -> ${updatedFootprints}`);
+    // 检查假足迹按钮与假计数器已被彻底清除
+    const fakeFootprintBtn = await page.$('#btn-quick-footprint, #qzone-footprint-counter');
+    if (fakeFootprintBtn) throw new Error('不应再展示虚假足迹按钮与假计数器');
+    console.log('  -> 假足迹按钮与假计数器清理验证通过');
 
-    // 检查 QQ 空间说说寄语展台
-    console.log('[E2E 3.1] 检查 QQ 空间说说寄语展台与主人留痕...');
+    // 检查说说寄语展台与“说说动态 · 聚合时间流”无意义占位符已彻底移除
+    console.log('[E2E 3.1] 检查说说寄语展台与无意义占位符清理...');
     const sayWidget = await page.$('.qzone-say-widget');
-    if (!sayWidget) throw new Error('未找到 QQ 空间说说寄语展台 .qzone-say-widget');
-    const sayTitle = await page.$eval('.say-title', (el) => el.textContent.trim());
-    const sayQuote = await page.$eval('.say-quote', (el) => el.textContent.trim());
-    console.log(`  -> 主人说说展台: "${sayTitle}" | "${sayQuote.slice(0, 30)}..."`);
-    if (!sayTitle.includes('新鲜事') || !sayQuote) {
-      throw new Error('说说寄语展台内容未正确渲染');
-    }
+    if (sayWidget) throw new Error('不应再展示 .qzone-say-widget 占位符');
+    const streamTitleWrap = await page.$('.stream-title-wrap');
+    if (streamTitleWrap) throw new Error('不应再展示“说说动态 · 聚合时间流”占位符');
+    console.log('  -> .qzone-say-widget 与 .stream-title-wrap 彻底移除断言通过');
 
     // 2. 验证去冗余（无传送门、无分类标签指示器）
     console.log('[E2E 4] 验证已移除极客传送门与频道分类标签...');
@@ -326,8 +369,8 @@ async function runVerification() {
     if (channelTabs) throw new Error('不应再展示旧版频道或分类过滤指示器');
     console.log('  -> 冗余组件清理验证通过：传送门与动态分类说明已彻底移除');
 
-    // 3. 验证真实友链说说聚合与文档站友链剔除
-    console.log('[E2E 5] 验证真实友链动态聚合与非个人博客剔除...');
+    // 3. 验证说说瀑布流正常渲染且无文档站友链
+    console.log('[E2E 5] 验证真实说说渲染与文档站友链剔除...');
     const authors = await page.$$eval('.moment-card', (cards) =>
       cards.map((c) => c.getAttribute('data-author'))
     );
@@ -337,12 +380,23 @@ async function runVerification() {
     if (hasAstro || hasCloudflare) {
       throw new Error('朋友圈中仍残留 Astro / Cloudflare 等非个人独立博客文档站！');
     }
-    const hasAnzhiyu = authors.some((a) => a.includes('安知鱼'));
-    const hasXiaokang = authors.some((a) => a.includes('小康'));
-    console.log(`  -> 独立博友动态存在性: 安知鱼=${hasAnzhiyu}, 小康=${hasXiaokang}`);
-    if (!hasAnzhiyu) {
-      throw new Error('未成功聚合真实博友动态（如安知鱼）');
+
+    // 检查说说卡片底部的点赞头像流 (杜绝硬编码假头像)
+    console.log('[E2E 5.1] 检查说说点赞头像流 (严禁硬编码 seed=geek 假头像)...');
+    const fakeGeekAvatar = await page.$('.likes-avatar[src*="seed=geek"], .likes-avatar[src*="seed=cosmos"], .likes-avatar[src*="seed=voyager"]');
+    if (fakeGeekAvatar) {
+      throw new Error('严禁在说说卡片中硬编码展示 seed=geek/cosmos/voyager 假头像！');
     }
+    console.log('  -> 硬编码假头像清除断言通过: 无 seed=geek/cosmos/voyager');
+
+    // 点击点赞按钮，验证调用真实后端 API 并动态渲染点赞状态
+    const firstLikeBtn = await page.$('.moment-like-btn');
+    if (!firstLikeBtn) throw new Error('未找到说说点赞按钮');
+    await firstLikeBtn.click();
+    await page.waitForTimeout(300);
+    const isLikedClass = await firstLikeBtn.evaluate((el) => el.classList.contains('is-liked'));
+    console.log(`  -> 点击点赞后激活态: isLiked=${isLikedClass}`);
+    if (!isLikedClass) throw new Error('点击点赞未能成功激活 .is-liked 状态');
 
     // 检查说说卡片底部的点赞头像流与就地展开评论头像同步
     console.log('[E2E 5.1] 检查说说点赞头像流与访客头像实时同步...');
@@ -512,13 +566,13 @@ async function runVerification() {
     console.log('[E2E 12] 验证关键词搜索说说...');
     const searchInput = await page.$('#moments-search-input');
     if (searchInput) {
-      await searchInput.fill('安知鱼');
+      await searchInput.fill('架构');
       await page.waitForTimeout(200);
       const visibleAfterSearch = await page.$$eval('.moment-card', (els) =>
         els.filter((e) => e.style.display !== 'none').length
       );
-      console.log(`  -> 搜索“安知鱼”后可见说说数量: ${visibleAfterSearch}`);
-      if (visibleAfterSearch === 0) throw new Error('搜索博友说说无匹配结果');
+      console.log(`  -> 搜索“架构”后可见说说数量: ${visibleAfterSearch}`);
+      if (visibleAfterSearch === 0) throw new Error('搜索说说无匹配结果');
       await searchInput.fill('');
       await page.waitForTimeout(200);
     }

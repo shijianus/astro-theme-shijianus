@@ -10,8 +10,8 @@ device: "iPhone 16 Pro · 灵动岛"
 category: "thought"
 tags: ["前端工程", "主题契约", "极客生活"]
 pinned: false
-likes: 52
-commentCount: 2
+likes: 0
+commentCount: 0
 images:
   - "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=800&auto=format&fit=crop&q=80"
   - "https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?w=800&auto=format&fit=crop&q=80"

@@ -10,8 +10,8 @@ device: "Mac Studio · 边缘开发终端"
 category: "thought"
 tags: ["系统设计", "QQ空间模式", "主题联盟"]
 pinned: true
-likes: 68
-commentCount: 3
+likes: 0
+commentCount: 0
 images:
   - "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=800&auto=format&fit=crop&q=80"
   - "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800&auto=format&fit=crop&q=80"
