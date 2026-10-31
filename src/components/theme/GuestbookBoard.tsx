@@ -25,6 +25,15 @@ import {
   AlertCircle,
   Pin,
   CheckCircle2,
+  Bookmark,
+  Compass,
+  Eye,
+  Layers,
+  CornerDownRight,
+  ArrowLeft,
+  ChevronsUp,
+  ChevronsDown,
+  SlidersHorizontal,
 } from 'lucide-react';
 import {
   fetchComments,
@@ -41,9 +50,9 @@ import {
 import { renderCommentMarkdown } from '../../lib/comment-markdown';
 import { computeUserLevel } from '../../lib/user-level';
 
-// Board topic channels configuration
+// Board topic channels / dimensions configuration
 export const CHANNELS = [
-  { id: 'all', label: '全部板块', icon: '🌟', desc: '全站所有主题留言与讨论' },
+  { id: 'all', label: '全部维度', icon: '🌟', desc: '全站所有主题留言与讨论' },
   { id: 'chat', label: '畅所欲言', icon: '💬', desc: '自由闲聊、日常问候与生活点滴' },
   { id: 'tech', label: '技术探讨', icon: '🛠️', desc: '前端工程、边缘计算、AI与架构心得' },
   { id: 'ideas', label: '灵感交流', icon: '💡', desc: '设计思考、新颖想法与作品探讨' },
@@ -53,6 +62,20 @@ export const CHANNELS = [
 
 export type ChannelId = (typeof CHANNELS)[number]['id'];
 
+// Horizontal categories requested by user
+export const NAV_CATEGORIES = [
+  { id: 'latest', label: '最新', icon: Clock },
+  { id: 'recent', label: '近期', icon: Sparkles },
+  { id: 'dimensions', label: '维度', icon: Layers },
+  { id: 'hot', label: '热门', icon: Flame },
+  { id: 'featured', label: '精选', icon: Pin },
+  { id: 'my', label: '我的贴文', icon: MessageSquare },
+  { id: 'read', label: '已读', icon: Eye },
+  { id: 'bookmarked', label: '书签', icon: Bookmark },
+] as const;
+
+export type NavCategoryId = (typeof NAV_CATEGORIES)[number]['id'];
+
 // Curated Emojis Palette
 const EMOJI_GROUPS = [
   {
@@ -60,30 +83,126 @@ const EMOJI_GROUPS = [
     emojis: ['😀', '😃', '😄', '😆', '😅', '😂', '🤣', '😊', '🥹', '😍', '🥰', '😋', '🤔', '🤫', '🤗', '🫡', '🥳', '😎'],
   },
   {
-    name: '交互手势',
-    emojis: ['👍', '👎', '👏', '🙌', '🫶', '🤝', '✌️', '🤞', '🤟', '🤘', '👌', '🤌', '👈', '👉', '👆', '👇', '✍️', '🙏'],
+    name: '思想与手势',
+    emojis: ['👍', '🙌', '👏', '🤝', '✌️', '🫰', '🤙', '💪', '🙏', '💡', '🔥', '🚀', '✨', '🎯', '💯', '⚡', '🎉', '🌟'],
   },
   {
-    name: '氛围灵感',
-    emojis: ['🔥', '✨', '🌟', '💡', '🚀', '☕', '🎉', '💯', '💖', '❤️', '🧡', '💛', '💚', '💙', '💜', '💎', '🌈', '⚡'],
-  },
-  {
-    name: '符号徽章',
-    emojis: ['💻', '🛠️', '📦', '🎨', '📝', '📌', '🔍', '🛡️', '🌐', '💬', '💭', '☕', '🌱', '🕊️', '🎯', '🪐', '🪄', '⭐'],
+    name: '生活与符号',
+    emojis: ['☕', '🍵', '🌱', '🌿', '📖', '💻', '🎨', '🎵', '🕹️', '🛡️', '💬', '💭', '❤️', '🧡', '💛', '💚', '💙', '💜'],
   },
 ];
 
-// Quick stamps for Boost mode
-const QUICK_STAMPS = [
-  { icon: '🎉', text: '🎉 祝博主博客长青，内容常新！' },
-  { icon: '☕', text: '☕ 路过点赞，敬作者一杯热咖啡！' },
-  { icon: '🚀', text: '🚀 界面设计与交互太丝滑了，灵感爆发！' },
-  { icon: '🌟', text: '🌟 2026 探访留念，数字花园漫游打卡！' },
-  { icon: '💡', text: '💡 想就本站的系统架构和岛屿组件交流探讨一番~' },
-  { icon: '🌱', text: '🌱 友邻探访，愿我们的独立博客一同生长！' },
+// Quick Boost stamps
+const QUICK_BOOST_STAMPS = [
+  '🎉 祝博主博客长青，内容常新！',
+  '☕ 喝杯热咖啡，给思考留白。',
+  '💡 发现了一个超酷的技术方案！',
+  '🌱 友邻探访打卡，愿一同生长！',
+  '⚡ 毫秒落盘，边缘计算确实很棒！',
+  '🚀 留下足迹，向未来的自己问好！',
 ];
 
-// Official Pinned Welcome Thread (Anchor)
+// Starter Boost stream messages (so top marquee is lively on first view)
+const STARTER_BOOSTS: BlogComment[] = [
+  {
+    id: 'boost_starter_1',
+    postSlug: 'guestbook',
+    parentId: null,
+    postType: 'boost',
+    tag: 'chat',
+    authorId: 'reader_1',
+    authorName: '星河漫游者',
+    authorAvatar: '/media/shijianus/avatar.jpg',
+    authorRole: 'member',
+    message: '🌟 尺素寸心，愿我们的独立思考在边缘节点恒久闪烁！',
+    likesCount: 5,
+    reactions: { summary: { '❤️': 3, '🚀': 2 }, users: {} },
+    status: 'approved',
+    createdAt: '2026-10-31T01:00:00.000Z',
+    showLocation: true,
+    ipCountryFlag: '🇨🇳',
+    ipCountryName: '中国',
+    ipLocation: '上海',
+  },
+  {
+    id: 'boost_starter_2',
+    postSlug: 'guestbook',
+    parentId: null,
+    postType: 'boost',
+    tag: 'tech',
+    authorId: 'reader_2',
+    authorName: 'KernelHacker',
+    authorRole: 'member',
+    message: '⚡ 边缘计算的毫秒级落盘体验确实丝滑，顶部的弹幕设计太带感了！',
+    likesCount: 4,
+    reactions: { summary: { '🔥': 4 }, users: {} },
+    status: 'approved',
+    createdAt: '2026-10-31T01:30:00.000Z',
+    showLocation: true,
+    ipCountryFlag: '🇸🇬',
+    ipCountryName: '新加坡',
+    ipLocation: 'Singapore',
+  },
+  {
+    id: 'boost_starter_3',
+    postSlug: 'guestbook',
+    parentId: null,
+    postType: 'boost',
+    tag: 'life',
+    authorId: 'reader_3',
+    authorName: '晨光微熹',
+    authorRole: 'member',
+    message: '☕ 清晨喝一杯手冲曼特宁，阅读博主的工程规范，收获满满。',
+    likesCount: 3,
+    reactions: { summary: { '👍': 3 }, users: {} },
+    status: 'approved',
+    createdAt: '2026-10-31T02:00:00.000Z',
+    showLocation: true,
+    ipCountryFlag: '🇨🇳',
+    ipCountryName: '中国',
+    ipLocation: '浙江 · 杭州',
+  },
+  {
+    id: 'boost_starter_4',
+    postSlug: 'guestbook',
+    parentId: null,
+    postType: 'boost',
+    tag: 'ideas',
+    authorId: 'reader_4',
+    authorName: 'DesignCrafter',
+    authorRole: 'member',
+    message: '🎨 楼下 Gesture 的楼层时间轴滑块做得非常有质感，很有仪式感！',
+    likesCount: 6,
+    reactions: { summary: { '💡': 4, '✨': 2 }, users: {} },
+    status: 'approved',
+    createdAt: '2026-10-31T02:15:00.000Z',
+    showLocation: true,
+    ipCountryFlag: '🇯🇵',
+    ipCountryName: '日本',
+    ipLocation: 'Tokyo',
+  },
+  {
+    id: 'boost_starter_5',
+    postSlug: 'guestbook',
+    parentId: null,
+    postType: 'boost',
+    tag: 'feedback',
+    authorId: 'reader_5',
+    authorName: 'CodePilot',
+    authorRole: 'member',
+    message: '🚀 弹幕轻触即发，30字限制恰到好处，毫无负担！',
+    likesCount: 2,
+    reactions: { summary: { '🎉': 2 }, users: {} },
+    status: 'approved',
+    createdAt: '2026-10-31T02:40:00.000Z',
+    showLocation: true,
+    ipCountryFlag: '🇺🇸',
+    ipCountryName: '美国',
+    ipLocation: 'California',
+  },
+];
+
+// Official Pinned Welcome Thread (Anchor) with starter multi-floor replies
 const OFFICIAL_PINNED_POST: BlogComment = {
   id: 'pinned_welcome_official',
   postSlug: 'guestbook',
@@ -97,17 +216,21 @@ const OFFICIAL_PINNED_POST: BlogComment = {
   authorWebsite: 'https://blog.epocanvas.com',
   message: `### 🌟 欢迎来到全站留言与读者交流广场！
 
-这里是为所有读者与探索者打造的开放交流空间。你可以在这里探讨工程架构、交流设计灵感，或是分享日常随笔。
+这里是为所有读者与探索者打造的开放交流空间。我们采用了**楼上 Boost 弹幕流 + 楼下 Gesture 话题广场**的分层架构：
 
-#### 💡 如何参与交流？
-- **📝 Gesture 深度讨论**：字数在 8 字以上，支持完整 Markdown 图文排版、代码块、引用与多级跟帖回复；
-- **🚀 Boost 瞬时微语**：字数限制在 30 字以内，轻触即发，适合即时想法、问候打卡与灵感碰撞（默认不开放跟帖）；
-- **🏷️ 六大主题板块**：涵盖畅所欲言、技术探讨、灵感交流、生活碎碎念与站点建议，方便按需归类。
+#### 🚀 楼上 Boost：瞬时弹幕墙
+- 字数限制在 **30 字以内**，轻触快捷句或即时输入；
+- 飘浮在楼上作为全站活跃弹幕展示，不设跟帖回复，专注问候与灵感打卡。
 
-欢迎在下方点击 **「💬 跟帖回复」** 留下你的第一条声音！✨`,
-  likesCount: 6,
+#### 📝 楼下 Gesture：深度讨论帖
+- 字数在 **8 字以上**，支持完整 Markdown、代码块高亮、图片画廊与多级跟帖；
+- **点击条目直接点进去查看详情**，配备**右侧长条百分比滑动当前楼层进度条**（支持拖拽/点击指定楼层快速跳转）；
+- 顶部导航条支持切换 **最新、近期、维度、热门、精选、我的贴文、已读、书签**。
+
+欢迎在下方点击 **「跟帖回复」** 留下你的思想足迹！✨`,
+  likesCount: 8,
   reactions: {
-    summary: { '👍': 4, '🚀': 2, '✨': 3, '❤️': 2 },
+    summary: { '👍': 5, '🚀': 4, '✨': 3, '❤️': 4 },
     users: {},
   },
   status: 'pinned',
@@ -118,131 +241,243 @@ const OFFICIAL_PINNED_POST: BlogComment = {
   ipLocation: '浙江 · 杭州',
 };
 
+// Starter replies for pinned post to demonstrate the floor slider immediately
+const STARTER_PINNED_REPLIES: BlogComment[] = [
+  {
+    id: 'reply_floor_2_official',
+    postSlug: 'guestbook',
+    parentId: 'pinned_welcome_official',
+    postType: 'gesture',
+    tag: 'tech',
+    authorId: 'reader_alice',
+    authorName: 'Alice',
+    authorRole: 'member',
+    message: '体验了右侧的长条百分比楼层滑块，拖拽和点击跳转指定楼层非常灵敏，阅读长篇讨论毫无迷航感！',
+    likesCount: 3,
+    reactions: { summary: { '👍': 3 }, users: {} },
+    status: 'approved',
+    createdAt: '2026-10-31T00:15:00.000Z',
+    showLocation: true,
+    ipCountryFlag: '🇨🇳',
+    ipCountryName: '中国',
+    ipLocation: '北京',
+  },
+  {
+    id: 'reply_floor_3_official',
+    postSlug: 'guestbook',
+    parentId: 'pinned_welcome_official',
+    postType: 'gesture',
+    tag: 'tech',
+    authorId: 'reader_bob',
+    authorName: 'Bob_Dev',
+    authorRole: 'member',
+    message: '楼上跑马灯式的 Boost 弹幕很生动，把短评和长帖彻底解耦，界面的层次感瞬间拉满了。支持！',
+    likesCount: 4,
+    reactions: { summary: { '🚀': 2, '❤️': 2 }, users: {} },
+    status: 'approved',
+    createdAt: '2026-10-31T00:45:00.000Z',
+    showLocation: true,
+    ipCountryFlag: '🇺🇸',
+    ipCountryName: '美国',
+    ipLocation: 'San Jose',
+  },
+  {
+    id: 'reply_floor_4_official',
+    postSlug: 'guestbook',
+    parentId: 'pinned_welcome_official',
+    postType: 'gesture',
+    tag: 'tech',
+    authorId: 'reader_carol',
+    authorName: 'Carol_UI',
+    authorRole: 'member',
+    message: '横排分类里的“书签”和“已读”功能很实用，逛论坛或者深度讨论时可以随手收藏感兴趣的 Gesture。',
+    likesCount: 2,
+    reactions: { summary: { '💡': 2 }, users: {} },
+    status: 'approved',
+    createdAt: '2026-10-31T01:10:00.000Z',
+    showLocation: true,
+    ipCountryFlag: '🇨🇳',
+    ipCountryName: '中国',
+    ipLocation: '广东 · 深圳',
+  },
+];
+
 export function GuestbookBoard() {
-  // Core comment state
-  const [comments, setComments] = useState<BlogComment[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [sort, setSort] = useState<'new' | 'hot'>('new');
-  const [selectedChannel, setSelectedChannel] = useState<string>('all');
-  const [selectedType, setSelectedType] = useState<'all' | 'gesture' | 'boost'>('all');
+  // Navigation & View state
+  const [activeView, setActiveView] = useState<'list' | 'detail'>('list');
+  const [activeGestureId, setActiveGestureId] = useState<string | null>(null);
+  const [categoryFilter, setCategoryFilter] = useState<NavCategoryId>('latest');
+  const [selectedDimension, setSelectedDimension] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [showDimensionDropdown, setShowDimensionDropdown] = useState(false);
 
-  // Active composer state
-  const [composerMode, setComposerMode] = useState<'gesture' | 'boost'>('gesture');
-  const [composerChannel, setComposerChannel] = useState<string>('chat');
-  const [message, setMessage] = useState('');
-  const [previewTab, setPreviewTab] = useState<'write' | 'preview'>('write');
-  const [attachedImages, setAttachedImages] = useState<string[]>([]);
-  const [isUploadingImage, setIsUploadingImage] = useState(false);
-  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-  const [composerError, setComposerError] = useState<string | null>(null);
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
-
-  // Author profile & Identity state
-  const [identity, setIdentity] = useState<CommentIdentity | null>(null);
-  const [authorName, setAuthorName] = useState('');
-  const [authorAvatar, setAuthorAvatar] = useState('');
-  const [authorWebsite, setAuthorWebsite] = useState('');
-  const [authorEmail, setAuthorEmail] = useState('');
-  const [showIdentityEdit, setShowIdentityEdit] = useState(false);
-
-  // Reply trees state (Gesture only)
-  const [expandedReplies, setExpandedReplies] = useState<Record<string, boolean>>({
-    pinned_welcome_official: true,
-  });
-  const [activeReplyTargetId, setActiveReplyTargetId] = useState<string | null>(null);
-  const [replyMessage, setReplyMessage] = useState('');
-  const [replySubmitting, setReplySubmitting] = useState(false);
-  const [replyShowEmoji, setReplyShowEmoji] = useState(false);
-
-  // Editing state
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [editMessage, setEditMessage] = useState('');
-
-  // Lightbox zoom modal state
-  const [zoomedImage, setZoomedImage] = useState<string | null>(null);
-
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const replyTextareaRef = useRef<HTMLTextAreaElement>(null);
-  const emojiPickerRef = useRef<HTMLDivElement>(null);
-
-  // Load identity from storage on mount
-  useEffect(() => {
-    const id = readCommentIdentity();
-    setIdentity(id);
-    if (id) {
-      setAuthorName(id.name || '');
-      setAuthorAvatar(id.avatar || '');
-      setAuthorWebsite(id.website || '');
-      setAuthorEmail(id.email || '');
-    } else {
-      setAuthorName('访客');
-    }
-  }, []);
-
-  // Close emoji picker when clicking outside
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (emojiPickerRef.current && !emojiPickerRef.current.contains(event.target as Node)) {
-        setShowEmojiPicker(false);
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  // Load comments
-  const loadComments = useCallback(async () => {
-    setLoading(true);
+  // Local storage lists for read & bookmarked posts
+  const [readPostIds, setReadPostIds] = useState<string[]>(() => {
+    if (typeof window === 'undefined') return [];
     try {
-      const data = await fetchComments('guestbook', sort);
-      setComments(data);
-    } catch (err) {
-      console.error('Failed to load guestbook comments:', err);
-    } finally {
-      setLoading(false);
+      return JSON.parse(localStorage.getItem('shijianus_guestbook_reads') || '[]');
+    } catch {
+      return [];
     }
-  }, [sort]);
+  });
 
-  useEffect(() => {
-    loadComments();
-  }, [loadComments]);
+  const [bookmarkedPostIds, setBookmarkedPostIds] = useState<string[]>(() => {
+    if (typeof window === 'undefined') return [];
+    try {
+      return JSON.parse(localStorage.getItem('shijianus_guestbook_bookmarks') || '[]');
+    } catch {
+      return [];
+    }
+  });
 
-  // Toast auto-dismiss
-  useEffect(() => {
-    if (!toastMessage) return;
-    const t = setTimeout(() => setToastMessage(null), 3500);
-    return () => clearTimeout(t);
-  }, [toastMessage]);
+  // DB comments
+  const [dbComments, setDbComments] = useState<BlogComment[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [zoomedImage, setZoomedImage] = useState<string | null>(null);
+  const [identity, setIdentity] = useState<CommentIdentity | null>(null);
+
+  // Top Boost Panel State
+  const [boostInput, setBoostInput] = useState('');
+  const [boostSubmitting, setBoostSubmitting] = useState(false);
+  const [isBoostMarqueePaused, setIsBoostMarqueePaused] = useState(false);
+
+  // Gesture New Post Modal State
+  const [showGestureModal, setShowGestureModal] = useState(false);
+  const [gestureTitle, setGestureTitle] = useState('');
+  const [gestureMessage, setGestureMessage] = useState('');
+  const [gestureTag, setGestureTag] = useState<string>('tech');
+  const [gestureImages, setGestureImages] = useState<string[]>([]);
+  const [gestureUploading, setGestureUploading] = useState(false);
+  const [gesturePreviewTab, setGesturePreviewTab] = useState<'write' | 'preview'>('write');
+  const [gestureShowEmoji, setGestureShowEmoji] = useState(false);
+  const [gestureSubmitting, setGestureSubmitting] = useState(false);
+  const [gestureError, setGestureError] = useState<string | null>(null);
+
+  // Gesture Detail View State
+  const [detailReplyMessage, setDetailReplyMessage] = useState('');
+  const [detailReplyImages, setDetailReplyImages] = useState<string[]>([]);
+  const [detailReplyUploading, setDetailReplyUploading] = useState(false);
+  const [detailReplyPreviewTab, setDetailReplyPreviewTab] = useState<'write' | 'preview'>('write');
+  const [detailReplyShowEmoji, setDetailReplyShowEmoji] = useState(false);
+  const [detailReplySubmitting, setDetailReplySubmitting] = useState(false);
+  const [replyTargetFloor, setReplyTargetFloor] = useState<{ id: string; author: string } | null>(null);
+
+  // Floor Timeline Scroller State (for detail view)
+  const [currentFloor, setCurrentFloor] = useState(1);
+  const [scrollPercent, setScrollPercent] = useState(0);
+
+  const gestureTextareaRef = useRef<HTMLTextAreaElement>(null);
+  const detailReplyTextareaRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const detailFileInputRef = useRef<HTMLInputElement>(null);
 
   const showToast = (msg: string) => setToastMessage(msg);
 
-  // Combine DB comments with pinned anchor
-  const allCommentsWithPinned = useMemo(() => {
-    const hasPinned = comments.some((c) => c.id === OFFICIAL_PINNED_POST.id);
-    if (!hasPinned) {
-      return [OFFICIAL_PINNED_POST, ...comments];
+  // Load identity & fetch comments
+  useEffect(() => {
+    setIdentity(readCommentIdentity());
+
+    async function loadData() {
+      try {
+        setLoading(true);
+        const res = await fetchComments('guestbook');
+        if (res.ok && res.comments) {
+          setDbComments(res.comments);
+        }
+      } catch (err) {
+        console.error('Failed to load guestbook comments:', err);
+      } finally {
+        setLoading(false);
+      }
     }
-    return comments;
-  }, [comments]);
 
-  // Compute stats
-  const stats = useMemo(() => {
-    const total = allCommentsWithPinned.length;
-    const gestures = allCommentsWithPinned.filter((c) => c.postType === 'gesture' || c.postType === 'comment').length;
-    const boosts = allCommentsWithPinned.filter((c) => c.postType === 'boost').length;
-    const contributors = new Set(allCommentsWithPinned.map((c) => c.authorName || c.authorId)).size;
-    return { total, gestures, boosts, contributors };
-  }, [allCommentsWithPinned]);
+    loadData();
+  }, []);
 
-  // Organize comments into threads (top-level vs replies)
-  const { topLevelComments, repliesByParent } = useMemo(() => {
+  // Sync with URL hash for direct links (e.g., #gesture-<id>)
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash;
+      if (hash.startsWith('#gesture-')) {
+        const targetId = hash.replace('#gesture-', '');
+        setActiveGestureId(targetId);
+        setActiveView('detail');
+        markAsRead(targetId);
+      } else if (!hash) {
+        setActiveView('list');
+        setActiveGestureId(null);
+      }
+    };
+
+    handleHashChange();
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
+
+  // Update read posts
+  const markAsRead = useCallback((id: string) => {
+    setReadPostIds((prev) => {
+      if (prev.includes(id)) return prev;
+      const next = [id, ...prev];
+      try {
+        localStorage.setItem('shijianus_guestbook_reads', JSON.stringify(next));
+      } catch {}
+      return next;
+    });
+  }, []);
+
+  // Toggle bookmark
+  const toggleBookmark = useCallback((id: string, e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    setBookmarkedPostIds((prev) => {
+      const isBookmarked = prev.includes(id);
+      const next = isBookmarked ? prev.filter((item) => item !== id) : [id, ...prev];
+      try {
+        localStorage.setItem('shijianus_guestbook_bookmarks', JSON.stringify(next));
+      } catch {}
+      showToast(isBookmarked ? '🔖 已移出书签' : '⭐ 已加入书签');
+      return next;
+    });
+  }, []);
+
+  // Toast timer
+  useEffect(() => {
+    if (!toastMessage) return;
+    const t = setTimeout(() => setToastMessage(null), 3200);
+    return () => clearTimeout(t);
+  }, [toastMessage]);
+
+  // Merge starter Boosts with DB Boosts
+  const allBoostComments = useMemo(() => {
+    const fromDb = dbComments.filter((c) => c.postType === 'boost');
+    const existingIds = new Set(fromDb.map((c) => c.id));
+    const starters = STARTER_BOOSTS.filter((c) => !existingIds.has(c.id));
+    return [...fromDb, ...starters];
+  }, [dbComments]);
+
+  // Merge starter pinned post & starter replies with DB comments
+  const allGestureCommentsWithPinned = useMemo(() => {
+    const hasPinned = dbComments.some((c) => c.id === OFFICIAL_PINNED_POST.id);
+    let list = hasPinned ? [...dbComments] : [OFFICIAL_PINNED_POST, ...dbComments];
+
+    // Ensure starter replies exist if pinned post has no replies
+    const hasStarterReplies = list.some((c) => c.parentId === OFFICIAL_PINNED_POST.id);
+    if (!hasStarterReplies) {
+      list = [...list, ...STARTER_PINNED_REPLIES];
+    }
+    return list;
+  }, [dbComments]);
+
+  // Organize Gestures into Top-Level Posts vs Replies
+  const { topLevelGestures, repliesByParent } = useMemo(() => {
     const top: BlogComment[] = [];
     const rep: Record<string, BlogComment[]> = {};
 
-    for (const c of allCommentsWithPinned) {
+    for (const c of allGestureCommentsWithPinned) {
+      // Exclude Boost from Gesture feed
+      if (c.postType === 'boost') continue;
+
       if (c.parentId) {
         if (!rep[c.parentId]) rep[c.parentId] = [];
         rep[c.parentId].push(c);
@@ -251,329 +486,405 @@ export function GuestbookBoard() {
       }
     }
 
-    return { topLevelComments: top, repliesByParent: rep };
-  }, [allCommentsWithPinned]);
+    return { topLevelGestures: top, repliesByParent: rep };
+  }, [allGestureCommentsWithPinned]);
 
-  // Filtered comments
-  const filteredComments = useMemo(() => {
-    return topLevelComments.filter((c) => {
-      // Pinned posts always stay if in "all" or matching channel
-      const isPinned = c.status === 'pinned';
+  // Filtered Gestures according to the 8 horizontal categories
+  const filteredGestures = useMemo(() => {
+    let list = [...topLevelGestures];
 
-      // Channel filter
-      if (selectedChannel !== 'all') {
-        const itemTag = c.tag || 'chat';
-        if (itemTag !== selectedChannel && !isPinned) return false;
-      }
-
-      // Type filter
-      if (selectedType === 'boost' && c.postType !== 'boost') return false;
-      if (selectedType === 'gesture' && c.postType === 'boost') return false;
-
-      // Keyword search
-      if (searchQuery.trim()) {
-        const q = searchQuery.toLowerCase().trim();
-        const textMatch = (c.message || '').toLowerCase().includes(q);
-        const authorMatch = (c.authorName || '').toLowerCase().includes(q);
-        const tagMatch = (c.tag || '').toLowerCase().includes(q);
-        if (!textMatch && !authorMatch && !tagMatch) return false;
-      }
-
-      return true;
-    });
-  }, [topLevelComments, selectedChannel, selectedType, searchQuery]);
-
-  // Markdown tool handler
-  const insertMarkdown = (prefix: string, suffix: string = '') => {
-    const textarea = textareaRef.current;
-    if (!textarea) return;
-
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
-    const current = textarea.value;
-    const selected = current.substring(start, end);
-    const replacement = prefix + (selected || '文本') + suffix;
-
-    setMessage(current.substring(0, start) + replacement + current.substring(end));
-    setTimeout(() => {
-      textarea.focus();
-      textarea.setSelectionRange(start + prefix.length, start + prefix.length + (selected ? selected.length : 2));
-    }, 10);
-  };
-
-  // Insert emoji at cursor
-  const insertEmoji = (emoji: string, isReply = false) => {
-    if (isReply) {
-      const textarea = replyTextareaRef.current;
-      if (textarea) {
-        const start = textarea.selectionStart;
-        const end = textarea.selectionEnd;
-        const current = textarea.value;
-        setReplyMessage(current.substring(0, start) + emoji + current.substring(end));
-        setTimeout(() => {
-          textarea.focus();
-          textarea.setSelectionRange(start + emoji.length, start + emoji.length);
-        }, 10);
-      } else {
-        setReplyMessage((prev) => prev + emoji);
-      }
-      setReplyShowEmoji(false);
-      return;
+    // Search query
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase().trim();
+      list = list.filter(
+        (c) =>
+          c.message.toLowerCase().includes(q) ||
+          (c.authorName && c.authorName.toLowerCase().includes(q)) ||
+          (c.tag && c.tag.toLowerCase().includes(q))
+      );
     }
 
-    const textarea = textareaRef.current;
-    if (textarea) {
-      const start = textarea.selectionStart;
-      const end = textarea.selectionEnd;
-      const current = textarea.value;
-      setMessage(current.substring(0, start) + emoji + current.substring(end));
-      setTimeout(() => {
-        textarea.focus();
-        textarea.setSelectionRange(start + emoji.length, start + emoji.length);
-      }, 10);
-    } else {
-      setMessage((prev) => prev + emoji);
+    // Dimension / Tag filter (when active or selected)
+    if (selectedDimension !== 'all') {
+      list = list.filter((c) => (c.tag || 'tech') === selectedDimension);
     }
-    setShowEmojiPicker(false);
-  };
 
-  // Image Upload handler
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setIsUploadingImage(true);
-    setComposerError(null);
-    try {
-      const res = await uploadCommentImage(file);
-      if (res.ok && res.url) {
-        setAttachedImages((prev) => [...prev, res.url!]);
-        setMessage((prev) => {
-          const append = `\n\n![图片](${res.url})\n\n`;
-          return prev ? prev + append : `![图片](${res.url})`;
+    // Apply the 8 categories
+    switch (categoryFilter) {
+      case 'latest':
+        // Pinned on top, then newest
+        list.sort((a, b) => {
+          if (a.status === 'pinned' && b.status !== 'pinned') return -1;
+          if (b.status === 'pinned' && a.status !== 'pinned') return 1;
+          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
         });
-        showToast('图片上传成功！已插入内容中');
-      } else {
-        setComposerError(res.error || '图片上传失败，请重试');
-      }
-    } catch (err: any) {
-      setComposerError(err.message || '图片上传遇到问题');
-    } finally {
-      setIsUploadingImage(false);
-      if (fileInputRef.current) fileInputRef.current.value = '';
+        break;
+
+      case 'recent':
+        // Active recently (within 7 days)
+        const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+        list = list.filter(
+          (c) => new Date(c.createdAt).getTime() >= sevenDaysAgo || c.status === 'pinned'
+        );
+        list.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        break;
+
+      case 'dimensions':
+        // Kept filtered by dimension, default order
+        list.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        break;
+
+      case 'hot':
+        // Hot: sort by replies count * 3 + likes
+        list.sort((a, b) => {
+          const scoreA = (repliesByParent[a.id]?.length || 0) * 3 + (a.likesCount || 0);
+          const scoreB = (repliesByParent[b.id]?.length || 0) * 3 + (b.likesCount || 0);
+          return scoreB - scoreA;
+        });
+        break;
+
+      case 'featured':
+        // Featured: pinned or high likes
+        list = list.filter((c) => c.status === 'pinned' || (c.likesCount || 0) >= 3);
+        list.sort((a, b) => (b.likesCount || 0) - (a.likesCount || 0));
+        break;
+
+      case 'my':
+        // My posts
+        if (!identity?.id) {
+          list = [];
+        } else {
+          list = list.filter(
+            (c) => c.authorId === identity.id || c.authorName === identity.name
+          );
+        }
+        break;
+
+      case 'read':
+        // Read posts
+        list = list.filter((c) => readPostIds.includes(c.id));
+        break;
+
+      case 'bookmarked':
+        // Bookmarked posts
+        list = list.filter((c) => bookmarkedPostIds.includes(c.id));
+        break;
+    }
+
+    return list;
+  }, [
+    topLevelGestures,
+    categoryFilter,
+    selectedDimension,
+    searchQuery,
+    repliesByParent,
+    identity,
+    readPostIds,
+    bookmarkedPostIds,
+  ]);
+
+  // Current Active Gesture in detail view
+  const currentGesture = useMemo(() => {
+    if (!activeGestureId) return null;
+    return allGestureCommentsWithPinned.find((c) => c.id === activeGestureId) || null;
+  }, [activeGestureId, allGestureCommentsWithPinned]);
+
+  // Current Active Gesture's replies
+  const currentReplies = useMemo(() => {
+    if (!activeGestureId) return [];
+    const rep = repliesByParent[activeGestureId] || [];
+    return [...rep].sort(
+      (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+    );
+  }, [activeGestureId, repliesByParent]);
+
+  // Total floors for detail view: 1 (OP) + replies.length
+  const totalFloors = useMemo(() => {
+    return 1 + currentReplies.length;
+  }, [currentReplies]);
+
+  // Floor Timeline Scroll Tracker in Detail View
+  useEffect(() => {
+    if (activeView !== 'detail') return;
+
+    const handleScroll = () => {
+      const floors = document.querySelectorAll('.gb-floor-target');
+      if (!floors.length) return;
+
+      const viewportMiddle = window.innerHeight * 0.45;
+      let activeIdx = 0;
+
+      floors.forEach((floor, idx) => {
+        const rect = floor.getBoundingClientRect();
+        if (rect.top <= viewportMiddle) {
+          activeIdx = idx;
+        }
+      });
+
+      const floorNum = activeIdx + 1;
+      setCurrentFloor(floorNum);
+      const total = floors.length;
+      const pct = Math.min(100, Math.max(0, Math.round((floorNum / total) * 100)));
+      setScrollPercent(pct);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    // Run once initially
+    setTimeout(handleScroll, 200);
+
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [activeView, activeGestureId, currentReplies]);
+
+  // Jump to floor
+  const jumpToFloor = (floorNumber: number) => {
+    const el = document.getElementById(`floor-${floorNumber}`);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   };
 
-  // Remove attached image
-  const removeAttachedImage = (urlToRemove: string) => {
-    setAttachedImages((prev) => prev.filter((u) => u !== urlToRemove));
-    setMessage((prev) => prev.replace(new RegExp(`!?\\[.*?\\]\\(${urlToRemove.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\)`, 'g'), '').trim());
+  // Jump to reply composer
+  const jumpToComposer = () => {
+    const el = document.getElementById('detail-reply-composer');
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      detailReplyTextareaRef.current?.focus();
+    }
   };
 
-  // Handle post submit
-  const handlePostSubmit = async (e: React.FormEvent) => {
+  // Enter Gesture Detail View
+  const openGestureDetail = (item: BlogComment) => {
+    setActiveGestureId(item.id);
+    setActiveView('detail');
+    markAsRead(item.id);
+    window.location.hash = `#gesture-${item.id}`;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // Exit Gesture Detail View
+  const closeGestureDetail = () => {
+    setActiveView('list');
+    setActiveGestureId(null);
+    window.location.hash = '';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // ----------------------------------------------------
+  // SUBMISSION HANDLERS
+  // ----------------------------------------------------
+
+  // 1. Submit Boost (Top Marquee Panel)
+  const handleBoostSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setComposerError(null);
-
-    const trimmed = message.trim();
-    if (!trimmed) {
-      setComposerError('请输入留言内容');
+    const text = boostInput.trim();
+    if (!text) {
+      showToast('⚠️ 请输入 Boost 内容');
+      return;
+    }
+    if (text.length > 30) {
+      showToast('🚀 Boost 不能超过 30 个字');
       return;
     }
 
-    // Boost: <= 30 characters
-    if (composerMode === 'boost' && trimmed.length > 30) {
-      setComposerError(`🚀 Boost 瞬时微语不能超过 30 个字 (当前 ${trimmed.length} 字)`);
-      return;
-    }
-
-    // Gesture: >= 8 characters
-    if (composerMode === 'gesture' && trimmed.length < 8) {
-      setComposerError(`📝 Gesture 话题讨论至少需要 8 个字 (当前 ${trimmed.length} 字)`);
-      return;
-    }
-
-    setSubmitting(true);
     try {
-      const activeIdentity: CommentIdentity = identity || {
-        id: `vis_${Date.now()}`,
-        name: authorName.trim() || '访客',
-        email: authorEmail.trim(),
-        website: authorWebsite.trim(),
-        avatar: authorAvatar.trim(),
-        role: 'visitor',
-      };
-
+      setBoostSubmitting(true);
       const res = await createComment({
-        slug: 'guestbook',
-        message: trimmed,
-        postType: composerMode,
-        tag: composerChannel,
-        author: activeIdentity,
-        sessionToken: identity?.token,
+        postSlug: 'guestbook',
+        message: text,
+        postType: 'boost',
+        tag: 'chat',
+        identity: identity || undefined,
       });
 
       if (res.ok && res.comment) {
-        setMessage('');
-        setAttachedImages([]);
-        setPreviewTab('write');
-        showToast(composerMode === 'boost' ? '🚀 Boost 瞬时微语发射成功！' : '📝 Gesture 话题讨论发布成功！');
-        await loadComments();
+        setDbComments((prev) => [res.comment!, ...prev]);
+        setBoostInput('');
+        showToast('🚀 Boost 弹幕已发射上墙！');
       } else {
-        setComposerError(res.error || '发表留言失败，请稍后再试');
+        showToast(res.error || '发射失败，请稍后重试');
       }
     } catch (err: any) {
-      setComposerError(err.message || '网络异常，发表失败');
+      showToast(err.message || '网络连接异常');
     } finally {
-      setSubmitting(false);
+      setBoostSubmitting(false);
     }
   };
 
-  // Handle reply submit (Gesture only)
-  const handleReplySubmit = async (parentId: string) => {
-    const trimmed = replyMessage.trim();
-    if (!trimmed) return;
-
-    if (trimmed.length < 2) {
-      showToast('回复内容至少需 2 个字');
+  // 2. Submit New Gesture (Modal)
+  const handleGestureSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const body = gestureMessage.trim();
+    if (body.length < 8) {
+      setGestureError('📝 Gesture 讨论内容至少需要 8 个字');
       return;
     }
 
-    setReplySubmitting(true);
-    try {
-      const activeIdentity: CommentIdentity = identity || {
-        id: `vis_${Date.now()}`,
-        name: authorName.trim() || '访客',
-        email: authorEmail.trim(),
-        website: authorWebsite.trim(),
-        avatar: authorAvatar.trim(),
-        role: 'visitor',
-      };
+    let finalMessage = body;
+    if (gestureTitle.trim()) {
+      finalMessage = `### ${gestureTitle.trim()}\n\n${body}`;
+    }
+    if (gestureImages.length > 0) {
+      const imgMd = gestureImages.map((src) => `\n![image](${src})`).join('');
+      finalMessage += imgMd;
+    }
 
+    try {
+      setGestureSubmitting(true);
+      setGestureError(null);
       const res = await createComment({
-        slug: 'guestbook',
-        message: trimmed,
+        postSlug: 'guestbook',
+        message: finalMessage,
         postType: 'gesture',
-        parentId,
-        author: activeIdentity,
-        sessionToken: identity?.token,
+        tag: gestureTag,
+        identity: identity || undefined,
       });
 
       if (res.ok && res.comment) {
-        setReplyMessage('');
-        setActiveReplyTargetId(null);
-        setExpandedReplies((prev) => ({ ...prev, [parentId]: true }));
-        showToast('跟帖回复已成功送达！');
-        await loadComments();
+        setDbComments((prev) => [res.comment!, ...prev]);
+        setShowGestureModal(false);
+        setGestureTitle('');
+        setGestureMessage('');
+        setGestureImages([]);
+        showToast('✨ Gesture 发布成功！已进入详情讨论');
+        // Automatically open the new Gesture
+        openGestureDetail(res.comment);
       } else {
-        showToast(res.error || '回复失败，请稍后再试');
+        setGestureError(res.error || '发布失败，请检查网络');
       }
     } catch (err: any) {
-      showToast(err.message || '回复失败');
+      setGestureError(err.message || '发布异常');
     } finally {
-      setReplySubmitting(false);
+      setGestureSubmitting(false);
     }
   };
 
-  // Handle Reaction Toggle
+  // 3. Submit Reply in Detail View
+  const handleDetailReplySubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!currentGesture) return;
+
+    let body = detailReplyMessage.trim();
+    if (!body) {
+      showToast('⚠️ 请填写回复内容');
+      return;
+    }
+
+    if (replyTargetFloor) {
+      body = `> @${replyTargetFloor.author}\n\n${body}`;
+    }
+
+    if (detailReplyImages.length > 0) {
+      const imgMd = detailReplyImages.map((src) => `\n![image](${src})`).join('');
+      body += imgMd;
+    }
+
+    try {
+      setDetailReplySubmitting(true);
+      const res = await createComment({
+        postSlug: 'guestbook',
+        parentId: currentGesture.id,
+        message: body,
+        postType: 'gesture',
+        tag: currentGesture.tag,
+        identity: identity || undefined,
+      });
+
+      if (res.ok && res.comment) {
+        setDbComments((prev) => [...prev, res.comment!]);
+        setDetailReplyMessage('');
+        setDetailReplyImages([]);
+        setReplyTargetFloor(null);
+        showToast('💬 回复已发表到最新楼层！');
+        // Scroll to the new floor
+        setTimeout(() => {
+          jumpToFloor(totalFloors + 1);
+        }, 300);
+      } else {
+        showToast(res.error || '回复失败，请重试');
+      }
+    } catch (err: any) {
+      showToast(err.message || '网络连接异常');
+    } finally {
+      setDetailReplySubmitting(false);
+    }
+  };
+
+  // Reactions toggle
   const handleReaction = async (commentId: string, emoji: string) => {
     try {
-      const res = await likeComment(commentId, emoji, identity?.id || identity?.token);
-      if (res.ok || commentId === OFFICIAL_PINNED_POST.id) {
-        setComments((prev) => {
-          const list = prev.length ? prev : [OFFICIAL_PINNED_POST];
-          return list.map((c) => {
-            if (c.id !== commentId) return c;
-            const currentSummary = { ...(c.reactions?.summary || {}) };
-            const currentUsers = { ...(c.reactions?.users || {}) };
-            const uid = identity?.id || identity?.token || 'visitor';
-            const prevEmoji = currentUsers[uid];
-
-            if (prevEmoji === emoji) {
-              delete currentUsers[uid];
-              currentSummary[emoji] = Math.max((currentSummary[emoji] || 1) - 1, 0);
-              if (currentSummary[emoji] === 0) delete currentSummary[emoji];
-            } else {
-              if (prevEmoji) {
-                currentSummary[prevEmoji] = Math.max((currentSummary[prevEmoji] || 1) - 1, 0);
-                if (currentSummary[prevEmoji] === 0) delete currentSummary[prevEmoji];
-              }
-              currentUsers[uid] = emoji;
-              currentSummary[emoji] = (currentSummary[emoji] || 0) + 1;
-            }
-
-            return {
-              ...c,
-              reactions: { summary: currentSummary, users: currentUsers },
-            };
-          });
-        });
+      const res = await likeComment(commentId, emoji);
+      if (res.ok && res.comment) {
+        setDbComments((prev) =>
+          prev.map((c) => (c.id === commentId ? { ...c, ...res.comment } : c))
+        );
       }
     } catch (err) {
       console.error('Reaction toggle error:', err);
     }
   };
 
-  // Handle Delete
-  const handleDelete = async (commentId: string) => {
-    if (!window.confirm('确定要删除这条留言吗？此操作无法撤销。')) return;
+  // Markdown tool handler
+  const insertMarkdownHelper = (
+    ref: React.RefObject<HTMLTextAreaElement | null>,
+    setter: React.Dispatch<React.SetStateAction<string>>,
+    prefix: string,
+    suffix: string = ''
+  ) => {
+    const textarea = ref.current;
+    if (!textarea) return;
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const val = textarea.value;
+    const selected = val.substring(start, end);
+    const replacement = `${prefix}${selected}${suffix}`;
+    setter(val.substring(0, start) + replacement + val.substring(end));
+    setTimeout(() => {
+      textarea.focus();
+      textarea.setSelectionRange(start + prefix.length, end + prefix.length);
+    }, 50);
+  };
+
+  // Image Upload helper
+  const handleImageFileChange = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+    setUploading: (b: boolean) => void,
+    setImages: React.Dispatch<React.SetStateAction<string[]>>
+  ) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
     try {
-      const res = await deleteComment(commentId, identity?.token);
-      if (res.ok) {
-        showToast('留言已删除');
-        setComments((prev) => prev.filter((c) => c.id !== commentId && c.parentId !== commentId));
+      setUploading(true);
+      const res = await uploadCommentImage(file);
+      if (res.ok && res.url) {
+        setImages((prev) => [...prev, res.url!]);
+        showToast('🖼️ 图片上传成功！');
       } else {
-        showToast(res.error || '删除失败');
+        showToast(res.error || '图片上传失败');
       }
     } catch (err: any) {
-      showToast(err.message || '删除失败');
+      showToast(err.message || '上传异常');
+    } finally {
+      setUploading(false);
+      e.target.value = '';
     }
   };
 
-  // Handle Edit Submit
-  const handleEditSubmit = async (commentId: string) => {
-    const trimmed = editMessage.trim();
-    if (!trimmed) return;
-
+  const formatTime = (isoString?: string) => {
+    if (!isoString) return '刚刚';
     try {
-      const res = await editComment(commentId, trimmed, identity?.token);
-      if (res.ok) {
-        showToast('修改已保存');
-        setEditingId(null);
-        setComments((prev) =>
-          prev.map((c) => (c.id === commentId ? { ...c, message: trimmed, updatedAt: new Date().toISOString() } : c))
-        );
-      } else {
-        showToast(res.error || '修改失败');
-      }
-    } catch (err: any) {
-      showToast(err.message || '修改失败');
-    }
-  };
-
-  // Format relative time
-  const formatTime = (isoString: string) => {
-    try {
-      const d = new Date(isoString);
-      const now = new Date();
-      const diffSec = Math.floor((now.getTime() - d.getTime()) / 1000);
-      if (diffSec < 60) return '刚刚';
-      if (diffSec < 3600) return `${Math.floor(diffSec / 60)} 分钟前`;
-      if (diffSec < 86400) return `${Math.floor(diffSec / 3600)} 小时前`;
-      if (diffSec < 2592000) return `${Math.floor(diffSec / 86400)} 天前`;
-      return d.toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' });
+      const date = new Date(isoString);
+      const diff = Date.now() - date.getTime();
+      const minutes = Math.floor(diff / 60000);
+      if (minutes < 1) return '刚刚';
+      if (minutes < 60) return `${minutes}分钟前`;
+      const hours = Math.floor(minutes / 60);
+      if (hours < 24) return `${hours}小时前`;
+      const days = Math.floor(hours / 24);
+      if (days < 30) return `${days}天前`;
+      return date.toLocaleDateString();
     } catch {
-      return '日前';
-    }
-  };
-
-  // Share link handler
-  const handleShare = (commentId: string) => {
-    const url = `${window.location.origin}/guestbook/#comment-${commentId}`;
-    if (navigator.clipboard) {
-      navigator.clipboard.writeText(url).then(() => {
-        showToast('🔗 留言直达链接已复制到剪贴板！');
-      });
+      return '刚刚';
     }
   };
 
@@ -582,956 +893,1191 @@ export function GuestbookBoard() {
       {/* Toast Notification */}
       {toastMessage && (
         <div className="gb-toast" role="status">
-          <Sparkles className="w-4 h-4 text-amber-400" />
+          <CheckCircle2 className="w-4 h-4 text-emerald-400" />
           <span>{toastMessage}</span>
         </div>
       )}
 
-      {/* Image Lightbox Modal */}
+      {/* Lightbox Zoom */}
       {zoomedImage && (
         <div className="gb-lightbox" onClick={() => setZoomedImage(null)}>
           <button className="gb-lightbox__close" onClick={() => setZoomedImage(null)}>
-            <X className="w-6 h-6" />
+            <X className="w-5 h-5" />
           </button>
           <img src={zoomedImage} alt="Zoomed view" className="gb-lightbox__img" />
         </div>
       )}
 
-      {/* 1. Community Hero Header */}
-      <header className="gb-hero">
-        <div className="gb-hero__main">
-          <div className="gb-hero__badge">
-            <span className="gb-pulse-dot"></span>
-            <span>COMMUNITY PLAZA · 全站留言交流广场</span>
+      {/* ========================================================
+          1. 楼上：BOOST 实时弹幕墙与发射器 (TOP BOOST WALL)
+          ======================================================== */}
+      <section className="gb-boost-wall-card" aria-label="Boost 弹幕墙">
+        {/* Boost Header */}
+        <div className="gb-boost-wall-head">
+          <div className="gb-boost-head-left">
+            <span className="gb-boost-badge">
+              <span className="gb-pulse-dot"></span>
+              <Rocket className="w-3.5 h-3.5 mr-1" /> Boost
+            </span>
+            <span className="gb-boost-subtitle">全站实时微语弹幕流 · 30字极简上墙</span>
           </div>
-          <h1 className="gb-hero__title">尺素寸心 · 思想碰撞的数字花园</h1>
-          <p className="gb-hero__subtitle">
-            无论是一场深入的技术推演、一份真挚的建言献策，还是一声微语问候，都在这里沉淀为社区的共同记忆。
-          </p>
+
+          <div className="gb-boost-head-right">
+            <span className="gb-boost-count-pill">{allBoostComments.length} 条已发射</span>
+          </div>
         </div>
 
-        {/* Real-time stats Bento Cards */}
-        <div className="gb-hero__stats">
-          <div className="gb-stat-card is-total">
-            <div className="gb-stat-card__icon-wrap">💬</div>
-            <div className="gb-stat-card__content">
-              <span className="gb-stat-card__num">{stats.total}</span>
-              <span className="gb-stat-card__label">累计交流</span>
-            </div>
+        {/* Dual Marquee Track (Smooth Horizontal Floating Barrage) */}
+        <div
+          className={`gb-boost-marquee-container ${isBoostMarqueePaused ? 'is-paused' : ''}`}
+          onMouseEnter={() => setIsBoostMarqueePaused(true)}
+          onMouseLeave={() => setIsBoostMarqueePaused(false)}
+        >
+          {/* Track 1: Normal Direction */}
+          <div className="gb-boost-track gb-track-1">
+            {allBoostComments.concat(allBoostComments).map((b, idx) => (
+              <div key={`track1-${b.id}-${idx}`} className="gb-boost-pill-card">
+                <div className="gb-boost-pill__avatar">
+                  {b.authorAvatar ? (
+                    <img src={b.authorAvatar} alt={b.authorName} />
+                  ) : (
+                    <span>{getCommentInitials(b.authorName)}</span>
+                  )}
+                </div>
+                <div className="gb-boost-pill__body">
+                  <div className="gb-boost-pill__meta">
+                    <span className="gb-boost-pill__name">{b.authorName || '访客'}</span>
+                    {b.ipCountryFlag && (
+                      <span className="gb-boost-pill__flag" title={b.ipCountryName}>
+                        {b.ipCountryFlag}
+                      </span>
+                    )}
+                    <span className="gb-boost-pill__time">{formatTime(b.createdAt)}</span>
+                  </div>
+                  <div className="gb-boost-pill__text">{b.message}</div>
+                </div>
+              </div>
+            ))}
           </div>
-          <div className="gb-stat-card is-gesture">
-            <div className="gb-stat-card__icon-wrap">📝</div>
-            <div className="gb-stat-card__content">
-              <span className="gb-stat-card__num">{stats.gestures}</span>
-              <span className="gb-stat-card__label">Gesture 话题</span>
-            </div>
-          </div>
-          <div className="gb-stat-card is-boost">
-            <div className="gb-stat-card__icon-wrap">🚀</div>
-            <div className="gb-stat-card__content">
-              <span className="gb-stat-card__num">{stats.boosts}</span>
-              <span className="gb-stat-card__label">Boost 微语</span>
-            </div>
-          </div>
-          <div className="gb-stat-card is-contributors">
-            <div className="gb-stat-card__icon-wrap">👥</div>
-            <div className="gb-stat-card__content">
-              <span className="gb-stat-card__num">{stats.contributors}</span>
-              <span className="gb-stat-card__label">参与交流者</span>
-            </div>
+
+          {/* Track 2: Reverse Direction */}
+          <div className="gb-boost-track gb-track-2">
+            {[...allBoostComments]
+              .reverse()
+              .concat([...allBoostComments].reverse())
+              .map((b, idx) => (
+                <div key={`track2-${b.id}-${idx}`} className="gb-boost-pill-card is-reverse">
+                  <div className="gb-boost-pill__avatar is-purple">
+                    {b.authorAvatar ? (
+                      <img src={b.authorAvatar} alt={b.authorName} />
+                    ) : (
+                      <span>{getCommentInitials(b.authorName)}</span>
+                    )}
+                  </div>
+                  <div className="gb-boost-pill__body">
+                    <div className="gb-boost-pill__meta">
+                      <span className="gb-boost-pill__name">{b.authorName || '访客'}</span>
+                      {b.ipCountryFlag && (
+                        <span className="gb-boost-pill__flag" title={b.ipCountryName}>
+                          {b.ipCountryFlag}
+                        </span>
+                      )}
+                      <span className="gb-boost-pill__time">{formatTime(b.createdAt)}</span>
+                    </div>
+                    <div className="gb-boost-pill__text">{b.message}</div>
+                  </div>
+                </div>
+              ))}
           </div>
         </div>
-      </header>
 
-      {/* 2. Interactive Publisher Workshop (发布工坊) */}
-      <section className="gb-composer-card">
-        {/* Mode Selector Cards (Gesture vs Boost) */}
-        <div className="gb-composer-modes">
-          <button
-            type="button"
-            className={`gb-mode-btn is-gesture ${composerMode === 'gesture' ? 'is-active' : ''}`}
-            onClick={() => {
-              setComposerMode('gesture');
-              setComposerError(null);
-            }}
-          >
-            <div className="gb-mode-btn__badge">深度讨论</div>
-            <div className="gb-mode-btn__header">
-              <MessageSquare className="w-5 h-5 text-indigo-500" />
-              <span className="gb-mode-btn__title">📝 Gesture 话题</span>
-            </div>
-            <span className="gb-mode-btn__hint">8字以上 · Markdown图文 · 开放跟帖</span>
-          </button>
-
-          <button
-            type="button"
-            className={`gb-mode-btn is-boost ${composerMode === 'boost' ? 'is-active' : ''}`}
-            onClick={() => {
-              setComposerMode('boost');
-              setComposerError(null);
-            }}
-          >
-            <div className="gb-mode-btn__badge is-boost">瞬时微语</div>
-            <div className="gb-mode-btn__header">
-              <Rocket className="w-5 h-5 text-purple-500" />
-              <span className="gb-mode-btn__title">🚀 Boost 微语</span>
-            </div>
-            <span className="gb-mode-btn__hint">30字以内 · 极简呈现 · 仅支持表态</span>
-          </button>
-        </div>
-
-        {/* Quick Stamps for Boost mode */}
-        {composerMode === 'boost' && (
-          <div className="gb-boost-stamps">
-            <span className="gb-stamps-label">⚡ 灵感快捷句：</span>
-            <div className="gb-stamps-row">
-              {QUICK_STAMPS.map((s, idx) => (
+        {/* Boost Inline Launcher */}
+        <form onSubmit={handleBoostSubmit} className="gb-boost-launcher">
+          {/* Quick Stamps Row */}
+          <div className="gb-boost-stamps-strip">
+            <span className="gb-stamps-hint">⚡ 灵感快捷句：</span>
+            <div className="gb-stamps-scroll">
+              {QUICK_BOOST_STAMPS.map((stamp, idx) => (
                 <button
                   key={idx}
                   type="button"
                   className="gb-stamp-pill"
-                  onClick={() => setMessage(s.text)}
+                  onClick={() => setBoostInput(stamp)}
                 >
-                  <span>{s.icon}</span>
-                  <span className="gb-stamp-pill__text">{s.text.replace(/^[^\s]+\s*/, '')}</span>
+                  {stamp}
                 </button>
               ))}
             </div>
           </div>
-        )}
 
-        {/* Composer Form */}
-        <form onSubmit={handlePostSubmit} className="gb-composer-form">
-          {/* Top Bar: Channel selector pills & Preview toggle */}
-          <div className="gb-composer-topbar">
-            <div className="gb-channel-selector-row">
-              <span className="gb-field-label">
-                <Tag className="w-3.5 h-3.5 inline mr-1" />
-                发往板块:
-              </span>
-              <div className="gb-channel-select-pills">
-                {CHANNELS.filter((ch) => ch.id !== 'all').map((ch) => (
-                  <button
-                    key={ch.id}
-                    type="button"
-                    className={`gb-composer-channel-pill ${composerChannel === ch.id ? 'is-active' : ''}`}
-                    onClick={() => setComposerChannel(ch.id)}
-                  >
-                    <span>{ch.icon}</span>
-                    <span>{ch.label}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {composerMode === 'gesture' && (
-              <div className="gb-tab-switch">
-                <button
-                  type="button"
-                  className={`gb-tab-btn ${previewTab === 'write' ? 'is-active' : ''}`}
-                  onClick={() => setPreviewTab('write')}
-                >
-                  <Pencil className="w-3.5 h-3.5 mr-1" /> 编辑
-                </button>
-                <button
-                  type="button"
-                  className={`gb-tab-btn ${previewTab === 'preview' ? 'is-active' : ''}`}
-                  onClick={() => setPreviewTab('preview')}
-                >
-                  <Sparkles className="w-3.5 h-3.5 mr-1" /> 实时预览
-                </button>
-              </div>
-            )}
+          {/* Input Bar */}
+          <div className="gb-boost-input-row">
+            <input
+              type="text"
+              value={boostInput}
+              onChange={(e) => setBoostInput(e.target.value)}
+              placeholder="轻触上方快捷句或输入你的 30 字 Boost 弹幕..."
+              maxLength={30}
+              className="gb-boost-text-input"
+            />
+            <div className="gb-boost-counter">{boostInput.length}/30</div>
+            <button
+              type="submit"
+              disabled={boostSubmitting || !boostInput.trim()}
+              className="gb-boost-submit-btn"
+            >
+              <Rocket className="w-4 h-4 mr-1" />
+              <span>{boostSubmitting ? '发射中...' : '发射 Boost'}</span>
+            </button>
           </div>
-
-          {/* Markdown Formatting Toolbar (for Gesture mode) */}
-          {composerMode === 'gesture' && previewTab === 'write' && (
-            <div className="gb-md-toolbar">
-              <button type="button" title="粗体 (Ctrl+B)" onClick={() => insertMarkdown('**', '**')}>
-                <Bold className="w-4 h-4" />
-              </button>
-              <button type="button" title="斜体 (Ctrl+I)" onClick={() => insertMarkdown('*', '*')}>
-                <Italic className="w-4 h-4" />
-              </button>
-              <button type="button" title="代码块" onClick={() => insertMarkdown('\n```\n', '\n```\n')}>
-                <Code className="w-4 h-4" />
-              </button>
-              <button type="button" title="引用" onClick={() => insertMarkdown('\n> ', '\n')}>
-                <Quote className="w-4 h-4" />
-              </button>
-              <button type="button" title="无序列表" onClick={() => insertMarkdown('\n- ', '\n')}>
-                <List className="w-4 h-4" />
-              </button>
-              <button type="button" title="超链接" onClick={() => insertMarkdown('[链接说明](', ')')}>
-                <LinkIcon className="w-4 h-4" />
-              </button>
-              <div className="gb-toolbar-divider"></div>
-              <button
-                type="button"
-                className="gb-toolbar-tool-btn is-img-btn"
-                onClick={() => fileInputRef.current?.click()}
-                disabled={isUploadingImage}
-                title="上传图片"
-              >
-                <ImageIcon className="w-4 h-4 text-emerald-500" />
-                <span>{isUploadingImage ? '上传中...' : '插入图片'}</span>
-              </button>
-              <button
-                type="button"
-                className="gb-toolbar-tool-btn is-emoji-btn"
-                onClick={() => setShowEmojiPicker((prev) => !prev)}
-                title="插入 Emoji 表情"
-              >
-                <Smile className="w-4 h-4 text-amber-500" />
-                <span>表情</span>
-              </button>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/png,image/jpeg,image/jpg,image/webp,image/gif"
-                onChange={handleImageUpload}
-                style={{ display: 'none' }}
-              />
-            </div>
-          )}
-
-          {/* Emoji Palette Popover */}
-          {showEmojiPicker && (
-            <div ref={emojiPickerRef} className="gb-emoji-popover">
-              <div className="gb-emoji-popover__header">
-                <span>选择 Emoji 表情</span>
-                <button type="button" onClick={() => setShowEmojiPicker(false)}>
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-              <div className="gb-emoji-popover__body">
-                {EMOJI_GROUPS.map((grp, gi) => (
-                  <div key={gi} className="gb-emoji-group">
-                    <span className="gb-emoji-group__name">{grp.name}</span>
-                    <div className="gb-emoji-grid">
-                      {grp.emojis.map((em, ei) => (
-                        <button
-                          key={ei}
-                          type="button"
-                          className="gb-emoji-btn"
-                          onClick={() => insertEmoji(em)}
-                        >
-                          {em}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Input Area / Preview Area */}
-          <div className="gb-composer-input-wrap">
-            {previewTab === 'write' || composerMode === 'boost' ? (
-              <textarea
-                ref={textareaRef}
-                value={message}
-                onChange={(e) => {
-                  setMessage(e.target.value);
-                  if (composerError) setComposerError(null);
-                }}
-                rows={composerMode === 'boost' ? 2 : 5}
-                placeholder={
-                  composerMode === 'boost'
-                    ? '轻触即发，留下你的微语或简短问候 (30字以内，不支持跟帖回复)...'
-                    : '展开深入讨论，分享你的见解或提出疑问 (支持 Markdown、图文排版，至少 8 个字)...'
-                }
-                className={`gb-textarea ${composerMode === 'boost' ? 'is-boost' : ''}`}
-                maxLength={composerMode === 'boost' ? 30 : 2500}
-              />
-            ) : (
-              <div
-                className="gb-markdown-preview"
-                dangerouslySetInnerHTML={{
-                  __html: renderCommentMarkdown(message) || '<p class="text-slate-400 italic">预览区域为空，请在编辑框输入内容...</p>',
-                }}
-              />
-            )}
-          </div>
-
-          {/* Attached Images Tray */}
-          {attachedImages.length > 0 && (
-            <div className="gb-attached-tray">
-              <span className="gb-attached-tray__title">已添加附件图片：</span>
-              <div className="gb-attached-grid">
-                {attachedImages.map((imgUrl, idx) => (
-                  <div key={idx} className="gb-attached-thumb">
-                    <img
-                      src={imgUrl}
-                      alt="Attachment"
-                      onClick={() => setZoomedImage(imgUrl)}
-                    />
-                    <button
-                      type="button"
-                      className="gb-attached-remove"
-                      onClick={() => removeAttachedImage(imgUrl)}
-                      title="移除图片"
-                    >
-                      <X className="w-3 h-3" />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Feedback error alert */}
-          {composerError && (
-            <div className="gb-composer-alert">
-              <AlertCircle className="w-4 h-4 flex-shrink-0" />
-              <span>{composerError}</span>
-            </div>
-          )}
-
-          {/* Bottom Control Bar */}
-          <div className="gb-composer-bottombar">
-            {/* Identity info & Quick edit */}
-            <div className="gb-identity-info">
-              <div className="gb-identity-avatar-wrap">
-                {authorAvatar ? (
-                  <img src={authorAvatar} alt={authorName} className="gb-identity-avatar" />
-                ) : (
-                  <div className="gb-identity-avatar-placeholder">
-                    {getCommentInitials(authorName)}
-                  </div>
-                )}
-              </div>
-              <div className="gb-identity-meta">
-                <span className="gb-identity-name">{authorName || '访客'}</span>
-                <button
-                  type="button"
-                  className="gb-identity-edit-btn"
-                  onClick={() => setShowIdentityEdit((prev) => !prev)}
-                >
-                  {showIdentityEdit ? '收起名片' : '设置称呼与名片'}
-                </button>
-              </div>
-            </div>
-
-            {/* Character counter & Submit Button */}
-            <div className="gb-submit-controls">
-              <div className="gb-char-counter">
-                {composerMode === 'boost' ? (
-                  <span className={message.length > 30 ? 'text-red-500 font-bold' : ''}>
-                    {message.length} / 30 字
-                  </span>
-                ) : (
-                  <span className={message.trim().length > 0 && message.trim().length < 8 ? 'text-amber-500 font-medium' : ''}>
-                    {message.length} 字 (至少 8 字)
-                  </span>
-                )}
-              </div>
-
-              <button
-                type="submit"
-                disabled={
-                  submitting ||
-                  !message.trim() ||
-                  (composerMode === 'boost' && message.trim().length > 30) ||
-                  (composerMode === 'gesture' && message.trim().length < 8)
-                }
-                className={`gb-submit-btn ${composerMode === 'boost' ? 'is-boost-submit' : ''}`}
-              >
-                {submitting ? (
-                  <span>提交中...</span>
-                ) : composerMode === 'boost' ? (
-                  <>
-                    <Rocket className="w-4 h-4 mr-1.5" />
-                    <span>发射 Boost</span>
-                  </>
-                ) : (
-                  <>
-                    <Send className="w-4 h-4 mr-1.5" />
-                    <span>发布 Gesture 讨论</span>
-                  </>
-                )}
-              </button>
-            </div>
-          </div>
-
-          {/* Expandable Identity Edit Drawer */}
-          {showIdentityEdit && (
-            <div className="gb-identity-drawer">
-              <div className="gb-id-field">
-                <label>昵称 / 称呼:</label>
-                <input
-                  type="text"
-                  value={authorName}
-                  onChange={(e) => setAuthorName(e.target.value)}
-                  placeholder="留下你的大名或昵称"
-                  maxLength={30}
-                />
-              </div>
-              <div className="gb-id-field">
-                <label>个人主页 (选填):</label>
-                <input
-                  type="url"
-                  value={authorWebsite}
-                  onChange={(e) => setAuthorWebsite(e.target.value)}
-                  placeholder="https://example.com"
-                />
-              </div>
-              <div className="gb-id-field">
-                <label>邮箱 (选填，仅用于回复提醒):</label>
-                <input
-                  type="email"
-                  value={authorEmail}
-                  onChange={(e) => setAuthorEmail(e.target.value)}
-                  placeholder="your-name@domain.com"
-                />
-              </div>
-              <div className="gb-id-field">
-                <label>头像链接 (选填):</label>
-                <input
-                  type="url"
-                  value={authorAvatar}
-                  onChange={(e) => setAuthorAvatar(e.target.value)}
-                  placeholder="https://..."
-                />
-              </div>
-            </div>
-          )}
         </form>
       </section>
 
-      {/* 3. Community Channels & Navigation Filters */}
-      <nav className="gb-channel-nav" aria-label="留言板板块导航">
-        <div className="gb-channel-tabs">
-          {CHANNELS.map((ch) => {
-            const count = allCommentsWithPinned.filter((c) => (c.tag || 'chat') === ch.id).length;
+      {/* ========================================================
+          2. 横排分类导航条 (HORIZONTAL CATEGORIES BAR)
+          包含："最新" "近期" "维度" "热门" "精选" "我的贴文" "已读" "书签"
+          ======================================================== */}
+      <nav className="gb-nav-bar" aria-label="Gesture 讨论分类">
+        <div className="gb-nav-bar__categories">
+          {NAV_CATEGORIES.map((cat) => {
+            const Icon = cat.icon;
+            const isActive = categoryFilter === cat.id;
+
             return (
-              <button
-                key={ch.id}
-                type="button"
-                className={`gb-channel-pill ${selectedChannel === ch.id ? 'is-active' : ''}`}
-                onClick={() => setSelectedChannel(ch.id)}
-              >
-                <span className="gb-channel-pill__icon">{ch.icon}</span>
-                <span className="gb-channel-pill__label">{ch.label}</span>
-                {ch.id !== 'all' && count > 0 && (
-                  <span className="gb-channel-pill__count">{count}</span>
+              <div key={cat.id} className="gb-cat-btn-wrapper">
+                <button
+                  type="button"
+                  className={`gb-cat-btn ${isActive ? 'is-active' : ''}`}
+                  onClick={() => {
+                    setCategoryFilter(cat.id);
+                    if (cat.id === 'dimensions') {
+                      setShowDimensionDropdown((prev) => !prev);
+                    } else {
+                      setShowDimensionDropdown(false);
+                    }
+                  }}
+                >
+                  <Icon className="w-4 h-4 mr-1.5" />
+                  <span>{cat.label}</span>
+                  {cat.id === 'dimensions' && (
+                    <ChevronDown className="w-3.5 h-3.5 ml-1 text-slate-400" />
+                  )}
+                  {cat.id === 'bookmarked' && bookmarkedPostIds.length > 0 && (
+                    <span className="gb-cat-count">{bookmarkedPostIds.length}</span>
+                  )}
+                  {cat.id === 'read' && readPostIds.length > 0 && (
+                    <span className="gb-cat-count">{readPostIds.length}</span>
+                  )}
+                </button>
+
+                {/* Dimensions Dropdown Menu */}
+                {cat.id === 'dimensions' && showDimensionDropdown && (
+                  <div className="gb-dimension-dropdown">
+                    {CHANNELS.map((ch) => (
+                      <button
+                        key={ch.id}
+                        type="button"
+                        className={`gb-dimension-item ${selectedDimension === ch.id ? 'is-selected' : ''}`}
+                        onClick={() => {
+                          setSelectedDimension(ch.id);
+                          setShowDimensionDropdown(false);
+                        }}
+                      >
+                        <span className="gb-dim-icon">{ch.icon}</span>
+                        <div className="gb-dim-info">
+                          <span className="gb-dim-title">{ch.label}</span>
+                          <span className="gb-dim-desc">{ch.desc}</span>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
                 )}
-              </button>
+              </div>
             );
           })}
         </div>
 
-        {/* Filters & Sorting row */}
-        <div className="gb-filter-row">
-          {/* Post Type filter pills */}
-          <div className="gb-type-pills">
-            <button
-              type="button"
-              className={`gb-type-btn ${selectedType === 'all' ? 'is-active' : ''}`}
-              onClick={() => setSelectedType('all')}
-            >
-              全部类型
-            </button>
-            <button
-              type="button"
-              className={`gb-type-btn ${selectedType === 'gesture' ? 'is-active' : ''}`}
-              onClick={() => setSelectedType('gesture')}
-            >
-              📝 Gesture 话题
-            </button>
-            <button
-              type="button"
-              className={`gb-type-btn ${selectedType === 'boost' ? 'is-active' : ''}`}
-              onClick={() => setSelectedType('boost')}
-            >
-              🚀 Boost 微语
-            </button>
-          </div>
-
-          <div className="gb-filter-right">
-            {/* Search Input */}
-            <div className="gb-search-box">
-              <Search className="w-3.5 h-3.5 gb-search-icon" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="搜索讨论内容或用户..."
-                className="gb-search-input"
-              />
-              {searchQuery && (
-                <button
-                  type="button"
-                  className="gb-search-clear"
-                  onClick={() => setSearchQuery('')}
-                >
-                  <X className="w-3 h-3" />
-                </button>
-              )}
-            </div>
-
-            {/* Sort Toggle (Latest / Hot) */}
-            <div className="gb-sort-toggle">
+        {/* Right Tools: Search & New Gesture Button */}
+        <div className="gb-nav-bar__tools">
+          <div className="gb-nav-search">
+            <Search className="w-3.5 h-3.5 gb-search-icon" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="搜索 Gesture..."
+              className="gb-search-input"
+            />
+            {searchQuery && (
               <button
                 type="button"
-                className={`gb-sort-btn ${sort === 'new' ? 'is-active' : ''}`}
-                onClick={() => setSort('new')}
+                className="gb-search-clear"
+                onClick={() => setSearchQuery('')}
               >
-                <Clock className="w-3.5 h-3.5 mr-1" /> 最新
+                <X className="w-3 h-3" />
               </button>
-              <button
-                type="button"
-                className={`gb-sort-btn ${sort === 'hot' ? 'is-active' : ''}`}
-                onClick={() => setSort('hot')}
-              >
-                <Flame className="w-3.5 h-3.5 mr-1 text-orange-500" /> 最热
-              </button>
-            </div>
+            )}
           </div>
+
+          <button
+            type="button"
+            className="gb-new-gesture-btn"
+            onClick={() => {
+              setShowGestureModal(true);
+              setGestureError(null);
+            }}
+          >
+            <Pencil className="w-4 h-4 mr-1.5" />
+            <span>发布 Gesture</span>
+          </button>
         </div>
       </nav>
 
-      {/* 4. Discussions Stream */}
-      <main className="gb-stream">
-        {loading ? (
-          <div className="gb-loading-state">
-            <div className="gb-spinner"></div>
-            <span>正在连接边缘节点并加载全站讨论...</span>
-          </div>
-        ) : filteredComments.length === 0 ? (
-          <div className="gb-empty-card">
-            <div className="gb-empty-card__icon">🌱</div>
-            <h3 className="gb-empty-card__title">
-              {searchQuery ? '未找到匹配的讨论内容' : '该板块尚无留言或讨论'}
-            </h3>
-            <p className="gb-empty-card__desc">
-              {searchQuery
-                ? '可以尝试更换关键词搜索，或重置筛选条件'
-                : '成为第一个留下思想足迹的人吧！写下你的见解，启动交流之火。'}
-            </p>
-            <button
-              type="button"
-              className="gb-empty-cta-btn"
-              onClick={() => {
-                textareaRef.current?.focus();
-                textareaRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-              }}
-            >
-              <Pencil className="w-4 h-4 mr-1.5" /> 发起第一条讨论
-            </button>
-          </div>
-        ) : (
-          <div className="gb-cards-list">
-            {filteredComments.map((item) => {
-              const isBoost = item.postType === 'boost';
-              const isPinned = item.status === 'pinned';
-              const replies = repliesByParent[item.id] || [];
-              const isRepliesExpanded = Boolean(expandedReplies[item.id]);
-              const channelInfo = CHANNELS.find((ch) => ch.id === item.tag) || CHANNELS[1];
-              const userLevel = computeUserLevel(item.authorId || item.authorName);
-              const isOwner = Boolean(
-                identity?.id && (identity.id === item.authorId || identity.token === item.authorId)
-              );
+      {/* Dimension Pills Quick Strip (When Dimensions is selected) */}
+      {selectedDimension !== 'all' && (
+        <div className="gb-active-dimension-strip">
+          <span className="gb-active-dim-label">当前维度筛选：</span>
+          <span className="gb-active-dim-pill">
+            {CHANNELS.find((c) => c.id === selectedDimension)?.icon}{' '}
+            {CHANNELS.find((c) => c.id === selectedDimension)?.label}
+          </span>
+          <button
+            type="button"
+            className="gb-active-dim-reset"
+            onClick={() => setSelectedDimension('all')}
+          >
+            清除维度筛选 <X className="w-3 h-3 ml-0.5 inline" />
+          </button>
+        </div>
+      )}
 
-              return (
-                <article
-                  key={item.id}
-                  id={`comment-${item.id}`}
-                  className={`gb-card ${isBoost ? 'is-boost-card' : 'is-gesture-card'} ${isPinned ? 'is-pinned-card' : ''}`}
-                >
-                  {/* Card Header */}
-                  <div className="gb-card__header">
-                    <div className="gb-card__author-info">
-                      {/* Avatar */}
-                      <div className="gb-card__avatar-box">
+      {/* ========================================================
+          3. 楼下：GESTURE 广场列表 / 详情双视图 (GESTURE STREAM)
+          ======================================================== */}
+      {activeView === 'list' ? (
+        /* LIST VIEW (GESTURE 列表广场) */
+        <main className="gb-gesture-list-view">
+          {loading ? (
+            <div className="gb-loading-state">
+              <div className="gb-spinner"></div>
+              <span>正在连接边缘节点并加载 Gesture 讨论广场...</span>
+            </div>
+          ) : filteredGestures.length === 0 ? (
+            <div className="gb-empty-state">
+              <div className="gb-empty-icon">🌱</div>
+              <h3 className="gb-empty-title">
+                {searchQuery ? '未找到匹配的 Gesture 贴文' : '暂无符合当前分类的 Gesture'}
+              </h3>
+              <p className="gb-empty-desc">
+                {searchQuery
+                  ? '可以尝试更换关键词或清除筛选条件'
+                  : '成为第一个发起话题的人吧！写下你的见解，启动全站讨论。'}
+              </p>
+              <button
+                type="button"
+                className="gb-new-gesture-btn"
+                onClick={() => setShowGestureModal(true)}
+              >
+                <Pencil className="w-4 h-4 mr-1.5" /> 发起第一条 Gesture
+              </button>
+            </div>
+          ) : (
+            <div className="gb-gesture-table">
+              {filteredGestures.map((item) => {
+                const isPinned = item.status === 'pinned';
+                const isBookmarked = bookmarkedPostIds.includes(item.id);
+                const isRead = readPostIds.includes(item.id);
+                const replies = repliesByParent[item.id] || [];
+                const channel = CHANNELS.find((c) => c.id === item.tag) || CHANNELS[2];
+                const userLevel = computeUserLevel(item.authorId || item.authorName);
+
+                // Excerpt clean up
+                const cleanExcerpt = item.message
+                  .replace(/^###\s+.*$/m, '')
+                  .replace(/!\[.*?\]\(.*?\)/g, '')
+                  .replace(/[#*`_>]/g, '')
+                  .trim();
+
+                // Extract title if present
+                const titleMatch = item.message.match(/^###\s+(.*)$/m);
+                const title = titleMatch ? titleMatch[1] : cleanExcerpt.slice(0, 48) || '无标题讨论';
+
+                return (
+                  <article
+                    key={item.id}
+                    className={`gb-gesture-row ${isPinned ? 'is-pinned-row' : ''} ${isRead ? 'is-read-row' : ''}`}
+                    onClick={() => openGestureDetail(item)}
+                  >
+                    {/* Left: Author Avatar & Channel Icon */}
+                    <div className="gb-gesture-row__avatar-wrap">
+                      <div className="gb-gesture-row__avatar">
                         {item.authorAvatar ? (
-                          <img
-                            src={item.authorAvatar}
-                            alt={item.authorName}
-                            className="gb-card__avatar"
-                          />
+                          <img src={item.authorAvatar} alt={item.authorName} />
                         ) : (
-                          <div className="gb-card__avatar-fallback">
-                            {getCommentInitials(item.authorName)}
-                          </div>
+                          <span>{getCommentInitials(item.authorName)}</span>
                         )}
                       </div>
+                      <span className="gb-gesture-row__channel-icon" title={channel.label}>
+                        {channel.icon}
+                      </span>
+                    </div>
 
-                      {/* Author Details */}
-                      <div className="gb-card__author-meta">
-                        <div className="gb-card__author-row">
-                          <span className="gb-card__author-name">
-                            {item.authorWebsite ? (
-                              <a
-                                href={item.authorWebsite}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="gb-card__author-link"
-                              >
-                                {item.authorName}
-                              </a>
-                            ) : (
-                              item.authorName
-                            )}
+                    {/* Middle: Title & Meta Info */}
+                    <div className="gb-gesture-row__main">
+                      <div className="gb-gesture-row__header">
+                        {isPinned && (
+                          <span className="gb-badge is-pinned" title="官方置顶">
+                            <Pin className="w-3 h-3 inline mr-0.5" /> 官方置顶
                           </span>
+                        )}
+                        <span className="gb-channel-tag">
+                          {channel.icon} {channel.label}
+                        </span>
+                        <h2 className="gb-gesture-row__title">
+                          {title}
+                        </h2>
+                      </div>
 
-                          {/* Pinned Badge */}
-                          {isPinned && (
-                            <span className="gb-badge is-pinned" title="全站置顶官方指南">
-                              <Pin className="w-3 h-3 inline mr-0.5" /> 官方置顶
-                            </span>
-                          )}
+                      <p className="gb-gesture-row__excerpt">
+                        {cleanExcerpt.slice(0, 110)}
+                        {cleanExcerpt.length > 110 ? '...' : ''}
+                      </p>
 
-                          {/* Role Badge */}
+                      <div className="gb-gesture-row__footer">
+                        <span className="gb-gesture-row__author">
+                          {item.authorName || '访客'}
                           {item.authorRole === 'admin' && (
+                            <span className="gb-badge is-admin ml-1">👑 站长</span>
+                          )}
+                          <span className="gb-level-badge ml-1">{userLevel.badge}</span>
+                        </span>
+                        <span className="gb-dot-divider">•</span>
+                        <time className="gb-gesture-row__time">{formatTime(item.createdAt)}</time>
+                        {item.ipLocation && (
+                          <>
+                            <span className="gb-dot-divider">•</span>
+                            <span className="gb-gesture-row__loc">
+                              {item.ipCountryFlag} {item.ipLocation}
+                            </span>
+                          </>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Right: Metrics & Bookmark */}
+                    <div className="gb-gesture-row__right">
+                      {/* Replies count */}
+                      <div className="gb-gesture-metric is-replies" title="跟帖回复数">
+                        <MessageSquare className="w-4 h-4 mr-1 text-indigo-500" />
+                        <span>{replies.length}</span>
+                      </div>
+
+                      {/* Likes count */}
+                      <div className="gb-gesture-metric is-likes" title="表态点赞数">
+                        <Flame className="w-4 h-4 mr-1 text-orange-500" />
+                        <span>{item.likesCount || 0}</span>
+                      </div>
+
+                      {/* Bookmark Button */}
+                      <button
+                        type="button"
+                        className={`gb-bookmark-toggle ${isBookmarked ? 'is-bookmarked' : ''}`}
+                        title={isBookmarked ? '移出书签' : '加入书签'}
+                        onClick={(e) => toggleBookmark(item.id, e)}
+                      >
+                        <Bookmark className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+          )}
+        </main>
+      ) : (
+        /* ========================================================
+           DETAIL VIEW (GESTURE 详情与楼层时间轴滑块)
+           ======================================================== */
+        currentGesture && (
+          <div className="gb-gesture-detail-view">
+            {/* Detail Top Navigation */}
+            <div className="gb-detail-topbar">
+              <button
+                type="button"
+                className="gb-back-btn"
+                onClick={closeGestureDetail}
+              >
+                <ArrowLeft className="w-4 h-4 mr-1.5" />
+                <span>返回 Gesture 列表</span>
+              </button>
+
+              <div className="gb-detail-topbar__actions">
+                <button
+                  type="button"
+                  className={`gb-action-icon-btn ${bookmarkedPostIds.includes(currentGesture.id) ? 'is-active' : ''}`}
+                  onClick={(e) => toggleBookmark(currentGesture.id, e)}
+                  title="书签收藏"
+                >
+                  <Bookmark className="w-4 h-4" />
+                </button>
+
+                <button
+                  type="button"
+                  className="gb-action-icon-btn"
+                  onClick={() => {
+                    navigator.clipboard.writeText(window.location.href);
+                    showToast('🔗 贴文直达链接已复制到剪贴板！');
+                  }}
+                  title="复制直达链接"
+                >
+                  <Share2 className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+
+            {/* Layout Grid: Left Stream (Floors) + Right Timeline Scroller */}
+            <div className="gb-detail-layout">
+              {/* Left Column: Floor Stream */}
+              <div className="gb-detail-stream">
+                {/* 1 楼 (主楼 / OP Floor) */}
+                <article
+                  id="floor-1"
+                  className="gb-floor-item is-op-floor gb-floor-target"
+                >
+                  {/* Floor Header */}
+                  <div className="gb-floor-head">
+                    <div className="gb-floor-author-info">
+                      <div className="gb-floor-avatar">
+                        {currentGesture.authorAvatar ? (
+                          <img src={currentGesture.authorAvatar} alt={currentGesture.authorName} />
+                        ) : (
+                          <span>{getCommentInitials(currentGesture.authorName)}</span>
+                        )}
+                      </div>
+                      <div className="gb-floor-meta">
+                        <div className="gb-floor-name-row">
+                          <span className="gb-floor-name">{currentGesture.authorName || '访客'}</span>
+                          {currentGesture.authorRole === 'admin' && (
                             <span className="gb-badge is-admin">👑 站长</span>
                           )}
-                          {item.authorRole === 'reader' && (
-                            <span className="gb-badge is-reader">读者</span>
-                          )}
-                          {item.authorRole === 'visitor' && (
-                            <span className="gb-badge is-visitor">访客</span>
-                          )}
-
-                          {/* Level Badge */}
-                          <span
-                            className="gb-badge is-level"
-                            style={{
-                              borderColor: userLevel.badgeColor,
-                              color: userLevel.badgeColor,
-                            }}
-                          >
-                            {userLevel.levelTag}
+                          <span className="gb-level-badge">
+                            {computeUserLevel(currentGesture.authorId || currentGesture.authorName).badge}
                           </span>
-
-                          {/* Location flag */}
-                          {item.ipCountryFlag && (
-                            <span className="gb-badge is-geo" title={item.ipLocation || '属地'}>
-                              {item.ipCountryFlag} {item.ipLocation || item.ipCountryName}
-                            </span>
+                          {currentGesture.status === 'pinned' && (
+                            <span className="gb-badge is-pinned">📌 置顶</span>
                           )}
                         </div>
-
-                        {/* Channel tag & timestamp */}
-                        <div className="gb-card__sub-row">
-                          <span className="gb-channel-tag">
-                            {channelInfo.icon} {channelInfo.label}
-                          </span>
-                          <span className="gb-dot-divider">•</span>
-                          <time className="gb-card__time" dateTime={item.createdAt}>
-                            {formatTime(item.createdAt)}
-                          </time>
+                        <div className="gb-floor-sub-row">
+                          <time>{formatTime(currentGesture.createdAt)}</time>
+                          {currentGesture.ipLocation && (
+                            <>
+                              <span className="gb-dot-divider">•</span>
+                              <span>
+                                {currentGesture.ipCountryFlag} {currentGesture.ipLocation}
+                              </span>
+                            </>
+                          )}
                         </div>
                       </div>
                     </div>
 
-                    {/* Right side mode badge */}
-                    <div className="gb-card__type-badge">
-                      {isBoost ? (
-                        <span className="gb-boost-pill">
-                          <Rocket className="w-3 h-3 mr-1" /> Boost 瞬时流
-                        </span>
-                      ) : (
-                        <span className="gb-gesture-pill">
-                          <MessageSquare className="w-3 h-3 mr-1" /> Gesture 讨论
-                        </span>
-                      )}
-                    </div>
+                    <div className="gb-floor-number">#1 楼主</div>
                   </div>
 
-                  {/* Card Body */}
-                  <div className="gb-card__body">
-                    {editingId === item.id ? (
-                      <div className="gb-card__edit-form">
-                        <textarea
-                          value={editMessage}
-                          onChange={(e) => setEditMessage(e.target.value)}
-                          rows={3}
-                          className="gb-textarea"
-                        />
-                        <div className="gb-card__edit-actions">
-                          <button
-                            type="button"
-                            className="gb-btn-sm is-secondary"
-                            onClick={() => setEditingId(null)}
-                          >
-                            取消
-                          </button>
-                          <button
-                            type="button"
-                            className="gb-btn-sm is-primary"
-                            onClick={() => handleEditSubmit(item.id)}
-                          >
-                            保存修改
-                          </button>
-                        </div>
-                      </div>
-                    ) : (
-                      <div
-                        className="gb-card__content"
-                        dangerouslySetInnerHTML={{
-                          __html: renderCommentMarkdown(item.message),
-                        }}
-                      />
-                    )}
+                  {/* Floor Body (Markdown) */}
+                  <div className="gb-floor-body">
+                    <div
+                      className="gb-markdown-body"
+                      dangerouslySetInnerHTML={{
+                        __html: renderCommentMarkdown(currentGesture.message),
+                      }}
+                    />
                   </div>
 
-                  {/* Card Footer Actions */}
-                  <div className="gb-card__footer">
-                    {/* Reactions Bar */}
+                  {/* Floor Footer & Reactions */}
+                  <div className="gb-floor-foot">
                     <div className="gb-reactions-bar">
                       {['👍', '❤️', '🚀', '🎉', '💡', '🔥'].map((emoji) => {
-                        const count = item.reactions?.summary?.[emoji] || 0;
-                        const myUserId = identity?.id || identity?.token || 'visitor';
-                        const isReacted = item.reactions?.users?.[myUserId] === emoji;
-
+                        const count = currentGesture.reactions?.summary?.[emoji] || 0;
                         return (
                           <button
                             key={emoji}
                             type="button"
-                            className={`gb-reaction-btn ${isReacted ? 'is-reacted' : ''}`}
-                            onClick={() => handleReaction(item.id, emoji)}
-                            title={`以 ${emoji} 进行表态`}
+                            className={`gb-reaction-btn ${count > 0 ? 'has-reactions' : ''}`}
+                            onClick={() => handleReaction(currentGesture.id, emoji)}
                           >
-                            <span className="gb-reaction-emoji">{emoji}</span>
-                            {count > 0 && <span className="gb-reaction-count">{count}</span>}
+                            <span>{emoji}</span>
+                            {count > 0 && <span className="gb-reaction-num">{count}</span>}
                           </button>
                         );
                       })}
                     </div>
 
-                    {/* Action buttons on the right */}
-                    <div className="gb-card__actions">
-                      {/* CRITICAL RULE: Boost default CANNOT be replied to. Gesture CAN be replied to! */}
-                      {!isBoost ? (
-                        <button
-                          type="button"
-                          className={`gb-action-btn ${isRepliesExpanded ? 'is-active' : ''}`}
-                          onClick={() => {
-                            setExpandedReplies((prev) => ({
-                              ...prev,
-                              [item.id]: !prev[item.id],
-                            }));
-                            if (!activeReplyTargetId) {
-                              setActiveReplyTargetId(item.id);
-                            }
-                          }}
-                        >
-                          <MessageSquare className="w-3.5 h-3.5 mr-1 text-indigo-500" />
-                          <span>
-                            {replies.length > 0
-                              ? `${replies.length} 条跟帖回复`
-                              : '💬 跟帖回复'}
-                          </span>
-                          {replies.length > 0 &&
-                            (isRepliesExpanded ? (
-                              <ChevronUp className="w-3.5 h-3.5 ml-1" />
-                            ) : (
-                              <ChevronDown className="w-3.5 h-3.5 ml-1" />
-                            ))}
-                        </button>
-                      ) : (
-                        <span className="gb-boost-no-reply-hint" title="Boost 属于瞬时微语，不开放跟帖回复">
-                          ⚡ 瞬时微语 · 仅支持表态
-                        </span>
-                      )}
-
-                      {/* Share link */}
+                    <div className="gb-floor-actions">
                       <button
                         type="button"
-                        className="gb-action-btn"
-                        onClick={() => handleShare(item.id)}
-                        title="复制直达链接"
+                        className="gb-floor-action-btn"
+                        onClick={() => {
+                          setReplyTargetFloor({ id: currentGesture.id, author: currentGesture.authorName });
+                          jumpToComposer();
+                        }}
                       >
-                        <Share2 className="w-3.5 h-3.5" />
+                        <CornerDownRight className="w-3.5 h-3.5 mr-1" /> 回复楼主
                       </button>
-
-                      {/* Edit / Delete for author */}
-                      {isOwner && !isPinned && (
-                        <>
-                          <button
-                            type="button"
-                            className="gb-action-btn"
-                            onClick={() => {
-                              setEditingId(item.id);
-                              setEditMessage(item.message);
-                            }}
-                            title="编辑留言"
-                          >
-                            <Pencil className="w-3.5 h-3.5" />
-                          </button>
-                          <button
-                            type="button"
-                            className="gb-action-btn is-danger"
-                            onClick={() => handleDelete(item.id)}
-                            title="删除留言"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        </>
-                      )}
                     </div>
                   </div>
+                </article>
 
-                  {/* Nested Replies Stream (Gesture Discussion only) */}
-                  {!isBoost && (isRepliesExpanded || activeReplyTargetId === item.id) && (
-                    <div className="gb-replies-drawer">
-                      {/* Replies List */}
-                      {replies.length > 0 && (
-                        <div className="gb-replies-list">
-                          {replies.map((reply) => {
-                            const replyLevel = computeUserLevel(reply.authorId || reply.authorName);
-                            const isReplyOwner = Boolean(
-                              identity?.id &&
-                                (identity.id === reply.authorId || identity.token === reply.authorId)
-                            );
+                {/* 后续楼层 (Replies / 2楼、3楼...) */}
+                {currentReplies.map((reply, index) => {
+                  const floorNum = index + 2;
+                  const userLevel = computeUserLevel(reply.authorId || reply.authorName);
 
+                  return (
+                    <article
+                      key={reply.id}
+                      id={`floor-${floorNum}`}
+                      className="gb-floor-item gb-floor-target"
+                    >
+                      <div className="gb-floor-head">
+                        <div className="gb-floor-author-info">
+                          <div className="gb-floor-avatar">
+                            {reply.authorAvatar ? (
+                              <img src={reply.authorAvatar} alt={reply.authorName} />
+                            ) : (
+                              <span>{getCommentInitials(reply.authorName)}</span>
+                            )}
+                          </div>
+                          <div className="gb-floor-meta">
+                            <div className="gb-floor-name-row">
+                              <span className="gb-floor-name">{reply.authorName || '访客'}</span>
+                              {reply.authorRole === 'admin' && (
+                                <span className="gb-badge is-admin">👑 站长</span>
+                              )}
+                              <span className="gb-level-badge">{userLevel.badge}</span>
+                            </div>
+                            <div className="gb-floor-sub-row">
+                              <time>{formatTime(reply.createdAt)}</time>
+                              {reply.ipLocation && (
+                                <>
+                                  <span className="gb-dot-divider">•</span>
+                                  <span>
+                                    {reply.ipCountryFlag} {reply.ipLocation}
+                                  </span>
+                                </>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="gb-floor-number">#{floorNum} 楼</div>
+                      </div>
+
+                      <div className="gb-floor-body">
+                        <div
+                          className="gb-markdown-body"
+                          dangerouslySetInnerHTML={{
+                            __html: renderCommentMarkdown(reply.message),
+                          }}
+                        />
+                      </div>
+
+                      <div className="gb-floor-foot">
+                        <div className="gb-reactions-bar">
+                          {['👍', '❤️', '🚀', '🎉', '💡', '🔥'].map((emoji) => {
+                            const count = reply.reactions?.summary?.[emoji] || 0;
                             return (
-                              <div key={reply.id} className="gb-reply-item">
-                                <div className="gb-reply-item__header">
-                                  <div className="gb-card__avatar-box is-sm">
-                                    {reply.authorAvatar ? (
-                                      <img
-                                        src={reply.authorAvatar}
-                                        alt={reply.authorName}
-                                        className="gb-card__avatar"
-                                      />
-                                    ) : (
-                                      <div className="gb-card__avatar-fallback is-sm">
-                                        {getCommentInitials(reply.authorName)}
-                                      </div>
-                                    )}
-                                  </div>
-
-                                  <div className="gb-reply-item__meta">
-                                    <span className="gb-card__author-name is-sm">
-                                      {reply.authorName}
-                                    </span>
-                                    {reply.authorRole === 'admin' && (
-                                      <span className="gb-badge is-admin is-sm">👑 站长</span>
-                                    )}
-                                    <span
-                                      className="gb-badge is-level is-sm"
-                                      style={{
-                                        borderColor: replyLevel.badgeColor,
-                                        color: replyLevel.badgeColor,
-                                      }}
-                                    >
-                                      {replyLevel.levelTag}
-                                    </span>
-                                    <span className="gb-card__time is-sm">
-                                      {formatTime(reply.createdAt)}
-                                    </span>
-                                  </div>
-
-                                  {isReplyOwner && (
-                                    <button
-                                      type="button"
-                                      className="gb-reply-delete-btn"
-                                      onClick={() => handleDelete(reply.id)}
-                                      title="删除此回复"
-                                    >
-                                      <Trash2 className="w-3 h-3" />
-                                    </button>
-                                  )}
-                                </div>
-
-                                <div
-                                  className="gb-reply-item__body"
-                                  dangerouslySetInnerHTML={{
-                                    __html: renderCommentMarkdown(reply.message),
-                                  }}
-                                />
-
-                                <div className="gb-reply-item__footer">
-                                  <button
-                                    type="button"
-                                    className="gb-reaction-btn is-sm"
-                                    onClick={() => handleReaction(reply.id, '👍')}
-                                  >
-                                    👍 {reply.reactions?.summary?.['👍'] || ''}
-                                  </button>
-                                </div>
-                              </div>
+                              <button
+                                key={emoji}
+                                type="button"
+                                className={`gb-reaction-btn ${count > 0 ? 'has-reactions' : ''}`}
+                                onClick={() => handleReaction(reply.id, emoji)}
+                              >
+                                <span>{emoji}</span>
+                                {count > 0 && <span className="gb-reaction-num">{count}</span>}
+                              </button>
                             );
                           })}
                         </div>
-                      )}
 
-                      {/* In-place Reply Composer Box */}
-                      <div className="gb-reply-composer">
-                        <div className="gb-reply-composer__input-wrap">
-                          <textarea
-                            ref={replyTextareaRef}
-                            value={replyMessage}
-                            onChange={(e) => setReplyMessage(e.target.value)}
-                            placeholder={`回复 @${item.authorName} 的讨论 (参与互动，分享见解)...`}
-                            rows={2}
-                            className="gb-textarea is-reply"
-                          />
+                        <div className="gb-floor-actions">
+                          <button
+                            type="button"
+                            className="gb-floor-action-btn"
+                            onClick={() => {
+                              setReplyTargetFloor({ id: reply.id, author: reply.authorName });
+                              jumpToComposer();
+                            }}
+                          >
+                            <CornerDownRight className="w-3.5 h-3.5 mr-1" /> 回复 #{floorNum}
+                          </button>
                         </div>
+                      </div>
+                    </article>
+                  );
+                })}
 
-                        <div className="gb-reply-composer__controls">
-                          <div className="gb-reply-composer__left">
-                            <button
-                              type="button"
-                              className="gb-btn-icon"
-                              onClick={() => setReplyShowEmoji((prev) => !prev)}
-                              title="插入表情"
-                            >
-                              <Smile className="w-4 h-4 text-amber-500" />
-                            </button>
-                          </div>
+                {/* 底部楼层跟帖工坊 (Detail Reply Composer) */}
+                <section
+                  id="detail-reply-composer"
+                  className="gb-detail-reply-box"
+                >
+                  <div className="gb-detail-reply-head">
+                    <span className="gb-detail-reply-title">
+                      <MessageSquare className="w-4 h-4 mr-1.5 text-indigo-500" />
+                      跟帖回复讨论
+                    </span>
+                    {replyTargetFloor && (
+                      <span className="gb-reply-quote-target">
+                        正在引用 @{replyTargetFloor.author}
+                        <button
+                          type="button"
+                          className="gb-quote-clear"
+                          onClick={() => setReplyTargetFloor(null)}
+                        >
+                          <X className="w-3 h-3 ml-1 inline" />
+                        </button>
+                      </span>
+                    )}
+                  </div>
 
-                          <div className="gb-reply-composer__right">
-                            <button
-                              type="button"
-                              className="gb-btn-sm is-secondary"
-                              onClick={() => {
-                                setReplyMessage('');
-                                setActiveReplyTargetId(null);
-                              }}
-                            >
-                              收起
-                            </button>
-                            <button
-                              type="button"
-                              disabled={replySubmitting || !replyMessage.trim()}
-                              className="gb-btn-sm is-primary"
-                              onClick={() => handleReplySubmit(item.id)}
-                            >
-                              {replySubmitting ? '发送中...' : '提交回复'}
-                            </button>
-                          </div>
-                        </div>
+                  <form onSubmit={handleDetailReplySubmit}>
+                    {/* Toolbar */}
+                    <div className="gb-md-toolbar">
+                      <button
+                        type="button"
+                        title="粗体"
+                        onClick={() =>
+                          insertMarkdownHelper(detailReplyTextareaRef, setDetailReplyMessage, '**', '**')
+                        }
+                      >
+                        <Bold className="w-4 h-4" />
+                      </button>
+                      <button
+                        type="button"
+                        title="斜体"
+                        onClick={() =>
+                          insertMarkdownHelper(detailReplyTextareaRef, setDetailReplyMessage, '*', '*')
+                        }
+                      >
+                        <Italic className="w-4 h-4" />
+                      </button>
+                      <button
+                        type="button"
+                        title="代码块"
+                        onClick={() =>
+                          insertMarkdownHelper(
+                            detailReplyTextareaRef,
+                            setDetailReplyMessage,
+                            '\n```\n',
+                            '\n```\n'
+                          )
+                        }
+                      >
+                        <Code className="w-4 h-4" />
+                      </button>
+                      <button
+                        type="button"
+                        title="引用"
+                        onClick={() =>
+                          insertMarkdownHelper(detailReplyTextareaRef, setDetailReplyMessage, '\n> ', '\n')
+                        }
+                      >
+                        <Quote className="w-4 h-4" />
+                      </button>
+                      <button
+                        type="button"
+                        title="列表"
+                        onClick={() =>
+                          insertMarkdownHelper(detailReplyTextareaRef, setDetailReplyMessage, '\n- ', '\n')
+                        }
+                      >
+                        <List className="w-4 h-4" />
+                      </button>
+                      <button
+                        type="button"
+                        title="超链接"
+                        onClick={() =>
+                          insertMarkdownHelper(
+                            detailReplyTextareaRef,
+                            setDetailReplyMessage,
+                            '[说明](',
+                            ')'
+                          )
+                        }
+                      >
+                        <LinkIcon className="w-4 h-4" />
+                      </button>
 
-                        {/* Reply Emoji Palette */}
-                        {replyShowEmoji && (
-                          <div className="gb-reply-emoji-tray">
-                            {['😀', '😄', '😂', '😊', '😍', '🤔', '👍', '👏', '🙌', '🔥', '✨', '🚀', '💡', '🎉'].map(
-                              (em) => (
+                      <div className="gb-toolbar-divider"></div>
+
+                      <button
+                        type="button"
+                        title="插入表情"
+                        onClick={() => setDetailReplyShowEmoji((prev) => !prev)}
+                      >
+                        <Smile className="w-4 h-4" />
+                      </button>
+
+                      <button
+                        type="button"
+                        title="上传图片"
+                        onClick={() => detailFileInputRef.current?.click()}
+                      >
+                        <ImageIcon className="w-4 h-4" />
+                      </button>
+
+                      <input
+                        ref={detailFileInputRef}
+                        type="file"
+                        accept="image/*"
+                        style={{ display: 'none' }}
+                        onChange={(e) =>
+                          handleImageFileChange(e, setDetailReplyUploading, setDetailReplyImages)
+                        }
+                      />
+
+                      <div className="gb-tab-switch ml-auto">
+                        <button
+                          type="button"
+                          className={`gb-tab-btn ${detailReplyPreviewTab === 'write' ? 'is-active' : ''}`}
+                          onClick={() => setDetailReplyPreviewTab('write')}
+                        >
+                          编辑
+                        </button>
+                        <button
+                          type="button"
+                          className={`gb-tab-btn ${detailReplyPreviewTab === 'preview' ? 'is-active' : ''}`}
+                          onClick={() => setDetailReplyPreviewTab('preview')}
+                        >
+                          预览
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Emoji Palette */}
+                    {detailReplyShowEmoji && (
+                      <div className="gb-emoji-popover">
+                        {EMOJI_GROUPS.map((group, idx) => (
+                          <div key={idx} className="gb-emoji-group">
+                            <span className="gb-emoji-group__title">{group.name}</span>
+                            <div className="gb-emoji-grid">
+                              {group.emojis.map((em) => (
                                 <button
                                   key={em}
                                   type="button"
-                                  className="gb-emoji-btn is-sm"
-                                  onClick={() => insertEmoji(em, true)}
+                                  className="gb-emoji-btn"
+                                  onClick={() => {
+                                    insertMarkdownHelper(detailReplyTextareaRef, setDetailReplyMessage, em);
+                                    setDetailReplyShowEmoji(false);
+                                  }}
                                 >
                                   {em}
                                 </button>
-                              )
-                            )}
+                              ))}
+                            </div>
                           </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Textarea or Preview */}
+                    {detailReplyPreviewTab === 'write' ? (
+                      <textarea
+                        ref={detailReplyTextareaRef}
+                        rows={3}
+                        value={detailReplyMessage}
+                        onChange={(e) => setDetailReplyMessage(e.target.value)}
+                        placeholder="撰写你的回复讨论（支持 Markdown 排版、代码高亮）..."
+                        className="gb-textarea is-reply-box"
+                      />
+                    ) : (
+                      <div className="gb-preview-box">
+                        {detailReplyMessage.trim() ? (
+                          <div
+                            className="gb-markdown-body"
+                            dangerouslySetInnerHTML={{
+                              __html: renderCommentMarkdown(detailReplyMessage),
+                            }}
+                          />
+                        ) : (
+                          <span className="text-slate-400 text-xs">暂无预览内容</span>
                         )}
                       </div>
+                    )}
+
+                    {/* Attached Images */}
+                    {detailReplyImages.length > 0 && (
+                      <div className="gb-attached-images">
+                        {detailReplyImages.map((src, idx) => (
+                          <div key={idx} className="gb-thumb-wrap">
+                            <img src={src} alt="Attached" className="gb-thumb" />
+                            <button
+                              type="button"
+                              className="gb-thumb-del"
+                              onClick={() =>
+                                setDetailReplyImages((prev) => prev.filter((_, i) => i !== idx))
+                              }
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Submit Bar */}
+                    <div className="gb-detail-reply-footer">
+                      <span className="gb-word-count">字数: {detailReplyMessage.length}</span>
+                      <button
+                        type="submit"
+                        disabled={detailReplySubmitting || !detailReplyMessage.trim()}
+                        className="gb-submit-btn"
+                      >
+                        <Send className="w-3.5 h-3.5 mr-1" />
+                        <span>{detailReplySubmitting ? '发表中...' : '提交回复'}</span>
+                      </button>
                     </div>
-                  )}
-                </article>
-              );
-            })}
+                  </form>
+                </section>
+              </div>
+
+              {/* ========================================================
+                  右侧侧边栏：长条百分比滑动当前楼层进度条 (TIMELINE SCROLLER)
+                  ======================================================== */}
+              <aside className="gb-floor-scroller-aside">
+                <div className="gb-floor-scroller-card">
+                  {/* Scroller Header: Percentage & Current Floor */}
+                  <div className="gb-scroller-header">
+                    <span className="gb-scroller-pct">{scrollPercent}%</span>
+                    <span className="gb-scroller-floor-label">
+                      {currentFloor} / {totalFloors} 楼
+                    </span>
+                  </div>
+
+                  {/* Jump to Top Button */}
+                  <button
+                    type="button"
+                    className="gb-scroller-jump-btn"
+                    title="跳转至 1 楼 (顶部)"
+                    onClick={() => jumpToFloor(1)}
+                  >
+                    <ChevronsUp className="w-4 h-4" />
+                  </button>
+
+                  {/* Vertical Progress Rail & Interactive Floor Notches */}
+                  <div className="gb-scroller-rail-wrap">
+                    <div className="gb-scroller-rail">
+                      {/* Active Progress Fill */}
+                      <div
+                        className="gb-scroller-fill"
+                        style={{ height: `${scrollPercent}%` }}
+                      ></div>
+
+                      {/* Notches for each floor */}
+                      {Array.from({ length: totalFloors }).map((_, idx) => {
+                        const floorNum = idx + 1;
+                        const notchPercent = (floorNum / totalFloors) * 100;
+                        const isReached = currentFloor >= floorNum;
+
+                        return (
+                          <button
+                            key={floorNum}
+                            type="button"
+                            className={`gb-scroller-notch ${isReached ? 'is-reached' : ''} ${currentFloor === floorNum ? 'is-current' : ''}`}
+                            style={{ top: `${notchPercent}%` }}
+                            onClick={() => jumpToFloor(floorNum)}
+                            title={`跳转至 #${floorNum} 楼`}
+                          >
+                            <span className="gb-notch-tooltip">#{floorNum} 楼</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Jump to Bottom / Reply Button */}
+                  <button
+                    type="button"
+                    className="gb-scroller-jump-btn"
+                    title="跳转至底部回复"
+                    onClick={jumpToComposer}
+                  >
+                    <ChevronsDown className="w-4 h-4" />
+                  </button>
+                </div>
+              </aside>
+            </div>
           </div>
-        )}
-      </main>
+        )
+      )}
+
+      {/* ========================================================
+          4. 新建 GESTURE 模态对话框 (NEW GESTURE MODAL)
+          ======================================================== */}
+      {showGestureModal && (
+        <div className="gb-modal-overlay" onClick={() => setShowGestureModal(false)}>
+          <div
+            className="gb-modal-card"
+            onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+          >
+            {/* Modal Header */}
+            <div className="gb-modal-head">
+              <div className="gb-modal-title">
+                <Pencil className="w-4 h-4 text-indigo-500 mr-2" />
+                <span>发起新的 Gesture 贴文</span>
+              </div>
+              <button
+                type="button"
+                className="gb-modal-close"
+                onClick={() => setShowGestureModal(false)}
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Modal Form */}
+            <form onSubmit={handleGestureSubmit} className="gb-modal-form">
+              {/* Channel / Dimension Selector */}
+              <div className="gb-modal-row">
+                <label className="gb-modal-label">发往维度：</label>
+                <div className="gb-modal-channels">
+                  {CHANNELS.filter((ch) => ch.id !== 'all').map((ch) => (
+                    <button
+                      key={ch.id}
+                      type="button"
+                      className={`gb-modal-channel-btn ${gestureTag === ch.id ? 'is-active' : ''}`}
+                      onClick={() => setGestureTag(ch.id)}
+                    >
+                      <span>{ch.icon}</span>
+                      <span>{ch.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Title Input */}
+              <div className="gb-modal-row">
+                <input
+                  type="text"
+                  value={gestureTitle}
+                  onChange={(e) => setGestureTitle(e.target.value)}
+                  placeholder="话题标题（可选，留空则自动提取首句作为标题）..."
+                  className="gb-modal-title-input"
+                />
+              </div>
+
+              {/* Toolbar */}
+              <div className="gb-md-toolbar">
+                <button
+                  type="button"
+                  title="粗体"
+                  onClick={() =>
+                    insertMarkdownHelper(gestureTextareaRef, setGestureMessage, '**', '**')
+                  }
+                >
+                  <Bold className="w-4 h-4" />
+                </button>
+                <button
+                  type="button"
+                  title="斜体"
+                  onClick={() =>
+                    insertMarkdownHelper(gestureTextareaRef, setGestureMessage, '*', '*')
+                  }
+                >
+                  <Italic className="w-4 h-4" />
+                </button>
+                <button
+                  type="button"
+                  title="代码块"
+                  onClick={() =>
+                    insertMarkdownHelper(gestureTextareaRef, setGestureMessage, '\n```\n', '\n```\n')
+                  }
+                >
+                  <Code className="w-4 h-4" />
+                </button>
+                <button
+                  type="button"
+                  title="引用"
+                  onClick={() =>
+                    insertMarkdownHelper(gestureTextareaRef, setGestureMessage, '\n> ', '\n')
+                  }
+                >
+                  <Quote className="w-4 h-4" />
+                </button>
+                <button
+                  type="button"
+                  title="列表"
+                  onClick={() =>
+                    insertMarkdownHelper(gestureTextareaRef, setGestureMessage, '\n- ', '\n')
+                  }
+                >
+                  <List className="w-4 h-4" />
+                </button>
+                <button
+                  type="button"
+                  title="超链接"
+                  onClick={() =>
+                    insertMarkdownHelper(gestureTextareaRef, setGestureMessage, '[说明](', ')')
+                  }
+                >
+                  <LinkIcon className="w-4 h-4" />
+                </button>
+
+                <div className="gb-toolbar-divider"></div>
+
+                <button
+                  type="button"
+                  title="插入表情"
+                  onClick={() => setGestureShowEmoji((prev) => !prev)}
+                >
+                  <Smile className="w-4 h-4" />
+                </button>
+
+                <button
+                  type="button"
+                  title="上传图片"
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <ImageIcon className="w-4 h-4" />
+                </button>
+
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  style={{ display: 'none' }}
+                  onChange={(e) =>
+                    handleImageFileChange(e, setGestureUploading, setGestureImages)
+                  }
+                />
+
+                <div className="gb-tab-switch ml-auto">
+                  <button
+                    type="button"
+                    className={`gb-tab-btn ${gesturePreviewTab === 'write' ? 'is-active' : ''}`}
+                    onClick={() => setGesturePreviewTab('write')}
+                  >
+                    编辑
+                  </button>
+                  <button
+                    type="button"
+                    className={`gb-tab-btn ${gesturePreviewTab === 'preview' ? 'is-active' : ''}`}
+                    onClick={() => setGesturePreviewTab('preview')}
+                  >
+                    实时预览
+                  </button>
+                </div>
+              </div>
+
+              {/* Emoji Popover */}
+              {gestureShowEmoji && (
+                <div className="gb-emoji-popover">
+                  {EMOJI_GROUPS.map((group, idx) => (
+                    <div key={idx} className="gb-emoji-group">
+                      <span className="gb-emoji-group__title">{group.name}</span>
+                      <div className="gb-emoji-grid">
+                        {group.emojis.map((em) => (
+                          <button
+                            key={em}
+                            type="button"
+                            className="gb-emoji-btn"
+                            onClick={() => {
+                              insertMarkdownHelper(gestureTextareaRef, setGestureMessage, em);
+                              setGestureShowEmoji(false);
+                            }}
+                          >
+                            {em}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Textarea or Preview */}
+              {gesturePreviewTab === 'write' ? (
+                <textarea
+                  ref={gestureTextareaRef}
+                  rows={6}
+                  value={gestureMessage}
+                  onChange={(e) => setGestureMessage(e.target.value)}
+                  placeholder="畅所欲言，阐述你的深度思考（8字以上，支持 Markdown 排版、代码块、列表）..."
+                  className="gb-textarea is-modal-textarea"
+                />
+              ) : (
+                <div className="gb-preview-box is-modal-preview">
+                  {gestureMessage.trim() ? (
+                    <div
+                      className="gb-markdown-body"
+                      dangerouslySetInnerHTML={{
+                        __html: renderCommentMarkdown(gestureMessage),
+                      }}
+                    />
+                  ) : (
+                    <span className="text-slate-400 text-xs">暂无预览内容</span>
+                  )}
+                </div>
+              )}
+
+              {/* Attached Images */}
+              {gestureImages.length > 0 && (
+                <div className="gb-attached-images">
+                  {gestureImages.map((src, idx) => (
+                    <div key={idx} className="gb-thumb-wrap">
+                      <img src={src} alt="Attached" className="gb-thumb" />
+                      <button
+                        type="button"
+                        className="gb-thumb-del"
+                        onClick={() =>
+                          setGestureImages((prev) => prev.filter((_, i) => i !== idx))
+                        }
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Error Alert */}
+              {gestureError && (
+                <div className="gb-error-alert">
+                  <AlertCircle className="w-4 h-4 mr-1 text-rose-500" />
+                  <span>{gestureError}</span>
+                </div>
+              )}
+
+              {/* Footer */}
+              <div className="gb-modal-foot">
+                <span className="gb-word-count">
+                  当前字数: {gestureMessage.trim().length} 字 (最少 8 字)
+                </span>
+                <div className="gb-modal-actions">
+                  <button
+                    type="button"
+                    className="gb-cancel-btn"
+                    onClick={() => setShowGestureModal(false)}
+                  >
+                    取消
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={gestureSubmitting || gestureMessage.trim().length < 8}
+                    className="gb-submit-btn"
+                  >
+                    <Send className="w-3.5 h-3.5 mr-1" />
+                    <span>{gestureSubmitting ? '发布中...' : '发布 Gesture'}</span>
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
