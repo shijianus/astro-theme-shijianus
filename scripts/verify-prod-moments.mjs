@@ -26,13 +26,15 @@ async function verifyLiveMoments() {
 
   try {
     let targetUrl = PROD_URL;
-    let response = await page.goto(targetUrl, { waitUntil: 'networkidle', timeout: 30000 });
+    let response = await page.goto(targetUrl, { waitUntil: 'domcontentloaded', timeout: 30000 });
+    await page.waitForSelector('.qzone-space-hero', { timeout: 15000 }).catch(() => null);
     let spaceHero = await page.$('.qzone-space-hero');
 
     if (!spaceHero) {
       console.log(`[Prod E2E] 主域名可能存在 CDN 边缘节点微缓存，切换至最新部署别名: ${DEPLOY_URL}`);
       targetUrl = DEPLOY_URL;
-      response = await page.goto(targetUrl, { waitUntil: 'networkidle', timeout: 30000 });
+      response = await page.goto(targetUrl, { waitUntil: 'domcontentloaded', timeout: 30000 });
+      await page.waitForSelector('.qzone-space-hero', { timeout: 15000 }).catch(() => null);
       spaceHero = await page.$('.qzone-space-hero');
     }
 
