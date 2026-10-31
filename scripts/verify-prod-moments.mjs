@@ -18,7 +18,7 @@
 import { chromium } from 'playwright';
 
 const PROD_URL = 'https://blog.epocanvas.com/moments/';
-const DEPLOY_URL = 'https://62b1470c.shijianus-blog.pages.dev/moments/';
+const DEPLOY_URL = 'https://135562c7.shijianus-blog.pages.dev/moments/';
 
 async function verifyLiveMoments() {
   console.log(`[Prod E2E] 正在启动无头浏览器访问生产端: ${PROD_URL}...`);
@@ -81,13 +81,30 @@ async function verifyLiveMoments() {
       throw new Error('未显示空间主人 · SVIP 徽章');
     }
 
-    // 2. 验证 QQ 空间子导航栏
-    console.log('[Prod E2E 2] 验证 QQ 空间子导航栏...');
+    // 2. 验证 QQ 空间子导航栏与互动
+    console.log('[Prod E2E 2] 验证 QQ 空间子导航栏与踩一踩足迹互动...');
     const subnavLinks = await page.$$('.qzone-subnav-bar .subnav-item');
     console.log(`  -> 生产端子导航项数量: ${subnavLinks.length}`);
     if (subnavLinks.length < 4) throw new Error('子导航项少于 4 个');
     const subnavTexts = await Promise.all(subnavLinks.map((el) => el.textContent()));
     console.log(`  -> 子导航项目: ${subnavTexts.map((s) => s.trim()).join(' | ')}`);
+
+    // 检查空间装扮切换按钮
+    const btnToggleSkin = await page.$('#btn-toggle-skin');
+    if (!btnToggleSkin) throw new Error('生产端未找到空间装扮按钮 #btn-toggle-skin');
+
+    // 检查踩一踩按钮与足迹
+    const btnFootprint = await page.$('#btn-quick-footprint');
+    if (!btnFootprint) throw new Error('生产端未找到踩一踩按钮 #btn-quick-footprint');
+    const footprintText = await page.$eval('#qzone-footprint-counter', (el) => el.textContent.trim());
+    console.log(`  -> 空间足迹指标: ${footprintText}`);
+
+    // 检查说说寄语展台
+    console.log('[Prod E2E 2.1] 检查 QQ 空间说说寄语展台...');
+    const sayWidget = await page.$('.qzone-say-widget');
+    if (!sayWidget) throw new Error('生产端未找到说说寄语展台 .qzone-say-widget');
+    const sayTitle = await page.$eval('.say-title', (el) => el.textContent.trim());
+    console.log(`  -> 主人说说展台标题: "${sayTitle}"`);
 
     // 3. 验证去冗余（传送门与频道分类完全移除）
     console.log('[Prod E2E 3] 验证冗余组件已彻底清理...');
