@@ -647,6 +647,22 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
         </div>
       </div>
     </div>
+
+    <!-- QQ 空间式大图画廊沉浸式浏览模态 (完全就地，无外链跳转) -->
+    <div id="qzone-photo-lightbox" class="qzone-photo-lightbox hidden" role="dialog" aria-modal="true" aria-label="大图画廊预览">
+      <div class="lightbox-backdrop"></div>
+      <div class="lightbox-dialog">
+        <button type="button" class="btn-lightbox-close" id="btn-lightbox-close" title="关闭大图预览 (Esc)">✕</button>
+        <div class="lightbox-img-wrap">
+          <img id="lightbox-img" class="lightbox-img" src="" alt="大图预览" />
+        </div>
+        <div class="lightbox-footer">
+          <button type="button" class="lightbox-nav-btn prev" id="btn-lightbox-prev" title="上一张">‹</button>
+          <span class="lightbox-counter" id="lightbox-counter">1 / 1</span>
+          <button type="button" class="lightbox-nav-btn next" id="btn-lightbox-next" title="下一张">›</button>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -770,6 +786,33 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
             setTimeout(() => heart.classList.remove('heart-burst'), 600);
           }
           showToast('感谢您的点赞支持！❤️');
+
+          // 反代与后端点赞打通 (如果是友邻动态，通过 /api/cross-comment 跨站送达；如果是站长原生，调用 /api/comments)
+          const cardEl = document.querySelector(`.moment-card[data-id="${id}"]`);
+          const isOwnerCard = cardEl?.dataset.isOwner === 'true';
+          const originApiCard = cardEl?.dataset.originApi;
+          if (!isOwnerCard && originApiCard && !originApiCard.includes('blog.epocanvas.com')) {
+            fetch('/api/cross-comment', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                action: 'like',
+                targetApi: originApiCard,
+                slug: id,
+                fromSite: window.location.origin,
+              }),
+            }).catch(() => {});
+          } else {
+            fetch('/api/comments', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                action: 'reaction',
+                slug: `moment_${id}`,
+                reaction: '👍',
+              }),
+            }).catch(() => {});
+          }
 
           if (stackEl) {
             const authorIdentity = localStorage.getItem('shijianus_comment_author_email') || localStorage.getItem('shijianus_comment_author_name') || 'visitor';
@@ -1044,7 +1087,24 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
         const res = await fetch(fetchUrl);
         if (!res.ok) throw new Error('网络请求异常');
         const data = await res.json();
-        const comments = (data && (data.comments || data.items || data.data?.comments)) || [];
+        let comments = (data && (data.comments || data.items || data.data?.comments)) || [];
+
+        // 合并本地访客刚刚发表的留言缓存 (确保跨站或延迟时依然秒级可见)
+        try {
+          const localSavedRaw = localStorage.getItem('shijianus_moment_comments_' + momentId);
+          if (localSavedRaw) {
+            const localSaved = JSON.parse(localSavedRaw);
+            if (Array.isArray(localSaved) && localSaved.length > 0) {
+              const existingTexts = new Set(comments.map((c) => (c.message || '').trim()));
+              for (const lc of localSaved) {
+                if (!existingTexts.has((lc.message || '').trim())) {
+                  comments.unshift(lc);
+                }
+              }
+            }
+          }
+        } catch (_) {}
+
         loadedCommentsMap.set(momentId, comments);
 
         // 更新卡片上的留言计数
@@ -1053,15 +1113,29 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
 
         renderCommentsList(momentId, comments);
       } catch (err) {
-        const fallbackHtml = `
-          <div class="comments-empty-notice">
-            <span class="empty-icon">💭</span>
-            <span>暂无访客留言，快来留下第一个脚印吧！</span>
-          </div>
-        `;
-        if (listContainer) listContainer.innerHTML = fallbackHtml;
-        if (currentActiveMomentId === momentId && inpageListContainer) {
-          inpageListContainer.innerHTML = fallbackHtml;
+        // 网络异常时，优雅读取本地留言记录
+        let fallbackComments = [];
+        try {
+          const localSavedRaw = localStorage.getItem('shijianus_moment_comments_' + momentId);
+          if (localSavedRaw) fallbackComments = JSON.parse(localSavedRaw) || [];
+        } catch (_) {}
+
+        if (fallbackComments.length > 0) {
+          loadedCommentsMap.set(momentId, fallbackComments);
+          renderCommentsList(momentId, fallbackComments);
+          const countBadge = document.getElementById(`comment-count-${momentId}`);
+          if (countBadge) countBadge.textContent = String(fallbackComments.length);
+        } else {
+          const fallbackHtml = `
+            <div class="comments-empty-notice">
+              <span class="empty-icon">💭</span>
+              <span>暂无访客留言，快来留下第一个脚印吧！</span>
+            </div>
+          `;
+          if (listContainer) listContainer.innerHTML = fallbackHtml;
+          if (currentActiveMomentId === momentId && inpageListContainer) {
+            inpageListContainer.innerHTML = fallbackHtml;
+          }
         }
       }
     }
@@ -1165,6 +1239,24 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
         localStorage.setItem('shijianus_comment_author_name', authorName);
         if (authorEmail) localStorage.setItem('shijianus_comment_author_email', authorEmail);
 
+        const localCommentObj = {
+          id: 'local_' + Date.now(),
+          authorName,
+          authorAvatar: computeVisitorAvatar(authorEmail || authorName),
+          authorRole: 'visitor',
+          message,
+          timeAgo: '刚刚',
+          timestamp: new Date().toISOString(),
+        };
+
+        // 无论远端网络如何，先在 localStorage 保存本地副本，确保瞬间可见且不丢失
+        try {
+          const localKey = 'shijianus_moment_comments_' + momentId;
+          const currentSaved = JSON.parse(localStorage.getItem(localKey) || '[]');
+          currentSaved.unshift(localCommentObj);
+          localStorage.setItem(localKey, JSON.stringify(currentSaved.slice(0, 50)));
+        } catch (_) {}
+
         if (submitBtn) {
           submitBtn.disabled = true;
           submitBtn.innerHTML = '<span>发送中...</span><span class="loading-spinner-sm"></span>';
@@ -1219,19 +1311,8 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
           await loadMomentComments(momentId);
         } catch (err) {
           showToast('留言发表成功（本地已即时记录）！');
-          const currentList = loadedCommentsMap.get(momentId) || [];
-          currentList.unshift({
-            id: 'temp_' + Date.now(),
-            authorName,
-            authorRole: 'visitor',
-            message,
-            timeAgo: '刚刚',
-          });
-          loadedCommentsMap.set(momentId, currentList);
-          renderCommentsList(momentId, currentList);
-          const countBadge = document.getElementById(`comment-count-${momentId}`);
-          if (countBadge) countBadge.textContent = String(currentList.length);
           if (textarea) textarea.value = '';
+          await loadMomentComments(momentId);
         } finally {
           if (submitBtn) {
             submitBtn.disabled = false;
@@ -1359,14 +1440,13 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
       if (inpagePhotosGrid) {
         if (item.images && item.images.length > 0) {
           inpagePhotosGrid.innerHTML = item.images.map((imgUrl, idx) => `
-            <div class="inpage-photo-item" title="点击新窗口查看原图">
-              <a href="${imgUrl}" target="_blank" rel="noopener noreferrer">
-                <img src="${imgUrl}" alt="${escapeHtml(item.title)} 图片 ${idx + 1}" loading="lazy" />
-              </a>
+            <div class="inpage-photo-item" data-photo-idx="${idx}" title="点击沉浸式浏览大图">
+              <img src="${imgUrl}" alt="${escapeHtml(item.title)} 图片 ${idx + 1}" loading="lazy" />
             </div>
           `).join('');
           inpagePhotosGrid.className = `inpage-photos-grid photos-count-${Math.min(item.images.length, 9)}`;
           inpagePhotosGrid.style.display = 'grid';
+          bindInpagePhotos(item.images);
         } else {
           inpagePhotosGrid.innerHTML = '';
           inpagePhotosGrid.style.display = 'none';
@@ -1524,6 +1604,97 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
           btn.textContent = '展开全文 ▾';
         }
       });
+    });
+
+    // 智能检查：如果内容不足 5 行（未产生截断溢出），自动隐藏“展开全文”按钮
+    document.querySelectorAll('.moment-summary-bubble').forEach((bubble) => {
+      const summary = bubble.querySelector('.moment-summary');
+      const btn = bubble.querySelector('.btn-toggle-expand');
+      if (summary && btn) {
+        if (summary.textContent.trim().length < 130 && summary.scrollHeight <= summary.clientHeight + 4) {
+          btn.style.display = 'none';
+          bubble.classList.remove('is-clamped');
+        }
+      }
+    });
+
+    // 9. QQ 空间大图画廊沉浸式预览 (Lightbox, 杜绝外部跳出)
+    const lightboxEl = document.getElementById('qzone-photo-lightbox');
+    const lightboxImg = document.getElementById('lightbox-img');
+    const lightboxCounter = document.getElementById('lightbox-counter');
+    const btnLightboxClose = document.getElementById('btn-lightbox-close');
+    const btnLightboxPrev = document.getElementById('btn-lightbox-prev');
+    const btnLightboxNext = document.getElementById('btn-lightbox-next');
+    const lightboxBackdrop = lightboxEl?.querySelector('.lightbox-backdrop');
+
+    let currentGalleryImages = [];
+    let currentGalleryIdx = 0;
+
+    function openPhotoLightbox(images, startIdx = 0) {
+      if (!images || images.length === 0 || !lightboxEl || !lightboxImg) return;
+      currentGalleryImages = images;
+      currentGalleryIdx = Math.max(0, Math.min(startIdx, images.length - 1));
+      updateLightboxDisplay();
+      lightboxEl.classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closePhotoLightbox() {
+      if (!lightboxEl) return;
+      lightboxEl.classList.add('hidden');
+      document.body.style.overflow = '';
+      currentGalleryImages = [];
+    }
+
+    function updateLightboxDisplay() {
+      if (!lightboxImg || !lightboxCounter) return;
+      const url = currentGalleryImages[currentGalleryIdx];
+      lightboxImg.src = url;
+      lightboxCounter.textContent = `${currentGalleryIdx + 1} / ${currentGalleryImages.length}`;
+      if (btnLightboxPrev) btnLightboxPrev.style.visibility = currentGalleryImages.length > 1 ? 'visible' : 'hidden';
+      if (btnLightboxNext) btnLightboxNext.style.visibility = currentGalleryImages.length > 1 ? 'visible' : 'hidden';
+    }
+
+    function bindInpagePhotos(images) {
+      document.querySelectorAll('.inpage-photo-item').forEach((itemEl) => {
+        itemEl.addEventListener('click', (e) => {
+          e.preventDefault();
+          const idx = parseInt(itemEl.dataset.photoIdx || '0', 10);
+          openPhotoLightbox(images, idx);
+        });
+      });
+    }
+
+    if (btnLightboxClose) btnLightboxClose.addEventListener('click', closePhotoLightbox);
+    if (lightboxBackdrop) lightboxBackdrop.addEventListener('click', closePhotoLightbox);
+    if (btnLightboxPrev) {
+      btnLightboxPrev.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (currentGalleryImages.length <= 1) return;
+        currentGalleryIdx = (currentGalleryIdx - 1 + currentGalleryImages.length) % currentGalleryImages.length;
+        updateLightboxDisplay();
+      });
+    }
+    if (btnLightboxNext) {
+      btnLightboxNext.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (currentGalleryImages.length <= 1) return;
+        currentGalleryIdx = (currentGalleryIdx + 1) % currentGalleryImages.length;
+        updateLightboxDisplay();
+      });
+    }
+
+    window.addEventListener('keydown', (e) => {
+      if (!lightboxEl || lightboxEl.classList.contains('hidden')) return;
+      if (e.key === 'Escape') closePhotoLightbox();
+      if (e.key === 'ArrowLeft' && currentGalleryImages.length > 1) {
+        currentGalleryIdx = (currentGalleryIdx - 1 + currentGalleryImages.length) % currentGalleryImages.length;
+        updateLightboxDisplay();
+      }
+      if (e.key === 'ArrowRight' && currentGalleryImages.length > 1) {
+        currentGalleryIdx = (currentGalleryIdx + 1) % currentGalleryImages.length;
+        updateLightboxDisplay();
+      }
     });
 
     // 路由监听：通过 URL hash (#moment-...) 自动在页面内展示说说详情
@@ -3268,6 +3439,136 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
   .moments-toast.is-visible {
     opacity: 1;
     transform: translateX(-50%) translateY(0);
+  }
+
+  /* QQ 空间大图沉浸式画廊模态 (就地浏览) */
+  .qzone-photo-lightbox {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 10050;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .qzone-photo-lightbox.hidden {
+    display: none !important;
+  }
+
+  .lightbox-backdrop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(10, 12, 20, 0.92);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+  }
+
+  .lightbox-dialog {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    max-width: 92vw;
+    max-height: 92vh;
+  }
+
+  .btn-lightbox-close {
+    position: absolute;
+    top: -46px;
+    right: 0;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: #ffffff;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .btn-lightbox-close:hover {
+    background: rgba(239, 68, 68, 0.85);
+    border-color: rgba(239, 68, 68, 1);
+  }
+
+  .lightbox-img-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    max-width: 90vw;
+    max-height: 78vh;
+  }
+
+  .lightbox-img {
+    max-width: 90vw;
+    max-height: 78vh;
+    object-fit: contain;
+    border-radius: 10px;
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.6);
+    user-select: none;
+    transition: transform 0.25s ease;
+  }
+
+  .lightbox-footer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5rem;
+    margin-top: 14px;
+    color: #f1f5f9;
+  }
+
+  .lightbox-nav-btn {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    color: #ffffff;
+    font-size: 1.25rem;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .lightbox-nav-btn:hover {
+    background: var(--theme-main, #425aef);
+    border-color: var(--theme-main, #425aef);
+  }
+
+  .lightbox-counter {
+    font-size: 0.9rem;
+    font-weight: 600;
+    letter-spacing: 1px;
+    background: rgba(0, 0, 0, 0.4);
+    padding: 4px 12px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+  }
+
+  .inpage-photo-item {
+    cursor: zoom-in;
+    border-radius: 8px;
+    overflow: hidden;
+    transition: transform 0.2s ease;
+  }
+
+  .inpage-photo-item:hover {
+    transform: scale(1.02);
   }
 
   .moments-toast.hidden { display: none; }

@@ -117,6 +117,55 @@ function createServer() {
         }
       }
 
+      // 模拟 /api/cross-comment (反代接口)
+      if (reqPath === '/api/cross-comment') {
+        res.setHeader('Access-Control-Allow-Origin', '*');
+        res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
+        res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+        if (req.method === 'OPTIONS') {
+          res.writeHead(204);
+          res.end();
+          return;
+        }
+
+        if (req.method === 'GET') {
+          res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+          res.end(
+            JSON.stringify({
+              ok: true,
+              federated: true,
+              comments: [
+                {
+                  id: 'remote_az_1',
+                  authorName: 'Hexo极客',
+                  authorRole: 'visitor',
+                  message: '色彩对比度算法优化非常赞！暗黑模式质感提升显著！',
+                  timeAgo: '10分钟前',
+                },
+              ],
+            })
+          );
+          return;
+        }
+
+        if (req.method === 'POST') {
+          let body = '';
+          req.on('data', (chunk) => (body += chunk));
+          req.on('end', () => {
+            const data = JSON.parse(body || '{}');
+            if (data.action === 'like') {
+              res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+              res.end(JSON.stringify({ ok: true, federated: true, action: 'like', message: '跨站点赞已送达友邻！' }));
+            } else {
+              res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+              res.end(JSON.stringify({ ok: true, federated: true, message: '串门评论已成功直达友邻数据库！' }));
+            }
+          });
+          return;
+        }
+      }
+
       // 模拟 /api/moments-sync
       if (reqPath === '/api/moments-sync') {
         res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
@@ -375,6 +424,27 @@ async function runVerification() {
     console.log(`  -> 当前 URL Hash: ${currentHash}`);
     if (!currentHash.startsWith('#moment-')) {
       throw new Error('打开说说详情时未能自动同步 #moment-{id} Hash');
+    }
+
+    // 验证大图画廊沉浸式预览 (Lightbox, 杜绝外部跳转)
+    const inpagePhotos = await page.$$('.inpage-photo-item');
+    if (inpagePhotos.length > 0) {
+      console.log(`  -> 发现 ${inpagePhotos.length} 张大图，验证点击画廊沉浸式浏览...`);
+      await inpagePhotos[0].click();
+      await page.waitForTimeout(200);
+      const isLightboxVisible = await page.$eval('#qzone-photo-lightbox', (el) => !el.classList.contains('hidden'));
+      const lightboxImgSrc = await page.$eval('#lightbox-img', (el) => el.getAttribute('src'));
+      console.log(`  -> 画廊模态状态: visible=${isLightboxVisible}, 图片源=${lightboxImgSrc ? '有效' : '空'}`);
+      if (!isLightboxVisible || !lightboxImgSrc) {
+        throw new Error('点击图片未能激活就地画廊模态预览');
+      }
+      const btnCloseLightbox = await page.$('#btn-lightbox-close');
+      if (btnCloseLightbox) {
+        await btnCloseLightbox.click();
+        await page.waitForTimeout(200);
+        const isLightboxClosed = await page.$eval('#qzone-photo-lightbox', (el) => el.classList.contains('hidden'));
+        if (!isLightboxClosed) throw new Error('点击关闭按钮未能关闭画廊模态');
+      }
     }
 
     // 5. 验证页面内详情的返回按钮（切回瀑布流）

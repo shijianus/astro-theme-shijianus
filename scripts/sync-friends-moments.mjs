@@ -47,6 +47,7 @@ const TARGET_FRIENDS = [
     shijianusTheme: false,
     category: 'design',
     mood: '🎨 灵感',
+    device: '来自「安知鱼」的花园 · MacBook Pro',
     badge: '🌐 友邻传送',
     images: [
       'https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?w=800&auto=format&fit=crop&q=80',
@@ -67,6 +68,7 @@ const TARGET_FRIENDS = [
     shijianusEndpoint: 'https://akilar.top/shijianus-moments.json',
     category: 'tech',
     mood: '🎵 律动',
+    device: '来自「Akilar」的糖果屋 · ChromeOS',
     badge: '🌐 友邻传送',
     images: [
       'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=800&auto=format&fit=crop&q=80',
@@ -88,6 +90,7 @@ const TARGET_FRIENDS = [
     shijianusTheme: false,
     category: 'life',
     mood: '🌅 自由',
+    device: '来自「Leonus」的随想 · iPhone 16 Pro',
     badge: '🌐 友邻传送',
     images: [
       'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=800&auto=format&fit=crop&q=80',
@@ -106,6 +109,7 @@ const TARGET_FRIENDS = [
     shijianusTheme: false,
     category: 'tech',
     mood: '💡 探索',
+    device: '来自「小康」的笔记 · Linux Desktop',
     badge: '🌐 友邻传送',
     images: [
       'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=800&auto=format&fit=crop&q=80',
@@ -312,7 +316,7 @@ async function syncFriendsMoments() {
             badge: friend.badge,
             isOwner: false,
             mood: friend.mood,
-            device: `来自好友「${friend.name}」的最新发布`,
+            device: friend.device || `来自好友「${friend.name}」的最新发布`,
             title: latest.title,
             url: `/moments/#moment-${momentId}`,
             summary: latest.summary || friend.defaultItem.summary,
@@ -347,7 +351,7 @@ async function syncFriendsMoments() {
         badge: friend.badge,
         isOwner: false,
         mood: friend.mood,
-        device: `来自好友「${friend.name}」的花园`,
+        device: friend.device || `来自好友「${friend.name}」的花园`,
         title: friend.defaultItem.title,
         url: `/moments/#moment-${momentId}`,
         summary: friend.defaultItem.summary,
