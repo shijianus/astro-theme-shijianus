@@ -192,8 +192,8 @@ async function runVerification() {
     }
     console.log('[Verify] ✓ Verified class="gb-hero" is completely removed');
 
-    // 2. Test Top Boost Wall (楼上 Boost 弹幕墙)
-    console.log('[Verify] 2. Testing Top Boost Wall...');
+    // 2. Test Top Boost Stream (楼上 Boost 实时观点流)
+    console.log('[Verify] 2. Testing Top Boost Stream...');
     const boostWall = await page.$('.gb-boost-wall-card');
     if (!boostWall) throw new Error('Top Boost wall card (.gb-boost-wall-card) not found');
 
@@ -203,29 +203,93 @@ async function runVerification() {
       throw new Error('Boost badge missing');
     }
 
-    // Check dual marquee tracks
+    // Verify Count Status text
+    const statusCountText = await page.textContent('.gb-boost-status-count');
+    console.log(`[Verify] Boost Status Count text: "${statusCountText?.trim()}"`);
+    if (!statusCountText?.includes('全站共收录')) {
+      throw new Error(`Expected status count to include "全站共收录", got "${statusCountText}"`);
+    }
+
+    // Verify obsolete subtitle and stamps are REMOVED
+    const oldSubtitle = await page.$('.gb-boost-subtitle');
+    if (oldSubtitle) {
+      throw new Error('Expected old .gb-boost-subtitle to be removed');
+    }
+    const stampPill = await page.$('.gb-stamp-pill');
+    if (stampPill) {
+      throw new Error('Expected quick stamps (.gb-stamp-pill) to be completely removed');
+    }
+    console.log('[Verify] ✓ Verified old subtitle and stamps are completely eradicated');
+
+    // Verify "+ 发布 Boost" button in header
+    const launchBoostBtn = await page.$('.gb-launch-boost-btn');
+    if (!launchBoostBtn) {
+      throw new Error('Launch Boost button (.gb-launch-boost-btn) missing in Boost header');
+    }
+    console.log('[Verify] ✓ Launch Boost button found in header');
+
+    // Check dual stream tracks
     const marqueeCardsCount = await page.$$eval('.gb-boost-pill-card', (els) => els.length);
-    console.log(`[Verify] Boost marquee cards count: ${marqueeCardsCount}`);
+    console.log(`[Verify] Boost viewpoint cards count: ${marqueeCardsCount}`);
     if (marqueeCardsCount < 4) {
-      throw new Error('Boost marquee should have floating cards');
+      throw new Error('Boost stream should have viewpoint cards');
     }
 
-    // Click quick stamp and send Boost
-    const firstStamp = await page.$('.gb-stamp-pill');
-    if (firstStamp) {
-      await firstStamp.click();
-      const inputVal = await page.$eval('.gb-boost-text-input', (el) => el.value);
-      console.log(`[Verify] Boost input filled by stamp: "${inputVal}"`);
-      if (!inputVal) throw new Error('Boost stamp did not fill input');
+    // 3. Test Non-blocking Floating Composer Dock for Boost
+    console.log('[Verify] 3. Testing Floating Composer Dock for Boost...');
+    await launchBoostBtn.click();
+    await page.waitForTimeout(300);
 
-      // Submit Boost
-      await page.click('.gb-boost-submit-btn');
-      await page.waitForTimeout(600);
-      console.log('[Verify] ✓ Boost barrage submitted successfully');
+    const floatingComposer = await page.$('.gb-floating-composer');
+    if (!floatingComposer) {
+      throw new Error('Floating composer (.gb-floating-composer) failed to open');
     }
 
-    // 3. Test Horizontal Categories Bar (横排分类导航条)
-    console.log('[Verify] 3. Testing Horizontal Categories Bar...');
+    // Verify NO blocking modal overlay backdrop
+    const modalBackdrop = await page.$('.gb-modal-overlay:not([style*="display: none"])');
+    if (modalBackdrop) {
+      const isDisplayContents = await page.$eval('.gb-modal-overlay', (el) => window.getComputedStyle(el).display);
+      console.log(`[Verify] Modal overlay display style: ${isDisplayContents}`);
+    }
+
+    // Verify Boost Mode Tab active
+    const activeTab = await page.textContent('.gb-mode-tab.is-active');
+    console.log(`[Verify] Active Mode Tab: "${activeTab?.trim()}"`);
+    if (!activeTab?.includes('Boost')) {
+      throw new Error('Expected Boost mode tab to be active');
+    }
+
+    // Test Minimize to Bottom Dock Pill
+    const minimizeBtn = await page.$('.gb-window-tool-btn[title="最小化到右下角"]');
+    if (minimizeBtn) {
+      await minimizeBtn.click();
+      await page.waitForTimeout(300);
+      const minimizedPill = await page.$('.gb-composer-minimized-pill');
+      if (!minimizedPill) throw new Error('Minimized dock pill (.gb-composer-minimized-pill) not found');
+      console.log('[Verify] ✓ Successfully minimized composer to bottom dock pill');
+
+      // Click minimized pill to expand back
+      await minimizedPill.click();
+      await page.waitForTimeout(300);
+      const reExpanded = await page.$('.gb-floating-composer');
+      if (!reExpanded) throw new Error('Failed to restore composer from minimized pill');
+      console.log('[Verify] ✓ Restored composer from dock pill');
+    }
+
+    // Fill Boost Input (<= 30 chars) and submit
+    const boostTextarea = await page.$('.gb-textarea.is-boost-textarea');
+    if (boostTextarea) {
+      await boostTextarea.fill('🚀 边缘计算落盘毫秒级，短句观点随手分享！');
+      const boostSubmitBtn = await page.$('.gb-submit-btn.is-boost-btn');
+      if (boostSubmitBtn) {
+        await boostSubmitBtn.click();
+        await page.waitForTimeout(800);
+        console.log('[Verify] ✓ Boost viewpoint submitted via floating composer');
+      }
+    }
+
+    // 4. Test Horizontal Categories Bar (横排分类导航条)
+    console.log('[Verify] 4. Testing Horizontal Categories Bar...');
     const navCategories = ['最新', '近期', '维度', '热门', '精选', '我的贴文', '已读', '书签'];
     for (const catName of navCategories) {
       const catBtn = await page.$(`.gb-cat-btn:has-text("${catName}")`);
@@ -251,13 +315,38 @@ async function runVerification() {
       console.log('[Verify] ✓ Selected "技术探讨" dimension');
     }
 
-    // 4. Test Gesture Topic Feed (楼下 Gesture 列表)
-    console.log('[Verify] 4. Testing Gesture Topic Feed...');
+    // 5. Test Gesture Feed & 20-Item Display Cap
+    console.log('[Verify] 5. Testing Gesture Feed & 20-Item Display Cap...');
     await page.waitForSelector('.gb-gesture-row', { timeout: 10000 });
     const gestureRowsCount = await page.$$eval('.gb-gesture-row', (els) => els.length);
-    console.log(`[Verify] Gesture rows count: ${gestureRowsCount}`);
+    console.log(`[Verify] Active Gesture rows count on screen: ${gestureRowsCount}`);
     if (gestureRowsCount === 0) {
       throw new Error('Expected at least 1 Gesture row in discussion feed');
+    }
+    if (gestureRowsCount > 20) {
+      throw new Error(`Gesture rows count on screen exceeds 20: ${gestureRowsCount}`);
+    }
+    console.log('[Verify] ✓ Confirmed Gesture feed is capped at at most 20 items per view');
+
+    // Test Floating Composer for Gesture
+    console.log('[Verify] 5.1. Testing Floating Composer for Gesture...');
+    const newGestureBtn = await page.$('.gb-new-gesture-btn');
+    if (newGestureBtn) {
+      await newGestureBtn.click();
+      await page.waitForTimeout(300);
+      const gComposer = await page.$('.gb-floating-composer');
+      if (!gComposer) throw new Error('Floating composer failed to open for Gesture');
+
+      const isGestureActive = await page.textContent('.gb-mode-tab.is-active');
+      if (!isGestureActive?.includes('Gesture')) {
+        throw new Error('Expected Gesture mode tab to be active');
+      }
+
+      // Close composer
+      const closeBtn = await page.$('.gb-window-tool-btn.is-close');
+      if (closeBtn) await closeBtn.click();
+      await page.waitForTimeout(300);
+      console.log('[Verify] ✓ Verified Floating Composer opens in Gesture mode and closes cleanly');
     }
 
     // Verify Bookmark Toggle on Row

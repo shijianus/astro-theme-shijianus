@@ -108,6 +108,7 @@ export function convertCollectionMoments(entries: CollectionEntry<'moments'>[]):
     const firstLine = body.split('\n').map((s) => s.trim()).filter(Boolean)[0] || '站长新说说';
     const title = firstLine.length > 40 ? `${firstLine.slice(0, 40)}...` : firstLine;
     const momentId = data.id || `m_${entry.id}`;
+    const images = Array.isArray(data.images) && data.images.length > 0 ? data.images : [];
 
     return {
       id: momentId,
@@ -119,8 +120,10 @@ export function convertCollectionMoments(entries: CollectionEntry<'moments'>[]):
       mood: data.mood || '☕ 思考',
       device: data.device || 'Mac Studio · Astro 5',
       title,
-      url: `/moments/#${momentId}`,
+      url: `/moments/#moment-${momentId}`,
       summary,
+      content: body,
+      images,
       timeAgo: formatTimeAgo(dateObj),
       timestamp: data.date || formatTimestamp(dateObj),
       category: data.category || 'thought',
@@ -128,7 +131,7 @@ export function convertCollectionMoments(entries: CollectionEntry<'moments'>[]):
       likes: data.likes || 0,
       commentCount: data.commentCount || 0,
       origin: friendsConfig.siteInfo.url,
-      originUrl: `${friendsConfig.siteInfo.url}/moments/#${momentId}`,
+      originUrl: `${friendsConfig.siteInfo.url}/moments/#moment-${momentId}`,
       originApi: `${friendsConfig.siteInfo.url}/api/comments`,
     };
   });

@@ -209,20 +209,49 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
           </div>
         </div>
 
-        <!-- 卡片主体：说说标题与正文 -->
+        <!-- 卡片主体：说说标题与正文 (5行上限与最多9张图，点击就地看详情) -->
         <div class="moment-card__body">
           <h2 class="moment-title">
-            <a
-              href={item.url}
-              target={item.url.startsWith('/') ? undefined : '_blank'}
-              rel={item.url.startsWith('/') ? undefined : 'noopener noreferrer'}
+            <button
+              type="button"
+              class="moment-title-btn"
+              data-open-detail={item.id}
+              title="查看说说完整图文详情与互动 (QQ空间模式)"
             >
               {item.title}
-            </a>
+            </button>
           </h2>
-          <div class="moment-summary-bubble">
+
+          <div class="moment-summary-bubble is-clamped" data-moment-id={item.id}>
             <p class="moment-summary">{item.summary}</p>
+            <button
+              type="button"
+              class="btn-toggle-expand"
+              data-moment-id={item.id}
+              title="展开查看完整内容"
+            >
+              展开全文 ▾
+            </button>
           </div>
+
+          <!-- 最多 9 张图片九宫格展示 (QQ 空间风格) -->
+          {item.images && item.images.length > 0 && (
+            <div class={`moment-photos-grid photos-count-${Math.min(item.images.length, 9)}`}>
+              {item.images.slice(0, 9).map((imgUrl, imgIdx) => (
+                <div
+                  class="moment-photo-item"
+                  data-open-detail={item.id}
+                  data-img-src={imgUrl}
+                  title="点击查看大图与说说详情"
+                >
+                  <img src={imgUrl} alt={`${item.title} 图片 ${imgIdx + 1}`} loading="lazy" />
+                  {imgIdx === 8 && item.images.length > 9 && (
+                    <div class="photos-more-badge">+{item.images.length - 9}</div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         <!-- 标签列表 -->
@@ -234,7 +263,7 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
           </div>
         )}
 
-        <!-- 卡片底栏：QQ 空间式点赞、就地评论展开、分享与串门 -->
+        <!-- 卡片底栏：QQ 空间式点赞、就地评论展开、分享与详情直达 -->
         <div class="moment-card__footer">
           <div class="footer-action-group">
             <button
@@ -253,7 +282,7 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
               class="moment-action-btn moment-comment-toggle-btn"
               type="button"
               data-moment-id={item.id}
-              title="展开/折叠评论留言区"
+              title="就地展开/折叠评论留言区"
             >
               <span class="btn-icon">💬</span>
               <span class="comment-btn-label">评论</span>
@@ -274,17 +303,31 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
             </button>
           </div>
 
-          <a
-            class="moment-origin-link"
-            href={item.url}
-            target={item.url.startsWith('/') ? undefined : '_blank'}
-            rel={item.url.startsWith('/') ? undefined : 'noopener noreferrer'}
-          >
-            <span>{item.isOwner ? '查看详情' : '去TA家串门'}</span>
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
-            </svg>
-          </a>
+          <div class="footer-detail-group">
+            <button
+              type="button"
+              class="moment-detail-open-btn"
+              data-open-detail={item.id}
+              title="在当前页面打开说说完整图文与互动详情"
+            >
+              <span>查看详情</span>
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+              </svg>
+            </button>
+
+            {!item.isOwner && item.originUrl && (
+              <a
+                class="moment-origin-tag"
+                href={item.originUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                title={`前往博友「${item.author}」原站`}
+              >
+                <span>原站 ↗</span>
+              </a>
+            )}
+          </div>
         </div>
 
         <!-- 5. QQ 空间式就地展开评论留言楼层 (默认折叠，点击展开) -->
@@ -375,6 +418,138 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
     <div class="empty-icon">🍃</div>
     <h3 class="empty-title">没有找到匹配的说说动态</h3>
     <p class="empty-desc">换个关键词试试，或者切换到【全景动态】查看全部内容！</p>
+  </div>
+  <!-- 6. QQ 空间式全景详情模态框 (点击说说卡片就地打开，保持本站 URL 与反代交互) -->
+  <div id="moment-detail-modal" class="moment-detail-modal hidden" aria-hidden="true">
+    <div class="modal-backdrop" id="modal-backdrop"></div>
+    <div class="modal-dialog theme-card">
+      <button type="button" class="modal-close-btn" id="btn-close-modal" title="关闭详情 (ESC)">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+      </button>
+
+      <!-- 模态框头部：作者身份与元数据 -->
+      <div class="modal-header">
+        <div class="modal-author-wrap">
+          <img id="modal-avatar" class="modal-avatar" src="" alt="作者头像" />
+          <div class="modal-author-info">
+            <div class="modal-author-title-row">
+              <span id="modal-author-name" class="modal-author-name"></span>
+              <span id="modal-author-badge" class="modal-badge-pill"></span>
+              <span id="modal-mood" class="modal-mood-pill"></span>
+            </div>
+            <div class="modal-meta-row">
+              <span id="modal-time" class="modal-time-text"></span>
+              <span id="modal-device" class="modal-device-text"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 模态框主体内容 -->
+      <div class="modal-body">
+        <h2 id="modal-title" class="modal-title-text"></h2>
+        <div id="modal-content" class="modal-content-markdown"></div>
+
+        <!-- 模态框完整多图展示 (最多9张大图九宫格/画廊) -->
+        <div id="modal-photos-grid" class="modal-photos-grid"></div>
+
+        <!-- 来源与跨站主权通信指示条 -->
+        <div id="modal-origin-banner" class="modal-origin-banner"></div>
+
+        <!-- 互动工具条 -->
+        <div class="modal-action-bar">
+          <button type="button" class="modal-like-btn" id="modal-like-btn" title="为说说点赞">
+            <span class="like-heart">❤️</span>
+            <span class="modal-like-label">赞</span>
+            <span class="modal-like-count" id="modal-like-count">0</span>
+          </button>
+          <button type="button" class="modal-share-btn" id="modal-share-btn" title="复制说说直达链接">
+            <span>🔗 分享</span>
+          </button>
+          <a id="modal-external-link" class="modal-external-btn hidden" href="#" target="_blank" rel="noopener noreferrer">
+            <span>前往原站点 ↗</span>
+          </a>
+        </div>
+
+        <hr class="modal-divider" />
+
+        <!-- 模态框内嵌实时评论区 -->
+        <div class="modal-comments-section">
+          <div class="modal-comments-head">
+            <h3 class="modal-comments-title">💬 评论互动与脚印</h3>
+            <span id="modal-cross-hint" class="modal-cross-hint"></span>
+          </div>
+
+          <!-- 评论列表容器 -->
+          <div id="modal-comments-list" class="modal-comments-list">
+            <div class="comments-loading">
+              <span class="loading-spinner"></span>
+              <span>正在连接数据库加载评论...</span>
+            </div>
+          </div>
+
+          <!-- 模态框发评表单 -->
+          <form id="modal-quick-comment-form" class="moment-quick-comment-form">
+            <div class="form-row-meta">
+              <div class="meta-input-group">
+                <span class="input-icon">👤</span>
+                <input
+                  type="text"
+                  name="authorName"
+                  class="comment-input comment-author-input"
+                  placeholder="您的称呼 (必填)"
+                  required
+                  maxlength="30"
+                />
+                <button type="button" class="btn-random-nickname" title="随机生成一个极客昵称">🎲</button>
+              </div>
+
+              <div class="meta-input-group">
+                <span class="input-icon">📫</span>
+                <input
+                  type="email"
+                  name="authorEmail"
+                  class="comment-input comment-email-input"
+                  placeholder="邮箱 (选填)"
+                  maxlength="60"
+                />
+              </div>
+            </div>
+
+            <div class="form-row-content">
+              <textarea
+                name="message"
+                class="comment-textarea"
+                rows="2"
+                placeholder="畅所欲言，留下您的想法... (支持 Markdown)"
+                required
+                maxlength="300"
+              ></textarea>
+            </div>
+
+            <div class="form-row-tools">
+              <div class="emoji-quick-bar">
+                <button type="button" class="quick-emoji-btn" data-emoji="😊">😊</button>
+                <button type="button" class="quick-emoji-btn" data-emoji="👍">👍</button>
+                <button type="button" class="quick-emoji-btn" data-emoji="🎉">🎉</button>
+                <button type="button" class="quick-emoji-btn" data-emoji="🔥">🔥</button>
+                <button type="button" class="quick-emoji-btn" data-emoji="☕">☕</button>
+                <button type="button" class="quick-emoji-btn" data-emoji="💡">💡</button>
+                <button type="button" class="quick-emoji-btn" data-emoji="🚀">🚀</button>
+                <button type="button" class="quick-emoji-btn" data-emoji="❤️">❤️</button>
+              </div>
+
+              <button type="submit" class="comment-submit-btn">
+                <span>发表留言</span>
+                <span class="submit-arrow">✈️</span>
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 

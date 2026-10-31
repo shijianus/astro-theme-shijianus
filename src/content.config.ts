@@ -185,6 +185,8 @@ const momentsCollection = defineCollection({
     origin: z.string().optional(),
     originUrl: z.string().optional(),
     originApi: z.string().optional(),
+    images: z.array(z.string()).default([]),
+    content: z.string().optional(),
   }),
 });
 

@@ -48,9 +48,13 @@ const TARGET_FRIENDS = [
     category: 'design',
     mood: '🎨 灵感',
     badge: '🌐 友邻传送',
+    images: [
+      'https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?w=800&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800&auto=format&fit=crop&q=80',
+    ],
     defaultItem: {
       title: '关于 Hexo 主题色彩与暗黑模式适配的几点新思考',
-      summary: '在多设备自适应的今天，单纯的黑色背景已经不足以支撑高级感，深灰与半透明材质搭配才是呼吸感的关键...',
+      summary: '在多设备自适应的今天，单纯的黑色背景已经不足以支撑高级感，深灰与半透明材质搭配才是呼吸感的关键。色彩对比度算法优化让暗黑模式更具温度与深度。',
       timestamp: '2026-10-31 18:45',
     },
   },
@@ -64,9 +68,15 @@ const TARGET_FRIENDS = [
     category: 'tech',
     mood: '🎵 律动',
     badge: '🌐 友邻传送',
+    images: [
+      'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=800&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=800&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=800&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=800&auto=format&fit=crop&q=80',
+    ],
     defaultItem: {
       title: '在浏览器中使用 Web Audio API 绘制实时声波瀑布',
-      summary: '分享一段仅用纯原生 JS 捕捉音频频谱并渲染在 Canvas 上的轻量方案，不需要庞大第三方库...',
+      summary: '分享一段仅用纯原生 JS 捕捉音频频谱并渲染在 Canvas 上的轻量方案，不需要庞大第三方库。音乐不仅是听觉的享受，更是视觉与代码交织的律动。',
       timestamp: '2026-10-31 14:10',
     },
   },
@@ -79,9 +89,12 @@ const TARGET_FRIENDS = [
     category: 'life',
     mood: '🌅 自由',
     badge: '🌐 友邻传送',
+    images: [
+      'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=800&auto=format&fit=crop&q=80',
+    ],
     defaultItem: {
       title: '秋日骑行记：在城市边缘追逐落日余晖',
-      summary: '放下键盘，骑上单车，沿着滨海公路一路向西。生活除了终端和像素，还有金黄色的落日与旷野...',
+      summary: '放下键盘，骑上单车，沿着滨海公路一路向西。生活除了终端和像素，还有金黄色的落日与旷野。晚风吹拂过发梢，所有的重构压力在此刻烟消云散。',
       timestamp: '2026-10-30 19:12',
     },
   },
@@ -94,9 +107,14 @@ const TARGET_FRIENDS = [
     category: 'tech',
     mood: '⚡ 极速',
     badge: '🌐 友邻传送',
+    images: [
+      'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=800&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=800&auto=format&fit=crop&q=80',
+    ],
     defaultItem: {
       title: 'Astro 6 核心编译引擎速度再次提升 40%',
-      summary: '通过底层 Vite 打包管线的全新 Rust 插件加速，万级内容集合的冷启动与热重载延时显著降低...',
+      summary: '通过底层 Vite 打包管线的全新 Rust 插件加速，万级内容集合的冷启动与热重载延时显著降低，边缘按需渲染与静态生成的边界更加清晰。',
       timestamp: '2026-10-31 16:00',
     },
   },
@@ -109,9 +127,13 @@ const TARGET_FRIENDS = [
     category: 'tech',
     mood: '⚡ 边缘',
     badge: '🌐 友邻传送',
+    images: [
+      'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=800&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1542838132-92c53300491e?w=800&auto=format&fit=crop&q=80',
+    ],
     defaultItem: {
       title: 'Cloudflare 边缘架构实践新篇',
-      summary: '边缘计算与分布式网络的前沿实践...',
+      summary: '边缘计算与分布式网络的前沿实践。利用全球边缘节点构建极低延时的 Serverless 应用，配合 D1 实现零冷启动的分布式读写分离。',
       timestamp: '2026-10-30 18:00',
     },
   },
@@ -153,6 +175,8 @@ function loadLocalMarkdownMoments() {
       const firstLine = bodyRaw.split('\n').map((s) => s.trim()).filter(Boolean)[0] || '站长新说说';
       const title = firstLine.length > 40 ? `${firstLine.slice(0, 40)}...` : firstLine;
 
+      const images = Array.isArray(meta.images) && meta.images.length > 0 ? meta.images : [];
+
       masterMoments.push({
         id: momentId,
         author: meta.author || SITE_INFO.name,
@@ -163,8 +187,10 @@ function loadLocalMarkdownMoments() {
         mood: meta.mood || '🚀 专注',
         device: meta.device || 'Mac Studio · Astro 5',
         title,
-        url: `/moments/#${momentId}`,
+        url: `/moments/#moment-${momentId}`,
         summary: cleanSummary,
+        content: bodyRaw,
+        images,
         timeAgo: '刚刚',
         timestamp: meta.date || (meta.pubDate ? new Date(meta.pubDate).toISOString().slice(0, 16).replace('T', ' ') : '近期'),
         category: meta.category || 'thought',
@@ -172,7 +198,7 @@ function loadLocalMarkdownMoments() {
         likes: typeof meta.likes === 'number' ? meta.likes : 45,
         commentCount: typeof meta.commentCount === 'number' ? meta.commentCount : 2,
         origin: SITE_INFO.url,
-        originUrl: `${SITE_INFO.url}/moments/#${momentId}`,
+        originUrl: `${SITE_INFO.url}/moments/#moment-${momentId}`,
         originApi: `${SITE_INFO.url}/api/comments`,
         pinned: Boolean(meta.pinned),
       });
@@ -259,8 +285,9 @@ async function syncFriendsMoments() {
       const themeData = await fetchShijianusThemeMoments(endpoint);
       if (themeData && themeData.moments.length > 0) {
         const topMoment = themeData.moments[0];
+        const momentId = `theme_${friend.name.replace(/\s+/g, '_')}_${topMoment.id}`;
         captured = {
-          id: `theme_${friend.name.replace(/\s+/g, '_')}_${topMoment.id}`,
+          id: momentId,
           author: friend.name,
           authorUrl: friend.url,
           avatar: friend.avatar,
@@ -269,8 +296,10 @@ async function syncFriendsMoments() {
           mood: topMoment.mood || friend.mood,
           device: `来自「${friend.name}」的 shijianus-blog 动态`,
           title: topMoment.title,
-          url: topMoment.url || `${friend.url}moments/#${topMoment.id}`,
+          url: `/moments/#moment-${momentId}`,
           summary: topMoment.summary,
+          content: topMoment.content || topMoment.summary,
+          images: topMoment.images || friend.images || [],
           timeAgo: topMoment.timeAgo || '刚刚',
           timestamp: topMoment.timestamp,
           category: friend.category,
@@ -295,8 +324,9 @@ async function syncFriendsMoments() {
         if (parsedItems && parsedItems.length > 0) {
           const latest = parsedItems[0];
           const { timeAgo } = normalizeDate(latest.pubDate);
+          const momentId = `sync_${friend.name.replace(/\s+/g, '_')}_${latest.id.slice(-8)}`;
           captured = {
-            id: `sync_${friend.name.replace(/\s+/g, '_')}_${latest.id.slice(-8)}`,
+            id: momentId,
             author: friend.name,
             authorUrl: friend.url,
             avatar: friend.avatar,
@@ -305,8 +335,10 @@ async function syncFriendsMoments() {
             mood: friend.mood,
             device: `来自好友「${friend.name}」的最新发布`,
             title: latest.title,
-            url: latest.link,
+            url: `/moments/#moment-${momentId}`,
             summary: latest.summary || friend.defaultItem.summary,
+            content: latest.summary || friend.defaultItem.summary,
+            images: friend.images || [],
             timeAgo: timeAgo,
             timestamp: latest.pubDate,
             category: friend.category,
@@ -327,8 +359,9 @@ async function syncFriendsMoments() {
 
     // 若网络均不可达，优雅启用保底数据，杜绝白屏
     if (!captured) {
+      const momentId = `sync_${friend.name.replace(/\s+/g, '_')}_fallback`;
       captured = {
-        id: `sync_${friend.name.replace(/\s+/g, '_')}_fallback`,
+        id: momentId,
         author: friend.name,
         authorUrl: friend.url,
         avatar: friend.avatar,
@@ -337,8 +370,10 @@ async function syncFriendsMoments() {
         mood: friend.mood,
         device: `来自好友「${friend.name}」的花园`,
         title: friend.defaultItem.title,
-        url: friend.url,
+        url: `/moments/#moment-${momentId}`,
         summary: friend.defaultItem.summary,
+        content: friend.defaultItem.summary,
+        images: friend.images || [],
         timeAgo: '近期更新',
         timestamp: friend.defaultItem.timestamp,
         category: friend.category,

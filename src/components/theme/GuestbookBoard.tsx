@@ -34,6 +34,9 @@ import {
   ChevronsUp,
   ChevronsDown,
   SlidersHorizontal,
+  Minus,
+  Maximize2,
+  Minimize2,
 } from 'lucide-react';
 import {
   fetchComments,
@@ -92,17 +95,7 @@ const EMOJI_GROUPS = [
   },
 ];
 
-// Quick Boost stamps
-const QUICK_BOOST_STAMPS = [
-  '🎉 祝博主博客长青，内容常新！',
-  '☕ 喝杯热咖啡，给思考留白。',
-  '💡 发现了一个超酷的技术方案！',
-  '🌱 友邻探访打卡，愿一同生长！',
-  '⚡ 毫秒落盘，边缘计算确实很棒！',
-  '🚀 留下足迹，向未来的自己问好！',
-];
-
-// Starter Boost stream messages (so top marquee is lively on first view)
+// Starter Boost viewpoint messages (ensuring top stream is never empty)
 const STARTER_BOOSTS: BlogComment[] = [
   {
     id: 'boost_starter_1',
@@ -133,7 +126,7 @@ const STARTER_BOOSTS: BlogComment[] = [
     authorId: 'reader_2',
     authorName: 'KernelHacker',
     authorRole: 'member',
-    message: '⚡ 边缘计算的毫秒级落盘体验确实丝滑，顶部的弹幕设计太带感了！',
+    message: '⚡ 边缘计算的毫秒级落盘体验非常丝滑，短句观点随手记录毫无负担！',
     likesCount: 4,
     reactions: { summary: { '🔥': 4 }, users: {} },
     status: 'approved',
@@ -190,7 +183,7 @@ const STARTER_BOOSTS: BlogComment[] = [
     authorId: 'reader_5',
     authorName: 'CodePilot',
     authorRole: 'member',
-    message: '🚀 弹幕轻触即发，30字限制恰到好处，毫无负担！',
+    message: '🚀 Boost 轻触即发，30字极简观点表达，随时留下思想切片！',
     likesCount: 2,
     reactions: { summary: { '🎉': 2 }, users: {} },
     status: 'approved',
@@ -216,18 +209,19 @@ const OFFICIAL_PINNED_POST: BlogComment = {
   authorWebsite: 'https://blog.epocanvas.com',
   message: `### 🌟 欢迎来到全站留言与读者交流广场！
 
-这里是为所有读者与探索者打造的开放交流空间。我们采用了**楼上 Boost 弹幕流 + 楼下 Gesture 话题广场**的分层架构：
+这里是为所有读者与探索者打造的开放交流空间。我们采用了**楼上 Boost 观点流 + 楼下 Gesture 话题广场**的分层架构：
 
-#### 🚀 楼上 Boost：瞬时弹幕墙
-- 字数限制在 **30 字以内**，轻触快捷句或即时输入；
-- 飘浮在楼上作为全站活跃弹幕展示，不设跟帖回复，专注问候与灵感打卡。
+#### 🚀 楼上 Boost：瞬时观点流
+- 专为**快速表达即时想法与简短看法**设计的短句平台（限 30 字以内）；
+- 不设长文排版与复杂回复，免去沉重负担，在顶部平台常驻轮播呈现全站最新声音。
 
-#### 📝 楼下 Gesture：深度讨论帖
-- 字数在 **8 字以上**，支持完整 Markdown、代码块高亮、图片画廊与多级跟帖；
+#### 📝 楼下 Gesture：深度讨论广场
+- 适合展开系统性思考与深度对话（8 字以上），支持完整 Markdown、代码高亮、多图与楼层跟帖；
 - **点击条目直接点进去查看详情**，配备**右侧长条百分比滑动当前楼层进度条**（支持拖拽/点击指定楼层快速跳转）；
-- 顶部导航条支持切换 **最新、近期、维度、热门、精选、我的贴文、已读、书签**。
+- 顶部导航条支持切换 **最新、近期、维度、热门、精选、我的贴文、已读、书签**；
+- 底部配备**非阻塞悬浮起草面板**，支持在浏览全站讨论的同时随时拟写观点与话题。
 
-欢迎在下方点击 **「跟帖回复」** 留下你的思想足迹！✨`,
+欢迎点击 **「发布 Gesture」** 或 **「发布 Boost」** 留下你的思想足迹！✨`,
   likesCount: 8,
   reactions: {
     summary: { '👍': 5, '🚀': 4, '✨': 3, '❤️': 4 },
@@ -271,7 +265,7 @@ const STARTER_PINNED_REPLIES: BlogComment[] = [
     authorId: 'reader_bob',
     authorName: 'Bob_Dev',
     authorRole: 'member',
-    message: '楼上跑马灯式的 Boost 弹幕很生动，把短评和长帖彻底解耦，界面的层次感瞬间拉满了。支持！',
+    message: '楼上常驻的 Boost 观点流很生动，把即时短评和深度长帖解耦，界面的层次感瞬间拉满了。支持！',
     likesCount: 4,
     reactions: { summary: { '🚀': 2, '❤️': 2 }, users: {} },
     status: 'approved',
@@ -337,13 +331,20 @@ export function GuestbookBoard() {
   const [zoomedImage, setZoomedImage] = useState<string | null>(null);
   const [identity, setIdentity] = useState<CommentIdentity | null>(null);
 
-  // Top Boost Panel State
-  const [boostInput, setBoostInput] = useState('');
-  const [boostSubmitting, setBoostSubmitting] = useState(false);
+  // Top Boost Stream State
   const [isBoostMarqueePaused, setIsBoostMarqueePaused] = useState(false);
 
-  // Gesture New Post Modal State
-  const [showGestureModal, setShowGestureModal] = useState(false);
+  // Floating Non-blocking Composer Dock State (Unified for Boost and Gesture)
+  const [showComposer, setShowComposer] = useState(false);
+  const [composerMode, setComposerMode] = useState<'boost' | 'gesture'>('gesture');
+  const [isComposerMinimized, setIsComposerMinimized] = useState(false);
+  const [isComposerMaximized, setIsComposerMaximized] = useState(false);
+
+  // Draft inputs for Boost
+  const [boostInput, setBoostInput] = useState('');
+  const [boostSubmitting, setBoostSubmitting] = useState(false);
+
+  // Draft inputs for Gesture
   const [gestureTitle, setGestureTitle] = useState('');
   const [gestureMessage, setGestureMessage] = useState('');
   const [gestureTag, setGestureTag] = useState<string>('tech');
@@ -583,6 +584,11 @@ export function GuestbookBoard() {
     bookmarkedPostIds,
   ]);
 
+  // Active Gesture Display Cap (At most 20 items per view, older items remain in DB and searchable)
+  const displayedGestures = useMemo(() => {
+    return filteredGestures.slice(0, 20);
+  }, [filteredGestures]);
+
   // Current Active Gesture in detail view
   const currentGesture = useMemo(() => {
     if (!activeGestureId) return null;
@@ -669,16 +675,24 @@ export function GuestbookBoard() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  // Open Floating Dock Composer
+  const openFloatingComposer = useCallback((mode: 'boost' | 'gesture' = 'gesture') => {
+    setComposerMode(mode);
+    setShowComposer(true);
+    setIsComposerMinimized(false);
+    setGestureError(null);
+  }, []);
+
   // ----------------------------------------------------
   // SUBMISSION HANDLERS
   // ----------------------------------------------------
 
-  // 1. Submit Boost (Top Marquee Panel)
-  const handleBoostSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  // 1. Submit Boost (From Floating Composer or Quick Trigger)
+  const handleBoostSubmit = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     const text = boostInput.trim();
     if (!text) {
-      showToast('⚠️ 请输入 Boost 内容');
+      showToast('⚠️ 请输入 Boost 观点内容');
       return;
     }
     if (text.length > 30) {
@@ -699,9 +713,10 @@ export function GuestbookBoard() {
       if (res.ok && res.comment) {
         setDbComments((prev) => [res.comment!, ...prev]);
         setBoostInput('');
-        showToast('🚀 Boost 弹幕已发射上墙！');
+        setShowComposer(false);
+        showToast('🚀 Boost 观点已成功发布！');
       } else {
-        showToast(res.error || '发射失败，请稍后重试');
+        showToast(res.error || '发布失败，请稍后重试');
       }
     } catch (err: any) {
       showToast(err.message || '网络连接异常');
@@ -710,9 +725,9 @@ export function GuestbookBoard() {
     }
   };
 
-  // 2. Submit New Gesture (Modal)
-  const handleGestureSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  // 2. Submit New Gesture (From Floating Composer)
+  const handleGestureSubmit = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     const body = gestureMessage.trim();
     if (body.length < 8) {
       setGestureError('📝 Gesture 讨论内容至少需要 8 个字');
@@ -741,7 +756,7 @@ export function GuestbookBoard() {
 
       if (res.ok && res.comment) {
         setDbComments((prev) => [res.comment!, ...prev]);
-        setShowGestureModal(false);
+        setShowComposer(false);
         setGestureTitle('');
         setGestureMessage('');
         setGestureImages([]);
@@ -909,9 +924,9 @@ export function GuestbookBoard() {
       )}
 
       {/* ========================================================
-          1. 楼上：BOOST 实时弹幕墙与发射器 (TOP BOOST WALL)
+          1. 楼上：BOOST 实时观点流 (TOP BOOST STREAM)
           ======================================================== */}
-      <section className="gb-boost-wall-card" aria-label="Boost 弹幕墙">
+      <section className="gb-boost-wall-card" aria-label="Boost 实时观点流">
         {/* Boost Header */}
         <div className="gb-boost-wall-head">
           <div className="gb-boost-head-left">
@@ -919,15 +934,26 @@ export function GuestbookBoard() {
               <span className="gb-pulse-dot"></span>
               <Rocket className="w-3.5 h-3.5 mr-1" /> Boost
             </span>
-            <span className="gb-boost-subtitle">全站实时微语弹幕流 · 30字极简上墙</span>
+            <span className="gb-boost-status-count">
+              {allBoostComments.length > 20
+                ? `全站共收录 ${allBoostComments.length} 条观点 · 轮播呈现最新热门观点`
+                : `全站共收录 ${allBoostComments.length} 条观点`}
+            </span>
           </div>
 
           <div className="gb-boost-head-right">
-            <span className="gb-boost-count-pill">{allBoostComments.length} 条已发射</span>
+            <button
+              type="button"
+              className="gb-launch-boost-btn"
+              onClick={() => openFloatingComposer('boost')}
+            >
+              <Rocket className="w-3.5 h-3.5 mr-1.5" />
+              <span>发布 Boost</span>
+            </button>
           </div>
         </div>
 
-        {/* Dual Marquee Track (Smooth Horizontal Floating Barrage) */}
+        {/* Dual Stream Track (Smooth Horizontal Floating Viewpoints) */}
         <div
           className={`gb-boost-marquee-container ${isBoostMarqueePaused ? 'is-paused' : ''}`}
           onMouseEnter={() => setIsBoostMarqueePaused(true)}
@@ -990,47 +1016,6 @@ export function GuestbookBoard() {
               ))}
           </div>
         </div>
-
-        {/* Boost Inline Launcher */}
-        <form onSubmit={handleBoostSubmit} className="gb-boost-launcher">
-          {/* Quick Stamps Row */}
-          <div className="gb-boost-stamps-strip">
-            <span className="gb-stamps-hint">⚡ 灵感快捷句：</span>
-            <div className="gb-stamps-scroll">
-              {QUICK_BOOST_STAMPS.map((stamp, idx) => (
-                <button
-                  key={idx}
-                  type="button"
-                  className="gb-stamp-pill"
-                  onClick={() => setBoostInput(stamp)}
-                >
-                  {stamp}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Input Bar */}
-          <div className="gb-boost-input-row">
-            <input
-              type="text"
-              value={boostInput}
-              onChange={(e) => setBoostInput(e.target.value)}
-              placeholder="轻触上方快捷句或输入你的 30 字 Boost 弹幕..."
-              maxLength={30}
-              className="gb-boost-text-input"
-            />
-            <div className="gb-boost-counter">{boostInput.length}/30</div>
-            <button
-              type="submit"
-              disabled={boostSubmitting || !boostInput.trim()}
-              className="gb-boost-submit-btn"
-            >
-              <Rocket className="w-4 h-4 mr-1" />
-              <span>{boostSubmitting ? '发射中...' : '发射 Boost'}</span>
-            </button>
-          </div>
-        </form>
       </section>
 
       {/* ========================================================
@@ -1122,10 +1107,7 @@ export function GuestbookBoard() {
           <button
             type="button"
             className="gb-new-gesture-btn"
-            onClick={() => {
-              setShowGestureModal(true);
-              setGestureError(null);
-            }}
+            onClick={() => openFloatingComposer('gesture')}
           >
             <Pencil className="w-4 h-4 mr-1.5" />
             <span>发布 Gesture</span>
@@ -1176,14 +1158,14 @@ export function GuestbookBoard() {
               <button
                 type="button"
                 className="gb-new-gesture-btn"
-                onClick={() => setShowGestureModal(true)}
+                onClick={() => openFloatingComposer('gesture')}
               >
                 <Pencil className="w-4 h-4 mr-1.5" /> 发起第一条 Gesture
               </button>
             </div>
           ) : (
             <div className="gb-gesture-table">
-              {filteredGestures.map((item) => {
+              {displayedGestures.map((item) => {
                 const isPinned = item.status === 'pinned';
                 const isBookmarked = bookmarkedPostIds.includes(item.id);
                 const isRead = readPostIds.includes(item.id);
@@ -1291,6 +1273,15 @@ export function GuestbookBoard() {
                   </article>
                 );
               })}
+
+              {/* 20-Item Display Cap Notice */}
+              {filteredGestures.length > 20 && (
+                <div className="gb-list-cap-notice">
+                  <span>
+                    已呈现当前分类前 20 条热议 Gesture（全站匹配共 {filteredGestures.length} 篇）· 历史讨论可通过顶部搜索或分类维度检索
+                  </span>
+                </div>
+              )}
             </div>
           )}
         </main>
@@ -1813,270 +1804,389 @@ export function GuestbookBoard() {
       )}
 
       {/* ========================================================
-          4. 新建 GESTURE 模态对话框 (NEW GESTURE MODAL)
+          4. 悬浮非阻塞草拟面板 (FLOATING NON-BLOCKING COMPOSER DOCK)
+          支持在 /guestbook/ 下全景浏览时自由收起、展开、切换 Boost / Gesture
           ======================================================== */}
-      {showGestureModal && (
-        <div className="gb-modal-overlay" onClick={() => setShowGestureModal(false)}>
+      {showComposer && (
+        isComposerMinimized ? (
           <div
-            className="gb-modal-card"
-            onClick={(e) => e.stopPropagation()}
-            role="dialog"
-            aria-modal="true"
+            className="gb-composer-minimized-pill"
+            onClick={() => setIsComposerMinimized(false)}
+            role="button"
+            tabIndex={0}
+            title="点击展开草拟面板"
           >
-            {/* Modal Header */}
-            <div className="gb-modal-head">
-              <div className="gb-modal-title">
-                <Pencil className="w-4 h-4 text-indigo-500 mr-2" />
-                <span>发起新的 Gesture 贴文</span>
-              </div>
+            <span className="gb-pulse-dot"></span>
+            <span className="gb-minimized-badge">
+              {composerMode === 'boost' ? '🚀 Boost' : '📝 Gesture'}
+            </span>
+            <span className="gb-minimized-preview">
+              {composerMode === 'boost'
+                ? (boostInput.trim() ? boostInput.trim().slice(0, 16) : '正在拟写短句观点...')
+                : (gestureTitle.trim() || gestureMessage.trim() ? (gestureTitle.trim() || gestureMessage.trim()).slice(0, 18) : '正在草拟讨论话题...')}
+            </span>
+            <div className="gb-minimized-actions">
               <button
                 type="button"
-                className="gb-modal-close"
-                onClick={() => setShowGestureModal(false)}
+                className="gb-minimized-btn"
+                title="展开"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsComposerMinimized(false);
+                }}
               >
-                <X className="w-4 h-4" />
+                <ChevronUp className="w-4 h-4" />
+              </button>
+              <button
+                type="button"
+                className="gb-minimized-btn is-close"
+                title="关闭"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowComposer(false);
+                }}
+              >
+                <X className="w-3.5 h-3.5" />
               </button>
             </div>
-
-            {/* Modal Form */}
-            <form onSubmit={handleGestureSubmit} className="gb-modal-form">
-              {/* Channel / Dimension Selector */}
-              <div className="gb-modal-row">
-                <label className="gb-modal-label">发往维度：</label>
-                <div className="gb-modal-channels">
-                  {CHANNELS.filter((ch) => ch.id !== 'all').map((ch) => (
-                    <button
-                      key={ch.id}
-                      type="button"
-                      className={`gb-modal-channel-btn ${gestureTag === ch.id ? 'is-active' : ''}`}
-                      onClick={() => setGestureTag(ch.id)}
-                    >
-                      <span>{ch.icon}</span>
-                      <span>{ch.label}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Title Input */}
-              <div className="gb-modal-row">
-                <input
-                  type="text"
-                  value={gestureTitle}
-                  onChange={(e) => setGestureTitle(e.target.value)}
-                  placeholder="话题标题（可选，留空则自动提取首句作为标题）..."
-                  className="gb-modal-title-input"
-                />
-              </div>
-
-              {/* Toolbar */}
-              <div className="gb-md-toolbar">
-                <button
-                  type="button"
-                  title="粗体"
-                  onClick={() =>
-                    insertMarkdownHelper(gestureTextareaRef, setGestureMessage, '**', '**')
-                  }
-                >
-                  <Bold className="w-4 h-4" />
-                </button>
-                <button
-                  type="button"
-                  title="斜体"
-                  onClick={() =>
-                    insertMarkdownHelper(gestureTextareaRef, setGestureMessage, '*', '*')
-                  }
-                >
-                  <Italic className="w-4 h-4" />
-                </button>
-                <button
-                  type="button"
-                  title="代码块"
-                  onClick={() =>
-                    insertMarkdownHelper(gestureTextareaRef, setGestureMessage, '\n```\n', '\n```\n')
-                  }
-                >
-                  <Code className="w-4 h-4" />
-                </button>
-                <button
-                  type="button"
-                  title="引用"
-                  onClick={() =>
-                    insertMarkdownHelper(gestureTextareaRef, setGestureMessage, '\n> ', '\n')
-                  }
-                >
-                  <Quote className="w-4 h-4" />
-                </button>
-                <button
-                  type="button"
-                  title="列表"
-                  onClick={() =>
-                    insertMarkdownHelper(gestureTextareaRef, setGestureMessage, '\n- ', '\n')
-                  }
-                >
-                  <List className="w-4 h-4" />
-                </button>
-                <button
-                  type="button"
-                  title="超链接"
-                  onClick={() =>
-                    insertMarkdownHelper(gestureTextareaRef, setGestureMessage, '[说明](', ')')
-                  }
-                >
-                  <LinkIcon className="w-4 h-4" />
-                </button>
-
-                <div className="gb-toolbar-divider"></div>
-
-                <button
-                  type="button"
-                  title="插入表情"
-                  onClick={() => setGestureShowEmoji((prev) => !prev)}
-                >
-                  <Smile className="w-4 h-4" />
-                </button>
-
-                <button
-                  type="button"
-                  title="上传图片"
-                  onClick={() => fileInputRef.current?.click()}
-                >
-                  <ImageIcon className="w-4 h-4" />
-                </button>
-
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  style={{ display: 'none' }}
-                  onChange={(e) =>
-                    handleImageFileChange(e, setGestureUploading, setGestureImages)
-                  }
-                />
-
-                <div className="gb-tab-switch ml-auto">
-                  <button
-                    type="button"
-                    className={`gb-tab-btn ${gesturePreviewTab === 'write' ? 'is-active' : ''}`}
-                    onClick={() => setGesturePreviewTab('write')}
-                  >
-                    编辑
-                  </button>
-                  <button
-                    type="button"
-                    className={`gb-tab-btn ${gesturePreviewTab === 'preview' ? 'is-active' : ''}`}
-                    onClick={() => setGesturePreviewTab('preview')}
-                  >
-                    实时预览
-                  </button>
-                </div>
-              </div>
-
-              {/* Emoji Popover */}
-              {gestureShowEmoji && (
-                <div className="gb-emoji-popover">
-                  {EMOJI_GROUPS.map((group, idx) => (
-                    <div key={idx} className="gb-emoji-group">
-                      <span className="gb-emoji-group__title">{group.name}</span>
-                      <div className="gb-emoji-grid">
-                        {group.emojis.map((em) => (
-                          <button
-                            key={em}
-                            type="button"
-                            className="gb-emoji-btn"
-                            onClick={() => {
-                              insertMarkdownHelper(gestureTextareaRef, setGestureMessage, em);
-                              setGestureShowEmoji(false);
-                            }}
-                          >
-                            {em}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* Textarea or Preview */}
-              {gesturePreviewTab === 'write' ? (
-                <textarea
-                  ref={gestureTextareaRef}
-                  rows={6}
-                  value={gestureMessage}
-                  onChange={(e) => setGestureMessage(e.target.value)}
-                  placeholder="畅所欲言，阐述你的深度思考（8字以上，支持 Markdown 排版、代码块、列表）..."
-                  className="gb-textarea is-modal-textarea"
-                />
-              ) : (
-                <div className="gb-preview-box is-modal-preview">
-                  {gestureMessage.trim() ? (
-                    <div
-                      className="gb-markdown-body"
-                      dangerouslySetInnerHTML={{
-                        __html: renderCommentMarkdown(gestureMessage),
-                      }}
-                    />
-                  ) : (
-                    <span className="text-slate-400 text-xs">暂无预览内容</span>
-                  )}
-                </div>
-              )}
-
-              {/* Attached Images */}
-              {gestureImages.length > 0 && (
-                <div className="gb-attached-images">
-                  {gestureImages.map((src, idx) => (
-                    <div key={idx} className="gb-thumb-wrap">
-                      <img src={src} alt="Attached" className="gb-thumb" />
-                      <button
-                        type="button"
-                        className="gb-thumb-del"
-                        onClick={() =>
-                          setGestureImages((prev) => prev.filter((_, i) => i !== idx))
-                        }
-                      >
-                        <X className="w-3 h-3" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* Error Alert */}
-              {gestureError && (
-                <div className="gb-error-alert">
-                  <AlertCircle className="w-4 h-4 mr-1 text-rose-500" />
-                  <span>{gestureError}</span>
-                </div>
-              )}
-
-              {/* Footer */}
-              <div className="gb-modal-foot">
-                <span className="gb-word-count">
-                  当前字数: {gestureMessage.trim().length} 字 (最少 8 字)
-                </span>
-                <div className="gb-modal-actions">
-                  <button
-                    type="button"
-                    className="gb-cancel-btn"
-                    onClick={() => setShowGestureModal(false)}
-                  >
-                    取消
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={gestureSubmitting || gestureMessage.trim().length < 8}
-                    className="gb-submit-btn"
-                  >
-                    <Send className="w-3.5 h-3.5 mr-1" />
-                    <span>{gestureSubmitting ? '发布中...' : '发布 Gesture'}</span>
-                  </button>
-                </div>
-              </div>
-            </form>
           </div>
-        </div>
+        ) : (
+          <div className={`gb-floating-composer ${isComposerMaximized ? 'is-maximized' : ''}`}>
+            {/* Composer Top Header with Tabs & Controls */}
+            <div className="gb-composer-header">
+              <div className="gb-composer-mode-tabs">
+                <button
+                  type="button"
+                  className={`gb-mode-tab ${composerMode === 'boost' ? 'is-active' : ''}`}
+                  onClick={() => setComposerMode('boost')}
+                >
+                  <Rocket className="w-3.5 h-3.5 mr-1" />
+                  <span>Boost</span>
+                </button>
+                <button
+                  type="button"
+                  className={`gb-mode-tab ${composerMode === 'gesture' ? 'is-active' : ''}`}
+                  onClick={() => setComposerMode('gesture')}
+                >
+                  <MessageSquare className="w-3.5 h-3.5 mr-1" />
+                  <span>Gesture</span>
+                </button>
+              </div>
+
+              <div className="gb-composer-window-tools">
+                <button
+                  type="button"
+                  className="gb-window-tool-btn"
+                  title="最小化到右下角"
+                  onClick={() => setIsComposerMinimized(true)}
+                >
+                  <Minus className="w-4 h-4" />
+                </button>
+                <button
+                  type="button"
+                  className="gb-window-tool-btn"
+                  title={isComposerMaximized ? '恢复大小' : '最大化'}
+                  onClick={() => setIsComposerMaximized((prev) => !prev)}
+                >
+                  {isComposerMaximized ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-3.5 h-3.5" />}
+                </button>
+                <button
+                  type="button"
+                  className="gb-window-tool-btn is-close"
+                  title="关闭起草面板"
+                  onClick={() => setShowComposer(false)}
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+
+            {/* Composer Content Body */}
+            {composerMode === 'boost' ? (
+              /* Boost Mode */
+              <div className="gb-composer-body is-boost-mode">
+                <div className="gb-composer-subtext">
+                  💡 快速表达此时此地的看法，限 30 字以内，不设复杂排版与跟帖，即发即显。
+                </div>
+
+                <div className="gb-boost-composer-input-wrap">
+                  <textarea
+                    rows={3}
+                    value={boostInput}
+                    onChange={(e) => setBoostInput(e.target.value)}
+                    placeholder="写下你此时此刻的想法、简短观点或问候（限30字以内）..."
+                    maxLength={30}
+                    className="gb-textarea is-boost-textarea"
+                  />
+                </div>
+
+                <div className="gb-modal-foot">
+                  <span className="gb-word-count">
+                    {boostInput.length} / 30 字
+                  </span>
+                  <div className="gb-modal-actions">
+                    <button
+                      type="button"
+                      className="gb-cancel-btn"
+                      onClick={() => setShowComposer(false)}
+                    >
+                      取消
+                    </button>
+                    <button
+                      type="button"
+                      disabled={boostSubmitting || !boostInput.trim()}
+                      onClick={handleBoostSubmit}
+                      className="gb-submit-btn is-boost-btn"
+                    >
+                      <Rocket className="w-3.5 h-3.5 mr-1" />
+                      <span>{boostSubmitting ? '发布中...' : '发布 Boost'}</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              /* Gesture Mode */
+              <div className="gb-composer-body is-gesture-mode">
+                {/* Channel / Dimension Selector */}
+                <div className="gb-modal-row">
+                  <label className="gb-modal-label">发往维度：</label>
+                  <div className="gb-modal-channels">
+                    {CHANNELS.filter((ch) => ch.id !== 'all').map((ch) => (
+                      <button
+                        key={ch.id}
+                        type="button"
+                        className={`gb-modal-channel-btn ${gestureTag === ch.id ? 'is-active' : ''}`}
+                        onClick={() => setGestureTag(ch.id)}
+                      >
+                        <span>{ch.icon}</span>
+                        <span>{ch.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Title Input */}
+                <div className="gb-modal-row">
+                  <input
+                    type="text"
+                    value={gestureTitle}
+                    onChange={(e) => setGestureTitle(e.target.value)}
+                    placeholder="话题标题（可选，简明概括你的核心议题）..."
+                    maxLength={100}
+                    className="gb-modal-title-input"
+                  />
+                </div>
+
+                {/* Toolbar */}
+                <div className="gb-md-toolbar">
+                  <button
+                    type="button"
+                    title="粗体"
+                    onClick={() =>
+                      insertMarkdownHelper(gestureTextareaRef, setGestureMessage, '**', '**')
+                    }
+                  >
+                    <Bold className="w-4 h-4" />
+                  </button>
+                  <button
+                    type="button"
+                    title="斜体"
+                    onClick={() =>
+                      insertMarkdownHelper(gestureTextareaRef, setGestureMessage, '*', '*')
+                    }
+                  >
+                    <Italic className="w-4 h-4" />
+                  </button>
+                  <button
+                    type="button"
+                    title="代码块"
+                    onClick={() =>
+                      insertMarkdownHelper(gestureTextareaRef, setGestureMessage, '\n```\n', '\n```\n')
+                    }
+                  >
+                    <Code className="w-4 h-4" />
+                  </button>
+                  <button
+                    type="button"
+                    title="引用"
+                    onClick={() =>
+                      insertMarkdownHelper(gestureTextareaRef, setGestureMessage, '\n> ', '\n')
+                    }
+                  >
+                    <Quote className="w-4 h-4" />
+                  </button>
+                  <button
+                    type="button"
+                    title="列表"
+                    onClick={() =>
+                      insertMarkdownHelper(gestureTextareaRef, setGestureMessage, '\n- ', '\n')
+                    }
+                  >
+                    <List className="w-4 h-4" />
+                  </button>
+                  <button
+                    type="button"
+                    title="超链接"
+                    onClick={() =>
+                      insertMarkdownHelper(gestureTextareaRef, setGestureMessage, '[说明](', ')')
+                    }
+                  >
+                    <LinkIcon className="w-4 h-4" />
+                  </button>
+
+                  <div className="gb-toolbar-divider"></div>
+
+                  <button
+                    type="button"
+                    title="插入表情"
+                    onClick={() => setGestureShowEmoji((prev) => !prev)}
+                  >
+                    <Smile className="w-4 h-4" />
+                  </button>
+
+                  <button
+                    type="button"
+                    title="上传图片"
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    <ImageIcon className="w-4 h-4" />
+                  </button>
+
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    style={{ display: 'none' }}
+                    onChange={(e) =>
+                      handleImageFileChange(e, setGestureUploading, setGestureImages)
+                    }
+                  />
+
+                  <div className="gb-tab-switch ml-auto">
+                    <button
+                      type="button"
+                      className={`gb-tab-btn ${gesturePreviewTab === 'write' ? 'is-active' : ''}`}
+                      onClick={() => setGesturePreviewTab('write')}
+                    >
+                      编辑
+                    </button>
+                    <button
+                      type="button"
+                      className={`gb-tab-btn ${gesturePreviewTab === 'preview' ? 'is-active' : ''}`}
+                      onClick={() => setGesturePreviewTab('preview')}
+                    >
+                      实时预览
+                    </button>
+                  </div>
+                </div>
+
+                {/* Emoji Popover */}
+                {gestureShowEmoji && (
+                  <div className="gb-emoji-popover">
+                    {EMOJI_GROUPS.map((group, idx) => (
+                      <div key={idx} className="gb-emoji-group">
+                        <span className="gb-emoji-group__title">{group.name}</span>
+                        <div className="gb-emoji-grid">
+                          {group.emojis.map((em) => (
+                            <button
+                              key={em}
+                              type="button"
+                              className="gb-emoji-btn"
+                              onClick={() => {
+                                insertMarkdownHelper(gestureTextareaRef, setGestureMessage, em);
+                                setGestureShowEmoji(false);
+                              }}
+                            >
+                              {em}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Textarea or Preview */}
+                {gesturePreviewTab === 'write' ? (
+                  <textarea
+                    ref={gestureTextareaRef}
+                    rows={isComposerMaximized ? 12 : 5}
+                    value={gestureMessage}
+                    onChange={(e) => setGestureMessage(e.target.value)}
+                    placeholder="畅所欲言，阐述你的深度思考（8字以上，支持 Markdown 排版、代码块、列表）..."
+                    className="gb-textarea is-modal-textarea"
+                  />
+                ) : (
+                  <div className="gb-preview-box is-modal-preview">
+                    {gestureMessage.trim() ? (
+                      <div
+                        className="gb-markdown-body"
+                        dangerouslySetInnerHTML={{
+                          __html: renderCommentMarkdown(gestureMessage),
+                        }}
+                      />
+                    ) : (
+                      <span className="text-slate-400 text-xs">暂无预览内容</span>
+                    )}
+                  </div>
+                )}
+
+                {/* Attached Images */}
+                {gestureImages.length > 0 && (
+                  <div className="gb-attached-images">
+                    {gestureImages.map((src, idx) => (
+                      <div key={idx} className="gb-thumb-wrap">
+                        <img src={src} alt="Attached" className="gb-thumb" />
+                        <button
+                          type="button"
+                          className="gb-thumb-del"
+                          onClick={() =>
+                            setGestureImages((prev) => prev.filter((_, i) => i !== idx))
+                          }
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Error Alert */}
+                {gestureError && (
+                  <div className="gb-error-alert">
+                    <AlertCircle className="w-4 h-4 mr-1 text-rose-500" />
+                    <span>{gestureError}</span>
+                  </div>
+                )}
+
+                {/* Footer */}
+                <div className="gb-modal-foot">
+                  <span className="gb-word-count">
+                    当前字数: {gestureMessage.trim().length} 字 (最少 8 字)
+                  </span>
+                  <div className="gb-modal-actions">
+                    <button
+                      type="button"
+                      className="gb-cancel-btn"
+                      onClick={() => setShowComposer(false)}
+                    >
+                      取消
+                    </button>
+                    <button
+                      type="button"
+                      disabled={gestureSubmitting || gestureMessage.trim().length < 8}
+                      onClick={handleGestureSubmit}
+                      className="gb-submit-btn"
+                    >
+                      <Send className="w-3.5 h-3.5 mr-1" />
+                      <span>{gestureSubmitting ? '发布中...' : '发布 Gesture'}</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )
       )}
     </div>
   );

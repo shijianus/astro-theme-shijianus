@@ -48,6 +48,8 @@ export interface MomentItem {
   origin?: string;
   originUrl?: string;
   originApi?: string;
+  images?: string[];
+  content?: string;
 }
 
 export const friendsConfig: {
