@@ -1,0 +1,794 @@
+---
+import { friendsConfig } from '../../config/friends';
+
+const moments = friendsConfig.moments;
+const totalFriends = friendsConfig.categories.reduce((acc, cat) => acc + cat.items.length, 0);
+---
+
+<section id="moments-dashboard" class="moments-dashboard">
+  <!-- 1. 顶部 Hero 与钓鱼漫游传送门 -->
+  <div class="moments-hero theme-card">
+    <div class="moments-hero__grid">
+      <div class="moments-hero__copy">
+        <div class="moments-hero__eyebrow">
+          <span class="radar-ping"></span>
+          <span>社交雷达 · 友邻朋友圈</span>
+        </div>
+        <h1 class="moments-hero__title">友邻动态圈 · 实时漫游雷达</h1>
+        <p class="moments-hero__summary">
+          打破中心化算法围墙，实时汇聚独立博友的最新文章、灵感速记与生活随笔。在无噪音的纯净时间流里，串联彼此的数字花园。
+        </p>
+
+        <!-- 活跃度指标 -->
+        <div class="moments-hero__stats">
+          <div class="stat-box">
+            <span class="stat-box__val">{totalFriends}</span>
+            <span class="stat-box__lbl">已连接博友</span>
+          </div>
+          <div class="stat-box">
+            <span class="stat-box__val">{moments.length * 8}+</span>
+            <span class="stat-box__lbl">已收录动态</span>
+          </div>
+          <div class="stat-box">
+            <span class="stat-box__val is-accent">6</span>
+            <span class="stat-box__lbl">今日新发布</span>
+          </div>
+          <div class="stat-box">
+            <span class="stat-box__val is-green">实时</span>
+            <span class="stat-box__lbl">雷达状态</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 钓鱼漫游交互卡片 -->
+      <div class="teleport-card theme-card">
+        <div class="teleport-card__badge">
+          <span>🎣 极客传送门</span>
+        </div>
+        <h3 class="teleport-card__title">去谁的博客逛逛？</h3>
+        <p class="teleport-card__desc">
+          摇晃鱼竿，随机穿越到某位博友的最新篇章。告别信息茧房，偶遇意外灵感。
+        </p>
+
+        <div id="fishing-result" class="fishing-result hidden">
+          <div class="fishing-result__avatar-box">
+            <img id="fish-avatar" src="" alt="avatar" />
+          </div>
+          <div class="fishing-result__info">
+            <div id="fish-author" class="fish-author"></div>
+            <a id="fish-link" class="fish-title" href="#" target="_blank" rel="noopener noreferrer"></a>
+          </div>
+        </div>
+
+        <button id="btn-fishing" class="fishing-btn" type="button">
+          <span class="fishing-icon">🎣</span>
+          <span id="fishing-btn-text">甩竿钓鱼 · 随机漫游</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. 分类与快速搜索过滤工具栏 -->
+  <div class="moments-toolbar theme-card">
+    <div class="moments-filter-chips">
+      <button class="filter-chip is-active" data-cat="all">🌟 全部动态 ({moments.length})</button>
+      <button class="filter-chip" data-cat="tech">💻 技术与架构</button>
+      <button class="filter-chip" data-cat="design">🎨 界面与设计</button>
+      <button class="filter-chip" data-cat="life">☕ 生活随想</button>
+      <button class="filter-chip" data-cat="thought">💡 站长随笔</button>
+    </div>
+
+    <div class="moments-search-box">
+      <svg class="search-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+      <input id="moments-search-input" type="text" placeholder="搜索博友、文章标题或关键词..." />
+    </div>
+  </div>
+
+  <!-- 3. 动态时间流卡片列表 -->
+  <div class="moments-feed" id="moments-feed">
+    {moments.map((item) => (
+      <article
+        class="moment-card theme-card"
+        data-id={item.id}
+        data-cat={item.category}
+        data-title={item.title.toLowerCase()}
+        data-author={item.author.toLowerCase()}
+      >
+        <!-- 卡片头部：作者与时间戳 -->
+        <div class="moment-card__header">
+          <a class="moment-author-link" href={item.authorUrl} target="_blank" rel="noopener noreferrer" title={`访问 ${item.author}`}>
+            <img class="moment-avatar" src={item.avatar} alt={item.author} loading="lazy" />
+            <div class="moment-author-meta">
+              <div class="moment-author-name">
+                <span>{item.author}</span>
+                {item.badge && <span class="moment-author-badge">{item.badge}</span>}
+              </div>
+              <time class="moment-time" datetime={item.timestamp} title={item.timestamp}>
+                {item.timeAgo} · {item.timestamp}
+              </time>
+            </div>
+          </a>
+
+          <div class="moment-card__category-pill">
+            {item.category === 'tech' && '💻 技术'}
+            {item.category === 'design' && '🎨 设计'}
+            {item.category === 'life' && '☕ 生活'}
+            {item.category === 'thought' && '💡 随笔'}
+          </div>
+        </div>
+
+        <!-- 卡片主体：标题与内容摘要 -->
+        <div class="moment-card__body">
+          <h2 class="moment-title">
+            <a href={item.url} target={item.url.startsWith('/') ? undefined : '_blank'} rel={item.url.startsWith('/') ? undefined : 'noopener noreferrer'}>
+              {item.title}
+            </a>
+          </h2>
+          <p class="moment-summary">{item.summary}</p>
+        </div>
+
+        <!-- 卡片标签 -->
+        {item.tags && item.tags.length > 0 && (
+          <div class="moment-tags">
+            {item.tags.map((t) => (
+              <span class="moment-tag">#{t}</span>
+            ))}
+          </div>
+        )}
+
+        <!-- 卡片底栏：互动与外链按钮 -->
+        <div class="moment-card__footer">
+          <button class="moment-like-btn" type="button" data-moment-id={item.id} data-initial-likes={item.likes}>
+            <span class="like-heart">❤️</span>
+            <span class="like-count">{item.likes}</span>
+          </button>
+
+          <a
+            class="moment-read-link"
+            href={item.url}
+            target={item.url.startsWith('/') ? undefined : '_blank'}
+            rel={item.url.startsWith('/') ? undefined : 'noopener noreferrer'}
+          >
+            <span>阅读原文</span>
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+          </a>
+        </div>
+      </article>
+    ))}
+  </div>
+</section>
+
+<!-- 互动脚本：随机漫游钓鱼、即时过滤与本地点赞 -->
+<script is:inline>
+  (() => {
+    // 钓鱼漫游逻辑
+    const momentsData = [
+      {
+        author: '安知鱼',
+        avatar: 'https://img02.anzhiy.cn/wordpress/927429623dc10b992167d49ee4329241.jpg',
+        title: '关于 Hexo 主题色彩与暗黑模式适配的几点新思考',
+        url: 'https://anzhiyu.cpolar.top/'
+      },
+      {
+        author: 'Astro 官方生态',
+        avatar: 'https://astro.build/favicon.svg',
+        title: 'Astro 6 核心编译引擎速度再次提升 40%',
+        url: 'https://astro.build/'
+      },
+      {
+        author: 'shijianus (站长)',
+        avatar: 'https://drawing.shijian.qzz.io/file/AgACAgEAAyEGAAS6jkJbAAMTaojJ2HJEypU1KmG8jAv2wXTVKB4AAjYMaxuc3khE9paUm5Tomx8BAAMCAAN3AAM9BA.png',
+        title: '把主导航下拉菜单彻底“应用化”：告别冰冷文档，迎接交互仪表盘',
+        url: '/about/site/'
+      },
+      {
+        author: 'Akilarの糖果屋',
+        avatar: 'https://npm.elemecdn.com/akilar-candyassets/image/siteicon/favicon.png',
+        title: '在浏览器中使用 Web Audio API 绘制实时声波瀑布',
+        url: 'https://akilar.top/'
+      },
+      {
+        author: 'Leonus',
+        avatar: 'https://q1.qlogo.cn/g?b=qq&nk=990320751&s=640',
+        title: '秋日骑行记：在城市边缘追逐落日余晖',
+        url: 'https://blog.leonus.cn/'
+      },
+      {
+        author: '小康的个人博客',
+        avatar: 'https://cdn.jsdelivr.net/gh/sviptzk/StaticFile_HEXO@v3.2.7/butterfly/img/avatar.jpg',
+        title: 'Cloudflare D1 边缘数据库在个人博客评论系统中的实践踩坑',
+        url: 'https://www.antmoe.com/'
+      }
+    ];
+
+    const btnFishing = document.getElementById('btn-fishing');
+    const resultBox = document.getElementById('fishing-result');
+    const fishAvatar = document.getElementById('fish-avatar');
+    const fishAuthor = document.getElementById('fish-author');
+    const fishLink = document.getElementById('fish-link');
+    const btnText = document.getElementById('fishing-btn-text');
+
+    if (btnFishing) {
+      btnFishing.addEventListener('click', () => {
+        btnFishing.classList.add('is-casting');
+        if (btnText) btnText.textContent = '甩竿中... 🎣';
+
+        setTimeout(() => {
+          btnFishing.classList.remove('is-casting');
+          const pick = momentsData[Math.floor(Math.random() * momentsData.length)];
+          if (fishAvatar) fishAvatar.src = pick.avatar;
+          if (fishAuthor) fishAuthor.textContent = `🎣 漫游捕获来自【${pick.author}】的新篇：`;
+          if (fishLink) {
+            fishLink.textContent = pick.title;
+            fishLink.href = pick.url;
+          }
+          if (resultBox) resultBox.classList.remove('hidden');
+          if (btnText) btnText.textContent = '再钓一次！🎣';
+        }, 600);
+      });
+    }
+
+    // 分类筛选与实时搜索
+    const filterChips = document.querySelectorAll('.filter-chip');
+    const searchInput = document.getElementById('moments-search-input');
+    const cards = document.querySelectorAll('.moment-card');
+
+    let currentCat = 'all';
+    let currentQuery = '';
+
+    function applyFilters() {
+      cards.forEach(card => {
+        const cat = card.dataset.cat;
+        const title = card.dataset.title || '';
+        const author = card.dataset.author || '';
+
+        const catMatch = (currentCat === 'all' || cat === currentCat);
+        const queryMatch = (!currentQuery || title.includes(currentQuery) || author.includes(currentQuery));
+
+        if (catMatch && queryMatch) {
+          card.style.display = '';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+    }
+
+    filterChips.forEach(chip => {
+      chip.addEventListener('click', () => {
+        filterChips.forEach(c => c.classList.remove('is-active'));
+        chip.classList.add('is-active');
+        currentCat = chip.dataset.cat || 'all';
+        applyFilters();
+      });
+    });
+
+    if (searchInput) {
+      searchInput.addEventListener('input', (e) => {
+        currentQuery = e.target.value.trim().toLowerCase();
+        applyFilters();
+      });
+    }
+
+    // 点赞微交互与持久化
+    document.querySelectorAll('.moment-like-btn').forEach(btn => {
+      const id = btn.dataset.momentId;
+      const key = `moment_liked_${id}`;
+      const countEl = btn.querySelector('.like-count');
+      let isLiked = localStorage.getItem(key) === 'true';
+
+      if (isLiked) {
+        btn.classList.add('is-liked');
+      }
+
+      btn.addEventListener('click', () => {
+        let currentLikes = parseInt(countEl?.textContent || '0', 10);
+        if (isLiked) {
+          currentLikes = Math.max(0, currentLikes - 1);
+          isLiked = false;
+          localStorage.setItem(key, 'false');
+          btn.classList.remove('is-liked');
+        } else {
+          currentLikes += 1;
+          isLiked = true;
+          localStorage.setItem(key, 'true');
+          btn.classList.add('is-liked');
+
+          // 微心心动画
+          const heart = btn.querySelector('.like-heart');
+          if (heart) {
+            heart.classList.add('heart-burst');
+            setTimeout(() => heart.classList.remove('heart-burst'), 600);
+          }
+        }
+        if (countEl) countEl.textContent = String(currentLikes);
+      });
+    });
+  })();
+</script>
+
+<style>
+  .moments-dashboard {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 1.5rem 1rem 4rem;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 1.75rem;
+  }
+
+  .theme-card {
+    background: var(--card-bg, rgba(255, 255, 255, 0.85));
+    border: 1px solid var(--border-color, rgba(66, 90, 239, 0.15));
+    border-radius: 8px;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+  }
+
+  /* 1. Hero 与钓鱼卡片 */
+  .moments-hero {
+    padding: 2.25rem 2rem;
+    background: linear-gradient(135deg, rgba(66, 90, 239, 0.08) 0%, rgba(255, 255, 255, 0.95) 100%);
+    position: relative;
+    overflow: hidden;
+  }
+
+  :root[data-theme='dark'] .moments-hero {
+    background: linear-gradient(135deg, rgba(66, 90, 239, 0.18) 0%, rgba(24, 25, 30, 0.95) 100%);
+  }
+
+  .moments-hero__grid {
+    display: grid;
+    grid-template-columns: 1.3fr 1fr;
+    gap: 2rem;
+    align-items: center;
+  }
+
+  @media (max-width: 868px) {
+    .moments-hero__grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .moments-hero__eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--theme-main, #425aef);
+    letter-spacing: 1px;
+    margin-bottom: 0.75rem;
+  }
+
+  .radar-ping {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--theme-main, #425aef);
+    box-shadow: 0 0 0 2px rgba(66, 90, 239, 0.25);
+    animation: radarWave 2s infinite ease-out;
+  }
+
+  @keyframes radarWave {
+    0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(66, 90, 239, 0.6); }
+    70% { transform: scale(1.2); box-shadow: 0 0 0 10px rgba(66, 90, 239, 0); }
+    100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(66, 90, 239, 0); }
+  }
+
+  .moments-hero__title {
+    font-size: 2.2rem;
+    font-weight: 850;
+    letter-spacing: -0.5px;
+    color: var(--font-color);
+    margin: 0 0 0.85rem;
+    line-height: 1.25;
+  }
+
+  .moments-hero__summary {
+    font-size: 1rem;
+    line-height: 1.65;
+    color: var(--text-secondary, #64748b);
+    margin: 0 0 1.5rem;
+  }
+
+  .moments-hero__stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+  }
+
+  .stat-box {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .stat-box__val {
+    font-size: 1.5rem;
+    font-weight: 850;
+    color: var(--font-color);
+  }
+
+  .stat-box__val.is-accent {
+    color: var(--theme-main, #425aef);
+  }
+
+  .stat-box__val.is-green {
+    color: #10b981;
+  }
+
+  .stat-box__lbl {
+    font-size: 0.8rem;
+    color: var(--text-secondary, #64748b);
+  }
+
+  /* 钓鱼卡片 */
+  .teleport-card {
+    padding: 1.5rem;
+    background: rgba(66, 90, 239, 0.05);
+    border: 1px solid rgba(66, 90, 239, 0.2);
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .teleport-card__badge {
+    align-self: flex-start;
+    padding: 3px 8px;
+    background: var(--theme-main, #425aef);
+    color: #fff;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 700;
+  }
+
+  .teleport-card__title {
+    font-size: 1.25rem;
+    font-weight: 850;
+    color: var(--font-color);
+    margin: 0;
+  }
+
+  .teleport-card__desc {
+    font-size: 0.85rem;
+    line-height: 1.5;
+    color: var(--text-secondary, #64748b);
+    margin: 0;
+  }
+
+  .fishing-result {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0.85rem;
+    background: #fff;
+    border-radius: 6px;
+    border: 1px solid var(--border-color, rgba(66, 90, 239, 0.15));
+    animation: fadeIn 0.3s ease;
+  }
+
+  :root[data-theme='dark'] .fishing-result {
+    background: #25262f;
+  }
+
+  .fishing-result.hidden {
+    display: none;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .fishing-result__avatar-box img {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+
+  .fish-author {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--theme-main, #425aef);
+  }
+
+  .fish-title {
+    font-size: 0.88rem;
+    font-weight: 800;
+    color: var(--font-color);
+    text-decoration: none;
+    line-height: 1.35;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .fish-title:hover {
+    color: var(--theme-main, #425aef);
+    text-decoration: underline;
+  }
+
+  .fishing-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: 40px;
+    padding: 0 16px;
+    background: var(--theme-main, #425aef);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 800;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(66, 90, 239, 0.25);
+    transition: all 0.2s ease;
+  }
+
+  .fishing-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(66, 90, 239, 0.35);
+  }
+
+  .fishing-btn.is-casting .fishing-icon {
+    animation: rodCast 0.6s ease;
+  }
+
+  @keyframes rodCast {
+    0%, 100% { transform: rotate(0); }
+    50% { transform: rotate(-30deg) scale(1.2); }
+  }
+
+  /* 2. 工具栏 */
+  .moments-toolbar {
+    padding: 1rem 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .moments-filter-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .filter-chip {
+    padding: 6px 12px;
+    border: 1px solid var(--border-color, rgba(66, 90, 239, 0.15));
+    background: transparent;
+    color: var(--font-color);
+    border-radius: 6px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.18s ease;
+  }
+
+  .filter-chip:hover {
+    background: rgba(66, 90, 239, 0.08);
+    border-color: var(--theme-main, #425aef);
+  }
+
+  .filter-chip.is-active {
+    background: var(--theme-main, #425aef);
+    color: #fff;
+    border-color: var(--theme-main, #425aef);
+  }
+
+  .moments-search-box {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 12px;
+    height: 36px;
+    background: rgba(0, 0, 0, 0.03);
+    border: 1px solid var(--border-color, rgba(0, 0, 0, 0.1));
+    border-radius: 6px;
+    width: 280px;
+  }
+
+  :root[data-theme='dark'] .moments-search-box {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.15);
+  }
+
+  .search-icon {
+    width: 16px;
+    height: 16px;
+    color: var(--text-secondary, #64748b);
+  }
+
+  .moments-search-box input {
+    border: none;
+    background: transparent;
+    color: var(--font-color);
+    font-size: 0.82rem;
+    outline: none;
+    width: 100%;
+  }
+
+  /* 3. 动态时间流卡片列表 */
+  .moments-feed {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  .moment-card {
+    padding: 1.5rem 1.75rem;
+    transition: transform 0.22s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                box-shadow 0.22s ease;
+  }
+
+  .moment-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px -4px rgba(66, 90, 239, 0.2);
+  }
+
+  .moment-card__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.85rem;
+  }
+
+  .moment-author-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+  }
+
+  .moment-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--border-color, rgba(66, 90, 239, 0.15));
+  }
+
+  .moment-author-name {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.95rem;
+    font-weight: 800;
+    color: var(--font-color);
+  }
+
+  .moment-author-badge {
+    font-size: 0.7rem;
+    padding: 1px 6px;
+    background: rgba(66, 90, 239, 0.12);
+    color: var(--theme-main, #425aef);
+    border-radius: 4px;
+  }
+
+  .moment-time {
+    font-size: 0.78rem;
+    color: var(--text-secondary, #64748b);
+  }
+
+  .moment-card__category-pill {
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 3px 10px;
+    background: rgba(0, 0, 0, 0.04);
+    color: var(--text-secondary, #64748b);
+    border-radius: 4px;
+  }
+
+  :root[data-theme='dark'] .moment-card__category-pill {
+    background: rgba(255, 255, 255, 0.08);
+  }
+
+  .moment-card__body {
+    margin-bottom: 0.85rem;
+  }
+
+  .moment-title {
+    font-size: 1.25rem;
+    font-weight: 850;
+    margin: 0 0 0.5rem;
+    line-height: 1.35;
+  }
+
+  .moment-title a {
+    color: var(--font-color);
+    text-decoration: none;
+    transition: color 0.15s ease;
+  }
+
+  .moment-title a:hover {
+    color: var(--theme-main, #425aef);
+  }
+
+  .moment-summary {
+    font-size: 0.92rem;
+    line-height: 1.6;
+    color: var(--text-secondary, #64748b);
+    margin: 0;
+  }
+
+  .moment-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 1rem;
+  }
+
+  .moment-tag {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--theme-main, #425aef);
+    opacity: 0.85;
+  }
+
+  .moment-card__footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 0.75rem;
+    border-top: 1px dashed var(--border-color, rgba(0, 0, 0, 0.06));
+  }
+
+  .moment-like-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border: none;
+    background: rgba(0, 0, 0, 0.03);
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--font-color);
+    transition: all 0.15s ease;
+  }
+
+  .moment-like-btn:hover {
+    background: rgba(239, 68, 68, 0.1);
+  }
+
+  .moment-like-btn.is-liked {
+    background: rgba(239, 68, 68, 0.12);
+    color: #ef4444;
+  }
+
+  .heart-burst {
+    animation: heartPop 0.5s ease-in-out;
+  }
+
+  @keyframes heartPop {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.4); }
+    100% { transform: scale(1); }
+  }
+
+  .moment-read-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--theme-main, #425aef);
+    text-decoration: none;
+    transition: gap 0.2s ease;
+  }
+
+  .moment-read-link:hover {
+    gap: 8px;
+    text-decoration: underline;
+  }
+</style>

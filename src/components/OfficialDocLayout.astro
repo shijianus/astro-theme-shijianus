@@ -1,0 +1,61 @@
+---
+import BlogLayout from '../layouts/BlogLayout.astro';
+import ContentFeatureEnhancer from './ContentFeatureEnhancer.astro';
+import OfficialDocHero from './OfficialDocHero.astro';
+import OfficialDocRuntime from './OfficialDocRuntime.astro';
+
+interface Variant {
+  lang: string;
+  title: string;
+  description?: string;
+  version?: string;
+  pubDate?: Date | string;
+  updatedDate?: Date | string;
+  Content: any;
+}
+
+interface Props {
+  variants: Variant[];
+  sidebarData?: any;
+  showAside?: boolean;
+  pageType?: string;
+}
+
+const {
+  variants,
+  sidebarData,
+  showAside = false,
+  pageType = 'standards',
+} = Astro.props;
+
+const defaultVariant = variants.find((variant) => variant.lang === 'zh-Hant') ?? variants[0];
+const defaultLang = defaultVariant.lang;
+---
+
+<BlogLayout
+  title={defaultVariant.title}
+  description={defaultVariant.description}
+  showAside={showAside}
+  pageType={pageType}
+  sidebarData={sidebarData}
+  lang={defaultLang}
+>
+  <OfficialDocHero slot="hero" variants={variants} />
+
+  <div class="official-doc-content" data-official-doc-content>
+    {variants.map(({ lang, Content: VariantContent }) => (
+      <div
+        class="article-translation-variant official-doc-translation-variant"
+        data-lang={lang}
+        dir={lang === 'ar' || lang === 'he' ? 'rtl' : 'ltr'}
+        style={lang === defaultLang ? '' : 'display: none;'}
+        aria-hidden={lang === defaultLang ? 'false' : 'true'}
+      >
+        <VariantContent />
+      </div>
+    ))}
+  </div>
+
+  <ContentFeatureEnhancer lang={defaultLang} />
+  <OfficialDocRuntime />
+</BlogLayout>

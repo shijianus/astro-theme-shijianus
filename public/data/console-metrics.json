@@ -1,12 +1,12 @@
 {
   "ok": true,
-  "generatedAt": "2026-10-30T06:22:12.136Z",
+  "generatedAt": "2026-10-31T02:51:07.645Z",
   "stats": {
     "posts": 30,
     "totalWords": 100922,
     "readingMinutes": 461,
     "avgWordsPerPost": 3364,
-    "uptimeDays": 1033,
+    "uptimeDays": 1034,
     "recentPostCount30d": 0,
     "activeStatus": "Status 0",
     "activeLevel": "Lv.0",
@@ -3082,7 +3082,7 @@
       "displayDate": "2026/10/30",
       "level": 0,
       "posts": [],
-      "isFuture": true
+      "isFuture": false
     },
     {
       "date": "2026-10-31",

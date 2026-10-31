@@ -419,9 +419,9 @@ export const siteConfig = {
         description: 'FRD',
         icon: 'link',
         children: [
-          { label: '友人帐', href: '/friends/', description: '互链、社群与交流入口', icon: 'link' },
+          { label: '友人帐', href: '/friends/', description: '博友名片与互链档案', icon: 'link' },
+          { label: '朋友圈', href: '/moments/', description: '友邻动态雷达与漫游', icon: 'rss' },
           { label: '留言板', href: '/lab/', description: '界面与功能的试验场', icon: 'message' },
-          { label: '朋友圈', href: '/status/', description: '查看当前重构进度', icon: 'rss' },
         ],
       },
       {
@@ -437,7 +437,7 @@ export const siteConfig = {
       },
       {
         label: '关于',
-        href: '/about/site/', // 默认解耦导航到"作者自述与建站说明"官方文档；站长可在配置中自由自定义
+        href: '/about/doc/', // 默认解耦导航到"作者自述与建站说明"官方Markdown文档；站长可在配置中自由自定义
         description: 'ABT',
         icon: 'circle-info',
         children: [

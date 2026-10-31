@@ -1,0 +1,34 @@
+---
+import { getCollection } from 'astro:content';
+import BlogLayout from '../../layouts/BlogLayout.astro';
+import ContentFeatureEnhancer from '../../components/ContentFeatureEnhancer.astro';
+import StandardsHero from '../../components/theme/StandardsHero.astro';
+import { getPublicPosts } from '../../lib/content';
+import { createSidebarData } from '../../lib/theme';
+import { Content, frontmatter } from '../../../docs/about.md';
+
+const posts = getPublicPosts(await getCollection('posts'));
+const sidebarData = createSidebarData(posts);
+---
+
+<BlogLayout
+  title={frontmatter.title}
+  description={frontmatter.description}
+  showAside={false}
+  pageType="standards"
+  sidebarData={sidebarData}
+  lang="zh-Hant"
+>
+  <StandardsHero
+    slot="hero"
+    title={frontmatter.title}
+    description={frontmatter.description}
+    version={frontmatter.version}
+    pubDate={frontmatter.pubDate}
+    updatedDate={frontmatter.updatedDate}
+  />
+
+  <Content />
+
+  <ContentFeatureEnhancer lang="zh-Hant" />
+</BlogLayout>

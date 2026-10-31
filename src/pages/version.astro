@@ -1,36 +1,20 @@
 ---
 import { getCollection } from 'astro:content';
 import BlogLayout from '../layouts/BlogLayout.astro';
-import ContentFeatureEnhancer from '../components/ContentFeatureEnhancer.astro';
-import StandardsHero from '../components/theme/StandardsHero.astro';
-import { createSidebarData } from '../lib/theme.ts';
-import {
-  Content,
-  frontmatter,
-} from '../../docs/standards/version.md';
+import VersionDashboard from '../components/theme/VersionDashboard.astro';
+import { getPublicPosts } from '../lib/content';
+import { createSidebarData } from '../lib/theme';
 
-const allPosts = await getCollection('posts');
-const sidebarData = createSidebarData(allPosts);
+const posts = getPublicPosts(await getCollection('posts'));
+const sidebarData = createSidebarData(posts);
 ---
 
 <BlogLayout
-  title={frontmatter.title}
-  description={frontmatter.description}
+  title="版本规范 | EpoCanvas 版本与架构规范"
+  description="说明 EpoCanvas 如何管理内容与程序版本、Git 提交追溯、Astro 构建分层、依赖契约与授权边界"
   showAside={false}
   pageType="standards"
   sidebarData={sidebarData}
-  lang="zh-Hant"
 >
-  <StandardsHero
-    slot="hero"
-    title={frontmatter.title}
-    description={frontmatter.description}
-    version={frontmatter.version}
-    pubDate={frontmatter.pubDate}
-    updatedDate={frontmatter.updatedDate}
-  />
-
-  <Content />
-
-  <ContentFeatureEnhancer lang="zh-Hant" />
+  <VersionDashboard />
 </BlogLayout>

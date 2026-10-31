@@ -1,0 +1,14 @@
+---
+import { getCollection } from 'astro:content';
+import BlogLayout from '../layouts/BlogLayout.astro';
+import MomentsDashboard from '../components/theme/MomentsDashboard.astro';
+import { getPublicPosts } from '../lib/content';
+import { createSidebarData } from '../lib/theme';
+
+const posts = getPublicPosts(await getCollection('posts'));
+const sidebarData = createSidebarData(posts);
+---
+
+<BlogLayout title="朋友圈 | 友邻动态圈" showAside={false} pageType="page" sidebarData={sidebarData}>
+  <MomentsDashboard />
+</BlogLayout>

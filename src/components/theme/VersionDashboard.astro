@@ -1,0 +1,1080 @@
+---
+import { siteConfig } from '../../config/site';
+
+const site = siteConfig.site;
+---
+
+<section id="version-dashboard" class="version-dashboard">
+  <!-- 1. 顶部版本标牌与浮动勋章 -->
+  <div class="version-hero-box theme-card">
+    <div class="version-hero-tag-left">
+      <span class="version-tag">#SemVer 2.0</span>
+      <span class="version-tag">#Git Commit SHA</span>
+      <span class="version-tag">#Astro 6</span>
+    </div>
+
+    <div class="version-icon-wrap">
+      <div class="version-icon-ring"></div>
+      <div class="version-icon-inner">
+        <svg class="version-git-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="6" y1="3" x2="6" y2="15"></line>
+          <circle cx="18" cy="6" r="3"></circle>
+          <circle cx="6" cy="18" r="3"></circle>
+          <path d="M18 9a9 9 0 0 1-9 9"></path>
+        </svg>
+      </div>
+      <span class="online-indicator" title="SemVer 标准规范 · 全站严谨追溯中"></span>
+    </div>
+
+    <div class="version-hero-tag-right">
+      <span class="version-tag">#Cloudflare Edge</span>
+      <span class="version-tag">#Edge Native</span>
+      <span class="version-tag">#Zero Uncommitted</span>
+    </div>
+  </div>
+
+  <div class="version-header-copy">
+    <h1 class="version-title">版本演进与架构分层规范</h1>
+    <p class="version-subtitle">EES-004 标准 · 语义化变更、部署追溯、架构分层与授权边界</p>
+  </div>
+
+  <!-- 2. Bento 核心展板网格 -->
+  <div class="version-bento-grid">
+    <!-- 板块 A：版本识别的三重维度 -->
+    <div class="bento-card dimension-card theme-card">
+      <div class="bento-badge">
+        <span class="badge-dot"></span>
+        <span>核心原则 · Principles</span>
+      </div>
+      <h2 class="bento-title">版本识别的三重维度</h2>
+      <p class="dimension-lead">
+        在 EpoCanvas 工程体系中，严禁将未经验证的构建号当作版本。我们严格区分三种互补的标识：
+      </p>
+
+      <div class="dimension-matrix">
+        <div class="dim-item">
+          <div class="dim-head">
+            <span class="dim-icon">📝</span>
+            <div class="dim-meta">
+              <strong>内容语义版本</strong>
+              <code>Markdown Frontmatter (SemVer)</code>
+            </div>
+          </div>
+          <p class="dim-desc">描述某篇规范、页面或文章的契约变更，遵循 <code>MAJOR.MINOR.PATCH</code> 语义。</p>
+        </div>
+
+        <div class="dim-item">
+          <div class="dim-head">
+            <span class="dim-icon">🔀</span>
+            <div class="dim-meta">
+              <strong>源码提交标识</strong>
+              <code>Git Commit SHA</code>
+            </div>
+          </div>
+          <p class="dim-desc">精确指出本地与远端源文件的完整代码状态，严禁无 commit 交付。</p>
+        </div>
+
+        <div class="dim-item">
+          <div class="dim-head">
+            <span class="dim-icon">☁️</span>
+            <div class="dim-meta">
+              <strong>边缘部署凭证</strong>
+              <code>Cloudflare Pages Deployment ID</code>
+            </div>
+          </div>
+          <p class="dim-desc">指出产物在全球边缘节点生效的具体部署记录与时间戳凭证。</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 板块 B：SemVer 规则与交互演练 -->
+    <div class="bento-card semver-card theme-card">
+      <div class="bento-badge is-blue">
+        <span>SemVer 2.0 · 规则矩阵</span>
+      </div>
+      <h2 class="bento-title">何时提升版本号？</h2>
+      <p class="bento-desc">根据修改的影响范围，严格执行语义化升级：</p>
+
+      <div class="semver-pill-grid">
+        <div class="semver-pill is-major" data-tier="major">
+          <div class="semver-pill-header">
+            <span class="semver-tag">MAJOR</span>
+            <span class="semver-num">X.0.0</span>
+          </div>
+          <p class="semver-summary">不相容破坏性变更</p>
+          <ul class="semver-list">
+            <li>API 接口字段改名或删除</li>
+            <li>数据库 Migration 结构性重构</li>
+            <li>核心鉴权或会话机制重构</li>
+          </ul>
+        </div>
+
+        <div class="semver-pill is-minor" data-tier="minor">
+          <div class="semver-pill-header">
+            <span class="semver-tag">MINOR</span>
+            <span class="semver-num">0.X.0</span>
+          </div>
+          <p class="semver-summary">向后相容的功能扩展</p>
+          <ul class="semver-list">
+            <li>新增独立页面或展示面板</li>
+            <li>新增向下兼容的 API 查询参数</li>
+            <li>社群规则或新协议章节发布</li>
+          </ul>
+        </div>
+
+        <div class="semver-pill is-patch" data-tier="patch">
+          <div class="semver-pill-header">
+            <span class="semver-tag">PATCH</span>
+            <span class="semver-num">0.0.X</span>
+          </div>
+          <p class="semver-summary">缺陷修复与排版勘误</p>
+          <ul class="semver-list">
+            <li>样式错位修复与视觉对齐</li>
+            <li>文章错字修正、链接勘误</li>
+            <li>不影响公开契约的内部性能优化</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- 交互式演练器 -->
+      <div class="semver-sandbox">
+        <div class="sandbox-title">⚡ 快速变更判定器</div>
+        <div class="sandbox-controls">
+          <select id="change-scenario-select" class="sandbox-select">
+            <option value="patch1">修复文章中的错别字与坏链接</option>
+            <option value="patch2">调整 CSS 间距，提升移动端自适应表现</option>
+            <option value="minor1">在导航下拉菜单中新增朋友圈 (/moments/) 独立仪表盘</option>
+            <option value="minor2">新增 D1 数据库非破坏性查询接口</option>
+            <option value="major1">重构评论系统鉴权协议，删除原 session 字段</option>
+            <option value="major2">修改文章 URL 路由规则，造成旧链接失效</option>
+          </select>
+          <div id="sandbox-result" class="sandbox-result is-patch">
+            <span class="result-badge">PATCH</span>
+            <span class="result-text">仅需递增补丁号 (+0.0.1)</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 板块 C：系统架构分层拓扑 -->
+    <div class="bento-card arch-card theme-card">
+      <div class="bento-badge is-indigo">
+        <span>架构拓扑 · Architecture Layers</span>
+      </div>
+      <h2 class="bento-title">EpoCanvas 4 层工程架构</h2>
+      <p class="bento-desc">分层解耦，确保静态生成与边缘动态能力的稳定共存：</p>
+
+      <div class="arch-stack">
+        <div class="arch-layer layer-4">
+          <div class="layer-num">L4</div>
+          <div class="layer-content">
+            <div class="layer-title">全球边缘治理与合规层 (Edge & Compliance)</div>
+            <div class="layer-chips">
+              <span>Cloudflare Pages</span>
+              <span>_headers 安全策略</span>
+              <span>Stripe Elements</span>
+              <span>TG 异步通知</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="arch-layer layer-3">
+          <div class="layer-num">L3</div>
+          <div class="layer-content">
+            <div class="layer-title">轻量 Serverless 与数据持久层 (Functions & D1)</div>
+            <div class="layer-chips">
+              <span>Cloudflare Functions</span>
+              <span>D1 SQLite 数据库</span>
+              <span>访客会话签权</span>
+              <span>零第三方追踪</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="arch-layer layer-2">
+          <div class="layer-num">L2</div>
+          <div class="layer-content">
+            <div class="layer-title">岛屿架构与渲染引擎 (Astro Islands & UI)</div>
+            <div class="layer-chips">
+              <span>Astro 6 SSG</span>
+              <span>React 19 Islands</span>
+              <span>Vanilla TS 高性能交互</span>
+              <span>PWA 离线底座</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="arch-layer layer-1">
+          <div class="layer-num">L1</div>
+          <div class="layer-content">
+            <div class="layer-title">内容与规范契约层 (Content & Contracts)</div>
+            <div class="layer-chips">
+              <span>Markdown / MDX 规范</span>
+              <span>SemVer 语义化标定</span>
+              <span>Git SHA 绝对追溯</span>
+              <span>多语言规范</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 板块 D：生产端发布与审计守则 -->
+    <div class="bento-card protocol-card theme-card">
+      <div class="bento-badge is-emerald">
+        <span>工程准则 · Delivery Protocol</span>
+      </div>
+      <h2 class="bento-title">严禁未提交/未部署即交付</h2>
+      <p class="bento-desc">
+        本仓库遵循最严格的发布工程守则，每一次正式变更均须通过完整流水线：
+      </p>
+
+      <div class="protocol-steps">
+        <div class="p-step">
+          <span class="p-num">01</span>
+          <div class="p-body">
+            <strong>单步提交与 Hash 输出</strong>
+            <p>每项独立改动立即 commit，必须在终端明确打印 7 位 short hash。</p>
+          </div>
+        </div>
+        <div class="p-step">
+          <span class="p-num">02</span>
+          <div class="p-body">
+            <strong>全量多远端镜像推送</strong>
+            <p>保证 <code>origin</code> (主仓库) 与 <code>cf</code> (部署仓库) 100% 同步推送到远端。</p>
+          </div>
+        </div>
+        <div class="p-step">
+          <span class="p-num">03</span>
+          <div class="p-body">
+            <strong>Cloudflare 边缘节点编译发布</strong>
+            <p>通过 Wrangler 部署至生产边缘环境，杜绝本地能跑线上跑崩的隐患。</p>
+          </div>
+        </div>
+        <div class="p-step">
+          <span class="p-num">04</span>
+          <div class="p-body">
+            <strong>无头浏览器线上真机审计</strong>
+            <p>调用 Playwright / Puppeteer 访问真实生产域名，控制台 0 报错验证。</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 板块 E：授权边界 -->
+    <div class="bento-card license-card theme-card">
+      <div class="bento-badge is-amber">
+        <span>开源授权 · Licensing</span>
+      </div>
+      <h2 class="bento-title">资产与授权边界</h2>
+      <p class="bento-desc">不同资产遵循清晰的授权划分，保护原创同时拥抱开源：</p>
+
+      <div class="license-grid">
+        <div class="lic-box">
+          <div class="lic-icon">💻</div>
+          <strong>源代码与主题实现</strong>
+          <span class="lic-tag">MIT License</span>
+          <p>完全开放，自由 fork、修改与二次分发，保留署名即可。</p>
+        </div>
+        <div class="lic-box">
+          <div class="lic-icon">✍️</div>
+          <strong>文章、自述与原创文字</strong>
+          <span class="lic-tag">CC BY-NC-SA 4.0</span>
+          <p>署名、非商业性使用、相同方式共享，保护原创思想主权。</p>
+        </div>
+        <div class="lic-box">
+          <div class="lic-icon">📦</div>
+          <strong>第三方依赖与字型图标</strong>
+          <span class="lic-tag">各自原生协议</span>
+          <p>尊重 upstream 许可，包含 Lucide、Astro、Tailwind 及字体授权。</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 板块 F：官方规范文档入口 -->
+    <div class="bento-card link-card theme-card">
+      <div class="link-card-inner">
+        <div class="link-card-content">
+          <span class="link-card-sub">官方规范文件 · Official Standard Markdown</span>
+          <h3 class="link-card-title">查阅完整 EES-004 工程规范标准</h3>
+          <p class="link-card-text">
+            若需查看完整的 SemVer 文本说明、API 破坏性变更细则与详细算法公式，请移步官方工程标准文档。
+          </p>
+        </div>
+        <a href="/standards/version/" class="link-card-btn">
+          <span>阅读 Markdown 标准文档</span>
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+            <polyline points="12 5 19 12 12 19"></polyline>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script is:inline>
+  (() => {
+    const select = document.getElementById('change-scenario-select');
+    const resultBox = document.getElementById('sandbox-result');
+    if (!select || !resultBox) return;
+
+    const scenarios = {
+      patch1: { tier: 'PATCH', desc: '勘误与文字修补 (+0.0.1)', cls: 'is-patch' },
+      patch2: { tier: 'PATCH', desc: '样式与自适应修复 (+0.0.1)', cls: 'is-patch' },
+      minor1: { tier: 'MINOR', desc: '新增独立应用界面 (+0.1.0)', cls: 'is-minor' },
+      minor2: { tier: 'MINOR', desc: '向后兼容的数据能力扩展 (+0.1.0)', cls: 'is-minor' },
+      major1: { tier: 'MAJOR', desc: '鉴权协议破坏性变更 (+1.0.0)', cls: 'is-major' },
+      major2: { tier: 'MAJOR', desc: '路由结构不兼容重构 (+1.0.0)', cls: 'is-major' },
+    };
+
+    select.addEventListener('change', () => {
+      const match = scenarios[select.value];
+      if (!match) return;
+
+      resultBox.className = 'sandbox-result ' + match.cls;
+      const badge = resultBox.querySelector('.result-badge');
+      const text = resultBox.querySelector('.result-text');
+      if (badge) badge.textContent = match.tier;
+      if (text) text.textContent = match.desc;
+    });
+  })();
+</script>
+
+<style>
+  .version-dashboard {
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 32px 20px 80px;
+    box-sizing: border-box;
+  }
+
+  /* 顶部标牌 */
+  .version-hero-box {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 24px 32px;
+    border-radius: 12px;
+    background: var(--card-bg, #ffffff);
+    border: 1px solid var(--style-border, #e2e8f0);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+    position: relative;
+    overflow: hidden;
+  }
+
+  :root[data-theme='dark'] .version-hero-box {
+    background: #181c27;
+    border-color: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  }
+
+  .version-hero-tag-left,
+  .version-hero-tag-right {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .version-tag {
+    font-size: 13px;
+    font-weight: 600;
+    font-family: var(--font-family-code, monospace);
+    padding: 6px 14px;
+    border-radius: 6px;
+    background: rgba(66, 90, 239, 0.08);
+    color: #425aef;
+    border: 1px solid rgba(66, 90, 239, 0.16);
+    transition: all 0.25s ease;
+  }
+
+  :root[data-theme='dark'] .version-tag {
+    background: rgba(99, 102, 241, 0.15);
+    color: #a5b4fc;
+    border-color: rgba(99, 102, 241, 0.25);
+  }
+
+  .version-icon-wrap {
+    position: relative;
+    width: 80px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .version-icon-ring {
+    position: absolute;
+    inset: -4px;
+    border-radius: 50%;
+    border: 2px dashed rgba(66, 90, 239, 0.3);
+    animation: spin 20s linear infinite;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  .version-icon-inner {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #425aef, #6366f1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    box-shadow: 0 4px 14px rgba(66, 90, 239, 0.35);
+  }
+
+  .version-git-svg {
+    width: 32px;
+    height: 32px;
+  }
+
+  .online-indicator {
+    position: absolute;
+    bottom: 6px;
+    right: 6px;
+    width: 14px;
+    height: 14px;
+    background: #10b981;
+    border: 2px solid #ffffff;
+    border-radius: 50%;
+    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.3);
+  }
+
+  :root[data-theme='dark'] .online-indicator {
+    border-color: #181c27;
+  }
+
+  .version-header-copy {
+    text-align: center;
+    margin: 36px 0 32px;
+  }
+
+  .version-title {
+    font-size: 32px;
+    font-weight: 800;
+    color: var(--font-color, #1e293b);
+    margin: 0 0 8px;
+    letter-spacing: -0.02em;
+  }
+
+  :root[data-theme='dark'] .version-title {
+    color: #f1f5f9;
+  }
+
+  .version-subtitle {
+    font-size: 16px;
+    color: #64748b;
+    margin: 0;
+  }
+
+  :root[data-theme='dark'] .version-subtitle {
+    color: #94a3b8;
+  }
+
+  /* Bento 核心网格 */
+  .version-bento-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+
+  .bento-card {
+    padding: 28px;
+    border-radius: 10px;
+    background: var(--card-bg, #ffffff);
+    border: 1px solid var(--style-border, #e2e8f0);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+  }
+
+  .bento-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+  }
+
+  :root[data-theme='dark'] .bento-card {
+    background: #181c27;
+    border-color: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+  }
+
+  .bento-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 4px 10px;
+    border-radius: 4px;
+    background: rgba(66, 90, 239, 0.08);
+    color: #425aef;
+    margin-bottom: 14px;
+  }
+
+  .badge-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #425aef;
+  }
+
+  .bento-badge.is-blue { background: rgba(59, 130, 246, 0.1); color: #2563eb; }
+  .bento-badge.is-indigo { background: rgba(99, 102, 241, 0.1); color: #4f46e5; }
+  .bento-badge.is-emerald { background: rgba(16, 185, 129, 0.1); color: #059669; }
+  .bento-badge.is-amber { background: rgba(245, 158, 11, 0.1); color: #d97706; }
+
+  :root[data-theme='dark'] .bento-badge.is-blue { color: #60a5fa; }
+  :root[data-theme='dark'] .bento-badge.is-indigo { color: #818cf8; }
+  :root[data-theme='dark'] .bento-badge.is-emerald { color: #34d399; }
+  :root[data-theme='dark'] .bento-badge.is-amber { color: #fbbf24; }
+
+  .bento-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--font-color, #1e293b);
+    margin: 0 0 10px;
+  }
+
+  :root[data-theme='dark'] .bento-title {
+    color: #f1f5f9;
+  }
+
+  .bento-desc,
+  .dimension-lead {
+    font-size: 14px;
+    line-height: 1.6;
+    color: #64748b;
+    margin: 0 0 20px;
+  }
+
+  :root[data-theme='dark'] .bento-desc,
+  :root[data-theme='dark'] .dimension-lead {
+    color: #94a3b8;
+  }
+
+  /* 板块 A：维度矩阵 */
+  .dimension-matrix {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .dim-item {
+    padding: 14px 16px;
+    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.02);
+    border: 1px solid rgba(0, 0, 0, 0.04);
+  }
+
+  :root[data-theme='dark'] .dim-item {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 255, 255, 0.06);
+  }
+
+  .dim-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 6px;
+  }
+
+  .dim-icon {
+    font-size: 20px;
+  }
+
+  .dim-meta strong {
+    display: block;
+    font-size: 14px;
+    color: var(--font-color, #1e293b);
+  }
+
+  :root[data-theme='dark'] .dim-meta strong {
+    color: #f8fafc;
+  }
+
+  .dim-meta code {
+    font-size: 11px;
+    font-family: var(--font-family-code, monospace);
+    color: #425aef;
+    background: rgba(66, 90, 239, 0.08);
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+
+  :root[data-theme='dark'] .dim-meta code {
+    color: #a5b4fc;
+    background: rgba(99, 102, 241, 0.15);
+  }
+
+  .dim-desc {
+    font-size: 13px;
+    color: #64748b;
+    margin: 0;
+    line-height: 1.5;
+  }
+
+  :root[data-theme='dark'] .dim-desc {
+    color: #94a3b8;
+  }
+
+  /* 板块 B：SemVer 胶囊 */
+  .semver-pill-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .semver-pill {
+    padding: 14px;
+    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.02);
+    border: 1px solid rgba(0, 0, 0, 0.06);
+  }
+
+  :root[data-theme='dark'] .semver-pill {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 255, 255, 0.06);
+  }
+
+  .semver-pill-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+  }
+
+  .semver-tag {
+    font-size: 11px;
+    font-weight: 800;
+    font-family: var(--font-family-code, monospace);
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+
+  .semver-pill.is-major .semver-tag { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+  .semver-pill.is-minor .semver-tag { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
+  .semver-pill.is-patch .semver-tag { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+
+  .semver-num {
+    font-size: 12px;
+    font-weight: 700;
+    font-family: var(--font-family-code, monospace);
+    color: #64748b;
+  }
+
+  :root[data-theme='dark'] .semver-num {
+    color: #94a3b8;
+  }
+
+  .semver-summary {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--font-color, #1e293b);
+    margin: 0 0 8px;
+  }
+
+  :root[data-theme='dark'] .semver-summary {
+    color: #f1f5f9;
+  }
+
+  .semver-list {
+    margin: 0;
+    padding-left: 14px;
+    font-size: 12px;
+    color: #64748b;
+    line-height: 1.6;
+  }
+
+  :root[data-theme='dark'] .semver-list {
+    color: #94a3b8;
+  }
+
+  /* 演练器 */
+  .semver-sandbox {
+    background: rgba(66, 90, 239, 0.04);
+    border: 1px dashed rgba(66, 90, 239, 0.25);
+    border-radius: 8px;
+    padding: 16px;
+  }
+
+  :root[data-theme='dark'] .semver-sandbox {
+    background: rgba(99, 102, 241, 0.06);
+    border-color: rgba(99, 102, 241, 0.3);
+  }
+
+  .sandbox-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #425aef;
+    margin-bottom: 10px;
+  }
+
+  :root[data-theme='dark'] .sandbox-title {
+    color: #a5b4fc;
+  }
+
+  .sandbox-controls {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+
+  .sandbox-select {
+    flex: 1;
+    height: 38px;
+    border-radius: 6px;
+    border: 1px solid var(--style-border, #cbd5e1);
+    background: var(--card-bg, #ffffff);
+    color: var(--font-color, #1e293b);
+    font-size: 13px;
+    padding: 0 10px;
+    outline: none;
+  }
+
+  :root[data-theme='dark'] .sandbox-select {
+    background: #1e2433;
+    border-color: rgba(255, 255, 255, 0.12);
+    color: #f1f5f9;
+  }
+
+  .sandbox-result {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 14px;
+    border-radius: 6px;
+    white-space: nowrap;
+  }
+
+  .sandbox-result.is-patch { background: rgba(16, 185, 129, 0.1); color: #059669; }
+  .sandbox-result.is-minor { background: rgba(59, 130, 246, 0.1); color: #2563eb; }
+  .sandbox-result.is-major { background: rgba(239, 68, 68, 0.1); color: #dc2626; }
+
+  :root[data-theme='dark'] .sandbox-result.is-patch { color: #34d399; }
+  :root[data-theme='dark'] .sandbox-result.is-minor { color: #60a5fa; }
+  :root[data-theme='dark'] .sandbox-result.is-major { color: #f87171; }
+
+  .result-badge {
+    font-size: 11px;
+    font-weight: 800;
+    font-family: var(--font-family-code, monospace);
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: currentColor;
+    color: #ffffff;
+  }
+
+  .result-text {
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  /* 板块 C：架构拓扑 */
+  .arch-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .arch-layer {
+    display: flex;
+    gap: 14px;
+    padding: 14px 16px;
+    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.02);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s ease, border-color 0.2s ease;
+  }
+
+  .arch-layer:hover {
+    transform: translateX(4px);
+    border-color: #425aef;
+  }
+
+  :root[data-theme='dark'] .arch-layer {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 255, 255, 0.06);
+  }
+
+  :root[data-theme='dark'] .arch-layer:hover {
+    border-color: #6366f1;
+  }
+
+  .layer-num {
+    font-size: 13px;
+    font-weight: 800;
+    font-family: var(--font-family-code, monospace);
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(66, 90, 239, 0.1);
+    color: #425aef;
+    flex-shrink: 0;
+  }
+
+  :root[data-theme='dark'] .layer-num {
+    background: rgba(99, 102, 241, 0.15);
+    color: #a5b4fc;
+  }
+
+  .layer-content {
+    flex: 1;
+  }
+
+  .layer-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--font-color, #1e293b);
+    margin-bottom: 6px;
+  }
+
+  :root[data-theme='dark'] .layer-title {
+    color: #f1f5f9;
+  }
+
+  .layer-chips {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .layer-chips span {
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: rgba(0, 0, 0, 0.04);
+    color: #64748b;
+    font-family: var(--font-family-code, monospace);
+  }
+
+  :root[data-theme='dark'] .layer-chips span {
+    background: rgba(255, 255, 255, 0.06);
+    color: #94a3b8;
+  }
+
+  /* 板块 D：发布守则 */
+  .protocol-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .p-step {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+  }
+
+  .p-num {
+    font-size: 13px;
+    font-weight: 800;
+    font-family: var(--font-family-code, monospace);
+    color: #10b981;
+    background: rgba(16, 185, 129, 0.1);
+    padding: 4px 8px;
+    border-radius: 4px;
+    flex-shrink: 0;
+  }
+
+  .p-body strong {
+    display: block;
+    font-size: 14px;
+    color: var(--font-color, #1e293b);
+    margin-bottom: 2px;
+  }
+
+  :root[data-theme='dark'] .p-body strong {
+    color: #f1f5f9;
+  }
+
+  .p-body p {
+    font-size: 13px;
+    color: #64748b;
+    margin: 0;
+    line-height: 1.5;
+  }
+
+  :root[data-theme='dark'] .p-body p {
+    color: #94a3b8;
+  }
+
+  /* 板块 E：授权网格 */
+  .license-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+
+  .lic-box {
+    padding: 16px;
+    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.02);
+    border: 1px solid rgba(0, 0, 0, 0.04);
+    text-align: center;
+  }
+
+  :root[data-theme='dark'] .lic-box {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 255, 255, 0.06);
+  }
+
+  .lic-icon {
+    font-size: 24px;
+    margin-bottom: 6px;
+  }
+
+  .lic-box strong {
+    display: block;
+    font-size: 13px;
+    color: var(--font-color, #1e293b);
+    margin-bottom: 6px;
+  }
+
+  :root[data-theme='dark'] .lic-box strong {
+    color: #f1f5f9;
+  }
+
+  .lic-tag {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 700;
+    font-family: var(--font-family-code, monospace);
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: rgba(245, 158, 11, 0.1);
+    color: #d97706;
+    margin-bottom: 8px;
+  }
+
+  :root[data-theme='dark'] .lic-tag {
+    color: #fbbf24;
+  }
+
+  .lic-box p {
+    font-size: 12px;
+    color: #64748b;
+    margin: 0;
+    line-height: 1.5;
+  }
+
+  :root[data-theme='dark'] .lic-box p {
+    color: #94a3b8;
+  }
+
+  /* 板块 F：官方规范入口 */
+  .link-card {
+    grid-column: span 2;
+    background: linear-gradient(135deg, rgba(66, 90, 239, 0.06), rgba(99, 102, 241, 0.03));
+    border: 1px dashed rgba(66, 90, 239, 0.3);
+  }
+
+  :root[data-theme='dark'] .link-card {
+    background: linear-gradient(135deg, rgba(66, 90, 239, 0.12), rgba(99, 102, 241, 0.06));
+    border-color: rgba(99, 102, 241, 0.35);
+  }
+
+  .link-card-inner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 24px;
+  }
+
+  .link-card-sub {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #425aef;
+    margin-bottom: 6px;
+    display: block;
+  }
+
+  :root[data-theme='dark'] .link-card-sub {
+    color: #a5b4fc;
+  }
+
+  .link-card-title {
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--font-color, #1e293b);
+    margin: 0 0 6px;
+  }
+
+  :root[data-theme='dark'] .link-card-title {
+    color: #f1f5f9;
+  }
+
+  .link-card-text {
+    font-size: 14px;
+    color: #64748b;
+    margin: 0;
+    line-height: 1.5;
+  }
+
+  :root[data-theme='dark'] .link-card-text {
+    color: #94a3b8;
+  }
+
+  .link-card-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    border-radius: 8px;
+    background: #425aef;
+    color: #ffffff !important;
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: none;
+    box-shadow: 0 4px 14px rgba(66, 90, 239, 0.35);
+    white-space: nowrap;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+    flex-shrink: 0;
+  }
+
+  .link-card-btn:hover {
+    transform: translateY(-2px);
+    background: #364bc9;
+    box-shadow: 0 6px 20px rgba(66, 90, 239, 0.45);
+  }
+
+  /* 响应式断点 */
+  @media (max-width: 900px) {
+    .version-bento-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .link-card {
+      grid-column: span 1;
+    }
+
+    .link-card-inner {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .semver-pill-grid,
+    .license-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .version-hero-box {
+      flex-direction: column;
+      gap: 16px;
+      text-align: center;
+    }
+  }
+</style>

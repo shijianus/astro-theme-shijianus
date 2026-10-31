@@ -1,34 +1,27 @@
 ---
 import { getCollection } from 'astro:content';
 import BlogLayout from '../../layouts/BlogLayout.astro';
-import ContentFeatureEnhancer from '../../components/ContentFeatureEnhancer.astro';
-import StandardsHero from '../../components/theme/StandardsHero.astro';
+import SiteDashboard from '../../components/theme/SiteDashboard.astro';
 import { getPublicPosts } from '../../lib/content';
 import { createSidebarData } from '../../lib/theme';
-import { Content, frontmatter } from '../../../docs/about.md';
 
 const posts = getPublicPosts(await getCollection('posts'));
 const sidebarData = createSidebarData(posts);
 ---
 
 <BlogLayout
-  title={frontmatter.title}
-  description={frontmatter.description}
+  title="关于本站 | EpoCanvas 工作台与系统设计"
+  description="在高信息密度里保留阅读秩序 · 把博客当成长期维护的软件系统"
   showAside={false}
-  pageType="standards"
+  pageType="about"
   sidebarData={sidebarData}
-  lang="zh-Hant"
 >
-  <StandardsHero
-    slot="hero"
-    title={frontmatter.title}
-    description={frontmatter.description}
-    version={frontmatter.version}
-    pubDate={frontmatter.pubDate}
-    updatedDate={frontmatter.updatedDate}
+  <SiteDashboard
+    stats={{
+      posts: sidebarData.totalPosts,
+      categories: sidebarData.totalCategories,
+      tags: sidebarData.totalTags,
+      readingMinutes: sidebarData.totalReadingMinutes,
+    }}
   />
-
-  <Content />
-
-  <ContentFeatureEnhancer lang="zh-Hant" />
 </BlogLayout>

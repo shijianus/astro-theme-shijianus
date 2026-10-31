@@ -1,0 +1,104 @@
+---
+---
+
+<script is:inline>
+  (() => {
+    const root = document.querySelector('[data-official-doc-hero]');
+    const data = root?.querySelector('[data-official-doc-variants]');
+    if (!root || !data) return;
+
+    let variants = [];
+    try {
+      variants = JSON.parse(data.textContent || '[]');
+    } catch (_) {
+      return;
+    }
+    if (!Array.isArray(variants) || variants.length === 0) return;
+
+    const defaultLang = variants.some((variant) => variant.lang === 'zh-Hant') ? 'zh-Hant' : variants[0].lang;
+    const available = new Set(variants.map((variant) => variant.lang));
+    const isRtl = (lang) => lang === 'ar' || lang === 'he' || lang === 'fa' || lang === 'ur';
+
+    const normalize = (raw) => {
+      const value = String(raw || '').trim().toLowerCase().replace(/_/g, '-');
+      if (value === 'zh' || value === 'zh-cn' || value === 'zh-hans') return 'zh-CN';
+      if (value === 'zh-hant' || value === 'zh-tw' || value === 'zh-hk' || value === 'zh-mo') return 'zh-Hant';
+      if (value.startsWith('en')) return 'en';
+      if (value.startsWith('fr')) return 'fr';
+      if (value.startsWith('es')) return 'es';
+      if (value.startsWith('de')) return 'de';
+      return value;
+    };
+
+    const preferredLanguage = () => {
+      try {
+        return window.localStorage.getItem('shijianus-manual-locale-selected')
+          || window.localStorage.getItem('shijianus-locale-variant')
+          || document.documentElement.dataset.localeVariant
+          || navigator.language;
+      } catch (_) {
+        return document.documentElement.dataset.localeVariant || navigator.language;
+      }
+    };
+
+    const setVisibleVariant = (raw, persist = false) => {
+      let lang = normalize(raw);
+      if (!available.has(lang)) lang = defaultLang;
+      const variant = variants.find((item) => item.lang === lang) || variants[0];
+
+      document.querySelectorAll('.official-doc-translation-variant').forEach((element) => {
+        const active = element.dataset.lang === variant.lang;
+        element.style.display = active ? '' : 'none';
+        element.setAttribute('aria-hidden', active ? 'false' : 'true');
+      });
+
+      const title = root.querySelector('[data-official-doc-title]');
+      const description = root.querySelector('[data-official-doc-description]');
+      const version = root.querySelector('[data-official-doc-version]');
+      const published = root.querySelector('[data-official-doc-published]');
+      const updated = root.querySelector('[data-official-doc-updated]');
+      if (title) title.textContent = variant.title || '';
+      if (description) description.textContent = variant.description || '';
+      if (version) version.textContent = variant.version || '';
+      if (published) published.textContent = variant.pubDate || '';
+      if (updated) updated.textContent = variant.updatedDate || '';
+
+      const titleMeta = document.querySelector('meta[name="description"]');
+      if (titleMeta) titleMeta.setAttribute('content', variant.description || '');
+      const siteTitle = document.title.split(' | ').slice(1).join(' | ');
+      document.title = siteTitle ? `${variant.title} | ${siteTitle}` : variant.title;
+
+      document.documentElement.lang = variant.lang;
+      document.documentElement.dataset.localeVariant = variant.lang;
+      document.documentElement.dir = isRtl(variant.lang) ? 'rtl' : 'ltr';
+      const main = document.querySelector('.standards-page-main');
+      if (main) main.dataset.lang = variant.lang;
+
+      if (persist) {
+        try {
+          window.localStorage.setItem('shijianus-manual-locale-selected', variant.lang);
+          window.localStorage.setItem('shijianus-locale-variant', variant.lang);
+        } catch (_) {}
+      }
+
+      window.dispatchEvent(new CustomEvent('shijianus:official-doc-language-change', { detail: variant.lang }));
+      window.dispatchEvent(new Event('resize'));
+      return variant.lang;
+    };
+
+    window.switchOfficialDocLanguage = setVisibleVariant;
+    const onLocaleChange = (event) => {
+      const detail = event?.detail;
+      const raw = typeof detail === 'string' ? detail : (detail?.locale || detail?.variant || detail?.lang);
+      if (raw) setVisibleVariant(raw, false);
+    };
+    window.addEventListener('shijianus:localechange', onLocaleChange);
+
+    const initial = preferredLanguage();
+    setVisibleVariant(initial, false);
+
+    document.addEventListener('astro:before-swap', () => {
+      window.removeEventListener('shijianus:localechange', onLocaleChange);
+    }, { once: true });
+  })();
+</script>
