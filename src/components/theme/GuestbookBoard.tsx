@@ -724,10 +724,17 @@ export function GuestbookBoard() {
   const hasComposerImages = composerImages.length > 0;
   const hasComposerSpecificDim = composerDimension !== 'all' && composerDimension !== '';
 
+  // Dynamic Intelligent Detection for Composer Type (Boost vs Gesture)
+  // Rule:
+  // - If user provides title, custom tags, attached images, or specific channel/dimension -> Gesture
+  // - Otherwise, if content length <= 30 chars (including default empty or < 8 chars) -> Boost
+  // - All other cases (e.g. text > 30 chars) -> Gesture
   const determinedType: 'boost' | 'gesture' = useMemo(() => {
+    if (hasComposerTitle || hasComposerTags || hasComposerImages || hasComposerSpecificDim) {
+      return 'gesture';
+    }
     const len = trimmedComposerText.length;
-    if (len < 8) return 'boost';
-    if (len <= 30 && !hasComposerTitle && !hasComposerTags && !hasComposerImages && !hasComposerSpecificDim) {
+    if (len <= 30) {
       return 'boost';
     }
     return 'gesture';
@@ -2256,20 +2263,20 @@ export function GuestbookBoard() {
               <div className="gb-composer-smart-hint">
                 {determinedType === 'boost' ? (
                   <span>
-                    💡 <strong>Boost 模式已激活</strong>：当前内容
-                    {trimmedComposerText.length < 8 ? ' 少于 8 字' : ' 处于 30 字内且未填写标题/分类/Tag'}
-                    ，将作为即时轻量短句发布至顶部观点流。
+                    💡 <strong>Boost 模式已激活</strong>：当前内容处于 30 字内且未填写标题/分类/Tag，将作为即时轻量短句发布至顶部观点流。
                   </span>
                 ) : (
                   <span>
                     📝 <strong>Gesture 模式已激活</strong>：
-                    {trimmedComposerText.length >= 30
-                      ? ' 字数已达到 30 字以上'
-                      : hasComposerTitle
+                    {hasComposerTitle
                       ? ' 已包含标题'
                       : hasComposerTags
                       ? ' 已添加自定义 Tag'
-                      : ' 已选择专属讨论维度'}
+                      : hasComposerSpecificDim
+                      ? ' 已选择专属讨论维度'
+                      : trimmedComposerText.length > 30
+                      ? ' 字数已达到 30 字以上'
+                      : ' 准备沉淀为讨论长帖'}
                     ，将沉淀为广场深度长帖（支持楼层跟帖互动与时间轴滑块）。
                   </span>
                 )}
