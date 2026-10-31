@@ -18,12 +18,43 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
   <!-- 1. QQ 空间风格：站长空间个人主页 Banner 与数据雷达 -->
   <div class="qzone-space-hero theme-card">
     <div
+      id="qzone-space-cover"
       class="qzone-space-cover"
       style={settings.coverBg ? `background-image: url('${settings.coverBg}'); background-size: cover; background-position: center;` : undefined}
     >
       <div class="space-cover-glow"></div>
-      <div class="space-weather-pill">
-        <span class="weather-text">{settings.weather || '☀️ 今日晴 · 状态 空间全速运行中'}</span>
+
+      <!-- 右上角工具：实时天气状态与空间装扮切换 (QQ空间个性化装扮) -->
+      <div class="space-cover-top-tools">
+        <div class="space-weather-pill" id="space-weather-pill">
+          <span class="weather-icon" id="weather-icon">☀️</span>
+          <span class="weather-text" id="weather-text">{settings.weather || '今日晴 · 空间全速运行中'}</span>
+        </div>
+
+        <div class="space-skin-switcher-wrap">
+          <button id="btn-toggle-skin" class="btn-toggle-skin" type="button" title="更换QQ空间装扮背景">
+            <span>🎨 装扮空间</span>
+          </button>
+          <div id="skin-dropdown-menu" class="skin-dropdown-menu hidden">
+            <div class="skin-menu-title">空间装扮风格</div>
+            <button type="button" class="skin-opt-btn is-active" data-skin="cyber">
+              <span class="skin-dot dot-cyber"></span>
+              <span>极客数码 (默认)</span>
+            </button>
+            <button type="button" class="skin-opt-btn" data-skin="galaxy">
+              <span class="skin-dot dot-galaxy"></span>
+              <span>幻彩星河</span>
+            </button>
+            <button type="button" class="skin-opt-btn" data-skin="amber">
+              <span class="skin-dot dot-amber"></span>
+              <span>暖阳生活</span>
+            </button>
+            <button type="button" class="skin-opt-btn" data-skin="ocean">
+              <span class="skin-dot dot-ocean"></span>
+              <span>碧海晴空</span>
+            </button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -42,6 +73,7 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
         <div class="profile-name-row">
           <h1 class="profile-name">{friendsConfig.siteInfo.name}</h1>
           <span class="qzone-vip-badge">空间主人 · SVIP</span>
+          <span class="qzone-level-badge">Lv.8 极客造物主</span>
           <span class="qzone-radar-pill">
             <span class="radar-ping"></span>
             <span>{settings.statusText || '实时在线 · 专注重构中'}</span>
@@ -68,6 +100,10 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
           <span class="stat-number is-pink" id="total-likes-counter">{totalLikes}</span>
           <span class="stat-label">❤️ 获赞总计</span>
         </div>
+        <div class="space-stat-item">
+          <span class="stat-number is-teal" id="qzone-footprint-counter">2,842</span>
+          <span class="stat-label">👣 空间足迹</span>
+        </div>
       </div>
     </div>
 
@@ -91,10 +127,43 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
           <span class="subnav-text">友人帐</span>
         </a>
       </div>
-      <button id="btn-sync-friends-radar" class="sync-radar-btn" type="button" title="从边缘探测友邻最新动态">
-        <span class="sync-icon">🔄</span>
-        <span class="sync-btn-text">探测友邻更新</span>
+      <div class="subnav-tools">
+        <button id="btn-quick-footprint" class="qzone-action-pill-btn footprint-btn" type="button" title="给空间主人留下一枚足迹">
+          <span class="btn-emoji">🐾</span>
+          <span>踩一踩</span>
+        </button>
+        <button id="btn-sync-friends-radar" class="sync-radar-btn" type="button" title="从边缘探测友邻最新动态">
+          <span class="sync-icon">🔄</span>
+          <span class="sync-btn-text">探测友邻更新</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- QQ 空间说说寄语与踩一踩展台 (新鲜事与互动留痕) -->
+  <div class="qzone-say-widget theme-card">
+    <div class="say-widget-left">
+      <div class="say-avatar-wrap">
+        <img src={friendsConfig.siteInfo.avatar} alt={friendsConfig.siteInfo.name} class="say-avatar" />
+        <span class="say-online-dot"></span>
+      </div>
+      <div class="say-text-box">
+        <div class="say-prompt-row">
+          <span class="say-title">💬 有什么新鲜事想告诉大家？</span>
+          <span class="say-owner-tag">空间主人寄语</span>
+        </div>
+        <p class="say-quote">{settings.signature || '欢迎来到我的数字空间！记录生活切片、偶拾架构灵感。访客可自由在下方说说评论、点赞互动～'}</p>
+      </div>
+    </div>
+    <div class="say-widget-actions">
+      <button id="btn-widget-footprint" class="say-action-btn footprint-action-btn" type="button" title="给空间主人留下一枚足迹">
+        <span class="say-action-icon">🐾</span>
+        <span>踩一踩</span>
       </button>
+      <a href="/guestbook/" class="say-action-btn is-outline" title="前往交流板留言">
+        <span class="say-action-icon">💌</span>
+        <span>交流板</span>
+      </a>
     </div>
   </div>
 
@@ -228,6 +297,19 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
               </div>
             )}
 
+            <!-- QQ 空间式“觉得很赞”互动头像流 -->
+            <div class="moment-likes-preview" id={`likes-preview-${item.id}`}>
+              <span class="likes-preview-heart">❤️</span>
+              <div class="likes-avatar-stack" id={`likes-stack-${item.id}`}>
+                <img class="likes-avatar" src="https://api.dicebear.com/7.x/identicon/svg?seed=geek" alt="赞者" />
+                <img class="likes-avatar" src="https://api.dicebear.com/7.x/identicon/svg?seed=cosmos" alt="赞者" />
+                <img class="likes-avatar" src="https://api.dicebear.com/7.x/identicon/svg?seed=voyager" alt="赞者" />
+              </div>
+              <span class="likes-preview-text" id={`likes-text-${item.id}`}>
+                {item.likes > 0 ? `${item.likes} 人觉得很赞` : '快来给说说点个赞吧'}
+              </span>
+            </div>
+
             <!-- 卡片底栏：QQ 空间式点赞、就地评论展开、分享与详情直达 -->
             <div class="moment-card__footer">
               <div class="footer-action-group">
@@ -315,61 +397,75 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
                   </div>
                 </div>
 
-                <!-- 访客就地快捷留言表单 -->
+                <!-- 访客就地快捷留言表单 (带访客头像实时同步) -->
                 <form class="moment-quick-comment-form" data-moment-id={item.id}>
-                  <div class="form-row-meta">
-                    <div class="meta-input-group">
-                      <span class="input-icon">👤</span>
-                      <input
-                        type="text"
-                        name="authorName"
-                        class="comment-input comment-author-input"
-                        placeholder="您的昵称 (必填)"
-                        required
-                        maxlength="30"
+                  <div class="comment-form-avatar-layout">
+                    <div class="comment-visitor-avatar-box">
+                      <img
+                        class="comment-visitor-avatar-img"
+                        src="https://api.dicebear.com/7.x/identicon/svg?seed=visitor"
+                        alt="我的头像"
+                        title="输入称呼或 QQ 邮箱自动同步真实头像"
                       />
-                      <button type="button" class="btn-random-nickname" title="随机生成一个极客昵称">🎲</button>
+                      <span class="visitor-avatar-label">我</span>
                     </div>
 
-                    <div class="meta-input-group">
-                      <span class="input-icon">📫</span>
-                      <input
-                        type="email"
-                        name="authorEmail"
-                        class="comment-input comment-email-input"
-                        placeholder="邮箱 (选填，仅用于头像与通知)"
-                        maxlength="60"
-                      />
+                    <div class="comment-form-main-fields">
+                      <div class="form-row-meta">
+                        <div class="meta-input-group">
+                          <span class="input-icon">👤</span>
+                          <input
+                            type="text"
+                            name="authorName"
+                            class="comment-input comment-author-input"
+                            placeholder="您的称呼 / 昵称 (必填)"
+                            required
+                            maxlength="30"
+                          />
+                          <button type="button" class="btn-random-nickname" title="随机生成一个极客昵称">🎲</button>
+                        </div>
+
+                        <div class="meta-input-group">
+                          <span class="input-icon">📫</span>
+                          <input
+                            type="text"
+                            name="authorEmail"
+                            class="comment-input comment-email-input"
+                            placeholder="QQ号 或 邮箱 (自动同步真实头像)"
+                            maxlength="60"
+                          />
+                        </div>
+                      </div>
+
+                      <div class="form-row-content">
+                        <textarea
+                          name="message"
+                          class="comment-textarea"
+                          rows="2"
+                          placeholder="留下您的想法、足迹或交流两句吧... (支持 Markdown)"
+                          required
+                          maxlength="300"
+                        ></textarea>
+                      </div>
+
+                      <div class="form-row-tools">
+                        <div class="emoji-quick-bar">
+                          <button type="button" class="quick-emoji-btn" data-emoji="😊">😊</button>
+                          <button type="button" class="quick-emoji-btn" data-emoji="👍">👍</button>
+                          <button type="button" class="quick-emoji-btn" data-emoji="🎉">🎉</button>
+                          <button type="button" class="quick-emoji-btn" data-emoji="🔥">🔥</button>
+                          <button type="button" class="quick-emoji-btn" data-emoji="☕">☕</button>
+                          <button type="button" class="quick-emoji-btn" data-emoji="💡">💡</button>
+                          <button type="button" class="quick-emoji-btn" data-emoji="🚀">🚀</button>
+                          <button type="button" class="quick-emoji-btn" data-emoji="❤️">❤️</button>
+                        </div>
+
+                        <button type="submit" class="comment-submit-btn">
+                          <span>发表留言</span>
+                          <span class="submit-arrow">✈️</span>
+                        </button>
+                      </div>
                     </div>
-                  </div>
-
-                  <div class="form-row-content">
-                    <textarea
-                      name="message"
-                      class="comment-textarea"
-                      rows="2"
-                      placeholder="留下您的想法、足迹或交流两句吧... (支持 Markdown)"
-                      required
-                      maxlength="300"
-                    ></textarea>
-                  </div>
-
-                  <div class="form-row-tools">
-                    <div class="emoji-quick-bar">
-                      <button type="button" class="quick-emoji-btn" data-emoji="😊">😊</button>
-                      <button type="button" class="quick-emoji-btn" data-emoji="👍">👍</button>
-                      <button type="button" class="quick-emoji-btn" data-emoji="🎉">🎉</button>
-                      <button type="button" class="quick-emoji-btn" data-emoji="🔥">🔥</button>
-                      <button type="button" class="quick-emoji-btn" data-emoji="☕">☕</button>
-                      <button type="button" class="quick-emoji-btn" data-emoji="💡">💡</button>
-                      <button type="button" class="quick-emoji-btn" data-emoji="🚀">🚀</button>
-                      <button type="button" class="quick-emoji-btn" data-emoji="❤️">❤️</button>
-                    </div>
-
-                    <button type="submit" class="comment-submit-btn">
-                      <span>发表留言</span>
-                      <span class="submit-arrow">✈️</span>
-                    </button>
                   </div>
                 </form>
               </div>
@@ -467,61 +563,75 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
             </div>
           </div>
 
-          <!-- 详情页发评表单 -->
+          <!-- 详情页发评表单 (带访客头像实时同步) -->
           <form id="inpage-quick-comment-form" class="moment-quick-comment-form">
-            <div class="form-row-meta">
-              <div class="meta-input-group">
-                <span class="input-icon">👤</span>
-                <input
-                  type="text"
-                  name="authorName"
-                  class="comment-input comment-author-input"
-                  placeholder="您的称呼 (必填)"
-                  required
-                  maxlength="30"
+            <div class="comment-form-avatar-layout">
+              <div class="comment-visitor-avatar-box">
+                <img
+                  class="comment-visitor-avatar-img"
+                  src="https://api.dicebear.com/7.x/identicon/svg?seed=visitor"
+                  alt="我的头像"
+                  title="输入称呼或 QQ 邮箱自动同步真实头像"
                 />
-                <button type="button" class="btn-random-nickname" title="随机生成一个极客昵称">🎲</button>
+                <span class="visitor-avatar-label">我</span>
               </div>
 
-              <div class="meta-input-group">
-                <span class="input-icon">📫</span>
-                <input
-                  type="email"
-                  name="authorEmail"
-                  class="comment-input comment-email-input"
-                  placeholder="邮箱 (选填)"
-                  maxlength="60"
-                />
+              <div class="comment-form-main-fields">
+                <div class="form-row-meta">
+                  <div class="meta-input-group">
+                    <span class="input-icon">👤</span>
+                    <input
+                      type="text"
+                      name="authorName"
+                      class="comment-input comment-author-input"
+                      placeholder="您的称呼 / 昵称 (必填)"
+                      required
+                      maxlength="30"
+                    />
+                    <button type="button" class="btn-random-nickname" title="随机生成一个极客昵称">🎲</button>
+                  </div>
+
+                  <div class="meta-input-group">
+                    <span class="input-icon">📫</span>
+                    <input
+                      type="text"
+                      name="authorEmail"
+                      class="comment-input comment-email-input"
+                      placeholder="QQ号 或 邮箱 (自动同步真实头像)"
+                      maxlength="60"
+                    />
+                  </div>
+                </div>
+
+                <div class="form-row-content">
+                  <textarea
+                    name="message"
+                    class="comment-textarea"
+                    rows="2"
+                    placeholder="畅所欲言，留下您的想法... (支持 Markdown)"
+                    required
+                    maxlength="300"
+                  ></textarea>
+                </div>
+
+                <div class="form-row-tools">
+                  <div class="emoji-quick-bar">
+                    <button type="button" class="quick-emoji-btn" data-emoji="😊">😊</button>
+                    <button type="button" class="quick-emoji-btn" data-emoji="👍">👍</button>
+                    <button type="button" class="quick-emoji-btn" data-emoji="🎉">🎉</button>
+                    <button type="button" class="quick-emoji-btn" data-emoji="🔥">🔥</button>
+                    <button type="button" class="quick-emoji-btn" data-emoji="☕">☕</button>
+                    <button type="button" class="quick-emoji-btn" data-emoji="💡">💡</button>
+                    <button type="button" class="quick-emoji-btn" data-emoji="🚀">🚀</button>
+                    <button type="button" class="quick-emoji-btn" data-emoji="❤️">❤️</button>
+                  </div>
+
+                  <button type="submit" class="comment-submit-btn">
+                    <span>发表留言</span>
+                    <span class="submit-arrow">✈️</span>
+                  </button>
+                </div>
               </div>
-            </div>
-
-            <div class="form-row-content">
-              <textarea
-                name="message"
-                class="comment-textarea"
-                rows="2"
-                placeholder="畅所欲言，留下您的想法... (支持 Markdown)"
-                required
-                maxlength="300"
-              ></textarea>
-            </div>
-
-            <div class="form-row-tools">
-              <div class="emoji-quick-bar">
-                <button type="button" class="quick-emoji-btn" data-emoji="😊">😊</button>
-                <button type="button" class="quick-emoji-btn" data-emoji="👍">👍</button>
-                <button type="button" class="quick-emoji-btn" data-emoji="🎉">🎉</button>
-                <button type="button" class="quick-emoji-btn" data-emoji="🔥">🔥</button>
-                <button type="button" class="quick-emoji-btn" data-emoji="☕">☕</button>
-                <button type="button" class="quick-emoji-btn" data-emoji="💡">💡</button>
-                <button type="button" class="quick-emoji-btn" data-emoji="🚀">🚀</button>
-                <button type="button" class="quick-emoji-btn" data-emoji="❤️">❤️</button>
-              </div>
-
-              <button type="submit" class="comment-submit-btn">
-                <span>发表留言</span>
-                <span class="submit-arrow">✈️</span>
-              </button>
             </div>
           </form>
         </div>
@@ -599,12 +709,31 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
       });
     }
 
-    // 2. 点赞微动效与持久化
+    // 2. QQ 空间式访客头像计算与全页面实时同步 (支持 QQ 邮箱头像与自定义称呼)
+    function computeVisitorAvatar(nameOrEmail) {
+      if (!nameOrEmail) return 'https://api.dicebear.com/7.x/identicon/svg?seed=visitor';
+      const clean = String(nameOrEmail).trim();
+      const qqMatch = clean.match(/^(\d{5,12})(@qq\.com)?$/i);
+      if (qqMatch && qqMatch[1]) {
+        return `https://q1.qlogo.cn/g?b=qq&nk=${qqMatch[1]}&s=100`;
+      }
+      return `https://api.dicebear.com/7.x/identicon/svg?seed=${encodeURIComponent(clean)}`;
+    }
+
+    function syncAllVisitorAvatars(url) {
+      document.querySelectorAll('.comment-visitor-avatar-img').forEach((img) => {
+        img.src = url;
+      });
+    }
+
+    // 3. 点赞微动效与持久化 (QQ 空间赞者头像队列联动)
     document.querySelectorAll('.moment-like-btn').forEach((btn) => {
       const id = btn.dataset.momentId;
       const key = `moment_liked_${id}`;
       const countEl = btn.querySelector('.like-count');
       const totalLikesCounter = document.getElementById('total-likes-counter');
+      const stackEl = document.getElementById(`likes-stack-${id}`);
+      const likesTextEl = document.getElementById(`likes-text-${id}`);
       let isLiked = localStorage.getItem(key) === 'true';
 
       if (isLiked) {
@@ -622,6 +751,12 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
           localStorage.setItem(key, 'false');
           btn.classList.remove('is-liked');
           showToast('已取消点赞');
+
+          const myAvatar = document.getElementById(`my-like-avatar-${id}`);
+          if (myAvatar) myAvatar.remove();
+          if (likesTextEl) {
+            likesTextEl.textContent = currentLikes > 0 ? `${currentLikes} 人觉得很赞` : '快来给说说点个赞吧';
+          }
         } else {
           currentLikes += 1;
           totalCount += 1;
@@ -635,6 +770,18 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
             setTimeout(() => heart.classList.remove('heart-burst'), 600);
           }
           showToast('感谢您的点赞支持！❤️');
+
+          if (stackEl) {
+            const authorIdentity = localStorage.getItem('shijianus_comment_author_email') || localStorage.getItem('shijianus_comment_author_name') || 'visitor';
+            const userAvatarUrl = computeVisitorAvatar(authorIdentity);
+            const myAvatar = document.createElement('img');
+            myAvatar.className = 'likes-avatar is-my-like';
+            myAvatar.src = userAvatarUrl;
+            myAvatar.alt = '我';
+            myAvatar.id = `my-like-avatar-${id}`;
+            stackEl.prepend(myAvatar);
+          }
+          if (likesTextEl) likesTextEl.textContent = `${currentLikes} 人觉得很赞`;
         }
 
         if (countEl) countEl.textContent = String(currentLikes);
@@ -652,7 +799,7 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
       });
     });
 
-    // 3. 分享按钮：一键复制动态链接
+    // 4. 分享按钮：一键复制动态链接
     document.querySelectorAll('.moment-share-btn').forEach((btn) => {
       btn.addEventListener('click', () => {
         const id = btn.dataset.momentId;
@@ -671,7 +818,7 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
       });
     });
 
-    // 4. 随机昵称生成器与自动回填
+    // 5. 随机昵称生成器与自动回填
     const adjectives = ['极客', '赛博', '灵感', '代码', '深夜', '咖啡', '漫游', '星际', '优雅', '无界'];
     const nouns = ['行者', '探索家', '架构师', '思想者', '筑梦师', '旅人', '观察员', '创造者', '极客'];
     function getRandomNickname() {
@@ -684,6 +831,11 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
     const savedName = localStorage.getItem('shijianus_comment_author_name') || '';
     const savedEmail = localStorage.getItem('shijianus_comment_author_email') || '';
 
+    // 初始化已保存的访客头像
+    if (savedEmail || savedName) {
+      syncAllVisitorAvatars(computeVisitorAvatar(savedEmail || savedName));
+    }
+
     function initCommentForm(form) {
       const nameInput = form.querySelector('.comment-author-input');
       const emailInput = form.querySelector('.comment-email-input');
@@ -693,9 +845,19 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
       if (nameInput && savedName) nameInput.value = savedName;
       if (emailInput && savedEmail) emailInput.value = savedEmail;
 
+      function onIdentityChange() {
+        const val = emailInput?.value.trim() || nameInput?.value.trim() || '';
+        const avatarUrl = computeVisitorAvatar(val);
+        syncAllVisitorAvatars(avatarUrl);
+      }
+
+      if (emailInput) emailInput.addEventListener('input', onIdentityChange);
+      if (nameInput) nameInput.addEventListener('input', onIdentityChange);
+
       if (randomBtn && nameInput) {
         randomBtn.addEventListener('click', () => {
           nameInput.value = getRandomNickname();
+          onIdentityChange();
           showToast(`已为您随机生成昵称：${nameInput.value}`);
         });
       }
@@ -712,6 +874,127 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
     }
 
     document.querySelectorAll('.moment-quick-comment-form').forEach(initCommentForm);
+
+    // 6. QQ 空间式踩一踩与足迹互动
+    const footprintCounter = document.getElementById('qzone-footprint-counter');
+    let footprintCount = parseInt(localStorage.getItem('qzone_footprint_count') || '2842', 10);
+    if (footprintCounter) footprintCounter.textContent = footprintCount.toLocaleString();
+
+    function triggerFootprint(btnEl) {
+      footprintCount += 1;
+      localStorage.setItem('qzone_footprint_count', String(footprintCount));
+      if (footprintCounter) footprintCounter.textContent = footprintCount.toLocaleString();
+
+      if (btnEl) {
+        const rect = btnEl.getBoundingClientRect();
+        const floater = document.createElement('div');
+        floater.className = 'qzone-floating-paw';
+        floater.textContent = '🐾 +1 踩了踩';
+        floater.style.left = `${rect.left + rect.width / 2}px`;
+        floater.style.top = `${rect.top}px`;
+        document.body.appendChild(floater);
+        setTimeout(() => floater.remove(), 1200);
+      }
+
+      showToast('🐾 你悄悄踩了踩空间主人的小窝，留下了一枚专属足迹！');
+    }
+
+    const btnQuickFootprint = document.getElementById('btn-quick-footprint');
+    const btnWidgetFootprint = document.getElementById('btn-widget-footprint');
+    if (btnQuickFootprint) btnQuickFootprint.addEventListener('click', () => triggerFootprint(btnQuickFootprint));
+    if (btnWidgetFootprint) btnWidgetFootprint.addEventListener('click', () => triggerFootprint(btnWidgetFootprint));
+
+    // 7. QQ 空间装扮皮肤主题切换
+    const skinPresets = {
+      cyber: {
+        cover: '/media/shijianus/geek-cover.jpg',
+        name: '极客数码 (默认)',
+      },
+      galaxy: {
+        cover: 'https://images.unsplash.com/photo-1506703719100-a0f3a48c0f86?w=1600&auto=format&fit=crop&q=80',
+        name: '幻彩星河',
+      },
+      amber: {
+        cover: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1600&auto=format&fit=crop&q=80',
+        name: '暖阳生活',
+      },
+      ocean: {
+        cover: 'https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=1600&auto=format&fit=crop&q=80',
+        name: '碧海晴空',
+      },
+    };
+
+    const btnToggleSkin = document.getElementById('btn-toggle-skin');
+    const skinMenu = document.getElementById('skin-dropdown-menu');
+    const spaceCover = document.getElementById('qzone-space-cover');
+
+    if (btnToggleSkin && skinMenu) {
+      btnToggleSkin.addEventListener('click', (e) => {
+        e.stopPropagation();
+        skinMenu.classList.toggle('hidden');
+      });
+
+      document.addEventListener('click', () => {
+        if (!skinMenu.classList.contains('hidden')) {
+          skinMenu.classList.add('hidden');
+        }
+      });
+
+      document.querySelectorAll('.skin-opt-btn').forEach((btn) => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const skinKey = btn.dataset.skin;
+          const preset = skinPresets[skinKey];
+          if (!preset) return;
+
+          document.querySelectorAll('.skin-opt-btn').forEach((b) => b.classList.remove('is-active'));
+          btn.classList.add('is-active');
+
+          if (spaceCover) {
+            spaceCover.style.backgroundImage = `url('${preset.cover}')`;
+          }
+          localStorage.setItem('qzone_space_skin', skinKey);
+          skinMenu.classList.add('hidden');
+          showToast(`已更换空间装扮：${preset.name} ✨`);
+        });
+      });
+
+      // 初始化读取装扮皮肤
+      const savedSkin = localStorage.getItem('qzone_space_skin');
+      if (savedSkin && skinPresets[savedSkin]) {
+        const preset = skinPresets[savedSkin];
+        if (spaceCover) spaceCover.style.backgroundImage = `url('${preset.cover}')`;
+        document.querySelectorAll('.skin-opt-btn').forEach((b) => {
+          if (b.dataset.skin === savedSkin) b.classList.add('is-active');
+          else b.classList.remove('is-active');
+        });
+      }
+    }
+
+    // 8. 动态实时时间与问候语
+    const weatherTextEl = document.getElementById('weather-text');
+    const weatherIconEl = document.getElementById('weather-icon');
+    function updateLiveTimeStatus() {
+      const hour = new Date().getHours();
+      let icon = '☀️';
+      let text = '今日晴 · 空间全速运行中';
+      if (hour >= 0 && hour < 6) {
+        icon = '🌙';
+        text = '深夜静谧 · 沉思时刻';
+      } else if (hour >= 6 && hour < 12) {
+        icon = '🌅';
+        text = '清晨微光 · 灵感启航';
+      } else if (hour >= 12 && hour < 18) {
+        icon = '☀️';
+        text = '午后晴朗 · 高效编码';
+      } else {
+        icon = '🌆';
+        text = '暮色霞光 · 漫游花园';
+      }
+      if (weatherIconEl) weatherIconEl.textContent = icon;
+      if (weatherTextEl) weatherTextEl.textContent = text;
+    }
+    updateLiveTimeStatus();
 
     // 5. QQ 空间式评论楼层与异步 D1 / 跨站主权路由联动
     const loadedCommentsMap = new Map();
@@ -1298,7 +1581,7 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
   }
 
   .qzone-space-cover {
-    height: 140px;
+    height: clamp(230px, 23vw, 290px);
     background: linear-gradient(120deg, #425aef 0%, #7000ff 50%, #00b4d8 100%);
     position: relative;
     padding: 1rem 1.5rem;
@@ -1306,6 +1589,7 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
     background-repeat: no-repeat;
     background-size: cover;
     background-position: center;
+    transition: background-image 0.4s ease;
   }
 
   .space-cover-glow {
@@ -1314,21 +1598,122 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
     background: radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.3) 0%, transparent 60%);
   }
 
-  .space-weather-pill {
+  .space-cover-top-tools {
     position: absolute;
     top: 1rem;
     right: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    z-index: 10;
+  }
+
+  .space-weather-pill {
     display: inline-flex;
     align-items: center;
     gap: 6px;
     padding: 6px 14px;
     border-radius: 20px;
-    background: rgba(0, 0, 0, 0.35);
+    background: rgba(0, 0, 0, 0.45);
     backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     color: #fff;
     font-size: 0.8rem;
     font-weight: 600;
+    border: 1px solid rgba(255, 255, 255, 0.2);
   }
+
+  .space-skin-switcher-wrap {
+    position: relative;
+  }
+
+  .btn-toggle-skin {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 20px;
+    background: rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    color: #fff;
+    font-size: 0.8rem;
+    font-weight: 700;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .btn-toggle-skin:hover {
+    background: rgba(66, 90, 239, 0.85);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  }
+
+  .skin-dropdown-menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    width: 170px;
+    background: var(--card-bg, #fff);
+    border: 1px solid var(--border-color, rgba(66, 90, 239, 0.2));
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    backdrop-filter: blur(14px);
+    padding: 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    z-index: 100;
+    animation: fadeIn 0.15s ease;
+  }
+
+  .skin-menu-title {
+    font-size: 0.72rem;
+    font-weight: 800;
+    color: var(--text-secondary, #64748b);
+    padding: 4px 8px;
+    border-bottom: 1px solid rgba(66, 90, 239, 0.1);
+    margin-bottom: 2px;
+  }
+
+  .skin-opt-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    border: none;
+    background: transparent;
+    border-radius: 6px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--font-color);
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.15s;
+  }
+
+  .skin-opt-btn:hover {
+    background: rgba(66, 90, 239, 0.1);
+    color: var(--theme-main, #425aef);
+  }
+
+  .skin-opt-btn.is-active {
+    background: rgba(66, 90, 239, 0.15);
+    color: var(--theme-main, #425aef);
+    font-weight: 850;
+  }
+
+  .skin-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+  }
+
+  .dot-cyber { background: #425aef; }
+  .dot-galaxy { background: #8b5cf6; }
+  .dot-amber { background: #f59e0b; }
+  .dot-ocean { background: #00b4d8; }
 
   .qzone-profile-bar {
     padding: 0 2rem 1.5rem;
@@ -1413,6 +1798,17 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
     box-shadow: 0 2px 8px rgba(245, 158, 11, 0.35);
   }
 
+  .qzone-level-badge {
+    padding: 3px 8px;
+    border-radius: 6px;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: #fff;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+  }
+
   .qzone-radar-pill {
     display: inline-flex;
     align-items: center;
@@ -1474,6 +1870,7 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
   .stat-number.is-purple { color: #8b5cf6; }
   .stat-number.is-blue { color: #3b82f6; }
   .stat-number.is-pink { color: #ec4899; }
+  .stat-number.is-teal { color: #0d9488; }
 
   .stat-label {
     font-size: 0.72rem;
@@ -1558,6 +1955,282 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
   @keyframes spin {
     from { transform: rotate(0deg); }
     to { transform: rotate(360deg); }
+  }
+
+  .subnav-tools {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .qzone-action-pill-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 14px;
+    border-radius: 20px;
+    background: rgba(245, 158, 11, 0.12);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    color: #d97706;
+    font-size: 0.85rem;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .qzone-action-pill-btn:hover {
+    background: #f59e0b;
+    color: #fff;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.35);
+  }
+
+  /* QQ 空间说说寄语与踩一踩展台 */
+  .qzone-say-widget {
+    padding: 1.25rem 1.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    background: linear-gradient(135deg, rgba(66, 90, 239, 0.04) 0%, var(--card-bg, #fff) 100%);
+    border-left: 4px solid var(--theme-main, #425aef);
+  }
+
+  .say-widget-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex: 1;
+    min-width: 280px;
+  }
+
+  .say-avatar-wrap {
+    position: relative;
+    width: 48px;
+    height: 48px;
+    flex-shrink: 0;
+  }
+
+  .say-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid rgba(66, 90, 239, 0.25);
+  }
+
+  .say-online-dot {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #10b981;
+    border: 2px solid #fff;
+  }
+
+  .say-text-box {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .say-prompt-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .say-title {
+    font-size: 0.98rem;
+    font-weight: 850;
+    color: var(--font-color);
+  }
+
+  .say-owner-tag {
+    font-size: 0.7rem;
+    font-weight: 800;
+    padding: 1px 6px;
+    border-radius: 4px;
+    background: rgba(245, 158, 11, 0.15);
+    color: #d97706;
+  }
+
+  .say-quote {
+    margin: 0;
+    font-size: 0.88rem;
+    color: var(--text-secondary, #64748b);
+    line-height: 1.5;
+  }
+
+  .say-widget-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .say-action-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 16px;
+    border-radius: 20px;
+    background: var(--theme-main, #425aef);
+    color: #fff;
+    font-size: 0.85rem;
+    font-weight: 800;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s ease;
+  }
+
+  .say-action-btn:hover {
+    background: #3549d4;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(66, 90, 239, 0.35);
+  }
+
+  .say-action-btn.is-outline {
+    background: transparent;
+    color: var(--theme-main, #425aef);
+    border: 1px solid rgba(66, 90, 239, 0.25);
+  }
+
+  .say-action-btn.is-outline:hover {
+    background: rgba(66, 90, 239, 0.1);
+  }
+
+  /* QQ 空间式赞者头像流 */
+  .moment-likes-preview {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    background: rgba(66, 90, 239, 0.04);
+    border-radius: 8px;
+    font-size: 0.8rem;
+    color: var(--text-secondary, #64748b);
+    margin-top: 0.25rem;
+  }
+
+  .likes-preview-heart {
+    font-size: 0.85rem;
+  }
+
+  .likes-avatar-stack {
+    display: flex;
+    align-items: center;
+    margin-left: 2px;
+  }
+
+  .likes-avatar {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 2px solid var(--card-bg, #fff);
+    margin-left: -6px;
+    object-fit: cover;
+    transition: transform 0.2s;
+  }
+
+  .likes-avatar:first-child {
+    margin-left: 0;
+  }
+
+  .likes-avatar:hover {
+    transform: scale(1.2);
+    z-index: 2;
+  }
+
+  .likes-avatar.is-my-like {
+    border-color: #ef4444;
+    animation: heartBeat 0.5s ease;
+  }
+
+  .likes-preview-text {
+    font-weight: 700;
+    margin-left: 4px;
+  }
+
+  /* 访客头像与输入布局 */
+  .comment-form-avatar-layout {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+
+  .comment-visitor-avatar-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    flex-shrink: 0;
+  }
+
+  .comment-visitor-avatar-img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid rgba(66, 90, 239, 0.25);
+    background: rgba(0, 0, 0, 0.03);
+    transition: transform 0.2s ease, border-color 0.2s ease;
+  }
+
+  .comment-visitor-avatar-img:hover {
+    transform: scale(1.05);
+    border-color: var(--theme-main, #425aef);
+  }
+
+  .visitor-avatar-label {
+    font-size: 0.68rem;
+    font-weight: 800;
+    color: var(--text-secondary, #64748b);
+  }
+
+  .comment-form-main-fields {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  /* 踩一踩浮动动画 */
+  .qzone-floating-paw {
+    position: fixed;
+    z-index: 99999;
+    color: #d97706;
+    font-size: 0.95rem;
+    font-weight: 850;
+    pointer-events: none;
+    animation: floatUpPaw 1.2s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    background: rgba(254, 243, 199, 0.95);
+    padding: 4px 10px;
+    border-radius: 12px;
+    border: 1px solid rgba(245, 158, 11, 0.4);
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.25);
+  }
+
+  @keyframes floatUpPaw {
+    0% {
+      opacity: 0;
+      transform: translate(-50%, 0) scale(0.6);
+    }
+    20% {
+      opacity: 1;
+      transform: translate(-50%, -20px) scale(1.1);
+    }
+    80% {
+      opacity: 0.9;
+      transform: translate(-50%, -60px) scale(1);
+    }
+    100% {
+      opacity: 0;
+      transform: translate(-50%, -90px) scale(0.9);
+    }
   }
 
   /* 2. 主舞台容器 */

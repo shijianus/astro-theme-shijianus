@@ -5,7 +5,7 @@
   "site": {
     "name": "EpoCanvas (shijianus)",
     "url": "https://blog.epocanvas.com",
-    "avatar": "https://drawing.shijian.qzz.io/file/AgACAgEAAyEGAAS6jkJbAAMTaojJ2HJEypU1KmG8jAv2wXTVKB4AAjYMaxuc3khE9paUm5Tomx8BAAMCAAN3AAM9BA.png",
+    "avatar": "/media/shijianus/avatar.jpg",
     "desc": "把研究、开发和生活折叠成可读的记录。在高信息密度里保留阅读秩序。"
   },
   "api": {
@@ -13,14 +13,14 @@
     "likes": "https://blog.epocanvas.com/api/comments",
     "crossComment": "https://blog.epocanvas.com/api/cross-comment"
   },
-  "updatedAt": "2026-10-31T21:04:42.011Z",
+  "updatedAt": "2026-10-31T21:21:32.119Z",
   "total": 3,
   "moments": [
     {
       "id": "m_20261031_01",
       "author": "shijianus (站长)",
       "authorUrl": "https://blog.epocanvas.com",
-      "avatar": "https://drawing.shijian.qzz.io/file/AgACAgEAAyEGAAS6jkJbAAMTaojJ2HJEypU1KmG8jAv2wXTVKB4AAjYMaxuc3khE9paUm5Tomx8BAAMCAAN3AAM9BA.png",
+      "avatar": "/media/shijianus/avatar.jpg",
       "badge": "👑 站长原声",
       "isOwner": true,
       "mood": "🚀 专注",
@@ -53,7 +53,7 @@
       "id": "m_20261031_02",
       "author": "shijianus (站长)",
       "authorUrl": "https://blog.epocanvas.com",
-      "avatar": "https://drawing.shijian.qzz.io/file/AgACAgEAAyEGAAS6jkJbAAMTaojJ2HJEypU1KmG8jAv2wXTVKB4AAjYMaxuc3khE9paUm5Tomx8BAAMCAAN3AAM9BA.png",
+      "avatar": "/media/shijianus/avatar.jpg",
       "badge": "👑 站长原声",
       "isOwner": true,
       "mood": "☕ 惬意",
@@ -85,7 +85,7 @@
       "id": "m_20261030_03",
       "author": "shijianus (站长)",
       "authorUrl": "https://blog.epocanvas.com",
-      "avatar": "https://drawing.shijian.qzz.io/file/AgACAgEAAyEGAAS6jkJbAAMTaojJ2HJEypU1KmG8jAv2wXTVKB4AAjYMaxuc3khE9paUm5Tomx8BAAMCAAN3AAM9BA.png",
+      "avatar": "/media/shijianus/avatar.jpg",
       "badge": "👑 站长原声",
       "isOwner": true,
       "mood": "💡 探索",

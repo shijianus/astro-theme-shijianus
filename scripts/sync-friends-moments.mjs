@@ -33,7 +33,7 @@ if (!fs.existsSync(publicDataDir)) {
 const SITE_INFO = {
   name: 'EpoCanvas (shijianus)',
   url: 'https://blog.epocanvas.com',
-  avatar: 'https://drawing.shijian.qzz.io/file/AgACAgEAAyEGAAS6jkJbAAMTaojJ2HJEypU1KmG8jAv2wXTVKB4AAjYMaxuc3khE9paUm5Tomx8BAAMCAAN3AAM9BA.png',
+  avatar: '/media/shijianus/avatar.jpg',
   desc: '把研究、开发和生活折叠成可读的记录。在高信息密度里保留阅读秩序。',
 };
 

@@ -2,7 +2,7 @@
 id: "m_20261031_02"
 author: "shijianus (站长)"
 authorUrl: "https://blog.epocanvas.com"
-avatar: "https://drawing.shijian.qzz.io/file/AgACAgEAAyEGAAS6jkJbAAMTaojJ2HJEypU1KmG8jAv2wXTVKB4AAjYMaxuc3khE9paUm5Tomx8BAAMCAAN3AAM9BA.png"
+avatar: "/media/shijianus/avatar.jpg"
 pubDate: 2026-10-31T06:30:00.000Z
 date: "2026-10-31 17:15"
 mood: "☕ 惬意"

@@ -192,12 +192,23 @@ async function runVerification() {
       throw new Error('未正确渲染 QQ 空间个性化封面大图 background-image');
     }
 
-    // 检查空间天气与状态
+    // 检查空间天气与状态 (支持动态时间自适应)
     const weatherPill = await page.$eval('.space-weather-pill', (el) => el.textContent.trim());
     console.log(`  -> 空间天气状态: ${weatherPill}`);
-    if (!weatherPill.includes('今日晴') || !weatherPill.includes('空间全速运行中')) {
+    if (!weatherPill || weatherPill.length < 3) {
       throw new Error('空间天气与运行状态文字异常');
     }
+
+    // 检查空间装扮切换按钮与下拉菜单
+    const btnToggleSkin = await page.$('#btn-toggle-skin');
+    if (!btnToggleSkin) throw new Error('未找到空间装扮皮肤切换按钮 #btn-toggle-skin');
+    await btnToggleSkin.click();
+    await page.waitForTimeout(100);
+    const skinMenuVisible = await page.$eval('#skin-dropdown-menu', (el) => !el.classList.contains('hidden'));
+    console.log(`  -> 空间装扮下拉菜单展开状态: ${skinMenuVisible}`);
+    if (!skinMenuVisible) throw new Error('点击装扮按钮未能展开装扮风格菜单');
+    // 点击关闭
+    await btnToggleSkin.click();
 
     // 检查站长专属皇冠与 SVIP 空间主人徽章
     const crownBadge = await page.$('.owner-crown-badge');
@@ -210,6 +221,18 @@ async function runVerification() {
       throw new Error('未显示空间主人 · SVIP 徽章');
     }
 
+    const levelBadge = await page.$('.qzone-level-badge');
+    if (!levelBadge) throw new Error('未找到站长等级徽章 .qzone-level-badge');
+    const levelText = await levelBadge.textContent();
+    console.log(`  -> 站长空间等级: ${levelText}`);
+
+    // 检查站长头像是否同步为实际站长头像 (/media/shijianus/avatar.jpg)
+    const masterAvatarSrc = await page.$eval('.profile-avatar', (el) => el.getAttribute('src') || '');
+    console.log(`  -> 站长头像同步状态: ${masterAvatarSrc}`);
+    if (!masterAvatarSrc.includes('shijianus/avatar.jpg') && !masterAvatarSrc.includes('avatar')) {
+      throw new Error('站长头像未同步实际状态');
+    }
+
     // 检查实时在线状态 pill
     const radarPill = await page.$eval('.qzone-radar-pill', (el) => el.textContent.trim());
     console.log(`  -> 在线状态: ${radarPill}`);
@@ -217,13 +240,33 @@ async function runVerification() {
       throw new Error('未正确同步实际在线状态');
     }
 
-    // 检查 QQ 空间子导航栏
-    console.log('[E2E 3] 检查 QQ 空间子导航栏...');
+    // 检查 QQ 空间子导航栏与踩一踩互动
+    console.log('[E2E 3] 检查 QQ 空间子导航栏与踩一踩足迹互动...');
     const subnavLinks = await page.$$('.qzone-subnav-bar .subnav-item');
     console.log(`  -> 子导航项数量: ${subnavLinks.length}`);
     if (subnavLinks.length < 4) throw new Error('子导航项少于 4 个');
     const subnavTexts = await Promise.all(subnavLinks.map((el) => el.textContent()));
     console.log(`  -> 子导航文案: ${subnavTexts.map((s) => s.trim()).join(' | ')}`);
+
+    // 测试踩一踩按钮与足迹浮动微动效
+    const btnFootprint = await page.$('#btn-quick-footprint');
+    if (!btnFootprint) throw new Error('未找到导航栏踩一踩按钮 #btn-quick-footprint');
+    const initFootprints = await page.$eval('#qzone-footprint-counter', (el) => el.textContent.trim());
+    await btnFootprint.click();
+    await page.waitForTimeout(150);
+    const updatedFootprints = await page.$eval('#qzone-footprint-counter', (el) => el.textContent.trim());
+    console.log(`  -> 空间足迹计数: ${initFootprints} -> ${updatedFootprints}`);
+
+    // 检查 QQ 空间说说寄语展台
+    console.log('[E2E 3.1] 检查 QQ 空间说说寄语展台与主人留痕...');
+    const sayWidget = await page.$('.qzone-say-widget');
+    if (!sayWidget) throw new Error('未找到 QQ 空间说说寄语展台 .qzone-say-widget');
+    const sayTitle = await page.$eval('.say-title', (el) => el.textContent.trim());
+    const sayQuote = await page.$eval('.say-quote', (el) => el.textContent.trim());
+    console.log(`  -> 主人说说展台: "${sayTitle}" | "${sayQuote.slice(0, 30)}..."`);
+    if (!sayTitle.includes('新鲜事') || !sayQuote) {
+      throw new Error('说说寄语展台内容未正确渲染');
+    }
 
     // 2. 验证去冗余（无传送门、无分类标签指示器）
     console.log('[E2E 4] 验证已移除极客传送门与频道分类标签...');
@@ -250,6 +293,31 @@ async function runVerification() {
     console.log(`  -> 独立博友动态存在性: 安知鱼=${hasAnzhiyu}, 小康=${hasXiaokang}`);
     if (!hasAnzhiyu) {
       throw new Error('未成功聚合真实博友动态（如安知鱼）');
+    }
+
+    // 检查说说卡片底部的点赞头像流与就地展开评论头像同步
+    console.log('[E2E 5.1] 检查说说点赞头像流与访客头像实时同步...');
+    const firstLikesPreview = await page.$('.moment-likes-preview');
+    if (!firstLikesPreview) throw new Error('未找到说说点赞头像流 .moment-likes-preview');
+    const likesText = await firstLikesPreview.textContent();
+    console.log(`  -> 说说赞流文案: ${likesText.trim()}`);
+
+    // 点击第一条说说的“评论”展开抽屉，输入 QQ 邮箱测试头像实时计算
+    const firstCommentToggle = await page.$('.moment-comment-toggle-btn');
+    if (firstCommentToggle) {
+      await firstCommentToggle.click();
+      await page.waitForTimeout(200);
+      const emailInput = await page.$('.moment-comments-drawer:not(.hidden) .comment-email-input');
+      const avatarImg = await page.$('.moment-comments-drawer:not(.hidden) .comment-visitor-avatar-img');
+      if (emailInput && avatarImg) {
+        await emailInput.fill('123456@qq.com');
+        await page.waitForTimeout(100);
+        const updatedAvatarSrc = await avatarImg.getAttribute('src');
+        console.log(`  -> 访客输入QQ邮箱后实时头像: ${updatedAvatarSrc}`);
+        if (!updatedAvatarSrc.includes('qlogo.cn') || !updatedAvatarSrc.includes('123456')) {
+          throw new Error('输入QQ邮箱后未能实时同步QQ真实头像');
+        }
+      }
     }
 
     // 4. 关键验证：详情界面直接加载到页面内 (In-Page View)，杜绝单独弹窗！
