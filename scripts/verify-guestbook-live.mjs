@@ -72,31 +72,37 @@ async function verifyLive() {
     }
     console.log('[Live Verify] ✓ Confirmed 3-row Boost tracks rendered on live');
 
-    // 3. Audit Navigation Bar Dropdowns (分区 & 维度 with 4-Item Scrollable Menus)
-    console.log('[Live Verify] 3. Auditing Navigation Bar Dropdowns...');
-    const catDropdownBtn = await page.$('.gb-nav-dropdown-btn:has-text("分区:")');
-    if (!catDropdownBtn) throw new Error('Category dropdown trigger missing on live');
-    await catDropdownBtn.click();
-    await page.waitForTimeout(300);
+    // 3. Audit Navigation Bar: "维度" First (4-Item Scrollable Menu) + Horizontal Category Tabs
+    console.log('[Live Verify] 3. Auditing Navigation Bar: "维度" First + Horizontal Tabs...');
+    // 3.1 Verify Dimension dropdown is placed at the first position
+    const firstNavEl = await page.$('.gb-nav-bar__categories > *:first-child');
+    const isFirstDim = await firstNavEl?.$('.gb-dim-dropdown-btn');
+    if (!isFirstDim) throw new Error('"维度" dropdown not placed at the first position on live');
+    console.log('[Live Verify] ✓ Confirmed "维度" dropdown is placed at the first position on live');
 
-    const catDropdownMenu = await page.$('.gb-scrollable-dropdown.is-four-items-max');
-    if (!catDropdownMenu) throw new Error('Category scrollable dropdown failed to open on live');
-    console.log('[Live Verify] ✓ Category dropdown opened on live');
-
-    // Close by clicking outside or dimension
-    const dimDropdownBtn = await page.$('.gb-nav-dropdown-btn:has-text("维度:")');
-    if (!dimDropdownBtn) throw new Error('Dimension dropdown trigger missing on live');
-    await dimDropdownBtn.click();
+    // Open Dimension dropdown
+    await isFirstDim.click();
     await page.waitForTimeout(300);
 
     const dimDropdownMenu = await page.$('.gb-scrollable-dropdown.is-four-items-max');
     if (!dimDropdownMenu) throw new Error('Dimension scrollable dropdown failed to open on live');
-    console.log('[Live Verify] ✓ Dimension dropdown opened on live');
+    console.log('[Live Verify] ✓ Dimension dropdown opened on live with 4-item scrollable menu');
 
     // Select "全部维度" to close
     const allOption = await page.$('.gb-scrollable-dropdown__item:has-text("全部维度")');
     if (allOption) await allOption.click();
     await page.waitForTimeout(300);
+
+    // 3.2 Verify Horizontal Tabs are lined up: 最新, 近期, 热门, 精选, 我的贴文, 已读, 书签
+    const horizontalTabs = await page.$$eval('.gb-cat-tab-btn', (els) => els.map((el) => el.textContent?.trim()));
+    console.log(`[Live Verify] Live horizontal tabs: ${JSON.stringify(horizontalTabs)}`);
+    const expectedOrder = ['最新', '近期', '热门', '精选', '我的贴文', '已读', '书签'];
+    for (const exp of expectedOrder) {
+      if (!horizontalTabs.some((t) => t.includes(exp))) {
+        throw new Error(`Expected horizontal tab "${exp}" on live`);
+      }
+    }
+    console.log('[Live Verify] ✓ Confirmed all category tabs horizontally rendered in order after "维度" on live');
 
     // 4. Audit Official Pinned Rule Threads
     console.log('[Live Verify] 4. Auditing Official Pinned Rule Threads...');

@@ -367,9 +367,10 @@
 }
 
 /* ========================================================
-   2. 分区与维度下拉导航条 (NAV DROPDOWNS BAR)
-   - 分区下拉：最多 4 个同时展示，支持滚轮平滑滚动
-   - 维度下拉：最多 4 个同时展示，支持滚轮平滑滚动
+   2. 横排分类与维度导航条 (NAV BAR)
+   - 顺序：维度放在首位（4 项可滑轮滚动下拉菜单）
+   - 其后排开横向分类 Tabs：最新 / 近期 / 热门 / 精选 / 我的贴文 / 已读 / 书签
+   - 右侧保留统一发布入口：发布 Gesture
    ======================================================== */
 .gb-nav-bar {
   display: flex;
@@ -390,10 +391,10 @@
   border-color: rgba(255, 255, 255, 0.08);
 }
 
-.gb-nav-bar__dropdowns {
+.gb-nav-bar__categories {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 6px;
   flex-wrap: wrap;
 }
 
@@ -401,45 +402,53 @@
   position: relative;
 }
 
+/* 1. 维度下拉按钮 (位于首位) */
+.gb-dim-dropdown-btn,
 .gb-nav-dropdown-btn {
   display: inline-flex;
   align-items: center;
-  padding: 7px 14px;
+  padding: 6px 12px;
   border-radius: 8px;
   border: 1px solid rgba(226, 232, 240, 0.9);
-  background: rgba(248, 250, 252, 0.85);
+  background: rgba(248, 250, 252, 0.9);
   color: #475569;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.15s ease;
+  user-select: none;
 }
 
+:root[data-theme='dark'] .gb-dim-dropdown-btn,
 :root[data-theme='dark'] .gb-nav-dropdown-btn {
   background: rgba(15, 23, 42, 0.55);
   border-color: rgba(255, 255, 255, 0.08);
   color: #cbd5e1;
 }
 
+.gb-dim-dropdown-btn:hover,
 .gb-nav-dropdown-btn:hover {
   background: rgba(66, 90, 239, 0.08);
   border-color: #425aef;
   color: #425aef;
 }
 
+.gb-dim-dropdown-btn.is-filtered,
 .gb-nav-dropdown-btn.is-filtered {
-  border-color: rgba(66, 90, 239, 0.4);
-  background: rgba(66, 90, 239, 0.06);
+  border-color: rgba(66, 90, 239, 0.5);
+  background: rgba(66, 90, 239, 0.08);
   color: #425aef;
 }
 
+.gb-dim-prefix,
 .gb-dropdown-prefix {
-  font-size: 12px;
+  font-size: 11.5px;
   color: #94a3b8;
-  margin-right: 6px;
+  margin-right: 5px;
   font-weight: 500;
 }
 
+.gb-dim-value,
 .gb-dropdown-value {
   font-weight: 700;
 }
@@ -452,6 +461,70 @@
   border-radius: 10px;
   margin-left: 6px;
   font-weight: 700;
+}
+
+/* 2. 横向排开的各分类 Tabs (最新 / 近期 / 热门 / 精选 / 我的贴文 / 已读 / 书签) */
+.gb-cat-tab-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 11px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+  white-space: nowrap;
+}
+
+:root[data-theme='dark'] .gb-cat-tab-btn {
+  color: #94a3b8;
+}
+
+.gb-cat-tab-btn:hover {
+  background: rgba(0, 0, 0, 0.04);
+  color: #1e293b;
+}
+
+:root[data-theme='dark'] .gb-cat-tab-btn:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: #f1f5f9;
+}
+
+.gb-cat-tab-btn.is-active {
+  background: #425aef;
+  color: #ffffff;
+  border-color: #425aef;
+  box-shadow: 0 2px 8px rgba(66, 90, 239, 0.28);
+}
+
+.gb-cat-tab-btn.is-active:hover {
+  background: #3b50d9;
+  color: #ffffff;
+}
+
+.gb-cat-badge {
+  font-size: 10.5px;
+  background: rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+  padding: 1px 5px;
+  border-radius: 8px;
+  margin-left: 5px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.gb-cat-tab-btn:not(.is-active) .gb-cat-badge {
+  background: #e2e8f0;
+  color: #475569;
+}
+
+:root[data-theme='dark'] .gb-cat-tab-btn:not(.is-active) .gb-cat-badge {
+  background: #334155;
+  color: #cbd5e1;
 }
 
 /* 4-Item Scrollable Dropdown Menu */
@@ -2303,6 +2376,19 @@
   .gb-nav-bar {
     flex-direction: column;
     align-items: stretch;
+  }
+
+  .gb-nav-bar__categories {
+    width: 100%;
+    overflow-x: auto;
+    scrollbar-width: none;
+    flex-wrap: nowrap;
+    padding-bottom: 4px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .gb-nav-bar__categories::-webkit-scrollbar {
+    display: none;
   }
 
   .gb-nav-bar__tools {

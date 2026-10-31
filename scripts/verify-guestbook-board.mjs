@@ -249,41 +249,16 @@ async function runVerification() {
       throw new Error('Boost stream should have diverse viewpoint cards across 3 rows');
     }
 
-    // 3. Test Navigation Bar with 4-Item Scrollable Dropdowns (分区 & 维度)
-    console.log('[Verify] 3. Testing Navigation Bar Dropdowns...');
-    // 3.1 Category Dropdown
-    const catDropdownBtn = await page.$('.gb-nav-dropdown-btn:has-text("分区:")');
-    if (!catDropdownBtn) throw new Error('Category dropdown trigger button (.gb-nav-dropdown-btn) not found');
-    await catDropdownBtn.click();
-    await page.waitForTimeout(300);
+    // 3. Test Navigation Bar: "维度" First (4-Item Scrollable Dropdown) + Horizontal Category Tabs
+    console.log('[Verify] 3. Testing Navigation Bar: "维度" First + Horizontal Tabs...');
+    // 3.1 Verify Dimension Dropdown is the first element
+    const firstNavEl = await page.$('.gb-nav-bar__categories > *:first-child');
+    const isFirstDim = await firstNavEl?.$('.gb-dim-dropdown-btn');
+    if (!isFirstDim) throw new Error('Expected "维度" dropdown to be in the first position of the navigation bar');
+    console.log('[Verify] ✓ Confirmed "维度" dropdown is placed at the first position');
 
-    const catDropdownMenu = await page.$('.gb-scrollable-dropdown.is-four-items-max');
-    if (!catDropdownMenu) throw new Error('Category scrollable dropdown failed to open');
-
-    const catItemsCount = await page.$$eval('.gb-scrollable-dropdown.is-four-items-max .gb-scrollable-dropdown__item', (els) => els.length);
-    console.log(`[Verify] Category dropdown total items: ${catItemsCount}`);
-    if (catItemsCount < 7) {
-      throw new Error('Category dropdown should list all categories (最新, 近期, 热门, 精选, 我的贴文, 已读, 书签)');
-    }
-
-    // Select "热门"
-    const hotOption = await page.$('.gb-scrollable-dropdown__item:has-text("热门")');
-    if (hotOption) await hotOption.click();
-    await page.waitForTimeout(300);
-    console.log('[Verify] ✓ Selected "热门" category');
-
-    // Switch back to "最新"
-    await catDropdownBtn.click();
-    await page.waitForTimeout(300);
-    const latestOption = await page.$('.gb-scrollable-dropdown__item:has-text("最新")');
-    if (latestOption) await latestOption.click();
-    await page.waitForTimeout(300);
-    console.log('[Verify] ✓ Switched back to "最新" category');
-
-    // 3.2 Dimension Dropdown
-    const dimDropdownBtn = await page.$('.gb-nav-dropdown-btn:has-text("维度:")');
-    if (!dimDropdownBtn) throw new Error('Dimension dropdown trigger button not found');
-    await dimDropdownBtn.click();
+    // Test clicking Dimension dropdown
+    await isFirstDim.click();
     await page.waitForTimeout(300);
 
     const dimDropdownMenu = await page.$('.gb-scrollable-dropdown.is-four-items-max');
@@ -300,6 +275,31 @@ async function runVerification() {
     if (techOption) await techOption.click();
     await page.waitForTimeout(300);
     console.log('[Verify] ✓ Selected "技术探讨" dimension');
+
+    // 3.2 Verify Horizontal Tabs are lined up in order: 最新, 近期, 热门, 精选, 我的贴文, 已读, 书签
+    const horizontalTabs = await page.$$eval('.gb-cat-tab-btn', (els) => els.map((el) => el.textContent?.trim()));
+    console.log(`[Verify] Horizontal tabs rendered: ${JSON.stringify(horizontalTabs)}`);
+    const expectedOrder = ['最新', '近期', '热门', '精选', '我的贴文', '已读', '书签'];
+    for (const exp of expectedOrder) {
+      if (!horizontalTabs.some((t) => t.includes(exp))) {
+        throw new Error(`Expected horizontal tab "${exp}" to be rendered`);
+      }
+    }
+    console.log('[Verify] ✓ All horizontal category tabs rendered in order after "维度"');
+
+    // Test clicking "热门" tab
+    const hotTab = await page.$('.gb-cat-tab-btn:has-text("热门")');
+    if (hotTab) await hotTab.click();
+    await page.waitForTimeout(300);
+    const isHotActive = await hotTab?.evaluate((el) => el.classList.contains('is-active'));
+    if (!isHotActive) throw new Error('Expected "热门" tab to be active after clicking');
+    console.log('[Verify] ✓ Successfully switched to "热门" tab');
+
+    // Switch back to "最新" tab
+    const latestTab = await page.$('.gb-cat-tab-btn:has-text("最新")');
+    if (latestTab) await latestTab.click();
+    await page.waitForTimeout(300);
+    console.log('[Verify] ✓ Successfully switched back to "最新" tab');
 
     // Reset dimension to all
     const dimResetBtn = await page.$('.gb-active-dim-reset');

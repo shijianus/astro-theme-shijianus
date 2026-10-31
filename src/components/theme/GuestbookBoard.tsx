@@ -65,11 +65,10 @@ export const CHANNELS = [
 
 export type ChannelId = (typeof CHANNELS)[number]['id'];
 
-// Horizontal categories requested by user
-export const NAV_CATEGORIES = [
+// Horizontal category tabs lined up in sequence after "维度" (Dimension)
+export const HORIZONTAL_TABS = [
   { id: 'latest', label: '最新', icon: Clock },
   { id: 'recent', label: '近期', icon: Sparkles },
-  { id: 'dimensions', label: '维度', icon: Layers },
   { id: 'hot', label: '热门', icon: Flame },
   { id: 'featured', label: '精选', icon: Pin },
   { id: 'my', label: '我的贴文', icon: MessageSquare },
@@ -77,7 +76,8 @@ export const NAV_CATEGORIES = [
   { id: 'bookmarked', label: '书签', icon: Bookmark },
 ] as const;
 
-export type NavCategoryId = (typeof NAV_CATEGORIES)[number]['id'];
+export const NAV_CATEGORIES = HORIZONTAL_TABS;
+export type NavCategoryId = (typeof HORIZONTAL_TABS)[number]['id'] | 'dimensions';
 
 // Curated Emojis Palette
 const EMOJI_GROUPS = [
@@ -501,10 +501,7 @@ export function GuestbookBoard() {
   const [categoryFilter, setCategoryFilter] = useState<NavCategoryId>('latest');
   const [selectedDimension, setSelectedDimension] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
-  const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
   const [showDimensionDropdown, setShowDimensionDropdown] = useState(false);
-
-  const categoryDropdownRef = useRef<HTMLDivElement>(null);
   const dimensionDropdownRef = useRef<HTMLDivElement>(null);
 
   // Local storage lists for read & bookmarked posts
@@ -577,12 +574,6 @@ export function GuestbookBoard() {
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       const target = e.target as Node;
-      if (
-        categoryDropdownRef.current &&
-        !categoryDropdownRef.current.contains(target)
-      ) {
-        setShowCategoryDropdown(false);
-      }
       if (
         dimensionDropdownRef.current &&
         !dimensionDropdownRef.current.contains(target)
@@ -1175,9 +1166,6 @@ export function GuestbookBoard() {
     }
   };
 
-  const currentCategoryObj = NAV_CATEGORIES.find((c) => c.id === categoryFilter) || NAV_CATEGORIES[0];
-  const CurrentCatIcon = currentCategoryObj.icon;
-  const currentCatBadgeCount = categoryFilter === 'bookmarked' ? bookmarkedPostIds.length : categoryFilter === 'read' ? readPostIds.length : 0;
   const currentDimensionObj = CHANNELS.find((c) => c.id === selectedDimension) || CHANNELS[0];
 
   return (
@@ -1328,80 +1316,26 @@ export function GuestbookBoard() {
       </section>
 
       {/* ========================================================
-          2. 分区与维度下拉导航条 (NAV DROPDOWNS BAR)
-          - 分区下拉：最多 4 个同时展示，支持滚轮平滑滚动
-          - 维度下拉：最多 4 个同时展示，支持滚轮平滑滚动
+          2. 横排分类与维度导航条 (NAV BAR)
+          - 顺序："维度" 放在第一个（下拉菜单，最多 4 项滚动展示）
+          - 其后排开横向分类 Tabs："最新" "近期" "热门" "精选" "我的贴文" "已读" "书签"
           - 右侧保留统一发布入口：发布 Gesture
           ======================================================== */}
       <nav className="gb-nav-bar" aria-label="Gesture 讨论分类与维度">
-        <div className="gb-nav-bar__dropdowns">
-          {/* 1. 分区下拉选择器 (Category Dropdown) */}
-          <div className="gb-dropdown-wrapper" ref={categoryDropdownRef}>
+        <div className="gb-nav-bar__categories">
+          {/* 1. 维度下拉选择器 (Dimension Dropdown) - 位于首位 */}
+          <div className="gb-dropdown-wrapper gb-dim-dropdown-wrapper" ref={dimensionDropdownRef}>
             <button
               type="button"
-              className={`gb-nav-dropdown-btn ${categoryFilter !== 'latest' ? 'is-filtered' : ''}`}
-              onClick={() => {
-                setShowCategoryDropdown((prev) => !prev);
-                setShowDimensionDropdown(false);
-              }}
-              aria-haspopup="listbox"
-              aria-expanded={showCategoryDropdown}
-            >
-              <span className="gb-dropdown-prefix">分区:</span>
-              <CurrentCatIcon className="w-4 h-4 mr-1.5 text-indigo-500 flex-shrink-0" />
-              <span className="gb-dropdown-value">{currentCategoryObj?.label || '最新'}</span>
-              {currentCatBadgeCount > 0 && (
-                <span className="gb-dropdown-badge">{currentCatBadgeCount}</span>
-              )}
-              <ChevronDown className={`w-3.5 h-3.5 ml-1.5 text-slate-400 transition-transform ${showCategoryDropdown ? 'rotate-180' : ''}`} />
-            </button>
-
-            {showCategoryDropdown && (
-              <div className="gb-scrollable-dropdown is-four-items-max" role="listbox">
-                {NAV_CATEGORIES.map((cat) => {
-                  const Icon = cat.icon;
-                  const isSelected = categoryFilter === cat.id;
-                  const count = cat.id === 'bookmarked' ? bookmarkedPostIds.length : cat.id === 'read' ? readPostIds.length : 0;
-
-                  return (
-                    <button
-                      key={cat.id}
-                      type="button"
-                      className={`gb-scrollable-dropdown__item ${isSelected ? 'is-selected' : ''}`}
-                      onClick={() => {
-                        setCategoryFilter(cat.id);
-                        setShowCategoryDropdown(false);
-                      }}
-                      role="option"
-                      aria-selected={isSelected}
-                    >
-                      <Icon className="w-4 h-4 mr-2.5 text-slate-500 dark:text-slate-400 flex-shrink-0" />
-                      <span className="gb-dropdown-item__label">{cat.label}</span>
-                      {count > 0 && <span className="gb-dropdown-item__badge">{count}</span>}
-                      {isSelected && <span className="gb-dropdown-item__check">✓</span>}
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-
-          {/* 2. 维度下拉选择器 (Dimension Dropdown) */}
-          <div className="gb-dropdown-wrapper" ref={dimensionDropdownRef}>
-            <button
-              type="button"
-              className={`gb-nav-dropdown-btn ${selectedDimension !== 'all' ? 'is-filtered' : ''}`}
-              onClick={() => {
-                setShowDimensionDropdown((prev) => !prev);
-                setShowCategoryDropdown(false);
-              }}
+              className={`gb-dim-dropdown-btn ${selectedDimension !== 'all' ? 'is-filtered' : ''}`}
+              onClick={() => setShowDimensionDropdown((prev) => !prev)}
               aria-haspopup="listbox"
               aria-expanded={showDimensionDropdown}
             >
-              <span className="gb-dropdown-prefix">维度:</span>
-              <span className="mr-1.5 text-base flex-shrink-0">{currentDimensionObj?.icon || '🌟'}</span>
-              <span className="gb-dropdown-value">{currentDimensionObj?.label || '全部维度'}</span>
-              <ChevronDown className={`w-3.5 h-3.5 ml-1.5 text-slate-400 transition-transform ${showDimensionDropdown ? 'rotate-180' : ''}`} />
+              <span className="gb-dim-prefix">维度:</span>
+              <span className="mr-1 text-sm flex-shrink-0">{currentDimensionObj?.icon || '🌟'}</span>
+              <span className="gb-dim-value">{selectedDimension === 'all' ? '全部维度' : currentDimensionObj?.label}</span>
+              <ChevronDown className={`w-3.5 h-3.5 ml-1 text-slate-400 transition-transform ${showDimensionDropdown ? 'rotate-180' : ''}`} />
             </button>
 
             {showDimensionDropdown && (
@@ -1433,6 +1367,32 @@ export function GuestbookBoard() {
               </div>
             )}
           </div>
+
+          {/* 2. 横向排开的各分类标签项 (最新, 近期, 热门, 精选, 我的贴文, 已读, 书签) */}
+          {HORIZONTAL_TABS.map((cat) => {
+            const Icon = cat.icon;
+            const isActive = categoryFilter === cat.id;
+            const count =
+              cat.id === 'bookmarked'
+                ? bookmarkedPostIds.length
+                : cat.id === 'read'
+                ? readPostIds.length
+                : 0;
+
+            return (
+              <button
+                key={cat.id}
+                type="button"
+                data-cat-id={cat.id}
+                className={`gb-cat-tab-btn ${isActive ? 'is-active' : ''}`}
+                onClick={() => setCategoryFilter(cat.id)}
+              >
+                <Icon className="w-3.5 h-3.5 mr-1.5 flex-shrink-0" />
+                <span>{cat.label}</span>
+                {count > 0 && <span className="gb-cat-badge">{count}</span>}
+              </button>
+            );
+          })}
         </div>
 
         {/* Right Tools: Search & New Gesture Button */}
