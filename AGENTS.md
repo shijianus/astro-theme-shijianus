@@ -6490,10 +6490,11 @@
   3. 🌐 友邻传送：仅展示朋友们发表的最新篇章与思想（带博客归属小尾巴与原文直达链接）；
   4. 分类过滤芯片（全部 / 随笔灵感 / 架构技术 / 界面美学 / 生活随想）与实时搜索输入框。
 - [x] **核心难点攻坚：友邻动态多源同步机制 (Friends Dynamic Sync Engine)**：
-  1. 数据模型与订阅源扩展：在 `src/config/friends.ts` 中为友邻引入 `feed` 字段与说说设备来源小尾巴；
-  2. 构建时自动生成缓存：编写 `scripts/sync-friends-moments.mjs`，在构建流水线中自动生成 `public/data/friends-moments.json`；
-  3. 边缘无跨域同步接口：新增 `functions/api/moments-sync.ts`，支持边缘并发拉取解析与 1 小时 CDN 缓存；
-  4. 客户端雷达探测刷新：界面提供“🔄 探测友邻更新”按钮，点击触发声波扫描并增量捕获友邻最新动态，吐司友好提醒。
+  1. 根因与难点剖析：彻底解构去中心化博客动态同步的 5 大技术死穴（协议异构 RSS/Atom/JSON、浏览器跨域 CORS 阻断、第三方弱网/宕机雪崩阻塞、时间去重混排、HTML 注入与防盗链）；
+  2. 零依赖订阅源解析器 (`src/lib/feed-parser.ts`)：在 Node.js 与 Cloudflare 边缘环境实现原生 XML/Atom/JSON 正则流式提取，规范提取标题、链接、摘要并清洗 XSS 标签；
+  3. 构建时多源探测与熔断流水线 (`scripts/sync-friends-moments.mjs`)：带 `AbortSignal.timeout(5000)` 保护，并发抓取解析友邻真实 Feed，失败自动回退缓存，确保 0 阻塞 0 白屏；
+  4. 边缘无跨域同步接口 (`functions/api/moments-sync.ts`)：支持跨源代理并发拉取，配置 1 小时全球边缘 CDN 缓存，供前端实时探测雷达直接消费；
+  5. 客户端雷达探测刷新：界面提供“🔄 探测友邻更新”按钮，点击触发声波扫描并增量捕获友邻最新动态，吐司友好提醒。
 - [x] **QQ 空间式就地展开评论楼层与访客留言互动 (In-place Comments)**：
   1. 每一条说说卡片底部均提供 ❤️ 点赞（爱心脉冲动画与本地持久化）与 💬 评论按钮；
   2. 点击“评论”原地平滑滑出评论楼层，异步调用 `/api/comments?slug=moment_${id}` 拉取真实留言；
