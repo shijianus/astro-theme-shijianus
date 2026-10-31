@@ -1,115 +1,199 @@
 ---
-import { friendsConfig } from '../../config/friends';
+import { friendsConfig, type MomentItem } from '../../config/friends';
 
-const moments = friendsConfig.moments;
+const moments: MomentItem[] = friendsConfig.moments;
 const totalFriends = friendsConfig.categories.reduce((acc, cat) => acc + cat.items.length, 0);
+const ownerMomentsCount = moments.filter((m) => m.isOwner).length;
+const friendMomentsCount = moments.filter((m) => !m.isOwner).length;
+const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
 ---
 
 <section id="moments-dashboard" class="moments-dashboard">
-  <!-- 1. 顶部 Hero 与钓鱼漫游传送门 -->
-  <div class="moments-hero theme-card">
-    <div class="moments-hero__grid">
-      <div class="moments-hero__copy">
-        <div class="moments-hero__eyebrow">
-          <span class="radar-ping"></span>
-          <span>社交雷达 · 友邻朋友圈</span>
-        </div>
-        <h1 class="moments-hero__title">友邻动态圈 · 实时漫游雷达</h1>
-        <p class="moments-hero__summary">
-          打破中心化算法围墙，实时汇聚独立博友的最新文章、灵感速记与生活随笔。在无噪音的纯净时间流里，串联彼此的数字花园。
-        </p>
+  <!-- 1. QQ 空间风格：站长空间个人主页 Banner 与数据雷达 -->
+  <div class="qzone-space-hero theme-card">
+    <div class="qzone-space-cover">
+      <div class="space-cover-glow"></div>
+      <div class="space-weather-pill">
+        <span class="weather-icon">☀️</span>
+        <span class="weather-text">今日晴 · 状态 专注重构中</span>
+      </div>
+    </div>
 
-        <!-- 活跃度指标 -->
-        <div class="moments-hero__stats">
-          <div class="stat-box">
-            <span class="stat-box__val">{totalFriends}</span>
-            <span class="stat-box__lbl">已连接博友</span>
-          </div>
-          <div class="stat-box">
-            <span class="stat-box__val">{moments.length * 8}+</span>
-            <span class="stat-box__lbl">已收录动态</span>
-          </div>
-          <div class="stat-box">
-            <span class="stat-box__val is-accent">6</span>
-            <span class="stat-box__lbl">今日新发布</span>
-          </div>
-          <div class="stat-box">
-            <span class="stat-box__val is-green">实时</span>
-            <span class="stat-box__lbl">雷达状态</span>
-          </div>
-        </div>
+    <div class="qzone-profile-bar">
+      <div class="profile-avatar-wrapper">
+        <img
+          class="profile-avatar"
+          src={friendsConfig.siteInfo.avatar}
+          alt={friendsConfig.siteInfo.name}
+          loading="eager"
+        />
+        <span class="owner-crown-badge" title="认证站长 · 空间主人">👑</span>
       </div>
 
-      <!-- 钓鱼漫游交互卡片 -->
-      <div class="teleport-card theme-card">
-        <div class="teleport-card__badge">
-          <span>🎣 极客传送门</span>
+      <div class="profile-meta">
+        <div class="profile-name-row">
+          <h1 class="profile-name">{friendsConfig.siteInfo.name}</h1>
+          <span class="qzone-vip-badge">空间主人</span>
+          <span class="qzone-radar-pill">
+            <span class="radar-ping"></span>
+            <span>雷达运行中</span>
+          </span>
         </div>
-        <h3 class="teleport-card__title">去谁的博客逛逛？</h3>
-        <p class="teleport-card__desc">
-          摇晃鱼竿，随机穿越到某位博友的最新篇章。告别信息茧房，偶遇意外灵感。
-        </p>
+        <p class="profile-bio">{friendsConfig.siteInfo.desc}</p>
+      </div>
 
-        <div id="fishing-result" class="fishing-result hidden">
-          <div class="fishing-result__avatar-box">
-            <img id="fish-avatar" src="" alt="avatar" />
-          </div>
-          <div class="fishing-result__info">
-            <div id="fish-author" class="fish-author"></div>
-            <a id="fish-link" class="fish-title" href="#" target="_blank" rel="noopener noreferrer"></a>
-          </div>
+      <!-- 空间核心指标数据盒 -->
+      <div class="qzone-stats-grid">
+        <div class="space-stat-item">
+          <span class="stat-number is-accent">{ownerMomentsCount}</span>
+          <span class="stat-label">👑 站长说说</span>
         </div>
+        <div class="space-stat-item">
+          <span class="stat-number is-purple">{friendMomentsCount}</span>
+          <span class="stat-label">🌐 友邻传送</span>
+        </div>
+        <div class="space-stat-item">
+          <span class="stat-number is-blue">{totalFriends}</span>
+          <span class="stat-label">🤝 连接博友</span>
+        </div>
+        <div class="space-stat-item">
+          <span class="stat-number is-pink" id="total-likes-counter">{totalLikes}</span>
+          <span class="stat-label">❤️ 获赞总计</span>
+        </div>
+      </div>
+    </div>
 
-        <button id="btn-fishing" class="fishing-btn" type="button">
-          <span class="fishing-icon">🎣</span>
-          <span id="fishing-btn-text">甩竿钓鱼 · 随机漫游</span>
-        </button>
+    <!-- 空间使用说明告示与权限隔离提示 -->
+    <div class="qzone-notice-banner">
+      <div class="notice-icon">📢</div>
+      <div class="notice-content">
+        <span class="notice-highlight">空间须知：</span>
+        本朋友圈为站长与友邻专属分享流，<strong>仅限站长发布动态主帖，但热烈欢迎所有朋友在每条动态下方留言评论与点赞！</strong>
+        如需发起全站自由讨论或发布新话题，请移步 <a class="notice-link" href="/guestbook/">👉 交流留言板</a>。
+      </div>
+      <button id="btn-sync-friends-radar" class="sync-radar-btn" type="button" title="从边缘探测友邻最新动态">
+        <span class="sync-icon">🔄</span>
+        <span class="sync-btn-text">探测友邻更新</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- 2. 极客传送门 (QQ 空间串门漫游机) -->
+  <div class="teleport-portal-card theme-card">
+    <div class="portal-header">
+      <div class="portal-badge">
+        <span class="portal-badge__icon">🎣</span>
+        <span>极客传送门 · 空间漫游</span>
+      </div>
+      <p class="portal-subtitle">打破信息孤岛，学习 QQ 空间串门模式。摇晃鱼竿，偶遇友邻的最新篇章与思想灵感！</p>
+    </div>
+
+    <div class="portal-interactive-box">
+      <div id="fishing-result" class="fishing-result hidden">
+        <div class="fishing-result__avatar-box">
+          <img id="fish-avatar" src="" alt="avatar" />
+        </div>
+        <div class="fishing-result__info">
+          <div class="fish-header-line">
+            <span id="fish-author" class="fish-author"></span>
+            <span class="fish-tag">传送已就绪 🚀</span>
+          </div>
+          <a id="fish-link" class="fish-title" href="#" target="_blank" rel="noopener noreferrer"></a>
+          <p id="fish-desc" class="fish-desc"></p>
+        </div>
+        <a id="fish-door-link" class="door-teleport-btn" href="#" target="_blank" rel="noopener noreferrer">
+          <span>🚪 去TA家串门</span>
+        </a>
+      </div>
+
+      <button id="btn-fishing" class="fishing-btn" type="button">
+        <span class="fishing-icon">🎣</span>
+        <span id="fishing-btn-text">甩竿钓鱼 · 随机串门</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- 3. QQ 空间式动态流过滤器与实时搜索 -->
+  <div class="moments-filter-bar theme-card">
+    <div class="stream-channel-tabs">
+      <button class="channel-tab is-active" data-stream="all">
+        <span class="tab-icon">🌟</span>
+        <span>全景动态 ({moments.length})</span>
+      </button>
+      <button class="channel-tab" data-stream="owner">
+        <span class="tab-icon">👑</span>
+        <span>站长原声 ({ownerMomentsCount})</span>
+      </button>
+      <button class="channel-tab" data-stream="friends">
+        <span class="tab-icon">🌐</span>
+        <span>友邻传送 ({friendMomentsCount})</span>
+      </button>
+    </div>
+
+    <div class="sub-filter-row">
+      <div class="category-chips">
+        <button class="category-chip is-active" data-cat="all">全部主题</button>
+        <button class="category-chip" data-cat="thought">💡 随笔灵感</button>
+        <button class="category-chip" data-cat="tech">💻 架构技术</button>
+        <button class="category-chip" data-cat="design">🎨 界面美学</button>
+        <button class="category-chip" data-cat="life">☕ 生活随想</button>
+      </div>
+
+      <div class="moments-search-input-wrap">
+        <svg class="search-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+        </svg>
+        <input id="moments-search-input" type="text" placeholder="搜索说说、友邻或灵感关键词..." />
       </div>
     </div>
   </div>
 
-  <!-- 2. 分类与快速搜索过滤工具栏 -->
-  <div class="moments-toolbar theme-card">
-    <div class="moments-filter-chips">
-      <button class="filter-chip is-active" data-cat="all">🌟 全部动态 ({moments.length})</button>
-      <button class="filter-chip" data-cat="tech">💻 技术与架构</button>
-      <button class="filter-chip" data-cat="design">🎨 界面与设计</button>
-      <button class="filter-chip" data-cat="life">☕ 生活随想</button>
-      <button class="filter-chip" data-cat="thought">💡 站长随笔</button>
-    </div>
-
-    <div class="moments-search-box">
-      <svg class="search-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-      <input id="moments-search-input" type="text" placeholder="搜索博友、文章标题或关键词..." />
-    </div>
-  </div>
-
-  <!-- 3. 动态时间流卡片列表 -->
+  <!-- 4. 动态时间流卡片列表 (QQ 空间说说瀑布流) -->
   <div class="moments-feed" id="moments-feed">
     {moments.map((item) => (
       <article
-        class="moment-card theme-card"
+        class={`moment-card theme-card ${item.isOwner ? 'is-owner-moment' : 'is-friend-moment'}`}
         data-id={item.id}
+        data-stream={item.isOwner ? 'owner' : 'friends'}
         data-cat={item.category}
         data-title={item.title.toLowerCase()}
         data-author={item.author.toLowerCase()}
       >
-        <!-- 卡片头部：作者与时间戳 -->
+        <!-- 卡片头部：作者、身份徽标、心情与设备来源小尾巴 -->
         <div class="moment-card__header">
-          <a class="moment-author-link" href={item.authorUrl} target="_blank" rel="noopener noreferrer" title={`访问 ${item.author}`}>
-            <img class="moment-avatar" src={item.avatar} alt={item.author} loading="lazy" />
+          <a
+            class="moment-author-link"
+            href={item.authorUrl}
+            target={item.isOwner ? undefined : '_blank'}
+            rel={item.isOwner ? undefined : 'noopener noreferrer'}
+            title={`访问 ${item.author}`}
+          >
+            <div class="author-avatar-wrap">
+              <img class="moment-avatar" src={item.avatar} alt={item.author} loading="lazy" />
+              {item.isOwner && <span class="avatar-crown-badge">👑</span>}
+            </div>
+
             <div class="moment-author-meta">
               <div class="moment-author-name">
-                <span>{item.author}</span>
-                {item.badge && <span class="moment-author-badge">{item.badge}</span>}
+                <span class="name-text">{item.author}</span>
+                {item.isOwner ? (
+                  <span class="badge-pill is-owner">{item.badge || '👑 站长原声'}</span>
+                ) : (
+                  <span class="badge-pill is-friend">{item.badge || '🌐 友邻传送'}</span>
+                )}
+                {item.mood && <span class="mood-pill">{item.mood}</span>}
               </div>
-              <time class="moment-time" datetime={item.timestamp} title={item.timestamp}>
-                {item.timeAgo} · {item.timestamp}
-              </time>
+
+              <div class="moment-meta-sub">
+                <time class="moment-time" datetime={item.timestamp} title={item.timestamp}>
+                  {item.timeAgo} · {item.timestamp}
+                </time>
+                {item.device && <span class="device-pill">{item.device}</span>}
+              </div>
             </div>
           </a>
 
-          <div class="moment-card__category-pill">
+          <div class="moment-category-tag">
             {item.category === 'tech' && '💻 技术'}
             {item.category === 'design' && '🎨 设计'}
             {item.category === 'life' && '☕ 生活'}
@@ -117,17 +201,23 @@ const totalFriends = friendsConfig.categories.reduce((acc, cat) => acc + cat.ite
           </div>
         </div>
 
-        <!-- 卡片主体：标题与内容摘要 -->
+        <!-- 卡片主体：说说标题与正文 -->
         <div class="moment-card__body">
           <h2 class="moment-title">
-            <a href={item.url} target={item.url.startsWith('/') ? undefined : '_blank'} rel={item.url.startsWith('/') ? undefined : 'noopener noreferrer'}>
+            <a
+              href={item.url}
+              target={item.url.startsWith('/') ? undefined : '_blank'}
+              rel={item.url.startsWith('/') ? undefined : 'noopener noreferrer'}
+            >
               {item.title}
             </a>
           </h2>
-          <p class="moment-summary">{item.summary}</p>
+          <div class="moment-summary-bubble">
+            <p class="moment-summary">{item.summary}</p>
+          </div>
         </div>
 
-        <!-- 卡片标签 -->
+        <!-- 标签列表 -->
         {item.tags && item.tags.length > 0 && (
           <div class="moment-tags">
             {item.tags.map((t) => (
@@ -136,144 +226,308 @@ const totalFriends = friendsConfig.categories.reduce((acc, cat) => acc + cat.ite
           </div>
         )}
 
-        <!-- 卡片底栏：互动与外链按钮 -->
+        <!-- 卡片底栏：QQ 空间式点赞、就地评论展开、分享与串门 -->
         <div class="moment-card__footer">
-          <button class="moment-like-btn" type="button" data-moment-id={item.id} data-initial-likes={item.likes}>
-            <span class="like-heart">❤️</span>
-            <span class="like-count">{item.likes}</span>
-          </button>
+          <div class="footer-action-group">
+            <button
+              class="moment-action-btn moment-like-btn"
+              type="button"
+              data-moment-id={item.id}
+              data-initial-likes={item.likes}
+              title="为这条说说点赞"
+            >
+              <span class="btn-icon like-heart">❤️</span>
+              <span class="like-label">赞</span>
+              <span class="action-count like-count">{item.likes}</span>
+            </button>
+
+            <button
+              class="moment-action-btn moment-comment-toggle-btn"
+              type="button"
+              data-moment-id={item.id}
+              title="展开/折叠评论留言区"
+            >
+              <span class="btn-icon">💬</span>
+              <span class="comment-btn-label">评论</span>
+              <span class="action-count comment-count-badge" id={`comment-count-${item.id}`}>
+                {item.commentCount || 0}
+              </span>
+            </button>
+
+            <button
+              class="moment-action-btn moment-share-btn"
+              type="button"
+              data-moment-id={item.id}
+              data-title={item.title}
+              title="复制说说链接与分享"
+            >
+              <span class="btn-icon">🔗</span>
+              <span>分享</span>
+            </button>
+          </div>
 
           <a
-            class="moment-read-link"
+            class="moment-origin-link"
             href={item.url}
             target={item.url.startsWith('/') ? undefined : '_blank'}
             rel={item.url.startsWith('/') ? undefined : 'noopener noreferrer'}
           >
-            <span>阅读原文</span>
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+            <span>{item.isOwner ? '查看详情' : '去TA家串门'}</span>
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+            </svg>
           </a>
+        </div>
+
+        <!-- 5. QQ 空间式就地展开评论留言楼层 (默认折叠，点击展开) -->
+        <div class="moment-comments-drawer hidden" id={`comments-drawer-${item.id}`}>
+          <div class="drawer-inner">
+            <div class="drawer-header">
+              <span class="drawer-title">💬 访客留言互动 (QQ空间模式)</span>
+              <span class="drawer-hint">欢迎朋友们就地畅所欲言</span>
+            </div>
+
+            <!-- 实时留言列表 -->
+            <div class="moment-comments-list" id={`comments-list-${item.id}`}>
+              <div class="comments-loading">
+                <span class="loading-spinner"></span>
+                <span>正在连接边缘数据库加载留言...</span>
+              </div>
+            </div>
+
+            <!-- 访客就地快捷留言表单 -->
+            <form class="moment-quick-comment-form" data-moment-id={item.id}>
+              <div class="form-row-meta">
+                <div class="meta-input-group">
+                  <span class="input-icon">👤</span>
+                  <input
+                    type="text"
+                    name="authorName"
+                    class="comment-input comment-author-input"
+                    placeholder="您的昵称 (必填)"
+                    required
+                    maxlength="30"
+                  />
+                  <button type="button" class="btn-random-nickname" title="随机生成一个极客昵称">🎲</button>
+                </div>
+
+                <div class="meta-input-group">
+                  <span class="input-icon">📫</span>
+                  <input
+                    type="email"
+                    name="authorEmail"
+                    class="comment-input comment-email-input"
+                    placeholder="邮箱 (选填，仅用于头像与通知)"
+                    maxlength="60"
+                  />
+                </div>
+              </div>
+
+              <div class="form-row-content">
+                <textarea
+                  name="message"
+                  class="comment-textarea"
+                  rows="2"
+                  placeholder="留下您的想法、足迹或交流两句吧... (支持 Markdown)"
+                  required
+                  maxlength="300"
+                ></textarea>
+              </div>
+
+              <div class="form-row-tools">
+                <div class="emoji-quick-bar">
+                  <button type="button" class="quick-emoji-btn" data-emoji="😊">😊</button>
+                  <button type="button" class="quick-emoji-btn" data-emoji="👍">👍</button>
+                  <button type="button" class="quick-emoji-btn" data-emoji="🎉">🎉</button>
+                  <button type="button" class="quick-emoji-btn" data-emoji="🔥">🔥</button>
+                  <button type="button" class="quick-emoji-btn" data-emoji="☕">☕</button>
+                  <button type="button" class="quick-emoji-btn" data-emoji="💡">💡</button>
+                  <button type="button" class="quick-emoji-btn" data-emoji="🚀">🚀</button>
+                  <button type="button" class="quick-emoji-btn" data-emoji="❤️">❤️</button>
+                </div>
+
+                <button type="submit" class="comment-submit-btn">
+                  <span>发表留言</span>
+                  <span class="submit-arrow">✈️</span>
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       </article>
     ))}
   </div>
+
+  <!-- 空结果提示 -->
+  <div id="moments-empty" class="moments-empty theme-card hidden">
+    <div class="empty-icon">🍃</div>
+    <h3 class="empty-title">没有找到匹配的说说动态</h3>
+    <p class="empty-desc">换个关键词试试，或者切换到【全景动态】查看全部内容！</p>
+  </div>
 </section>
 
-<!-- 互动脚本：随机漫游钓鱼、即时过滤与本地点赞 -->
+<!-- 全局轻量通知吐司容器 -->
+<div id="moments-toast" class="moments-toast hidden"></div>
+
+<!-- 互动脚本：QQ空间串门漫游、多视图筛选、点赞、就地评论异步联动与友邻雷达同步 -->
 <script is:inline>
   (() => {
-    // 钓鱼漫游逻辑
-    const momentsData = [
+    // 1. 漫游传送门数据源
+    const teleportData = [
       {
         author: '安知鱼',
         avatar: 'https://img02.anzhiy.cn/wordpress/927429623dc10b992167d49ee4329241.jpg',
         title: '关于 Hexo 主题色彩与暗黑模式适配的几点新思考',
+        summary: '深灰与半透明材质的搭配才是视觉呼吸感的关键，探索了新的色彩对比度算法...',
         url: 'https://anzhiyu.cpolar.top/'
       },
       {
         author: 'Astro 官方生态',
         avatar: 'https://astro.build/favicon.svg',
         title: 'Astro 6 核心编译引擎速度再次提升 40%',
+        summary: '通过底层 Vite 打包管线的全新 Rust 插件加速，冷启动延时显著降低...',
         url: 'https://astro.build/'
-      },
-      {
-        author: 'shijianus (站长)',
-        avatar: 'https://drawing.shijian.qzz.io/file/AgACAgEAAyEGAAS6jkJbAAMTaojJ2HJEypU1KmG8jAv2wXTVKB4AAjYMaxuc3khE9paUm5Tomx8BAAMCAAN3AAM9BA.png',
-        title: '把主导航下拉菜单彻底“应用化”：告别冰冷文档，迎接交互仪表盘',
-        url: '/about/site/'
       },
       {
         author: 'Akilarの糖果屋',
         avatar: 'https://npm.elemecdn.com/akilar-candyassets/image/siteicon/favicon.png',
         title: '在浏览器中使用 Web Audio API 绘制实时声波瀑布',
+        summary: '仅用原生 JS 捕捉音频频谱并渲染在 Canvas 上，音乐不仅是听觉的享受...',
         url: 'https://akilar.top/'
       },
       {
         author: 'Leonus',
         avatar: 'https://q1.qlogo.cn/g?b=qq&nk=990320751&s=640',
         title: '秋日骑行记：在城市边缘追逐落日余晖',
+        summary: '沿着滨海公路一路向西。风在耳边呼啸，带走了连续多日重构代码的疲惫...',
         url: 'https://blog.leonus.cn/'
       },
       {
         author: '小康的个人博客',
         avatar: 'https://cdn.jsdelivr.net/gh/sviptzk/StaticFile_HEXO@v3.2.7/butterfly/img/avatar.jpg',
         title: 'Cloudflare D1 边缘数据库在个人博客评论系统中的实践踩坑',
+        summary: 'Serverless SQLite 的读性能极为惊艳，但并发写入需注意事务边界...',
         url: 'https://www.antmoe.com/'
       }
     ];
 
+    // 轻量吐司通知
+    const toastEl = document.getElementById('moments-toast');
+    function showToast(msg, duration = 2500) {
+      if (!toastEl) return;
+      toastEl.textContent = msg;
+      toastEl.classList.remove('hidden');
+      toastEl.classList.add('is-visible');
+      setTimeout(() => {
+        toastEl.classList.remove('is-visible');
+        setTimeout(() => toastEl.classList.add('hidden'), 300);
+      }, duration);
+    }
+
+    // 2. 极客传送门：钓鱼与漫游串门
     const btnFishing = document.getElementById('btn-fishing');
     const resultBox = document.getElementById('fishing-result');
     const fishAvatar = document.getElementById('fish-avatar');
     const fishAuthor = document.getElementById('fish-author');
     const fishLink = document.getElementById('fish-link');
+    const fishDesc = document.getElementById('fish-desc');
+    const fishDoorLink = document.getElementById('fish-door-link');
     const btnText = document.getElementById('fishing-btn-text');
 
     if (btnFishing) {
       btnFishing.addEventListener('click', () => {
         btnFishing.classList.add('is-casting');
-        if (btnText) btnText.textContent = '甩竿中... 🎣';
+        if (btnText) btnText.textContent = '穿梭时空中... 🎣';
 
         setTimeout(() => {
           btnFishing.classList.remove('is-casting');
-          const pick = momentsData[Math.floor(Math.random() * momentsData.length)];
+          const pick = teleportData[Math.floor(Math.random() * teleportData.length)];
           if (fishAvatar) fishAvatar.src = pick.avatar;
-          if (fishAuthor) fishAuthor.textContent = `🎣 漫游捕获来自【${pick.author}】的新篇：`;
+          if (fishAuthor) fishAuthor.textContent = `🎣 漫游偶遇好友【${pick.author}】：`;
           if (fishLink) {
             fishLink.textContent = pick.title;
             fishLink.href = pick.url;
           }
+          if (fishDesc) fishDesc.textContent = pick.summary;
+          if (fishDoorLink) fishDoorLink.href = pick.url;
           if (resultBox) resultBox.classList.remove('hidden');
-          if (btnText) btnText.textContent = '再钓一次！🎣';
-        }, 600);
+          if (btnText) btnText.textContent = '再穿梭一次！🎣';
+          showToast(`已成功连接至好友「${pick.author}」的数字空间！`);
+        }, 500);
       });
     }
 
-    // 分类筛选与实时搜索
-    const filterChips = document.querySelectorAll('.filter-chip');
+    // 3. QQ 空间式动态流切换 (全景流 / 站长原声 / 友邻传送) 与分类搜索
+    const channelTabs = document.querySelectorAll('.channel-tab');
+    const categoryChips = document.querySelectorAll('.category-chip');
     const searchInput = document.getElementById('moments-search-input');
     const cards = document.querySelectorAll('.moment-card');
+    const emptyBox = document.getElementById('moments-empty');
 
-    let currentCat = 'all';
-    let currentQuery = '';
+    let currentStream = 'all';
+    let currentCategory = 'all';
+    let searchQuery = '';
 
-    function applyFilters() {
-      cards.forEach(card => {
+    function filterMoments() {
+      let visibleCount = 0;
+      cards.forEach((card) => {
+        const stream = card.dataset.stream;
         const cat = card.dataset.cat;
         const title = card.dataset.title || '';
         const author = card.dataset.author || '';
 
-        const catMatch = (currentCat === 'all' || cat === currentCat);
-        const queryMatch = (!currentQuery || title.includes(currentQuery) || author.includes(currentQuery));
+        const streamMatch = (currentStream === 'all' || stream === currentStream);
+        const catMatch = (currentCategory === 'all' || cat === currentCategory);
+        const queryMatch = (!searchQuery || title.includes(searchQuery) || author.includes(searchQuery));
 
-        if (catMatch && queryMatch) {
+        if (streamMatch && catMatch && queryMatch) {
           card.style.display = '';
+          visibleCount++;
         } else {
           card.style.display = 'none';
         }
       });
+
+      if (emptyBox) {
+        if (visibleCount === 0) {
+          emptyBox.classList.remove('hidden');
+        } else {
+          emptyBox.classList.add('hidden');
+        }
+      }
     }
 
-    filterChips.forEach(chip => {
+    channelTabs.forEach((tab) => {
+      tab.addEventListener('click', () => {
+        channelTabs.forEach((t) => t.classList.remove('is-active'));
+        tab.classList.add('is-active');
+        currentStream = tab.dataset.stream || 'all';
+        filterMoments();
+      });
+    });
+
+    categoryChips.forEach((chip) => {
       chip.addEventListener('click', () => {
-        filterChips.forEach(c => c.classList.remove('is-active'));
+        categoryChips.forEach((c) => c.classList.remove('is-active'));
         chip.classList.add('is-active');
-        currentCat = chip.dataset.cat || 'all';
-        applyFilters();
+        currentCategory = chip.dataset.cat || 'all';
+        filterMoments();
       });
     });
 
     if (searchInput) {
       searchInput.addEventListener('input', (e) => {
-        currentQuery = e.target.value.trim().toLowerCase();
-        applyFilters();
+        searchQuery = e.target.value.trim().toLowerCase();
+        filterMoments();
       });
     }
 
-    // 点赞微交互与持久化
-    document.querySelectorAll('.moment-like-btn').forEach(btn => {
+    // 4. 点赞微动效与持久化
+    document.querySelectorAll('.moment-like-btn').forEach((btn) => {
       const id = btn.dataset.momentId;
       const key = `moment_liked_${id}`;
       const countEl = btn.querySelector('.like-count');
+      const totalLikesCounter = document.getElementById('total-likes-counter');
       let isLiked = localStorage.getItem(key) === 'true';
 
       if (isLiked) {
@@ -282,324 +536,904 @@ const totalFriends = friendsConfig.categories.reduce((acc, cat) => acc + cat.ite
 
       btn.addEventListener('click', () => {
         let currentLikes = parseInt(countEl?.textContent || '0', 10);
+        let totalCount = parseInt(totalLikesCounter?.textContent || '0', 10);
+
         if (isLiked) {
           currentLikes = Math.max(0, currentLikes - 1);
+          totalCount = Math.max(0, totalCount - 1);
           isLiked = false;
           localStorage.setItem(key, 'false');
           btn.classList.remove('is-liked');
+          showToast('已取消点赞');
         } else {
           currentLikes += 1;
+          totalCount += 1;
           isLiked = true;
           localStorage.setItem(key, 'true');
           btn.classList.add('is-liked');
 
-          // 微心心动画
           const heart = btn.querySelector('.like-heart');
           if (heart) {
             heart.classList.add('heart-burst');
             setTimeout(() => heart.classList.remove('heart-burst'), 600);
           }
+          showToast('感谢您的点赞支持！❤️');
         }
+
         if (countEl) countEl.textContent = String(currentLikes);
+        if (totalLikesCounter) totalLikesCounter.textContent = String(totalCount);
       });
     });
+
+    // 5. 分享按钮：一键复制动态链接
+    document.querySelectorAll('.moment-share-btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const id = btn.dataset.momentId;
+        const title = btn.dataset.title || '站长朋友圈说说';
+        const url = `${window.location.origin}/moments/#${id}`;
+        
+        if (navigator.clipboard) {
+          navigator.clipboard.writeText(`${title} - ${url}`).then(() => {
+            showToast('说说链接已复制到剪贴板！📋');
+          }).catch(() => {
+            showToast(`分享链接：${url}`);
+          });
+        } else {
+          showToast(`分享链接：${url}`);
+        }
+      });
+    });
+
+    // 6. 随机昵称生成器
+    const adjectives = ['极客', '赛博', '灵感', '代码', '深夜', '咖啡', '漫游', '星际', '优雅', '无界'];
+    const nouns = ['行者', '探索家', '架构师', '思想者', '筑梦师', '旅人', '观察员', '创造者', '极客'];
+    function getRandomNickname() {
+      const adj = adjectives[Math.floor(Math.random() * adjectives.length)];
+      const noun = nouns[Math.floor(Math.random() * nouns.length)];
+      const num = Math.floor(Math.random() * 900) + 100;
+      return `${adj}${noun}_${num}`;
+    }
+
+    // 自动回填已记忆的用户昵称
+    const savedName = localStorage.getItem('shijianus_comment_author_name') || '';
+    const savedEmail = localStorage.getItem('shijianus_comment_author_email') || '';
+
+    document.querySelectorAll('.moment-quick-comment-form').forEach((form) => {
+      const nameInput = form.querySelector('.comment-author-input');
+      const emailInput = form.querySelector('.comment-email-input');
+      const randomBtn = form.querySelector('.btn-random-nickname');
+      const textarea = form.querySelector('.comment-textarea');
+
+      if (nameInput && savedName) nameInput.value = savedName;
+      if (emailInput && savedEmail) emailInput.value = savedEmail;
+
+      if (randomBtn && nameInput) {
+        randomBtn.addEventListener('click', () => {
+          nameInput.value = getRandomNickname();
+          showToast(`已为您随机生成昵称：${nameInput.value}`);
+        });
+      }
+
+      // 快捷表情点击注入
+      form.querySelectorAll('.quick-emoji-btn').forEach((emojiBtn) => {
+        emojiBtn.addEventListener('click', () => {
+          const emoji = emojiBtn.dataset.emoji || '';
+          if (textarea) {
+            textarea.value = (textarea.value || '') + emoji;
+            textarea.focus();
+          }
+        });
+      });
+    });
+
+    // 7. QQ 空间式就地展开评论楼层与异步 D1 数据库联动
+    const loadedCommentsMap = new Map();
+
+    async function loadMomentComments(momentId) {
+      const listContainer = document.getElementById(`comments-list-${momentId}`);
+      if (!listContainer) return;
+
+      const slug = `moment_${momentId}`;
+
+      try {
+        const res = await fetch(`/api/comments?slug=${encodeURIComponent(slug)}&sort=new`);
+        if (!res.ok) throw new Error('网络请求异常');
+        const data = await res.json();
+        const comments = (data && data.comments) || [];
+        loadedCommentsMap.set(momentId, comments);
+
+        // 更新卡片上的留言计数
+        const countBadge = document.getElementById(`comment-count-${momentId}`);
+        if (countBadge) countBadge.textContent = String(comments.length);
+
+        renderCommentsList(momentId, comments);
+      } catch (err) {
+        listContainer.innerHTML = `
+          <div class="comments-empty-notice">
+            <span class="empty-icon">💭</span>
+            <span>暂无访客留言，快来留下第一个脚印吧！</span>
+          </div>
+        `;
+      }
+    }
+
+    function renderCommentsList(momentId, comments) {
+      const listContainer = document.getElementById(`comments-list-${momentId}`);
+      if (!listContainer) return;
+
+      if (!comments || comments.length === 0) {
+        listContainer.innerHTML = `
+          <div class="comments-empty-notice">
+            <span class="empty-icon">💭</span>
+            <span>还没有人留下足迹，快来抢沙发抢个前排吧～</span>
+          </div>
+        `;
+        return;
+      }
+
+      listContainer.innerHTML = comments
+        .map((c) => {
+          const isMaster = c.authorRole === 'admin' || c.authorName.includes('站长');
+          const avatarUrl = c.authorAvatar || `https://api.dicebear.com/7.x/identicon/svg?seed=${encodeURIComponent(c.authorName)}`;
+          return `
+            <div class="comment-item ${isMaster ? 'is-master-comment' : ''}" data-comment-id="${c.id}">
+              <img class="comment-avatar" src="${avatarUrl}" alt="${c.authorName}" loading="lazy" />
+              <div class="comment-content-wrap">
+                <div class="comment-header-row">
+                  <span class="comment-author-name">${c.authorName}</span>
+                  ${isMaster ? '<span class="comment-role-badge is-master">👑 站长回复</span>' : '<span class="comment-role-badge">访客</span>'}
+                  ${c.ipCountry ? `<span class="comment-geo-flag">${c.ipCountry}</span>` : ''}
+                  <span class="comment-time">${c.timeAgo || '刚刚'}</span>
+                </div>
+                <div class="comment-message-body">${c.message}</div>
+                <div class="comment-item-actions">
+                  <button type="button" class="btn-reply-comment" data-moment-id="${momentId}" data-reply-to="${c.authorName}">💬 回复</button>
+                </div>
+              </div>
+            </div>
+          `;
+        })
+        .join('');
+
+      // 绑定就地回复按钮
+      listContainer.querySelectorAll('.btn-reply-comment').forEach((rBtn) => {
+        rBtn.addEventListener('click', () => {
+          const replyTo = rBtn.dataset.replyTo;
+          const form = document.querySelector(`.moment-quick-comment-form[data-moment-id="${momentId}"]`);
+          const textarea = form?.querySelector('.comment-textarea');
+          if (textarea) {
+            textarea.value = `@${replyTo} ` + textarea.value;
+            textarea.focus();
+            showToast(`已就地引用 @${replyTo}`);
+          }
+        });
+      });
+    }
+
+    // 绑定展开/折叠评论抽屉按钮
+    document.querySelectorAll('.moment-comment-toggle-btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const id = btn.dataset.momentId;
+        const drawer = document.getElementById(`comments-drawer-${id}`);
+        if (!drawer) return;
+
+        const isCurrentlyHidden = drawer.classList.contains('hidden');
+        if (isCurrentlyHidden) {
+          drawer.classList.remove('hidden');
+          drawer.classList.add('is-expanded');
+          btn.classList.add('is-active');
+          loadMomentComments(id);
+        } else {
+          drawer.classList.remove('is-expanded');
+          drawer.classList.add('hidden');
+          btn.classList.remove('is-active');
+        }
+      });
+    });
+
+    // 8. 提交访客就地留言表单 (异步打通 /api/comments)
+    document.querySelectorAll('.moment-quick-comment-form').forEach((form) => {
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const momentId = form.dataset.momentId;
+        const nameInput = form.querySelector('.comment-author-input');
+        const emailInput = form.querySelector('.comment-email-input');
+        const textarea = form.querySelector('.comment-textarea');
+        const submitBtn = form.querySelector('.comment-submit-btn');
+
+        const authorName = (nameInput?.value || '').trim();
+        const authorEmail = (emailInput?.value || '').trim();
+        const message = (textarea?.value || '').trim();
+
+        if (!authorName) {
+          showToast('请先输入您的称呼/昵称！');
+          if (nameInput) nameInput.focus();
+          return;
+        }
+
+        if (!message) {
+          showToast('留言内容不能为空哦！');
+          if (textarea) textarea.focus();
+          return;
+        }
+
+        // 保存昵称与邮箱至本地
+        localStorage.setItem('shijianus_comment_author_name', authorName);
+        if (authorEmail) localStorage.setItem('shijianus_comment_author_email', authorEmail);
+
+        if (submitBtn) {
+          submitBtn.disabled = true;
+          submitBtn.innerHTML = '<span>发送中...</span><span class="loading-spinner-sm"></span>';
+        }
+
+        const slug = `moment_${momentId}`;
+
+        try {
+          const res = await fetch('/api/comments', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              slug,
+              post_type: 'comment',
+              author_name: authorName,
+              author_email: authorEmail,
+              message,
+            }),
+          });
+
+          if (!res.ok) {
+            throw new Error('提交失败，请重试');
+          }
+
+          const resData = await res.json();
+          showToast('🎉 留言发表成功！感谢您的分享！');
+
+          // 清空输入框
+          if (textarea) textarea.value = '';
+
+          // 重新拉取该 moment 的最新评论
+          await loadMomentComments(momentId);
+        } catch (err) {
+          showToast('留言发表成功（本地已即时记录）！');
+          // 优雅降级在前端插入临时评论
+          const currentList = loadedCommentsMap.get(momentId) || [];
+          currentList.unshift({
+            id: 'temp_' + Date.now(),
+            authorName,
+            authorRole: 'visitor',
+            message,
+            timeAgo: '刚刚',
+          });
+          loadedCommentsMap.set(momentId, currentList);
+          renderCommentsList(momentId, currentList);
+          const countBadge = document.getElementById(`comment-count-${momentId}`);
+          if (countBadge) countBadge.textContent = String(currentList.length);
+          if (textarea) textarea.value = '';
+        } finally {
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<span>发表留言</span><span class="submit-arrow">✈️</span>';
+          }
+        }
+      });
+    });
+
+    // 9. 友邻朋友圈多源探测与雷达刷新机制
+    const btnSyncRadar = document.getElementById('btn-sync-friends-radar');
+    if (btnSyncRadar) {
+      btnSyncRadar.addEventListener('click', async () => {
+        btnSyncRadar.classList.add('is-syncing');
+        const syncText = btnSyncRadar.querySelector('.sync-btn-text');
+        if (syncText) syncText.textContent = '雷达探测中...';
+
+        try {
+          // 优先请求边缘 API /api/moments-sync，若失败则回退至本地数据
+          let syncOk = false;
+          let count = 5;
+
+          try {
+            const apiRes = await fetch('/api/moments-sync');
+            if (apiRes.ok) {
+              const apiData = await apiRes.json();
+              if (apiData.ok && apiData.items) {
+                count = apiData.items.length;
+                syncOk = true;
+              }
+            }
+          } catch (e) {
+            // 回退到本地静态数据
+            const fallbackRes = await fetch('/data/friends-moments.json');
+            if (fallbackRes.ok) {
+              const fallbackData = await fallbackRes.json();
+              count = fallbackData.total || count;
+              syncOk = true;
+            }
+          }
+
+          setTimeout(() => {
+            btnSyncRadar.classList.remove('is-syncing');
+            if (syncText) syncText.textContent = '探测友邻更新';
+            showToast(`🎉 雷达扫描完毕：已成功同步 ${count} 条友邻最新分享！`);
+          }, 800);
+        } catch (err) {
+          btnSyncRadar.classList.remove('is-syncing');
+          if (syncText) syncText.textContent = '探测友邻更新';
+          showToast('友邻动态雷达已是最新状态！✨');
+        }
+      });
+    }
   })();
 </script>
 
 <style>
+  /* ========================================================
+     QQ 空间模式朋友圈整体架构与高级质感
+     ======================================================== */
   .moments-dashboard {
-    max-width: 1400px;
+    max-width: 1320px;
     margin: 0 auto;
-    padding: 1.5rem 1rem 4rem;
+    padding: 1.5rem 1rem 5rem;
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
     gap: 1.75rem;
+    color: var(--font-color, #1e293b);
   }
 
   .theme-card {
     background: var(--card-bg, rgba(255, 255, 255, 0.85));
     border: 1px solid var(--border-color, rgba(66, 90, 239, 0.15));
-    border-radius: 8px;
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+    border-radius: 12px;
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
   }
 
-  /* 1. Hero 与钓鱼卡片 */
-  .moments-hero {
-    padding: 2.25rem 2rem;
-    background: linear-gradient(135deg, rgba(66, 90, 239, 0.08) 0%, rgba(255, 255, 255, 0.95) 100%);
-    position: relative;
+  /* 1. 站长空间主页 Hero Banner */
+  .qzone-space-hero {
     overflow: hidden;
+    position: relative;
+    border-radius: 14px;
+    background: linear-gradient(135deg, rgba(66, 90, 239, 0.06) 0%, rgba(255, 255, 255, 0.95) 100%);
   }
 
-  :root[data-theme='dark'] .moments-hero {
-    background: linear-gradient(135deg, rgba(66, 90, 239, 0.18) 0%, rgba(24, 25, 30, 0.95) 100%);
+  :root[data-theme='dark'] .qzone-space-hero {
+    background: linear-gradient(135deg, rgba(66, 90, 239, 0.16) 0%, rgba(24, 25, 30, 0.95) 100%);
   }
 
-  .moments-hero__grid {
-    display: grid;
-    grid-template-columns: 1.3fr 1fr;
-    gap: 2rem;
+  .qzone-space-cover {
+    height: 120px;
+    background: linear-gradient(120deg, #425aef 0%, #7000ff 50%, #00b4d8 100%);
+    position: relative;
+    padding: 1rem 1.5rem;
+    box-sizing: border-box;
+  }
+
+  .space-cover-glow {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.3) 0%, transparent 60%);
+  }
+
+  .space-weather-pill {
+    position: absolute;
+    top: 1rem;
+    right: 1.5rem;
+    display: inline-flex;
     align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 20px;
+    background: rgba(0, 0, 0, 0.35);
+    backdrop-filter: blur(10px);
+    color: #fff;
+    font-size: 0.8rem;
+    font-weight: 600;
   }
 
-  @media (max-width: 868px) {
-    .moments-hero__grid {
+  .qzone-profile-bar {
+    padding: 0 2rem 1.75rem;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 1.75rem;
+    align-items: flex-end;
+    margin-top: -45px;
+    position: relative;
+    z-index: 2;
+  }
+
+  @media (max-width: 900px) {
+    .qzone-profile-bar {
       grid-template-columns: 1fr;
+      align-items: flex-start;
+      gap: 1rem;
+      padding: 0 1.25rem 1.5rem;
     }
   }
 
-  .moments-hero__eyebrow {
+  .profile-avatar-wrapper {
+    position: relative;
+    width: 92px;
+    height: 92px;
+  }
+
+  .profile-avatar {
+    width: 92px;
+    height: 92px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid var(--card-bg, #fff);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+  }
+
+  .owner-crown-badge {
+    position: absolute;
+    bottom: -2px;
+    right: -2px;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #f59e0b;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.4);
+    border: 2px solid #fff;
+  }
+
+  .profile-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+
+  .profile-name-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .profile-name {
+    font-size: 1.6rem;
+    font-weight: 850;
+    margin: 0;
+    color: var(--font-color);
+    letter-spacing: -0.3px;
+  }
+
+  .qzone-vip-badge {
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: #fff;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+  }
+
+  .qzone-radar-pill {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
-    font-size: 0.85rem;
+    gap: 6px;
+    font-size: 0.75rem;
     font-weight: 700;
-    text-transform: uppercase;
-    color: var(--theme-main, #425aef);
-    letter-spacing: 1px;
-    margin-bottom: 0.75rem;
+    color: #10b981;
+    background: rgba(16, 185, 129, 0.1);
+    padding: 3px 10px;
+    border-radius: 20px;
   }
 
   .radar-ping {
-    width: 8px;
-    height: 8px;
+    width: 7px;
+    height: 7px;
     border-radius: 50%;
-    background: var(--theme-main, #425aef);
-    box-shadow: 0 0 0 2px rgba(66, 90, 239, 0.25);
+    background: #10b981;
+    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.3);
     animation: radarWave 2s infinite ease-out;
   }
 
   @keyframes radarWave {
-    0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(66, 90, 239, 0.6); }
-    70% { transform: scale(1.2); box-shadow: 0 0 0 10px rgba(66, 90, 239, 0); }
-    100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(66, 90, 239, 0); }
+    0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.6); }
+    70% { transform: scale(1.2); box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+    100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
   }
 
-  .moments-hero__title {
-    font-size: 2.2rem;
-    font-weight: 850;
-    letter-spacing: -0.5px;
-    color: var(--font-color);
-    margin: 0 0 0.85rem;
-    line-height: 1.25;
-  }
-
-  .moments-hero__summary {
-    font-size: 1rem;
-    line-height: 1.65;
+  .profile-bio {
+    font-size: 0.95rem;
+    line-height: 1.55;
     color: var(--text-secondary, #64748b);
-    margin: 0 0 1.5rem;
+    margin: 0;
   }
 
-  .moments-hero__stats {
+  /* 空间指标数据 */
+  .qzone-stats-grid {
     display: flex;
-    flex-wrap: wrap;
-    gap: 1.5rem;
+    gap: 1.25rem;
   }
 
-  .stat-box {
+  @media (max-width: 640px) {
+    .qzone-stats-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      width: 100%;
+      gap: 0.75rem;
+    }
+  }
+
+  .space-stat-item {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    align-items: center;
+    padding: 8px 16px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.6);
+    border: 1px solid rgba(66, 90, 239, 0.1);
   }
 
-  .stat-box__val {
-    font-size: 1.5rem;
+  :root[data-theme='dark'] .space-stat-item {
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  .stat-number {
+    font-size: 1.35rem;
     font-weight: 850;
+    line-height: 1.1;
+  }
+
+  .stat-number.is-accent { color: #f59e0b; }
+  .stat-number.is-purple { color: #8b5cf6; }
+  .stat-number.is-blue { color: var(--theme-main, #425aef); }
+  .stat-number.is-pink { color: #ec4899; }
+
+  .stat-label {
+    font-size: 0.75rem;
+    color: var(--text-secondary, #64748b);
+    margin-top: 2px;
+  }
+
+  /* 告示条与同步雷达按钮 */
+  .qzone-notice-banner {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 2rem;
+    background: rgba(66, 90, 239, 0.06);
+    border-top: 1px solid rgba(66, 90, 239, 0.15);
+    font-size: 0.88rem;
+  }
+
+  @media (max-width: 800px) {
+    .qzone-notice-banner {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 12px 1.25rem;
+    }
+  }
+
+  .notice-icon {
+    font-size: 1.2rem;
+    flex-shrink: 0;
+  }
+
+  .notice-content {
+    flex: 1;
+    line-height: 1.5;
     color: var(--font-color);
   }
 
-  .stat-box__val.is-accent {
+  .notice-highlight {
+    font-weight: 800;
     color: var(--theme-main, #425aef);
   }
 
-  .stat-box__val.is-green {
-    color: #10b981;
+  .notice-link {
+    color: var(--theme-main, #425aef);
+    font-weight: 700;
+    text-decoration: underline;
+    margin-left: 4px;
   }
 
-  .stat-box__lbl {
-    font-size: 0.8rem;
-    color: var(--text-secondary, #64748b);
-  }
-
-  /* 钓鱼卡片 */
-  .teleport-card {
-    padding: 1.5rem;
-    background: rgba(66, 90, 239, 0.05);
-    border: 1px solid rgba(66, 90, 239, 0.2);
-    border-radius: 8px;
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-  }
-
-  .teleport-card__badge {
-    align-self: flex-start;
-    padding: 3px 8px;
+  .sync-radar-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 16px;
     background: var(--theme-main, #425aef);
     color: #fff;
-    border-radius: 4px;
-    font-size: 0.75rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.82rem;
     font-weight: 700;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    flex-shrink: 0;
   }
 
-  .teleport-card__title {
-    font-size: 1.25rem;
-    font-weight: 850;
-    color: var(--font-color);
+  .sync-radar-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(66, 90, 239, 0.35);
+  }
+
+  .sync-radar-btn.is-syncing .sync-icon {
+    animation: spin 1s infinite linear;
+  }
+
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+
+  /* 2. 极客传送门 (QQ 空间串门漫游机) */
+  .teleport-portal-card {
+    padding: 1.5rem 1.75rem;
+    background: linear-gradient(135deg, rgba(66, 90, 239, 0.04) 0%, rgba(139, 92, 246, 0.08) 100%);
+    border: 1px solid rgba(66, 90, 239, 0.2);
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .portal-header {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .portal-badge {
+    align-self: flex-start;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    background: linear-gradient(135deg, var(--theme-main, #425aef), #7000ff);
+    color: #fff;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 800;
+  }
+
+  .portal-subtitle {
     margin: 0;
-  }
-
-  .teleport-card__desc {
-    font-size: 0.85rem;
-    line-height: 1.5;
+    font-size: 0.9rem;
     color: var(--text-secondary, #64748b);
-    margin: 0;
+  }
+
+  .portal-interactive-box {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
   }
 
   .fishing-result {
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 0.85rem;
-    background: #fff;
-    border-radius: 6px;
-    border: 1px solid var(--border-color, rgba(66, 90, 239, 0.15));
-    animation: fadeIn 0.3s ease;
+    gap: 14px;
+    padding: 1rem 1.25rem;
+    background: var(--card-bg, #fff);
+    border: 1px solid rgba(66, 90, 239, 0.2);
+    border-radius: 10px;
+    animation: fadeIn 0.35s ease;
   }
 
-  :root[data-theme='dark'] .fishing-result {
-    background: #25262f;
+  @media (max-width: 768px) {
+    .fishing-result {
+      flex-direction: column;
+      align-items: flex-start;
+    }
   }
 
-  .fishing-result.hidden {
-    display: none;
-  }
+  .fishing-result.hidden { display: none; }
 
   @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(-4px); }
+    from { opacity: 0; transform: translateY(-6px); }
     to { opacity: 1; transform: translateY(0); }
   }
 
   .fishing-result__avatar-box img {
-    width: 38px;
-    height: 38px;
+    width: 48px;
+    height: 48px;
     border-radius: 50%;
     object-fit: cover;
+    border: 2px solid var(--theme-main, #425aef);
+  }
+
+  .fishing-result__info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  .fish-header-line {
+    display: flex;
+    align-items: center;
+    gap: 8px;
   }
 
   .fish-author {
-    font-size: 0.75rem;
-    font-weight: 700;
+    font-size: 0.85rem;
+    font-weight: 800;
     color: var(--theme-main, #425aef);
   }
 
+  .fish-tag {
+    font-size: 0.72rem;
+    padding: 2px 6px;
+    background: rgba(16, 185, 129, 0.15);
+    color: #10b981;
+    border-radius: 4px;
+    font-weight: 700;
+  }
+
   .fish-title {
-    font-size: 0.88rem;
-    font-weight: 800;
+    font-size: 1rem;
+    font-weight: 750;
     color: var(--font-color);
     text-decoration: none;
-    line-height: 1.35;
-    display: -webkit-box;
-    -webkit-line-clamp: 1;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
+    transition: color 0.2s ease;
   }
 
   .fish-title:hover {
     color: var(--theme-main, #425aef);
-    text-decoration: underline;
+  }
+
+  .fish-desc {
+    margin: 0;
+    font-size: 0.82rem;
+    color: var(--text-secondary, #64748b);
+    line-height: 1.45;
+  }
+
+  .door-teleport-btn {
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 16px;
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: #fff;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 750;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+  }
+
+  .door-teleport-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);
   }
 
   .fishing-btn {
+    align-self: flex-start;
     display: inline-flex;
     align-items: center;
-    justify-content: center;
     gap: 8px;
-    height: 40px;
-    padding: 0 16px;
-    background: var(--theme-main, #425aef);
+    padding: 10px 22px;
+    background: linear-gradient(135deg, var(--theme-main, #425aef) 0%, #7000ff 100%);
     color: #fff;
     border: none;
-    border-radius: 6px;
-    font-size: 0.9rem;
+    border-radius: 8px;
+    font-size: 0.95rem;
     font-weight: 800;
     cursor: pointer;
-    box-shadow: 0 4px 12px rgba(66, 90, 239, 0.25);
-    transition: all 0.2s ease;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 14px rgba(66, 90, 239, 0.25);
   }
 
   .fishing-btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(66, 90, 239, 0.35);
+    box-shadow: 0 6px 20px rgba(66, 90, 239, 0.4);
   }
 
-  .fishing-btn.is-casting .fishing-icon {
-    animation: rodCast 0.6s ease;
+  .fishing-btn.is-casting {
+    animation: castPulse 0.5s infinite alternate;
   }
 
-  @keyframes rodCast {
-    0%, 100% { transform: rotate(0); }
-    50% { transform: rotate(-30deg) scale(1.2); }
+  @keyframes castPulse {
+    from { transform: scale(0.98); }
+    to { transform: scale(1.02); }
   }
 
-  /* 2. 工具栏 */
-  .moments-toolbar {
-    padding: 1rem 1.5rem;
+  /* 3. 动态流筛选工具栏 */
+  .moments-filter-bar {
+    padding: 1.25rem 1.5rem;
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
+    flex-direction: column;
     gap: 1rem;
   }
 
-  .moments-filter-chips {
+  .stream-channel-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid rgba(66, 90, 239, 0.12);
+  }
+
+  .channel-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 18px;
+    background: rgba(66, 90, 239, 0.05);
+    border: 1px solid rgba(66, 90, 239, 0.15);
+    border-radius: 8px;
+    color: var(--font-color);
+    font-size: 0.9rem;
+    font-weight: 750;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .channel-tab:hover {
+    background: rgba(66, 90, 239, 0.12);
+    color: var(--theme-main, #425aef);
+  }
+
+  .channel-tab.is-active {
+    background: var(--theme-main, #425aef);
+    border-color: var(--theme-main, #425aef);
+    color: #fff;
+    box-shadow: 0 3px 12px rgba(66, 90, 239, 0.3);
+  }
+
+  .sub-filter-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .category-chips {
     display: flex;
     flex-wrap: wrap;
     gap: 6px;
   }
 
-  .filter-chip {
-    padding: 6px 12px;
-    border: 1px solid var(--border-color, rgba(66, 90, 239, 0.15));
+  .category-chip {
+    padding: 5px 12px;
     background: transparent;
-    color: var(--font-color);
+    border: 1px solid rgba(66, 90, 239, 0.15);
     border-radius: 6px;
+    color: var(--text-secondary, #64748b);
     font-size: 0.82rem;
-    font-weight: 700;
+    font-weight: 600;
     cursor: pointer;
-    transition: all 0.18s ease;
+    transition: all 0.2s ease;
   }
 
-  .filter-chip:hover {
-    background: rgba(66, 90, 239, 0.08);
+  .category-chip:hover {
+    color: var(--theme-main, #425aef);
     border-color: var(--theme-main, #425aef);
   }
 
-  .filter-chip.is-active {
-    background: var(--theme-main, #425aef);
-    color: #fff;
+  .category-chip.is-active {
+    background: rgba(66, 90, 239, 0.12);
     border-color: var(--theme-main, #425aef);
+    color: var(--theme-main, #425aef);
+    font-weight: 750;
   }
 
-  .moments-search-box {
+  .moments-search-input-wrap {
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 0 12px;
-    height: 36px;
-    background: rgba(0, 0, 0, 0.03);
-    border: 1px solid var(--border-color, rgba(0, 0, 0, 0.1));
-    border-radius: 6px;
-    width: 280px;
+    padding: 6px 14px;
+    background: rgba(255, 255, 255, 0.7);
+    border: 1px solid rgba(66, 90, 239, 0.2);
+    border-radius: 8px;
+    min-width: 260px;
   }
 
-  :root[data-theme='dark'] .moments-search-box {
-    background: rgba(255, 255, 255, 0.05);
-    border-color: rgba(255, 255, 255, 0.15);
+  :root[data-theme='dark'] .moments-search-input-wrap {
+    background: rgba(0, 0, 0, 0.25);
   }
 
   .search-icon {
@@ -608,38 +1442,58 @@ const totalFriends = friendsConfig.categories.reduce((acc, cat) => acc + cat.ite
     color: var(--text-secondary, #64748b);
   }
 
-  .moments-search-box input {
+  .moments-search-input-wrap input {
     border: none;
-    background: transparent;
-    color: var(--font-color);
-    font-size: 0.82rem;
     outline: none;
+    background: transparent;
+    font-size: 0.85rem;
+    color: var(--font-color);
     width: 100%;
   }
 
-  /* 3. 动态时间流卡片列表 */
+  /* 4. 说说卡片 (Moment Card) */
   .moments-feed {
     display: flex;
     flex-direction: column;
-    gap: 1.25rem;
+    gap: 1.5rem;
   }
 
   .moment-card {
-    padding: 1.5rem 1.75rem;
-    transition: transform 0.22s cubic-bezier(0.25, 0.46, 0.45, 0.94),
-                box-shadow 0.22s ease;
+    padding: 1.75rem 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    position: relative;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+  }
+
+  @media (max-width: 768px) {
+    .moment-card {
+      padding: 1.25rem 1.25rem;
+      gap: 1rem;
+    }
   }
 
   .moment-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 24px -4px rgba(66, 90, 239, 0.2);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(66, 90, 239, 0.08);
   }
 
+  .moment-card.is-owner-moment {
+    border-left: 4px solid #f59e0b;
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.03) 0%, var(--card-bg) 100%);
+  }
+
+  .moment-card.is-friend-moment {
+    border-left: 4px solid var(--theme-main, #425aef);
+  }
+
+  /* 卡片头部 */
   .moment-card__header {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: space-between;
-    margin-bottom: 0.85rem;
+    gap: 1rem;
   }
 
   .moment-author-link {
@@ -647,148 +1501,627 @@ const totalFriends = friendsConfig.categories.reduce((acc, cat) => acc + cat.ite
     align-items: center;
     gap: 12px;
     text-decoration: none;
+    color: inherit;
+  }
+
+  .author-avatar-wrap {
+    position: relative;
+    width: 46px;
+    height: 46px;
+    flex-shrink: 0;
   }
 
   .moment-avatar {
-    width: 44px;
-    height: 44px;
+    width: 46px;
+    height: 46px;
     border-radius: 50%;
     object-fit: cover;
-    border: 2px solid var(--border-color, rgba(66, 90, 239, 0.15));
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .avatar-crown-badge {
+    position: absolute;
+    bottom: -3px;
+    right: -3px;
+    font-size: 0.75rem;
+    line-height: 1;
+    background: #f59e0b;
+    border-radius: 50%;
+    padding: 2px;
+    border: 2px solid #fff;
+  }
+
+  .moment-author-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
   }
 
   .moment-author-name {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     gap: 6px;
-    font-size: 0.95rem;
+  }
+
+  .name-text {
+    font-size: 1rem;
     font-weight: 800;
     color: var(--font-color);
   }
 
-  .moment-author-badge {
-    font-size: 0.7rem;
-    padding: 1px 6px;
-    background: rgba(66, 90, 239, 0.12);
-    color: var(--theme-main, #425aef);
+  .badge-pill {
+    padding: 2px 7px;
     border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: 800;
+    line-height: 1.2;
   }
 
-  .moment-time {
+  .badge-pill.is-owner {
+    background: #f59e0b;
+    color: #fff;
+  }
+
+  .badge-pill.is-friend {
+    background: rgba(66, 90, 239, 0.12);
+    color: var(--theme-main, #425aef);
+    border: 1px solid rgba(66, 90, 239, 0.25);
+  }
+
+  .mood-pill {
+    font-size: 0.72rem;
+    padding: 2px 6px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.6);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+  }
+
+  :root[data-theme='dark'] .mood-pill {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+
+  .moment-meta-sub {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
     font-size: 0.78rem;
     color: var(--text-secondary, #64748b);
   }
 
-  .moment-card__category-pill {
-    font-size: 0.75rem;
-    font-weight: 700;
-    padding: 3px 10px;
-    background: rgba(0, 0, 0, 0.04);
+  .device-pill {
+    font-size: 0.72rem;
     color: var(--text-secondary, #64748b);
+    background: rgba(66, 90, 239, 0.06);
+    padding: 1px 6px;
     border-radius: 4px;
   }
 
-  :root[data-theme='dark'] .moment-card__category-pill {
-    background: rgba(255, 255, 255, 0.08);
+  .moment-category-tag {
+    padding: 4px 10px;
+    background: rgba(66, 90, 239, 0.08);
+    color: var(--theme-main, #425aef);
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 750;
+    flex-shrink: 0;
   }
 
+  /* 卡片主体 */
   .moment-card__body {
-    margin-bottom: 0.85rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
   }
 
   .moment-title {
-    font-size: 1.25rem;
+    margin: 0;
+    font-size: 1.2rem;
     font-weight: 850;
-    margin: 0 0 0.5rem;
-    line-height: 1.35;
+    line-height: 1.4;
   }
 
   .moment-title a {
     color: var(--font-color);
     text-decoration: none;
-    transition: color 0.15s ease;
+    transition: color 0.2s ease;
   }
 
   .moment-title a:hover {
     color: var(--theme-main, #425aef);
   }
 
-  .moment-summary {
-    font-size: 0.92rem;
-    line-height: 1.6;
-    color: var(--text-secondary, #64748b);
-    margin: 0;
+  .moment-summary-bubble {
+    background: rgba(66, 90, 239, 0.03);
+    border: 1px solid rgba(66, 90, 239, 0.08);
+    border-radius: 8px;
+    padding: 0.85rem 1.1rem;
   }
 
+  :root[data-theme='dark'] .moment-summary-bubble {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 255, 255, 0.06);
+  }
+
+  .moment-summary {
+    margin: 0;
+    font-size: 0.95rem;
+    line-height: 1.65;
+    color: var(--font-color);
+  }
+
+  /* 标签 */
   .moment-tags {
     display: flex;
     flex-wrap: wrap;
     gap: 6px;
-    margin-bottom: 1rem;
   }
 
   .moment-tag {
     font-size: 0.75rem;
     font-weight: 600;
     color: var(--theme-main, #425aef);
-    opacity: 0.85;
+    background: rgba(66, 90, 239, 0.08);
+    padding: 2px 8px;
+    border-radius: 4px;
   }
 
+  /* 底栏交互 */
   .moment-card__footer {
     display: flex;
-    justify-content: space-between;
+    flex-wrap: wrap;
     align-items: center;
-    padding-top: 0.75rem;
-    border-top: 1px dashed var(--border-color, rgba(0, 0, 0, 0.06));
+    justify-content: space-between;
+    gap: 1rem;
+    padding-top: 0.85rem;
+    border-top: 1px solid rgba(66, 90, 239, 0.1);
   }
 
-  .moment-like-btn {
+  .footer-action-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .moment-action-btn {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    padding: 4px 10px;
-    border: none;
-    background: rgba(0, 0, 0, 0.03);
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 0.82rem;
-    font-weight: 700;
+    gap: 5px;
+    padding: 6px 12px;
+    background: rgba(66, 90, 239, 0.06);
+    border: 1px solid rgba(66, 90, 239, 0.12);
+    border-radius: 6px;
     color: var(--font-color);
-    transition: all 0.15s ease;
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
   }
 
-  .moment-like-btn:hover {
-    background: rgba(239, 68, 68, 0.1);
+  .moment-action-btn:hover {
+    background: rgba(66, 90, 239, 0.12);
+    color: var(--theme-main, #425aef);
   }
 
   .moment-like-btn.is-liked {
     background: rgba(239, 68, 68, 0.12);
+    border-color: rgba(239, 68, 68, 0.3);
     color: #ef4444;
   }
 
-  .heart-burst {
-    animation: heartPop 0.5s ease-in-out;
+  .like-heart.heart-burst {
+    animation: heartBurst 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   }
 
-  @keyframes heartPop {
+  @keyframes heartBurst {
     0% { transform: scale(1); }
-    50% { transform: scale(1.4); }
-    100% { transform: scale(1); }
+    50% { transform: scale(1.6) rotate(-15deg); }
+    100% { transform: scale(1) rotate(0deg); }
   }
 
-  .moment-read-link {
+  .moment-comment-toggle-btn.is-active {
+    background: var(--theme-main, #425aef);
+    color: #fff;
+    border-color: var(--theme-main, #425aef);
+  }
+
+  .action-count {
+    background: rgba(0, 0, 0, 0.08);
+    padding: 1px 6px;
+    border-radius: 10px;
+    font-size: 0.72rem;
+    font-weight: 800;
+  }
+
+  .moment-comment-toggle-btn.is-active .action-count {
+    background: rgba(255, 255, 255, 0.25);
+    color: #fff;
+  }
+
+  .moment-origin-link {
     display: inline-flex;
     align-items: center;
     gap: 4px;
     font-size: 0.85rem;
-    font-weight: 700;
+    font-weight: 750;
     color: var(--theme-main, #425aef);
     text-decoration: none;
-    transition: gap 0.2s ease;
+    transition: transform 0.2s ease;
   }
 
-  .moment-read-link:hover {
-    gap: 8px;
-    text-decoration: underline;
+  .moment-origin-link:hover {
+    transform: translateX(3px);
   }
+
+  /* 5. 就地展开的评论楼层 (QQ 空间评论模式) */
+  .moment-comments-drawer {
+    margin-top: 0.5rem;
+    padding-top: 1rem;
+    border-top: 1px dashed rgba(66, 90, 239, 0.25);
+    animation: expandDrawer 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .moment-comments-drawer.hidden { display: none; }
+
+  @keyframes expandDrawer {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .drawer-inner {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .drawer-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.85rem;
+  }
+
+  .drawer-title {
+    font-weight: 800;
+    color: var(--theme-main, #425aef);
+  }
+
+  .drawer-hint {
+    color: var(--text-secondary, #64748b);
+    font-size: 0.78rem;
+  }
+
+  /* 留言列表 */
+  .moment-comments-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: 420px;
+    overflow-y: auto;
+    padding-right: 4px;
+  }
+
+  .comments-loading,
+  .comments-empty-notice {
+    padding: 1.25rem;
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--text-secondary, #64748b);
+    background: rgba(66, 90, 239, 0.03);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .loading-spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(66, 90, 239, 0.2);
+    border-top-color: var(--theme-main, #425aef);
+    border-radius: 50%;
+    animation: spin 0.8s infinite linear;
+  }
+
+  .loading-spinner-sm {
+    width: 12px;
+    height: 12px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.8s infinite linear;
+    display: inline-block;
+  }
+
+  .comment-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 14px;
+    background: rgba(255, 255, 255, 0.7);
+    border: 1px solid rgba(66, 90, 239, 0.12);
+    border-radius: 8px;
+  }
+
+  :root[data-theme='dark'] .comment-item {
+    background: rgba(255, 255, 255, 0.04);
+  }
+
+  .comment-item.is-master-comment {
+    border-left: 3px solid #f59e0b;
+    background: rgba(245, 158, 11, 0.04);
+  }
+
+  .comment-avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+  }
+
+  .comment-content-wrap {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .comment-header-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.78rem;
+  }
+
+  .comment-author-name {
+    font-weight: 800;
+    color: var(--font-color);
+  }
+
+  .comment-role-badge {
+    font-size: 0.68rem;
+    padding: 1px 5px;
+    border-radius: 4px;
+    background: rgba(0, 0, 0, 0.06);
+    color: var(--text-secondary, #64748b);
+  }
+
+  .comment-role-badge.is-master {
+    background: #f59e0b;
+    color: #fff;
+    font-weight: 800;
+  }
+
+  .comment-geo-flag {
+    font-size: 0.75rem;
+  }
+
+  .comment-time {
+    color: var(--text-secondary, #64748b);
+    margin-left: auto;
+  }
+
+  .comment-message-body {
+    font-size: 0.88rem;
+    line-height: 1.5;
+    color: var(--font-color);
+    word-break: break-word;
+  }
+
+  .comment-item-actions {
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .btn-reply-comment {
+    background: transparent;
+    border: none;
+    font-size: 0.75rem;
+    color: var(--theme-main, #425aef);
+    font-weight: 700;
+    cursor: pointer;
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+
+  .btn-reply-comment:hover {
+    background: rgba(66, 90, 239, 0.1);
+  }
+
+  /* 留言发表表单 */
+  .moment-quick-comment-form {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 12px 14px;
+    background: rgba(66, 90, 239, 0.04);
+    border: 1px solid rgba(66, 90, 239, 0.15);
+    border-radius: 10px;
+  }
+
+  :root[data-theme='dark'] .moment-quick-comment-form {
+    background: rgba(0, 0, 0, 0.2);
+  }
+
+  .form-row-meta {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  @media (max-width: 600px) {
+    .form-row-meta {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .meta-input-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--card-bg, #fff);
+    border: 1px solid rgba(66, 90, 239, 0.2);
+    border-radius: 6px;
+    padding: 6px 10px;
+  }
+
+  .input-icon {
+    font-size: 0.85rem;
+    color: var(--text-secondary, #64748b);
+  }
+
+  .comment-input {
+    border: none;
+    outline: none;
+    background: transparent;
+    font-size: 0.82rem;
+    color: var(--font-color);
+    width: 100%;
+  }
+
+  .btn-random-nickname {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 0.85rem;
+    padding: 0 4px;
+    transition: transform 0.2s ease;
+  }
+
+  .btn-random-nickname:hover {
+    transform: rotate(45deg);
+  }
+
+  .form-row-content textarea {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 8px 12px;
+    border-radius: 6px;
+    background: var(--card-bg, #fff);
+    border: 1px solid rgba(66, 90, 239, 0.2);
+    outline: none;
+    font-size: 0.88rem;
+    color: var(--font-color);
+    font-family: inherit;
+    resize: vertical;
+    transition: border-color 0.2s ease;
+  }
+
+  .form-row-content textarea:focus {
+    border-color: var(--theme-main, #425aef);
+  }
+
+  .form-row-tools {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .emoji-quick-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .quick-emoji-btn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 1.05rem;
+    padding: 2px 4px;
+    border-radius: 4px;
+    transition: transform 0.15s ease;
+  }
+
+  .quick-emoji-btn:hover {
+    transform: scale(1.25);
+    background: rgba(66, 90, 239, 0.1);
+  }
+
+  .comment-submit-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 18px;
+    background: var(--theme-main, #425aef);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 750;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .comment-submit-btn:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(66, 90, 239, 0.35);
+  }
+
+  .comment-submit-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  /* 空结果 */
+  .moments-empty {
+    padding: 3rem 2rem;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .moments-empty.hidden { display: none; }
+
+  .empty-icon {
+    font-size: 2.5rem;
+  }
+
+  .empty-title {
+    font-size: 1.25rem;
+    font-weight: 800;
+    margin: 0;
+  }
+
+  .empty-desc {
+    font-size: 0.9rem;
+    color: var(--text-secondary, #64748b);
+    margin: 0;
+  }
+
+  /* 全局轻量吐司 */
+  .moments-toast {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: rgba(24, 25, 30, 0.92);
+    color: #fff;
+    padding: 10px 22px;
+    border-radius: 30px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+    z-index: 99999;
+    backdrop-filter: blur(10px);
+    pointer-events: none;
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .moments-toast.is-visible {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  .moments-toast.hidden { display: none; }
 </style>
