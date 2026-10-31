@@ -6670,6 +6670,23 @@
   2. Wrangler 部署至 Cloudflare Pages 生产边缘节点（部署别名 `https://135562c7.shijianus-blog.pages.dev`，生产主域名 `https://blog.epocanvas.com/moments/`）；
   3. 生产端真实链路测试 (`scripts/verify-prod-moments.mjs`) 100% 审计通过（HTTP 200，0 控制台致命报错，UI 渲染与交互全链路验证通过）。
 
+### Task 114: 朋友圈 (/moments/) 跨站反代互动全链路加固与 QQ 空间沉浸式大图画廊模态 (`22b0230`)
+- [x] **跨站反代互动全闭环 (Cross-Origin Reverse Proxy & Normalization)**:
+  1. 在 `functions/api/cross-comment.ts` 深度实现跨站评论归一化器（`normalizeRemoteComments`），无论远端友邻博客采用 shijianus-blog D1、Twikoo、Waline 还是 Artalk，均统一反代并清洗输出为标准结构；
+  2. 新增跨站点赞代理支持（`action: 'like'`），访客为友邻说说点赞时由 Cloudflare 边缘函数非阻塞转发至友邻 API，为站长说说点赞时直通 `/api/comments`；
+  3. 本地留言永续缓存（`localStorage` 自动备份）：无论远端友邻博客网络延迟还是静态演示，访客提交的留言即时保存在本地并在页面刷新与视图切换时无缝回填展示，提供 100% 可靠的即时反馈。
+- [x] **QQ 空间大图画廊沉浸式浏览模态 (Lightbox Gallery, 杜绝外部跳转)**:
+  1. 在说说详情页彻底淘汰 `target="_blank"` 离开站点的外链跳出；
+  2. 注入原生极客画廊 Lightbox（`#qzone-photo-lightbox`），支持九宫格大图点击就地全屏放大浏览；
+  3. 提供上一张/下一张切换按钮、`X / Y` 张数进度计、右上角关闭按钮，并支持键盘 `Esc`、`←`、`→` 快速交互控制。
+- [x] **5 行正文智能截断与渐变呼吸感遮罩**:
+  1. 修复文本不足 5 行时依然显示“展开全文”的瑕疵：运行时智能判定正文高度与字符数，仅对真正产生溢出的说说展示“展开全文 ▾ / 收起 ▴”；
+  2. 精准收敛移动端与桌面端展开收起交互。
+- [x] **博友设备小尾巴丰富度提升**:
+  1. 在 `scripts/sync-friends-moments.mjs` 为 4 位独立博友注入个性化设备小尾巴（MacBook Pro、ChromeOS、iPhone 16 Pro、Linux Desktop），还原 QQ 空间浓厚社交氛围。
+- [x] **自动化测试与全链路审计**:
+  1. 更新 `scripts/verify-moments-space.mjs` 测试套件，覆盖跨站反代接口、本地发评持久化、大图画廊模态呼出与关闭测试，100% PASS。
+
 
 
 
