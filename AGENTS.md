@@ -6541,7 +6541,7 @@
      - 包含垂直进度导轨与已读进度填充（`.gb-scroller-fill`）；
      - 导轨上分布每个楼层的交互式小刻度圆点（Notches），鼠标悬浮展示 `#X 楼` 气泡提示，点击任一圆点直接平滑跳转至对应楼层；
      - 提供顶部直达 `▲` 与底部回复快速定位 `▼` 按钮。
-### Task 108: 朋友圈主题生态协议 (shijianus-protocol)、Markdown 归档、构建期清单互联与跨站主权路由 (Author-Origin) 落地
+### Task 108: 朋友圈主题生态协议 (shijianus-protocol)、Markdown 归档、构建期清单互联与跨站主权路由 (Author-Origin) 落地 (`5f80499`)
 - [x] **Markdown 文档规范化归档 (`src/content/moments/*.md`)**：
   1. 统一建立 `src/content/moments/` 目录，博主可通过编辑标准 Markdown 文档（支持 id, author, pubDate, mood, device, tags, category, pinned）沉淀原生说说；
   2. 在 `src/content.config.ts` 注册 Astro 5 `moments` 强类型内容集合（`glob` 加载器）；
