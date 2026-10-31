@@ -6640,7 +6640,8 @@
   4. 💡 《讨论维度（Channels）划分、Tag 标签与内容检索指南》（`pinned_dimensions_guide`）。
 - [x] **本地与生产端全流程自动化 Playwright 审计**：
   1. 本地测试套件 (`scripts/verify-guestbook-board.mjs`) 100% 全量通过（3排轨道、动态流速、单发布按钮、双下拉4项滚动、4篇置顶公约、智能类型判定、楼层滑块）；
-  2. 编译并部署至 Cloudflare Pages 生产边缘节点，执行线上真机全链路 E2E 验证。
+  2. 修复动态识别判定优先级（输入标题、特定维度或标签即刻激活 Gesture 模式，提交记录 `c4c5897`）；
+  3. 编译并部署至 Cloudflare Pages 生产边缘节点，执行线上真机全链路 E2E 验证。
 
 
 
