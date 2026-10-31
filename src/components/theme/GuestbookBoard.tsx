@@ -23,6 +23,8 @@ import {
   ChevronUp,
   Tag,
   AlertCircle,
+  Pin,
+  CheckCircle2,
 } from 'lucide-react';
 import {
   fetchComments,
@@ -35,7 +37,6 @@ import {
   uploadCommentImage,
   type BlogComment,
   type CommentIdentity,
-  type PostType,
 } from '../../lib/comment-client';
 import { renderCommentMarkdown } from '../../lib/comment-markdown';
 import { computeUserLevel } from '../../lib/user-level';
@@ -82,6 +83,41 @@ const QUICK_STAMPS = [
   { icon: '🌱', text: '🌱 友邻探访，愿我们的独立博客一同生长！' },
 ];
 
+// Official Pinned Welcome Thread (Anchor)
+const OFFICIAL_PINNED_POST: BlogComment = {
+  id: 'pinned_welcome_official',
+  postSlug: 'guestbook',
+  parentId: null,
+  postType: 'gesture',
+  tag: 'tech',
+  authorId: 'admin',
+  authorName: 'shijianus',
+  authorAvatar: '/media/shijianus/avatar.jpg',
+  authorRole: 'admin',
+  authorWebsite: 'https://blog.epocanvas.com',
+  message: `### 🌟 欢迎来到全站留言与读者交流广场！
+
+这里是为所有读者与探索者打造的开放交流空间。你可以在这里探讨工程架构、交流设计灵感，或是分享日常随笔。
+
+#### 💡 如何参与交流？
+- **📝 Gesture 深度讨论**：字数在 8 字以上，支持完整 Markdown 图文排版、代码块、引用与多级跟帖回复；
+- **🚀 Boost 瞬时微语**：字数限制在 30 字以内，轻触即发，适合即时想法、问候打卡与灵感碰撞（默认不开放跟帖）；
+- **🏷️ 六大主题板块**：涵盖畅所欲言、技术探讨、灵感交流、生活碎碎念与站点建议，方便按需归类。
+
+欢迎在下方点击 **「💬 跟帖回复」** 留下你的第一条声音！✨`,
+  likesCount: 6,
+  reactions: {
+    summary: { '👍': 4, '🚀': 2, '✨': 3, '❤️': 2 },
+    users: {},
+  },
+  status: 'pinned',
+  createdAt: '2026-10-31T00:00:00.000Z',
+  showLocation: true,
+  ipCountryFlag: '🇨🇳',
+  ipCountryName: '中国',
+  ipLocation: '浙江 · 杭州',
+};
+
 export function GuestbookBoard() {
   // Core comment state
   const [comments, setComments] = useState<BlogComment[]>([]);
@@ -112,7 +148,9 @@ export function GuestbookBoard() {
   const [showIdentityEdit, setShowIdentityEdit] = useState(false);
 
   // Reply trees state (Gesture only)
-  const [expandedReplies, setExpandedReplies] = useState<Record<string, boolean>>({});
+  const [expandedReplies, setExpandedReplies] = useState<Record<string, boolean>>({
+    pinned_welcome_official: true,
+  });
   const [activeReplyTargetId, setActiveReplyTargetId] = useState<string | null>(null);
   const [replyMessage, setReplyMessage] = useState('');
   const [replySubmitting, setReplySubmitting] = useState(false);
@@ -181,21 +219,30 @@ export function GuestbookBoard() {
 
   const showToast = (msg: string) => setToastMessage(msg);
 
+  // Combine DB comments with pinned anchor
+  const allCommentsWithPinned = useMemo(() => {
+    const hasPinned = comments.some((c) => c.id === OFFICIAL_PINNED_POST.id);
+    if (!hasPinned) {
+      return [OFFICIAL_PINNED_POST, ...comments];
+    }
+    return comments;
+  }, [comments]);
+
   // Compute stats
   const stats = useMemo(() => {
-    const total = comments.length;
-    const gestures = comments.filter((c) => c.postType === 'gesture' || c.postType === 'comment').length;
-    const boosts = comments.filter((c) => c.postType === 'boost').length;
-    const contributors = new Set(comments.map((c) => c.authorName || c.authorId)).size;
+    const total = allCommentsWithPinned.length;
+    const gestures = allCommentsWithPinned.filter((c) => c.postType === 'gesture' || c.postType === 'comment').length;
+    const boosts = allCommentsWithPinned.filter((c) => c.postType === 'boost').length;
+    const contributors = new Set(allCommentsWithPinned.map((c) => c.authorName || c.authorId)).size;
     return { total, gestures, boosts, contributors };
-  }, [comments]);
+  }, [allCommentsWithPinned]);
 
   // Organize comments into threads (top-level vs replies)
   const { topLevelComments, repliesByParent } = useMemo(() => {
     const top: BlogComment[] = [];
     const rep: Record<string, BlogComment[]> = {};
 
-    for (const c of comments) {
+    for (const c of allCommentsWithPinned) {
       if (c.parentId) {
         if (!rep[c.parentId]) rep[c.parentId] = [];
         rep[c.parentId].push(c);
@@ -205,15 +252,18 @@ export function GuestbookBoard() {
     }
 
     return { topLevelComments: top, repliesByParent: rep };
-  }, [comments]);
+  }, [allCommentsWithPinned]);
 
   // Filtered comments
   const filteredComments = useMemo(() => {
     return topLevelComments.filter((c) => {
+      // Pinned posts always stay if in "all" or matching channel
+      const isPinned = c.status === 'pinned';
+
       // Channel filter
       if (selectedChannel !== 'all') {
         const itemTag = c.tag || 'chat';
-        if (itemTag !== selectedChannel) return false;
+        if (itemTag !== selectedChannel && !isPinned) return false;
       }
 
       // Type filter
@@ -298,7 +348,6 @@ export function GuestbookBoard() {
       const res = await uploadCommentImage(file);
       if (res.ok && res.url) {
         setAttachedImages((prev) => [...prev, res.url!]);
-        // Also insert markdown syntax directly into message
         setMessage((prev) => {
           const append = `\n\n![图片](${res.url})\n\n`;
           return prev ? prev + append : `![图片](${res.url})`;
@@ -332,7 +381,6 @@ export function GuestbookBoard() {
       return;
     }
 
-    // Constraint validations:
     // Boost: <= 30 characters
     if (composerMode === 'boost' && trimmed.length > 30) {
       setComposerError(`🚀 Boost 瞬时微语不能超过 30 个字 (当前 ${trimmed.length} 字)`);
@@ -431,10 +479,10 @@ export function GuestbookBoard() {
   const handleReaction = async (commentId: string, emoji: string) => {
     try {
       const res = await likeComment(commentId, emoji, identity?.id || identity?.token);
-      if (res.ok) {
-        // Optimistic UI update
-        setComments((prev) =>
-          prev.map((c) => {
+      if (res.ok || commentId === OFFICIAL_PINNED_POST.id) {
+        setComments((prev) => {
+          const list = prev.length ? prev : [OFFICIAL_PINNED_POST];
+          return list.map((c) => {
             if (c.id !== commentId) return c;
             const currentSummary = { ...(c.reactions?.summary || {}) };
             const currentUsers = { ...(c.reactions?.users || {}) };
@@ -458,8 +506,8 @@ export function GuestbookBoard() {
               ...c,
               reactions: { summary: currentSummary, users: currentUsers },
             };
-          })
-        );
+          });
+        });
       }
     } catch (err) {
       console.error('Reaction toggle error:', err);
@@ -562,59 +610,73 @@ export function GuestbookBoard() {
           </p>
         </div>
 
-        {/* Real-time stats pills */}
+        {/* Real-time stats Bento Cards */}
         <div className="gb-hero__stats">
-          <div className="gb-stat-card">
-            <span className="gb-stat-card__num">{stats.total}</span>
-            <span className="gb-stat-card__label">💬 累计留言</span>
+          <div className="gb-stat-card is-total">
+            <div className="gb-stat-card__icon-wrap">💬</div>
+            <div className="gb-stat-card__content">
+              <span className="gb-stat-card__num">{stats.total}</span>
+              <span className="gb-stat-card__label">累计交流</span>
+            </div>
           </div>
-          <div className="gb-stat-card">
-            <span className="gb-stat-card__num">{stats.gestures}</span>
-            <span className="gb-stat-card__label">📝 Gesture 话题</span>
+          <div className="gb-stat-card is-gesture">
+            <div className="gb-stat-card__icon-wrap">📝</div>
+            <div className="gb-stat-card__content">
+              <span className="gb-stat-card__num">{stats.gestures}</span>
+              <span className="gb-stat-card__label">Gesture 话题</span>
+            </div>
           </div>
-          <div className="gb-stat-card">
-            <span className="gb-stat-card__num">{stats.boosts}</span>
-            <span className="gb-stat-card__label">🚀 Boost 瞬时流</span>
+          <div className="gb-stat-card is-boost">
+            <div className="gb-stat-card__icon-wrap">🚀</div>
+            <div className="gb-stat-card__content">
+              <span className="gb-stat-card__num">{stats.boosts}</span>
+              <span className="gb-stat-card__label">Boost 微语</span>
+            </div>
           </div>
-          <div className="gb-stat-card">
-            <span className="gb-stat-card__num">{stats.contributors}</span>
-            <span className="gb-stat-card__label">👥 活跃交流者</span>
+          <div className="gb-stat-card is-contributors">
+            <div className="gb-stat-card__icon-wrap">👥</div>
+            <div className="gb-stat-card__content">
+              <span className="gb-stat-card__num">{stats.contributors}</span>
+              <span className="gb-stat-card__label">参与交流者</span>
+            </div>
           </div>
         </div>
       </header>
 
       {/* 2. Interactive Publisher Workshop (发布工坊) */}
       <section className="gb-composer-card">
-        {/* Mode Selector Tabs (Gesture vs Boost) */}
+        {/* Mode Selector Cards (Gesture vs Boost) */}
         <div className="gb-composer-modes">
           <button
             type="button"
-            className={`gb-mode-btn ${composerMode === 'gesture' ? 'is-active' : ''}`}
+            className={`gb-mode-btn is-gesture ${composerMode === 'gesture' ? 'is-active' : ''}`}
             onClick={() => {
               setComposerMode('gesture');
               setComposerError(null);
             }}
           >
-            <div className="gb-mode-btn__icon">📝</div>
-            <div className="gb-mode-btn__meta">
-              <span className="gb-mode-btn__title">Gesture 深度讨论</span>
-              <span className="gb-mode-btn__hint">8字以上 · 丰富排版 · 允许跟帖讨论</span>
+            <div className="gb-mode-btn__badge">深度讨论</div>
+            <div className="gb-mode-btn__header">
+              <MessageSquare className="w-5 h-5 text-indigo-500" />
+              <span className="gb-mode-btn__title">📝 Gesture 话题</span>
             </div>
+            <span className="gb-mode-btn__hint">8字以上 · Markdown图文 · 开放跟帖</span>
           </button>
 
           <button
             type="button"
-            className={`gb-mode-btn ${composerMode === 'boost' ? 'is-active' : ''}`}
+            className={`gb-mode-btn is-boost ${composerMode === 'boost' ? 'is-active' : ''}`}
             onClick={() => {
               setComposerMode('boost');
               setComposerError(null);
             }}
           >
-            <div className="gb-mode-btn__icon">🚀</div>
-            <div className="gb-mode-btn__meta">
-              <span className="gb-mode-btn__title">Boost 瞬时微语</span>
-              <span className="gb-mode-btn__hint">30字以内 · 极简呈现 · 默认不支持回复</span>
+            <div className="gb-mode-btn__badge is-boost">瞬时微语</div>
+            <div className="gb-mode-btn__header">
+              <Rocket className="w-5 h-5 text-purple-500" />
+              <span className="gb-mode-btn__title">🚀 Boost 微语</span>
             </div>
+            <span className="gb-mode-btn__hint">30字以内 · 极简呈现 · 仅支持表态</span>
           </button>
         </div>
 
@@ -640,25 +702,26 @@ export function GuestbookBoard() {
 
         {/* Composer Form */}
         <form onSubmit={handlePostSubmit} className="gb-composer-form">
-          {/* Top Bar: Channel selector & Preview toggle */}
+          {/* Top Bar: Channel selector pills & Preview toggle */}
           <div className="gb-composer-topbar">
-            <div className="gb-channel-picker">
-              <label htmlFor="composer-channel-select" className="gb-field-label">
+            <div className="gb-channel-selector-row">
+              <span className="gb-field-label">
                 <Tag className="w-3.5 h-3.5 inline mr-1" />
-                选择板块:
-              </label>
-              <select
-                id="composer-channel-select"
-                value={composerChannel}
-                onChange={(e) => setComposerChannel(e.target.value)}
-                className="gb-channel-select"
-              >
+                发往板块:
+              </span>
+              <div className="gb-channel-select-pills">
                 {CHANNELS.filter((ch) => ch.id !== 'all').map((ch) => (
-                  <option key={ch.id} value={ch.id}>
-                    {ch.icon} {ch.label}
-                  </option>
+                  <button
+                    key={ch.id}
+                    type="button"
+                    className={`gb-composer-channel-pill ${composerChannel === ch.id ? 'is-active' : ''}`}
+                    onClick={() => setComposerChannel(ch.id)}
+                  >
+                    <span>{ch.icon}</span>
+                    <span>{ch.label}</span>
+                  </button>
                 ))}
-              </select>
+              </div>
             </div>
 
             {composerMode === 'gesture' && (
@@ -705,17 +768,17 @@ export function GuestbookBoard() {
               <div className="gb-toolbar-divider"></div>
               <button
                 type="button"
-                className="gb-toolbar-tool-btn"
+                className="gb-toolbar-tool-btn is-img-btn"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={isUploadingImage}
                 title="上传图片"
               >
                 <ImageIcon className="w-4 h-4 text-emerald-500" />
-                <span>{isUploadingImage ? '上传中...' : '图片'}</span>
+                <span>{isUploadingImage ? '上传中...' : '插入图片'}</span>
               </button>
               <button
                 type="button"
-                className="gb-toolbar-tool-btn"
+                className="gb-toolbar-tool-btn is-emoji-btn"
                 onClick={() => setShowEmojiPicker((prev) => !prev)}
                 title="插入 Emoji 表情"
               >
@@ -846,7 +909,7 @@ export function GuestbookBoard() {
                   className="gb-identity-edit-btn"
                   onClick={() => setShowIdentityEdit((prev) => !prev)}
                 >
-                  {showIdentityEdit ? '收起名片' : '设置称呼与信息'}
+                  {showIdentityEdit ? '收起名片' : '设置称呼与名片'}
                 </button>
               </div>
             </div>
@@ -940,22 +1003,23 @@ export function GuestbookBoard() {
       {/* 3. Community Channels & Navigation Filters */}
       <nav className="gb-channel-nav" aria-label="留言板板块导航">
         <div className="gb-channel-tabs">
-          {CHANNELS.map((ch) => (
-            <button
-              key={ch.id}
-              type="button"
-              className={`gb-channel-pill ${selectedChannel === ch.id ? 'is-active' : ''}`}
-              onClick={() => setSelectedChannel(ch.id)}
-            >
-              <span className="gb-channel-pill__icon">{ch.icon}</span>
-              <span className="gb-channel-pill__label">{ch.label}</span>
-              {ch.id !== 'all' && (
-                <span className="gb-channel-pill__count">
-                  {comments.filter((c) => (c.tag || 'chat') === ch.id).length}
-                </span>
-              )}
-            </button>
-          ))}
+          {CHANNELS.map((ch) => {
+            const count = allCommentsWithPinned.filter((c) => (c.tag || 'chat') === ch.id).length;
+            return (
+              <button
+                key={ch.id}
+                type="button"
+                className={`gb-channel-pill ${selectedChannel === ch.id ? 'is-active' : ''}`}
+                onClick={() => setSelectedChannel(ch.id)}
+              >
+                <span className="gb-channel-pill__icon">{ch.icon}</span>
+                <span className="gb-channel-pill__label">{ch.label}</span>
+                {ch.id !== 'all' && count > 0 && (
+                  <span className="gb-channel-pill__count">{count}</span>
+                )}
+              </button>
+            );
+          })}
         </div>
 
         {/* Filters & Sorting row */}
@@ -1061,6 +1125,7 @@ export function GuestbookBoard() {
           <div className="gb-cards-list">
             {filteredComments.map((item) => {
               const isBoost = item.postType === 'boost';
+              const isPinned = item.status === 'pinned';
               const replies = repliesByParent[item.id] || [];
               const isRepliesExpanded = Boolean(expandedReplies[item.id]);
               const channelInfo = CHANNELS.find((ch) => ch.id === item.tag) || CHANNELS[1];
@@ -1073,7 +1138,7 @@ export function GuestbookBoard() {
                 <article
                   key={item.id}
                   id={`comment-${item.id}`}
-                  className={`gb-card ${isBoost ? 'is-boost-card' : 'is-gesture-card'}`}
+                  className={`gb-card ${isBoost ? 'is-boost-card' : 'is-gesture-card'} ${isPinned ? 'is-pinned-card' : ''}`}
                 >
                   {/* Card Header */}
                   <div className="gb-card__header">
@@ -1111,9 +1176,16 @@ export function GuestbookBoard() {
                             )}
                           </span>
 
+                          {/* Pinned Badge */}
+                          {isPinned && (
+                            <span className="gb-badge is-pinned" title="全站置顶官方指南">
+                              <Pin className="w-3 h-3 inline mr-0.5" /> 官方置顶
+                            </span>
+                          )}
+
                           {/* Role Badge */}
                           {item.authorRole === 'admin' && (
-                            <span className="gb-badge is-admin">站长</span>
+                            <span className="gb-badge is-admin">👑 站长</span>
                           )}
                           {item.authorRole === 'reader' && (
                             <span className="gb-badge is-reader">读者</span>
@@ -1246,11 +1318,11 @@ export function GuestbookBoard() {
                             }
                           }}
                         >
-                          <MessageSquare className="w-3.5 h-3.5 mr-1" />
+                          <MessageSquare className="w-3.5 h-3.5 mr-1 text-indigo-500" />
                           <span>
                             {replies.length > 0
-                              ? `${replies.length} 条跟帖`
-                              : '跟帖回复'}
+                              ? `${replies.length} 条跟帖回复`
+                              : '💬 跟帖回复'}
                           </span>
                           {replies.length > 0 &&
                             (isRepliesExpanded ? (
@@ -1276,7 +1348,7 @@ export function GuestbookBoard() {
                       </button>
 
                       {/* Edit / Delete for author */}
-                      {isOwner && (
+                      {isOwner && !isPinned && (
                         <>
                           <button
                             type="button"
@@ -1337,7 +1409,7 @@ export function GuestbookBoard() {
                                       {reply.authorName}
                                     </span>
                                     {reply.authorRole === 'admin' && (
-                                      <span className="gb-badge is-admin is-sm">站长</span>
+                                      <span className="gb-badge is-admin is-sm">👑 站长</span>
                                     )}
                                     <span
                                       className="gb-badge is-level is-sm"
@@ -1394,7 +1466,7 @@ export function GuestbookBoard() {
                             ref={replyTextareaRef}
                             value={replyMessage}
                             onChange={(e) => setReplyMessage(e.target.value)}
-                            placeholder={`回复 @${item.authorName} 的讨论 (参与互动)...`}
+                            placeholder={`回复 @${item.authorName} 的讨论 (参与互动，分享见解)...`}
                             rows={2}
                             className="gb-textarea is-reply"
                           />
