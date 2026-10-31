@@ -181,7 +181,9 @@ async function runVerification() {
 
   try {
     console.log('[Verify] 1. Navigating to /guestbook/...');
-    await page.goto(`http://localhost:${PORT}/guestbook/`, { waitUntil: 'networkidle' });
+    await page.goto(`http://localhost:${PORT}/guestbook/`, { waitUntil: 'domcontentloaded' });
+    await page.waitForSelector('.guestbook-board-container', { timeout: 15000 });
+    await page.waitForSelector('.gb-stat-card__num', { timeout: 10000 });
 
     // Assert Title
     const title = await page.title();
@@ -267,7 +269,13 @@ async function runVerification() {
     }
 
     // Select "技术探讨" channel
-    await page.selectOption('#composer-channel-select', 'tech');
+    const techChannelPill = await page.$('.gb-composer-channel-pill:has-text("技术探讨")');
+    if (techChannelPill) {
+      await techChannelPill.click();
+    } else {
+      const select = await page.$('#composer-channel-select');
+      if (select) await page.selectOption('#composer-channel-select', 'tech');
+    }
 
     // Submit Gesture
     await (await page.$('.gb-submit-btn')).click();

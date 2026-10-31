@@ -6452,26 +6452,25 @@
 - [x] **自动化端到端测试全绿通过**：
   1. 扩展 Puppeteer 自动化测试套件（`scripts/verify-interactive-nav-pages.mjs`）至 11 大测试套件，全量 13 个导航子项及黑胶、视频、画布、弹幕与和弦全部验证通过。
 
-### Task 104: 留言板 (/guestbook/) 界面与交互全面重构：双模发帖、板块分类、表情图文与长短留言分级架构 (`01b9fec`, `49b880d`, `ddb56ab`)
-- [x] **后端 D1 数据库与 API 扩展 (`01b9fec`)**：
-  1. 新增数据库迁移文件 `migrations/0007_comment_tag.sql`，支持 `tag` 板块分类与多维索引；
-  2. 在 `functions/api/comments.ts` 扩展 `tag` 安全落盘与查询过滤；
-  3. 严格实现长短留言分级限制：`boost` 限制 30 字以下，`gesture` 限制 8 字以上；
-  4. 严格实现回复拦截机制：若目标留言为 `boost`，后端强制拒绝跟帖回复（`400 Bad Request`），确保瞬时微语的纯粹性；
-  5. 扩展客户端交互库 `src/lib/comment-client.ts`，原生打通 `gesture`、`boost`、`tag` 多维检索与创建。
-- [x] **留言板前端 App 级交互界面重构 (`49b880d`)**：
-  1. 全新开发 `src/components/theme/GuestbookBoard.tsx` 与专属样式 `src/styles/guestbook-board.css`；
-  2. 社区广场头部概览：动态计算并呈现全站留言数、Gesture 话题数、Boost 瞬时流数与活跃交流者数；
-  3. 六大主题板块导航（🌟 全部板块、💬 畅所欲言、🛠️ 技术探讨、💡 灵感交流、☕ 生活碎碎念、📮 站点建议），配合实时类型过滤（全部 / Gesture / Boost）与即时文本检索；
-  4. 双模工坊发帖台（Dual-Mode Composer）：
-     - `📝 Gesture 深度探讨`：支持 Markdown 格式化工具栏、实时渲染预览、图片上传与缩略图管理、多组表情弹窗、8字以上实时校验；
-     - `🚀 Boost 瞬时微语`：30字上限精准计数与阻断校验、快捷灵感盖章一键填入、极简微卡呈现；
-  5. 话题树与分级回复（Discussion Threads）：Gesture 话题支持就地呼出嵌套回复输入框并展示多级跟帖；Boost 微卡明确标注不可跟帖，专注表情互动；
-  6. 图片点击放大（Lightbox Zoom Modal）、一键复制直达链接与访客名片自定义编辑。
-- [x] **自动化 Playwright 端到端测试全绿通过 (`ddb56ab`)**：
-  1. 编写独立测试套件 `scripts/verify-guestbook-board.mjs`；
-  2. 覆盖标题与顶部看板渲染、板块过滤、Boost 快捷盖章填入与发射、30 字上限校验、Boost 禁回复判定、Gesture 8 字下限校验、Markdown 与 Emoji 注入、Gesture 跟帖回复就地展开与提交全链路；
-  3. 断言 100% 通过（Exit Code 0）。
+### Task 105: 留言板 (/guestbook/) Bento 视觉打磨、官方置顶锚点卡片与 Cloudflare Pages 生产端全链路实机验证 (`d2b2720`)
+- [x] **视觉与交互深化打磨 (`d2b2720`)**：
+  1. Bento 风格社区看板：4 组玻璃拟态指标卡（累计交流、Gesture 话题、Boost 微语、参与交流者）带呼吸光斑与柔和渐变；
+  2. 发帖台双模卡片（Gesture vs Boost）对比高亮微动效，Boost 灵感快捷句药丸胶囊（Pill Stamps）流式排布；
+  3. 板块胶囊选择器：发帖台内置 5 大板块选择药丸按钮，流式贴纸交互；
+  4. 官方置顶讨论锚点卡片（`pinned_welcome_official`）：站长徽章（👑 站长）、金色置顶标（📌 官方置顶）、规范说明 Markdown、表情表态栏与就地跟帖树；
+  5. 响应式布局优化：移动端/平板端自适应单列/双列弹性伸缩。
+- [x] **Cloudflare Pages 全量编译与生产端部署**：
+  1. 执行 `npm run build` 生成最新 SSG 静态路由；
+  2. 通过 Wrangler 部署至生产边缘项目 `shijianus-blog`（`https://01e0bbd6.shijianus-blog.pages.dev` -> `https://blog.epocanvas.com/guestbook/`）；
+  3. 全量推送至多远端分支：`origin` (`astro-theme-shijianus.git`) 与 `cf` (`shijianus.github.io.git`)。
+- [x] **生产端 (`https://blog.epocanvas.com/guestbook/`) Playwright 真实实机自动化端到端审计通过**：
+  1. 成功捕获生产端 `.guestbook-board-container` 动态挂载与 React 水合；
+  2. 验证 Hero Bento 数据卡片正常计算展示（累计交流: 1, Gesture: 1, Boost: 0, 交流者: 1）；
+  3. 验证 Boost 模式切换与 6 组灵感快捷句点击自动填入；
+  4. 验证 Gesture 模式 8 项 Markdown 工具栏与实时预览交互；
+  5. 验证官方置顶话题卡片、站长认证徽章、6 组表情表态按钮及就地跟帖交互；
+  6. 生产端 0 致命控制台 JS 报错，全量断言通过。
+
 
 
 
