@@ -1,6 +1,6 @@
 export type CommentRole = 'reader' | 'admin' | 'visitor';
 export type CommentStatus = 'published' | 'pinned' | 'flagged' | 'deleted' | 'limited';
-export type PostType = 'comment' | 'boost' | 'emoji';
+export type PostType = 'gesture' | 'boost' | 'comment' | 'emoji';
 
 export { resolveGeoInfo, getFlagEmoji, type GeoItemInfo } from './geo-names';
 
@@ -34,6 +34,7 @@ export type BlogComment = {
   quoteId?: string | null;
   quote?: CommentQuote | null;
   postType: PostType;
+  tag?: string;
   authorId: string;
   authorName: string;
   authorEmail?: string;
@@ -72,6 +73,7 @@ export type StoredComment = {
   likes: string[];
   status: CommentStatus;
   slug?: string;
+  tag?: string;
 };
 
 export const COMMENT_ACCOUNT_KEY = 'shijianus-comment-account';
@@ -238,7 +240,8 @@ export function getCommentInitials(name: string) {
 export async function fetchComments(
   slug: string,
   sort: 'hot' | 'new' = 'new',
-  auth?: { token?: string; adminToken?: string }
+  auth?: { token?: string; adminToken?: string },
+  filters?: { tag?: string; type?: string }
 ): Promise<BlogComment[]> {
   try {
     const headers: Record<string, string> = {};
@@ -249,7 +252,17 @@ export async function fetchComments(
       headers['Authorization'] = `Bearer ${auth.token}`;
       headers['X-Comment-Session-Token'] = auth.token;
     }
-    const res = await fetch(`/api/comments?slug=${encodeURIComponent(slug)}&sort=${sort}`, {
+    const params = new URLSearchParams({
+      slug,
+      sort,
+    });
+    if (filters?.tag && filters.tag !== 'all') {
+      params.set('tag', filters.tag);
+    }
+    if (filters?.type && filters.type !== 'all') {
+      params.set('type', filters.type);
+    }
+    const res = await fetch(`/api/comments?${params.toString()}`, {
       headers,
     });
     const result = await safeFetchJson<{ ok: boolean; comments: BlogComment[] }>(res);
@@ -267,6 +280,7 @@ export async function createComment(params: {
   slug: string;
   message: string;
   postType?: PostType;
+  tag?: string;
   parentId?: string | null;
   quoteId?: string | null;
   quote?: CommentQuote | null;
@@ -303,6 +317,7 @@ export async function createComment(params: {
         slug: params.slug,
         message: params.message,
         postType: params.postType || 'comment',
+        tag: params.tag || 'general',
         parentId: params.parentId || undefined,
         quoteId: params.quoteId || undefined,
         quote: params.quote || undefined,

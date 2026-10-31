@@ -8,7 +8,8 @@ interface RawCommentRow {
   parent_id: string | null;
   quote_id: string | null;
   quote_source?: string;
-  post_type: 'comment' | 'boost' | 'emoji';
+  post_type: 'comment' | 'gesture' | 'boost' | 'emoji';
+  tag?: string;
   author_id: string;
   author_name: string;
   author_email?: string;
@@ -145,6 +146,13 @@ async function ensureTable(db: any) {
     await db.prepare(`CREATE INDEX IF NOT EXISTS idx_comments_parent_id ON comments (parent_id);`).run();
     await db.prepare(`CREATE INDEX IF NOT EXISTS idx_comments_ip_created ON comments (ip, created_at);`).run();
 
+    try {
+      await db.prepare(`ALTER TABLE comments ADD COLUMN tag TEXT DEFAULT 'general';`).run();
+    } catch {}
+    try {
+      await db.prepare(`CREATE INDEX IF NOT EXISTS idx_comments_tag ON comments (tag);`).run();
+    } catch {}
+
     tableEnsured = true;
   } catch (err) {
     console.error('[Comments] Table ensure error:', err);
@@ -200,6 +208,7 @@ function mapRowToClientComment(row: RawCommentRow, isAdmin = false, currentUserI
     quoteId: row.quote_id,
     quote: quoteParsed,
     postType: row.post_type || 'comment',
+    tag: row.tag || 'general',
     authorId: row.author_id,
     authorName: row.author_name || (row.author_role === 'admin' ? 'shijianus' : '访客'),
     authorAvatar: row.author_avatar || (row.author_role === 'admin' ? '/media/shijianus/avatar.jpg' : ''),
@@ -586,6 +595,8 @@ export async function onRequest(context: {
 
     const slug = url.searchParams.get('slug')?.trim();
     const sort = (url.searchParams.get('sort') || 'new').toLowerCase();
+    const tagFilter = url.searchParams.get('tag')?.trim();
+    const typeFilter = url.searchParams.get('type')?.trim();
     const limit = Math.min(Math.max(parseInt(url.searchParams.get('limit') || '100', 10), 1), 200);
     const offset = Math.max(parseInt(url.searchParams.get('offset') || '0', 10), 0);
 
@@ -600,16 +611,30 @@ export async function onRequest(context: {
           ? `ORDER BY CASE WHEN status = 'pinned' THEN 0 ELSE 1 END, likes_count DESC, created_at DESC`
           : `ORDER BY CASE WHEN status = 'pinned' THEN 0 ELSE 1 END, created_at DESC`;
 
+        let whereClause = `WHERE post_slug = ? AND status != 'deleted'`;
+        const queryParams: any[] = [slug];
+
+        if (tagFilter && tagFilter !== 'all') {
+          whereClause += ` AND tag = ?`;
+          queryParams.push(tagFilter);
+        }
+        if (typeFilter && typeFilter !== 'all') {
+          whereClause += ` AND post_type = ?`;
+          queryParams.push(typeFilter);
+        }
+
         const query = `
-          SELECT id, post_slug, parent_id, quote_id, quote_source, post_type, author_id, author_name,
+          SELECT id, post_slug, parent_id, quote_id, quote_source, post_type, tag, author_id, author_name,
                  author_avatar, author_website, author_role, message, ip, ip_country, ip_location,
                  show_location, likes_count, reactions, status, created_at, updated_at
           FROM comments
-          WHERE post_slug = ? AND status != 'deleted'
+          ${whereClause}
           ${orderClause}
           LIMIT ? OFFSET ?
         `;
-        const res = await env.DB.prepare(query).bind(slug, limit, offset).all<RawCommentRow>();
+        queryParams.push(limit, offset);
+
+        const res = await env.DB.prepare(query).bind(...queryParams).all<RawCommentRow>();
         const rows = res.results || [];
         return jsonResponse(request, env, {
           ok: true,
@@ -624,7 +649,12 @@ export async function onRequest(context: {
 
     // In-memory fallback
     const list = Array.from(memoryFallbackStore.values())
-      .filter((c) => c.post_slug === slug && c.status !== 'deleted')
+      .filter((c) => {
+        if (c.post_slug !== slug || c.status === 'deleted') return false;
+        if (tagFilter && tagFilter !== 'all' && c.tag !== tagFilter) return false;
+        if (typeFilter && typeFilter !== 'all' && c.post_type !== typeFilter) return false;
+        return true;
+      })
       .sort((a, b) => {
         if (a.status === 'pinned' && b.status !== 'pinned') return -1;
         if (b.status === 'pinned' && a.status !== 'pinned') return 1;
@@ -663,7 +693,13 @@ export async function onRequest(context: {
   if (action === 'create') {
     const slug = (payload.slug || url.searchParams.get('slug') || '').trim();
     const rawMessage = (payload.message || '').trim();
-    const postType = (payload.postType === 'boost' ? 'boost' : (payload.postType === 'emoji' ? 'emoji' : 'comment'));
+    const postType = (
+      payload.postType === 'boost' ? 'boost' :
+      payload.postType === 'gesture' ? 'gesture' :
+      payload.postType === 'emoji' ? 'emoji' :
+      'comment'
+    );
+    const tag = (payload.tag || 'general').trim().slice(0, 32);
     let authUser: any = null;
     let authorRole: 'admin' | 'reader' | 'visitor' = 'visitor';
     if (isAdmin) {
@@ -683,12 +719,16 @@ export async function onRequest(context: {
       return jsonResponse(request, env, { ok: false, error: '内容不能为空' }, { status: 400 });
     }
 
-    // Boost limit check: <= 16 characters
-    if (postType === 'boost' && rawMessage.length > 16) {
-      return jsonResponse(request, env, { ok: false, error: '🚀 Boost 动态内容不能超过 16 个字' }, { status: 400 });
+    // Boost limit check: <= 30 characters
+    if (postType === 'boost' && rawMessage.length > 30) {
+      return jsonResponse(request, env, { ok: false, error: '🚀 Boost 瞬时微语不能超过 30 个字' }, { status: 400 });
     }
-    if (postType === 'comment' && rawMessage.length > 1000) {
-      return jsonResponse(request, env, { ok: false, error: '评论内容不能超过 1000 字' }, { status: 400 });
+    // Gesture limit check: >= 8 characters
+    if (postType === 'gesture' && rawMessage.length < 8) {
+      return jsonResponse(request, env, { ok: false, error: '📝 Gesture 话题讨论内容至少需要 8 个字' }, { status: 400 });
+    }
+    if ((postType === 'comment' || postType === 'gesture') && rawMessage.length > 3000) {
+      return jsonResponse(request, env, { ok: false, error: '留言内容不能超过 3000 字' }, { status: 400 });
     }
 
     const isDev = Boolean(env.IS_DEV || (typeof process !== 'undefined' && process.env?.NODE_ENV !== 'production' && !env.DB));
@@ -824,6 +864,23 @@ export async function onRequest(context: {
       authorWebsite = '';
     }
     const parentId = payload.parentId ? String(payload.parentId).trim() : null;
+    if (parentId) {
+      let parentPostType: string | null = null;
+      if (env.DB) {
+        const parentRow = await env.DB.prepare('SELECT id, post_type FROM comments WHERE id = ?').bind(parentId).first<{ id: string; post_type: string }>();
+        parentPostType = parentRow?.post_type || null;
+      } else {
+        const memParent = memoryFallbackStore.get(parentId);
+        parentPostType = memParent?.post_type || null;
+      }
+      if (parentPostType === 'boost') {
+        return jsonResponse(request, env, {
+          ok: false,
+          error: '🚀 Boost 属于瞬时微语，默认不支持跟帖回复。欢迎发布 Gesture 话题展开讨论！',
+        }, { status: 400 });
+      }
+    }
+
     const quoteId = payload.quoteId ? String(payload.quoteId).trim() : null;
     const quoteSource = payload.quote ? JSON.stringify(payload.quote).slice(0, 500) : '';
     // Visitors are forced to show location (1), registered users can toggle
@@ -840,6 +897,7 @@ export async function onRequest(context: {
       quote_id: quoteId,
       quote_source: quoteSource,
       post_type: postType,
+      tag: tag,
       author_id: authorId,
       author_name: authorName,
       author_email: authorEmail,
@@ -865,12 +923,12 @@ export async function onRequest(context: {
       try {
         await env.DB.prepare(`
           INSERT INTO comments (
-            id, post_slug, parent_id, quote_id, quote_source, post_type, author_id, author_name,
+            id, post_slug, parent_id, quote_id, quote_source, post_type, tag, author_id, author_name,
             author_email, author_avatar, author_website, author_role, message, session_token,
             ip, ip_country, ip_location, show_location, user_agent, likes_count, reactions, status, created_at, updated_at
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, '{}', 'published', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, '{}', 'published', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
         `).bind(
-          commentId, slug, parentId, quoteId, quoteSource, postType, authorId, authorName,
+          commentId, slug, parentId, quoteId, quoteSource, postType, tag, authorId, authorName,
           authorEmail, authorAvatar, authorWebsite, authorRole, rawMessage, effectiveSessionToken,
           clientIp, cfCountry, ipLocation, showLocation, userAgent
         ).run();
