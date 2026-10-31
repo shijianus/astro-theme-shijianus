@@ -254,26 +254,31 @@ async function sendTelegramCommentNotification(
     id: string;
     parentId?: string | null;
     postType: string;
+    fromSite?: string;
   }
 ) {
   const token = env.TELEGRAM_BOT_TOKEN || (typeof process !== 'undefined' && process.env?.TELEGRAM_BOT_TOKEN);
   const chatId = env.TELEGRAM_CHAT_ID || (typeof process !== 'undefined' && process.env?.TELEGRAM_CHAT_ID);
   if (!token || !chatId) return;
 
-  const typeIcon = data.postType === 'boost' ? '🚀 Boost' : (data.parentId ? '💬 回复' : '💬 留言');
+  const isCrossSite = Boolean(data.fromSite);
+  const typeIcon = isCrossSite
+    ? '🌐 友邻串门评论'
+    : (data.postType === 'boost' ? '🚀 Boost' : (data.parentId ? '💬 回复' : '💬 留言'));
   const countryInfo = resolveCountryInfo(data.country);
 
   const text = [
     `<b>博客新互动提醒 (${typeIcon})</b>`,
     `----------------------------------------`,
-    `📝 <b>文章</b>: <code>/posts/${encodeURIComponent(data.slug)}/</code>`,
+    data.fromSite ? `🌐 <b>友邻串门来源</b>: <code>${sanitizeTgHtml(data.fromSite)}</code>` : '',
+    `📝 <b>动态/文章</b>: <code>/posts/${encodeURIComponent(data.slug)}/</code>`,
     `👤 <b>发言人</b>: <b>${sanitizeTgHtml(data.authorName)}</b>`,
     `💬 <b>内容</b>:\n${sanitizeTgHtml(data.message)}`,
     `🌍 <b>来源地</b>: ${countryInfo.flag} <code>${countryInfo.name}</code> (${sanitizeTgHtml(data.ip || 'Unknown')})`,
     `🆔 <b>编号</b>: <code>${sanitizeTgHtml(data.id)}</code>${data.parentId ? ` (父级: <code>${sanitizeTgHtml(data.parentId)}</code>)` : ''}`,
     `⏰ <b>时间</b>: <code>${new Date().toISOString()}</code>`,
     `----------------------------------------`,
-  ].join('\n');
+  ].filter(Boolean).join('\n');
 
   try {
     await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
@@ -881,6 +886,11 @@ export async function onRequest(context: {
       }
     }
 
+    const fromSite = String(payload.from_site || payload.fromSite || request.headers.get('X-From-Site') || '').trim();
+    if (fromSite && !authorWebsite) {
+      authorWebsite = fromSite;
+    }
+
     const quoteId = payload.quoteId ? String(payload.quoteId).trim() : null;
     const quoteSource = payload.quote ? JSON.stringify(payload.quote).slice(0, 500) : '';
     // Visitors are forced to show location (1), registered users can toggle
@@ -951,6 +961,7 @@ export async function onRequest(context: {
       id: commentId,
       parentId,
       postType,
+      fromSite,
     });
     if (typeof context.waitUntil === 'function') {
       context.waitUntil(bgTask);

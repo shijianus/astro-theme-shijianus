@@ -162,6 +162,33 @@ const postsCollection = defineCollection({
   }),
 });
 
+const momentsCollection = defineCollection({
+  loader: glob({
+    pattern: '**/[^_]*.{md,mdx}',
+    base: "./src/content/moments",
+    generateId: ({ entry }) => entry.replace(/\.(md|mdx)$/i, ''),
+  }),
+  schema: z.object({
+    id: z.string().optional(),
+    author: z.string().default('shijianus (站长)'),
+    authorUrl: z.string().default('https://blog.epocanvas.com'),
+    avatar: z.string().optional(),
+    pubDate: z.date().optional(),
+    date: z.string().optional(),
+    mood: z.string().optional(),
+    device: z.string().optional(),
+    tags: z.array(z.string()).default([]),
+    category: z.enum(['tech', 'life', 'design', 'thought']).default('thought'),
+    pinned: z.boolean().default(false),
+    likes: z.number().default(0),
+    commentCount: z.number().default(0),
+    origin: z.string().optional(),
+    originUrl: z.string().optional(),
+    originApi: z.string().optional(),
+  }),
+});
+
 export const collections = {
   'posts': postsCollection,
+  'moments': momentsCollection,
 };

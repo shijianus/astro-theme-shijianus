@@ -4,11 +4,13 @@ import BlogLayout from '../layouts/BlogLayout.astro';
 import MomentsDashboard from '../components/theme/MomentsDashboard.astro';
 import { getPublicPosts } from '../lib/content';
 import { createSidebarData } from '../lib/theme';
+import { getAllMoments } from '../lib/moments-loader';
 
 const posts = getPublicPosts(await getCollection('posts'));
 const sidebarData = createSidebarData(posts);
+const moments = await getAllMoments();
 ---
 
 <BlogLayout title="朋友圈 | 友邻动态圈" showAside={false} pageType="page" sidebarData={sidebarData}>
-  <MomentsDashboard />
+  <MomentsDashboard moments={moments} />
 </BlogLayout>

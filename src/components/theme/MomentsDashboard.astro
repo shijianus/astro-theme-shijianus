@@ -1,7 +1,12 @@
 ---
 import { friendsConfig, type MomentItem } from '../../config/friends';
 
-const moments: MomentItem[] = friendsConfig.moments;
+interface Props {
+  moments?: MomentItem[];
+}
+
+const { moments: propMoments } = Astro.props;
+const moments: MomentItem[] = propMoments && propMoments.length > 0 ? propMoments : friendsConfig.moments;
 const totalFriends = friendsConfig.categories.reduce((acc, cat) => acc + cat.items.length, 0);
 const ownerMomentsCount = moments.filter((m) => m.isOwner).length;
 const friendMomentsCount = moments.filter((m) => !m.isOwner).length;
@@ -158,6 +163,9 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
         data-cat={item.category}
         data-title={item.title.toLowerCase()}
         data-author={item.author.toLowerCase()}
+        data-is-owner={item.isOwner ? 'true' : 'false'}
+        data-origin={item.origin || ''}
+        data-origin-api={item.originApi || ''}
       >
         <!-- 卡片头部：作者、身份徽标、心情与设备来源小尾巴 -->
         <div class="moment-card__header">
@@ -283,8 +291,12 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
         <div class="moment-comments-drawer hidden" id={`comments-drawer-${item.id}`}>
           <div class="drawer-inner">
             <div class="drawer-header">
-              <span class="drawer-title">💬 访客留言互动 (QQ空间模式)</span>
-              <span class="drawer-hint">欢迎朋友们就地畅所欲言</span>
+              <span class="drawer-title">
+                💬 {item.isOwner ? '访客留言互动 (QQ空间模式)' : `与友邻「${item.author}」实时互动`}
+              </span>
+              <span class="drawer-hint">
+                {item.isOwner ? '欢迎朋友们就地畅所欲言' : '🌐 跨站直通车：您的评论将直接送达原作者的数据库'}
+              </span>
             </div>
 
             <!-- 实时留言列表 -->
@@ -626,20 +638,28 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
       });
     });
 
-    // 7. QQ 空间式就地展开评论楼层与异步 D1 数据库联动
+    // 7. QQ 空间式就地展开评论楼层与异步 D1 / 跨站主权路由联动
     const loadedCommentsMap = new Map();
 
     async function loadMomentComments(momentId) {
       const listContainer = document.getElementById(`comments-list-${momentId}`);
       if (!listContainer) return;
 
+      const card = document.querySelector(`.moment-card[data-id="${momentId}"]`);
+      const isOwner = card?.dataset.isOwner === 'true';
+      const originApi = card?.dataset.originApi;
       const slug = `moment_${momentId}`;
 
+      let fetchUrl = `/api/comments?slug=${encodeURIComponent(slug)}&sort=new`;
+      if (!isOwner && originApi && !originApi.includes('blog.epocanvas.com')) {
+        fetchUrl = `/api/cross-comment?originApi=${encodeURIComponent(originApi)}&slug=${encodeURIComponent(momentId)}`;
+      }
+
       try {
-        const res = await fetch(`/api/comments?slug=${encodeURIComponent(slug)}&sort=new`);
+        const res = await fetch(fetchUrl);
         if (!res.ok) throw new Error('网络请求异常');
         const data = await res.json();
-        const comments = (data && data.comments) || [];
+        const comments = (data && (data.comments || data.items || data.data?.comments)) || [];
         loadedCommentsMap.set(momentId, comments);
 
         // 更新卡片上的留言计数
@@ -766,21 +786,39 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
           submitBtn.innerHTML = '<span>发送中...</span><span class="loading-spinner-sm"></span>';
         }
 
-        const slug = `moment_${momentId}`;
+        const card = document.querySelector(`.moment-card[data-id="${momentId}"]`);
+        const isOwner = card?.dataset.isOwner === 'true';
+        const originApi = card?.dataset.originApi;
+        const author = card?.dataset.author || '友邻';
+
+        let submitUrl = '/api/comments';
+        let submitPayload = {
+          slug: `moment_${momentId}`,
+          post_type: 'comment',
+          author_name: authorName,
+          author_email: authorEmail,
+          message,
+        };
+
+        if (!isOwner && originApi && !originApi.includes('blog.epocanvas.com')) {
+          submitUrl = '/api/cross-comment';
+          submitPayload = {
+            targetApi: originApi,
+            slug: momentId,
+            author: authorName,
+            email: authorEmail,
+            content: message,
+            fromSite: window.location.origin,
+          };
+        }
 
         try {
-          const res = await fetch('/api/comments', {
+          const res = await fetch(submitUrl, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({
-              slug,
-              post_type: 'comment',
-              author_name: authorName,
-              author_email: authorEmail,
-              message,
-            }),
+            body: JSON.stringify(submitPayload),
           });
 
           if (!res.ok) {
@@ -788,7 +826,11 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
           }
 
           const resData = await res.json();
-          showToast('🎉 留言发表成功！感谢您的分享！');
+          if (!isOwner && originApi && !originApi.includes('blog.epocanvas.com')) {
+            showToast(`🚀 串门评论已成功直达【${author}】的博客数据库！`);
+          } else {
+            showToast('🎉 留言发表成功！感谢您的分享！');
+          }
 
           // 清空输入框
           if (textarea) textarea.value = '';

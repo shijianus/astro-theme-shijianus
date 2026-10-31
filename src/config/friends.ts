@@ -15,6 +15,8 @@ export interface FriendLink {
   status?: 'online' | 'checking';
   featured?: boolean;
   feed?: string;
+  shijianusTheme?: boolean;
+  shijianusEndpoint?: string;
 }
 
 export interface FriendCategory {
@@ -43,6 +45,9 @@ export interface MomentItem {
   tags: string[];
   likes: number;
   commentCount?: number;
+  origin?: string;
+  originUrl?: string;
+  originApi?: string;
 }
 
 export const friendsConfig: {

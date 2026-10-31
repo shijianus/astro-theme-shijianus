@@ -6541,14 +6541,35 @@
      - 包含垂直进度导轨与已读进度填充（`.gb-scroller-fill`）；
      - 导轨上分布每个楼层的交互式小刻度圆点（Notches），鼠标悬浮展示 `#X 楼` 气泡提示，点击任一圆点直接平滑跳转至对应楼层；
      - 提供顶部直达 `▲` 与底部回复快速定位 `▼` 按钮。
-- [x] **自动化端到端测试套件全量通过 (`scripts/verify-guestbook-board.mjs`)**：
-  1. 验证 `gb-hero` 完全清除；
-  2. 验证楼上 Boost 弹幕墙、双轨滚动、快捷盖章与 30 字发射；
-  3. 验证横排 8 分类导航（最新、近期、维度、热门、精选、我的贴文、已读、书签）与维度下拉选择；
-  4. 验证 Gesture 列表行渲染与书签收藏切换；
-  5. 验证点入详情视图、#1 楼主、各楼层标识；
-  6. 验证右侧长条百分比楼层滑块、导轨刻度跳转与百分比更新；
-  7. 验证底部回复发表与返回列表视图全链路 100% 通过。
+### Task 108: 朋友圈主题生态协议 (shijianus-protocol)、Markdown 归档、构建期清单互联与跨站主权路由 (Author-Origin) 落地
+- [x] **Markdown 文档规范化归档 (`src/content/moments/*.md`)**：
+  1. 统一建立 `src/content/moments/` 目录，博主可通过编辑标准 Markdown 文档（支持 id, author, pubDate, mood, device, tags, category, pinned）沉淀原生说说；
+  2. 在 `src/content.config.ts` 注册 Astro 5 `moments` 强类型内容集合（`glob` 加载器）；
+  3. 封装 `src/lib/moments-loader.ts` 实现本地 Markdown 说说与友邻动态的零开销合并。
+- [x] **构建产物主题生态清单 (`public/shijianus-moments.json`)**：
+  1. 制定去中心化标准协议 `shijianus-moments-v1`；
+  2. 构建期自动扫描 Markdown 说说并导出标准化清单，向外暴露站点信息、博主原声、评论权威端点（`api.comments`）与跨站代理端点（`api.crossComment`）；
+  3. 供所有采用 `shijianus-blog` 主题的友邻站点以零协议清洗、毫秒级解析直接引用。
+- [x] **双引擎同步流水线 (`scripts/sync-friends-moments.mjs`)**：
+  1. 主题联盟优先：对启用 `shijianusTheme: true` 的友邻，秒级直拉 `/shijianus-moments.json`；
+  2. 传统博客兜底：对第三方系统（Hexo/WordPress 等），通过 universal feed 解析器配合 `AbortSignal.timeout(5000)` 熔断抓取；
+  3. 最终产出零跨域风险的同源加速数据 `public/data/friends-moments.json`。
+- [x] **核心大难题攻坚：跨站交互主权路由与零分裂数据汇聚 (Author-Origin Routing)**：
+  1. 架构哲学：“谁的说说，谁的数据库就是唯一权威账本”；
+  2. 边缘跨站代理网关 (`functions/api/cross-comment.ts`)：
+     - 前端同源请求本站 `/api/cross-comment` 规避浏览器 CORS 跨域拦截；
+     - 服务端并发带 5s 熔断转发至原作者博客的 `originApi`；
+     - 注入 `X-From-Site: https://blog.epocanvas.com` 防伪与来源追踪标头；
+  3. 跨站评论入库与 Telegram 通知增强 (`functions/api/comments.ts`)：
+     - 支持接收 `from_site` / `X-From-Site` 来源；
+     - TG 通知呈现醒目 `🌐 友邻串门评论` 徽章并展示来源站点链接。
+  4. QQ 空间式前端联动 (`MomentsDashboard.astro`)：
+     - 说说卡片动态打上 `data-origin-api` 与 `data-is-owner` 锚点；
+     - 评论抽屉智能识别：站长说说走本地 D1，友邻说说走跨站主权路由代理，Toast 明确提示“串门评论已成功直达友邻数据库”。
+- [x] **自动化测试与端到端验证全量通过 (`scripts/verify-shijianus-moments-federation.mjs` & `scripts/verify-moments-space.mjs`)**：
+  1. 5 大核心支柱测试 100% 全部通过 (PASS)；
+  2. Playwright E2E 真实浏览器 8 项交互测试全绿。
+
 
 
 

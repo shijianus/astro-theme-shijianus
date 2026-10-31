@@ -1,0 +1,101 @@
+{
+  "version": "1.0.0",
+  "protocol": "shijianus-moments-v1",
+  "generator": "shijianus-blog-theme",
+  "site": {
+    "name": "EpoCanvas (shijianus)",
+    "url": "https://blog.epocanvas.com",
+    "avatar": "https://drawing.shijian.qzz.io/file/AgACAgEAAyEGAAS6jkJbAAMTaojJ2HJEypU1KmG8jAv2wXTVKB4AAjYMaxuc3khE9paUm5Tomx8BAAMCAAN3AAM9BA.png",
+    "desc": "把研究、开发和生活折叠成可读的记录。在高信息密度里保留阅读秩序。"
+  },
+  "api": {
+    "comments": "https://blog.epocanvas.com/api/comments",
+    "likes": "https://blog.epocanvas.com/api/comments",
+    "crossComment": "https://blog.epocanvas.com/api/cross-comment"
+  },
+  "updatedAt": "2026-10-31T15:15:14.477Z",
+  "total": 3,
+  "moments": [
+    {
+      "id": "m_20261031_01",
+      "author": "shijianus (站长)",
+      "authorUrl": "https://blog.epocanvas.com",
+      "avatar": "https://drawing.shijian.qzz.io/file/AgACAgEAAyEGAAS6jkJbAAMTaojJ2HJEypU1KmG8jAv2wXTVKB4AAjYMaxuc3khE9paUm5Tomx8BAAMCAAN3AAM9BA.png",
+      "badge": "👑 站长原声",
+      "isOwner": true,
+      "mood": "🚀 专注",
+      "device": "Mac Studio · 边缘开发终端",
+      "title": "今天把朋友圈从原本单调的静态列表全面改造为 QQ 空间式的多人分享聚合！站长专属...",
+      "url": "/moments/#m_20261031_01",
+      "summary": "今天把朋友圈从原本单调的静态列表全面改造为 QQ 空间式的多人分享聚合！站长专属说说沉淀生活碎碎念与架构灵感，同时支持友邻动态实时传送与极客漫游串门。欢迎大家在下方就地留言互动！",
+      "timeAgo": "刚刚",
+      "timestamp": "2026-10-31 19:20",
+      "category": "thought",
+      "tags": [
+        "系统设计",
+        "QQ空间模式",
+        "主题联盟"
+      ],
+      "likes": 68,
+      "commentCount": 3,
+      "origin": "https://blog.epocanvas.com",
+      "originUrl": "https://blog.epocanvas.com/moments/#m_20261031_01",
+      "originApi": "https://blog.epocanvas.com/api/comments",
+      "pinned": true
+    },
+    {
+      "id": "m_20261031_02",
+      "author": "shijianus (站长)",
+      "authorUrl": "https://blog.epocanvas.com",
+      "avatar": "https://drawing.shijian.qzz.io/file/AgACAgEAAyEGAAS6jkJbAAMTaojJ2HJEypU1KmG8jAv2wXTVKB4AAjYMaxuc3khE9paUm5Tomx8BAAMCAAN3AAM9BA.png",
+      "badge": "👑 站长原声",
+      "isOwner": true,
+      "mood": "☕ 惬意",
+      "device": "iPhone 16 Pro · 灵动岛",
+      "title": "关于朋友圈与主导航应用化的一点感悟：与其让独立博客成为孤独的孤岛，不如通过开源主...",
+      "url": "/moments/#m_20261031_02",
+      "summary": "关于朋友圈与主导航应用化的一点感悟：与其让独立博客成为孤独的孤岛，不如通过开源主题建立轻量协议！博主用 Markdown 写说说，构建时生成标准 JSON，友邻互相拉取，评论通过边缘网关直连原作者，这才是去中心化社交的理想模样。",
+      "timeAgo": "刚刚",
+      "timestamp": "2026-10-31 17:15",
+      "category": "thought",
+      "tags": [
+        "前端工程",
+        "主题契约",
+        "极客生活"
+      ],
+      "likes": 52,
+      "commentCount": 2,
+      "origin": "https://blog.epocanvas.com",
+      "originUrl": "https://blog.epocanvas.com/moments/#m_20261031_02",
+      "originApi": "https://blog.epocanvas.com/api/comments",
+      "pinned": false
+    },
+    {
+      "id": "m_20261030_03",
+      "author": "shijianus (站长)",
+      "authorUrl": "https://blog.epocanvas.com",
+      "avatar": "https://drawing.shijian.qzz.io/file/AgACAgEAAyEGAAS6jkJbAAMTaojJ2HJEypU1KmG8jAv2wXTVKB4AAjYMaxuc3khE9paUm5Tomx8BAAMCAAN3AAM9BA.png",
+      "badge": "👑 站长原声",
+      "isOwner": true,
+      "mood": "💡 探索",
+      "device": "Arch Linux · Neovim",
+      "title": "夜深了，在终端前重构 Cloudflare D1 边缘留言系统。从最初简单的单表...",
+      "url": "/moments/#m_20261030_03",
+      "summary": "夜深了，在终端前重构 Cloudflare D1 边缘留言系统。从最初简单的单表结构，到支持 YouTube 折叠回复、手风琴导轨、再到跨站作者主权路由，每一行代码的沉淀都让站点更具生命力。",
+      "timeAgo": "刚刚",
+      "timestamp": "2026-10-30 19:12",
+      "category": "tech",
+      "tags": [
+        "架构设计",
+        "去中心化",
+        "Cloudflare"
+      ],
+      "likes": 45,
+      "commentCount": 4,
+      "origin": "https://blog.epocanvas.com",
+      "originUrl": "https://blog.epocanvas.com/moments/#m_20261030_03",
+      "originApi": "https://blog.epocanvas.com/api/comments",
+      "pinned": false
+    }
+  ]
+}
