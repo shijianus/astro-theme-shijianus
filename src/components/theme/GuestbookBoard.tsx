@@ -310,7 +310,7 @@ export const OFFICIAL_PINNED_POSTS: BlogComment[] = [
       users: {},
     },
     status: 'pinned',
-    createdAt: '2026-10-31T00:00:00.000Z',
+    createdAt: '2026-10-31T00:20:00.000Z',
     showLocation: true,
     ipCountryFlag: '🇨🇳',
     ipCountryName: '中国',

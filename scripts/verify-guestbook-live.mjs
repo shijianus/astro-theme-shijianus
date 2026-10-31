@@ -52,23 +52,99 @@ async function verifyLive() {
     if (oldStamps) throw new Error('Old .gb-stamp-pill should not exist on live');
     console.log('[Live Verify] ✓ Confirmed old subtitle and stamp pills are completely removed');
 
-    // Verify "+ 发布 Boost" button
+    // Confirm separate Boost launch button is REMOVED
     const launchBoostBtn = await page.$('.gb-launch-boost-btn');
-    if (!launchBoostBtn) throw new Error('Launch Boost button (.gb-launch-boost-btn) missing on live');
-    const launchBtnText = await page.textContent('.gb-launch-boost-btn');
-    console.log(`[Live Verify] Launch Boost button: "${launchBtnText?.trim()}"`);
+    if (launchBoostBtn) throw new Error('Separate Launch Boost button should be removed from header on live');
+    console.log('[Live Verify] ✓ Verified separate Boost launch button removed from header');
 
-    // 3. Audit Non-blocking Floating Composer Dock for Boost
-    console.log('[Live Verify] 3. Testing Floating Composer Dock for Boost...');
-    await launchBoostBtn.click();
+    // Verify Boost spec badge on header right
+    const specBadge = await page.$('.gb-boost-spec-badge');
+    if (!specBadge) throw new Error('.gb-boost-spec-badge missing on live');
+    const specText = await page.textContent('.gb-boost-spec-badge');
+    console.log(`[Live Verify] Boost Spec Badge text: "${specText?.trim()}"`);
+
+    // Verify 3 rows container and all 3 tracks
+    const track1 = await page.$('.gb-track-1');
+    const track2 = await page.$('.gb-track-2');
+    const track3 = await page.$('.gb-track-3');
+    if (!track1 || !track2 || !track3) {
+      throw new Error('Expected all 3 Boost tracks rendered on live');
+    }
+    console.log('[Live Verify] ✓ Confirmed 3-row Boost tracks rendered on live');
+
+    // 3. Audit Navigation Bar Dropdowns (分区 & 维度 with 4-Item Scrollable Menus)
+    console.log('[Live Verify] 3. Auditing Navigation Bar Dropdowns...');
+    const catDropdownBtn = await page.$('.gb-nav-dropdown-btn:has-text("分区:")');
+    if (!catDropdownBtn) throw new Error('Category dropdown trigger missing on live');
+    await catDropdownBtn.click();
+    await page.waitForTimeout(300);
+
+    const catDropdownMenu = await page.$('.gb-scrollable-dropdown.is-four-items-max');
+    if (!catDropdownMenu) throw new Error('Category scrollable dropdown failed to open on live');
+    console.log('[Live Verify] ✓ Category dropdown opened on live');
+
+    // Close by clicking outside or dimension
+    const dimDropdownBtn = await page.$('.gb-nav-dropdown-btn:has-text("维度:")');
+    if (!dimDropdownBtn) throw new Error('Dimension dropdown trigger missing on live');
+    await dimDropdownBtn.click();
+    await page.waitForTimeout(300);
+
+    const dimDropdownMenu = await page.$('.gb-scrollable-dropdown.is-four-items-max');
+    if (!dimDropdownMenu) throw new Error('Dimension scrollable dropdown failed to open on live');
+    console.log('[Live Verify] ✓ Dimension dropdown opened on live');
+
+    // Select "全部维度" to close
+    const allOption = await page.$('.gb-scrollable-dropdown__item:has-text("全部维度")');
+    if (allOption) await allOption.click();
+    await page.waitForTimeout(300);
+
+    // 4. Audit Official Pinned Rule Threads
+    console.log('[Live Verify] 4. Auditing Official Pinned Rule Threads...');
+    await page.waitForSelector('.gb-gesture-row', { timeout: 10000 });
+    const pinnedRowsCount = await page.$$eval('.gb-gesture-row.is-pinned-row', (els) => els.length);
+    console.log(`[Live Verify] Live pinned rule threads count: ${pinnedRowsCount}`);
+    if (pinnedRowsCount < 4) {
+      throw new Error(`Expected at least 4 pinned rule threads on live, got ${pinnedRowsCount}`);
+    }
+    console.log('[Live Verify] ✓ Verified 4 official pinned rule threads on live');
+
+    // 5. Audit Gesture Feed & 20-Item Display Cap
+    console.log('[Live Verify] 5. Auditing Gesture Feed & 20-Item Display Cap...');
+    const rowCount = await page.$$eval('.gb-gesture-row', (els) => els.length);
+    console.log(`[Live Verify] Gesture rows rendered on screen: ${rowCount}`);
+    if (rowCount === 0) throw new Error('No gestures rendered on live feed');
+    if (rowCount > 20) throw new Error(`Gesture count on screen exceeds 20: ${rowCount}`);
+    console.log('[Live Verify] ✓ Confirmed Gesture feed is capped at at most 20 items on live');
+
+    // 6. Test Single Publish Button & Dynamic Smart Identification
+    console.log('[Live Verify] 6. Testing Floating Composer with Dynamic Smart Identification...');
+    const newGestureBtn = await page.$('.gb-new-gesture-btn');
+    if (!newGestureBtn) throw new Error('Single publish button (.gb-new-gesture-btn) missing on live');
+    await newGestureBtn.click();
     await page.waitForTimeout(400);
 
     const floatingComposer = await page.$('.gb-floating-composer');
     if (!floatingComposer) throw new Error('Floating composer failed to open on live');
 
-    const activeTab = await page.textContent('.gb-mode-tab.is-active');
-    console.log(`[Live Verify] Active Mode Tab: "${activeTab?.trim()}"`);
-    if (!activeTab?.includes('Boost')) throw new Error('Expected Boost mode tab active');
+    // Verify initial state detects Boost (< 8 chars)
+    let badgeText = await page.textContent('.gb-smart-type-badge');
+    console.log(`[Live Verify] Initial Dynamic Badge on live: "${badgeText?.trim()}"`);
+    if (!badgeText?.includes('Boost')) {
+      throw new Error(`Expected empty input to detect Boost on live, got "${badgeText}"`);
+    }
+
+    // Verify typing title switches to Gesture
+    const titleInput = await page.$('.gb-modal-title-input');
+    if (titleInput) {
+      await titleInput.fill('Live E2E Verification Title');
+      await page.waitForTimeout(200);
+
+      badgeText = await page.textContent('.gb-smart-type-badge');
+      console.log(`[Live Verify] With title Dynamic Badge on live: "${badgeText?.trim()}"`);
+      if (!badgeText?.includes('Gesture')) {
+        throw new Error('Expected entering title to switch badge to Gesture on live');
+      }
+    }
 
     // Test Minimize to dock pill
     const minimizeBtn = await page.$('.gb-window-tool-btn[title="最小化到右下角"]');
@@ -76,13 +152,13 @@ async function verifyLive() {
       await minimizeBtn.click();
       await page.waitForTimeout(300);
       const minimizedPill = await page.$('.gb-composer-minimized-pill');
-      if (!minimizedPill) throw new Error('Minimized pill failed to appear');
-      console.log('[Live Verify] ✓ Successfully minimized composer to dock pill');
+      if (!minimizedPill) throw new Error('Minimized pill failed to appear on live');
+      console.log('[Live Verify] ✓ Successfully minimized composer to dock pill on live');
 
       // Expand back
       await minimizedPill.click();
       await page.waitForTimeout(300);
-      console.log('[Live Verify] ✓ Successfully restored composer from dock pill');
+      console.log('[Live Verify] ✓ Successfully restored composer from dock pill on live');
     }
 
     // Close composer
@@ -90,49 +166,18 @@ async function verifyLive() {
     if (closeBtn) {
       await closeBtn.click();
       await page.waitForTimeout(300);
-      console.log('[Live Verify] ✓ Successfully closed composer');
+      console.log('[Live Verify] ✓ Successfully closed composer on live');
     }
 
-    // 4. Audit Horizontal Categories Bar
-    console.log('[Live Verify] 4. Auditing Horizontal Categories Bar...');
-    const navCategories = ['最新', '近期', '维度', '热门', '精选', '我的贴文', '已读', '书签'];
-    for (const catName of navCategories) {
-      const catBtn = await page.$(`.gb-cat-btn:has-text("${catName}")`);
-      if (!catBtn) {
-        throw new Error(`Missing category: "${catName}" in horizontal nav bar`);
-      }
+    // 7. Audit Click to Enter Detail View & Floor Timeline Scroller
+    console.log('[Live Verify] 7. Auditing Gesture Detail View on live...');
+    const welcomeRow = await page.$('.gb-gesture-row:has-text("欢迎来到全站留言")');
+    if (welcomeRow) {
+      await welcomeRow.click();
+    } else {
+      const firstRow = await page.$('.gb-gesture-row');
+      await firstRow.click();
     }
-    console.log('[Live Verify] ✓ All 8 categories active on live');
-
-    // 5. Audit Gesture Feed & 20-Item Display Cap
-    console.log('[Live Verify] 5. Auditing Gesture Feed & 20-Item Display Cap...');
-    await page.waitForSelector('.gb-gesture-row', { timeout: 10000 });
-    const rowCount = await page.$$eval('.gb-gesture-row', (els) => els.length);
-    console.log(`[Live Verify] Gesture rows rendered on screen: ${rowCount}`);
-    if (rowCount === 0) throw new Error('No gestures rendered on live feed');
-    if (rowCount > 20) throw new Error(`Gesture count on screen exceeds 20: ${rowCount}`);
-    console.log('[Live Verify] ✓ Confirmed Gesture feed is capped at at most 20 items on live');
-
-    // Test Floating Composer for Gesture
-    console.log('[Live Verify] 5.1 Testing Floating Composer for Gesture...');
-    const newGestureBtn = await page.$('.gb-new-gesture-btn');
-    if (newGestureBtn) {
-      await newGestureBtn.click();
-      await page.waitForTimeout(300);
-      const isGestureActive = await page.textContent('.gb-mode-tab.is-active');
-      console.log(`[Live Verify] Composer opened with tab: "${isGestureActive?.trim()}"`);
-      if (!isGestureActive?.includes('Gesture')) throw new Error('Expected Gesture mode tab active');
-
-      // Close it
-      await page.click('.gb-window-tool-btn.is-close');
-      await page.waitForTimeout(300);
-      console.log('[Live Verify] ✓ Floating composer opens in Gesture mode and closes cleanly');
-    }
-
-    // 6. Audit Click to Enter Detail View & Floor Timeline Scroller
-    console.log('[Live Verify] 6. Auditing Gesture Detail View on live...');
-    const firstRow = await page.$('.gb-gesture-row');
-    await firstRow.click();
     await page.waitForTimeout(600);
 
     const detailView = await page.$('.gb-gesture-detail-view');

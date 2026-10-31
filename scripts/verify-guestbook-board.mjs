@@ -192,35 +192,6 @@ async function runVerification() {
     }
     console.log('[Verify] ✓ Verified class="gb-hero" is completely removed');
 
-    // 2. Test Top Boost Stream (楼上 Boost 实时观点流)
-    console.log('[Verify] 2. Testing Top Boost Stream...');
-    const boostWall = await page.$('.gb-boost-wall-card');
-    if (!boostWall) throw new Error('Top Boost wall card (.gb-boost-wall-card) not found');
-
-    const boostBadgeText = await page.textContent('.gb-boost-badge');
-    console.log(`[Verify] Boost Badge text: "${boostBadgeText?.trim()}"`);
-    if (!boostBadgeText?.includes('Boost')) {
-      throw new Error('Boost badge missing');
-    }
-
-    // Verify Count Status text
-    const statusCountText = await page.textContent('.gb-boost-status-count');
-    console.log(`[Verify] Boost Status Count text: "${statusCountText?.trim()}"`);
-    if (!statusCountText?.includes('全站共收录')) {
-      throw new Error(`Expected status count to include "全站共收录", got "${statusCountText}"`);
-    }
-
-    // Verify obsolete subtitle and stamps are REMOVED
-    const oldSubtitle = await page.$('.gb-boost-subtitle');
-    if (oldSubtitle) {
-      throw new Error('Expected old .gb-boost-subtitle to be removed');
-    }
-    const stampPill = await page.$('.gb-stamp-pill');
-    if (stampPill) {
-      throw new Error('Expected quick stamps (.gb-stamp-pill) to be completely removed');
-    }
-    console.log('[Verify] ✓ Verified old subtitle and stamps are completely eradicated');
-
     // 2. Test Top Boost Stream (楼上 Boost 实时观点流 - 3排自适应流速)
     console.log('[Verify] 2. Testing Top Boost Stream...');
     const boostWall = await page.$('.gb-boost-wall-card');
@@ -455,10 +426,15 @@ async function runVerification() {
       console.log(`[Verify] Bookmark toggle active: ${Boolean(hasBookmarked)}`);
     }
 
-    // 5. Test Click to Enter Gesture Detail View & Floor Timeline Scroller
-    console.log('[Verify] 5. Clicking Gesture row to enter Detail View...');
-    const firstRow = await page.$('.gb-gesture-row');
-    await firstRow.click();
+    // 6. Test Click to Enter Gesture Detail View & Floor Timeline Scroller
+    console.log('[Verify] 6. Clicking Gesture row to enter Detail View...');
+    const welcomeRow = await page.$('.gb-gesture-row:has-text("欢迎来到全站留言")');
+    if (welcomeRow) {
+      await welcomeRow.click();
+    } else {
+      const firstRow = await page.$('.gb-gesture-row');
+      await firstRow.click();
+    }
     await page.waitForTimeout(600);
 
     // Verify Detail View active
