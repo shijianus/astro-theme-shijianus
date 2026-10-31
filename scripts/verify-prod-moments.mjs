@@ -18,7 +18,7 @@
 import { chromium } from 'playwright';
 
 const PROD_URL = 'https://blog.epocanvas.com/moments/';
-const DEPLOY_URL = 'https://1d6757a8.shijianus-blog.pages.dev/moments/';
+const DEPLOY_URL = 'https://041b96f5.shijianus-blog.pages.dev/moments/';
 
 async function verifyLiveMoments() {
   console.log(`[Prod E2E] 正在启动无头浏览器访问生产端: ${PROD_URL}...`);

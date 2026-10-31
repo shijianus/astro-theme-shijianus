@@ -6710,6 +6710,9 @@
 - [x] **全自动化 E2E 验证套件更新与本地 100% 全绿审计**：
   1. 更新 `scripts/verify-moments-space.mjs`，断言占位符与假按钮彻底移除、验证 Hero 与账号中心资料/状态双向同步、验证真实 D1 说说点赞与赞者头像队列动态渲染；
   2. 本地 E2E 测试 100% 全量通过。
+- [x] **全量部署 Cloudflare Pages 与生产端 (https://blog.epocanvas.com/moments/) 实机验证**:
+  1. 通过 Wrangler 编译并全量部署至 Cloudflare Pages 生产边缘节点（部署别名 `https://041b96f5.shijianus-blog.pages.dev/moments/`）；
+  2. 针对生产真实域名 `https://blog.epocanvas.com/moments/` 执行无头浏览器真实 E2E 审计 (`scripts/verify-prod-moments.mjs`)，HTTP 200，所有占位符清除、无假头像、去弹窗页面内详情与 Hash 路由 100% 审计通过。
 
 
 
