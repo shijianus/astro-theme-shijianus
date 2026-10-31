@@ -1,0 +1,20 @@
+---
+import { getCollection } from 'astro:content';
+import BlogLayout from '../layouts/BlogLayout.astro';
+import MusicDashboard from '../components/theme/MusicDashboard.astro';
+import { getPublicPosts } from '../lib/content';
+import { createSidebarData } from '../lib/theme';
+
+const posts = getPublicPosts(await getCollection('posts'));
+const sidebarData = createSidebarData(posts);
+---
+
+<BlogLayout
+  title="留声机 | 沉浸律动 · 音乐播放器"
+  description="欢迎来到 EpoCanvas 留声机音乐台。黑胶唱片旋转、白噪音环境混音与沉浸心流曲目。"
+  showAside={false}
+  pageType="page"
+  sidebarData={sidebarData}
+>
+  <MusicDashboard />
+</BlogLayout>

@@ -1,0 +1,20 @@
+---
+import { getCollection } from 'astro:content';
+import BlogLayout from '../layouts/BlogLayout.astro';
+import CinemaDashboard from '../components/theme/CinemaDashboard.astro';
+import { getPublicPosts } from '../lib/content';
+import { createSidebarData } from '../lib/theme';
+
+const posts = getPublicPosts(await getCollection('posts'));
+const sidebarData = createSidebarData(posts);
+---
+
+<BlogLayout
+  title="放映室 | 视听放映厅 · 经典极客影像"
+  description="欢迎来到 EpoCanvas 视听放映厅。关灯沉浸模式、宽银幕画幅与精选科技黑客纪录片。"
+  showAside={false}
+  pageType="page"
+  sidebarData={sidebarData}
+>
+  <CinemaDashboard />
+</BlogLayout>

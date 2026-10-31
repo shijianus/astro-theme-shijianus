@@ -1,0 +1,649 @@
+---
+import { siteConfig } from '../../config/site';
+
+const site = siteConfig.site;
+
+const cinemaCategories = [
+  {
+    name: '经典极客与黑客文化',
+    films: [
+      {
+        id: 1,
+        title: 'Revolution OS · 操作系统革命',
+        year: 2001,
+        duration: '85 分钟',
+        director: 'J.T.S. Moore',
+        rating: '9.1',
+        genre: '纪录片 / 开源运动',
+        badge: '极客圣经',
+        summary: '记录了 GNU/Linux、自由软件运动与开源黑客们如何通过纯粹的技术信仰，挑战科技巨头商业垄断的波澜壮阔历史。',
+        videoSrc: '/media/shijianus/avatar-dynamic.mp4',
+        cover: '/favicon.png',
+      },
+      {
+        id: 2,
+        title: 'Triumph of the Nerds · 硅谷传奇之极客的胜利',
+        year: 1996,
+        duration: '150 分钟',
+        director: 'Paul Sen',
+        rating: '9.3',
+        genre: '计算机编年史',
+        badge: '必看经典',
+        summary: '从车库发明到改变世界，详尽展现了乔布斯、盖茨、沃兹尼亚克等个人计算机先驱如何开启信息革命。',
+        videoSrc: '/media/shijianus/avatar-dynamic.mp4',
+        cover: '/favicon.png',
+      },
+    ],
+  },
+  {
+    name: '设计哲学与数字美学',
+    films: [
+      {
+        id: 3,
+        title: 'Objectified · 独立工业设计之美',
+        year: 2009,
+        duration: '75 分钟',
+        director: 'Gary Hustwit',
+        rating: '8.8',
+        genre: '设计哲学',
+        badge: '克制美学',
+        summary: '深入探寻我们日常所用物品背后的复杂创意：迪特·拉姆斯十条好设计原则、乔纳森·伊夫对一体化铝合金的执着追求。',
+        videoSrc: '/media/shijianus/avatar-dynamic.mp4',
+        cover: '/favicon.png',
+      },
+      {
+        id: 4,
+        title: 'Connecting · 人性化界面与未来交互',
+        year: 2012,
+        duration: '45 分钟',
+        director: 'Bassett & Partners',
+        rating: '8.6',
+        genre: 'UI/UX 前瞻',
+        badge: '交互推演',
+        summary: '聚焦触控、语音、环境感知等无形界面如何重塑人类与技术的连接关系，探讨后屏幕时代的交互设计秩序。',
+        videoSrc: '/media/shijianus/avatar-dynamic.mp4',
+        cover: '/favicon.png',
+      },
+    ],
+  },
+];
+---
+
+<section id="cinema-dashboard" class="cinema-dashboard">
+  <!-- 1. 顶部放映大厅舞台 (Marquee & Screen) -->
+  <div class="theater-stage theme-card">
+    <div class="theater-header">
+      <div class="theater-marquee">
+        <span class="neon-bulb"></span>
+        <span class="marquee-title">EPOCANVAS CINEMA · 视听放映厅</span>
+      </div>
+
+      <div class="theater-controls">
+        <button id="btn-toggle-lights" class="theater-btn" type="button" title="进入/退出关灯沉浸模式">
+          <span class="btn-icon">💡</span>
+          <span id="lights-btn-text">关灯模式</span>
+        </button>
+        <button id="btn-toggle-ratio" class="theater-btn" type="button" title="切换宽屏/超宽画幅">
+          <span class="btn-icon">📐</span>
+          <span id="ratio-btn-text">21:9 宽银幕</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- 银幕投影区域 -->
+    <div class="screen-wrap">
+      <div id="projector-glow" class="projector-glow"></div>
+      <div id="screen-container" class="screen-container ratio-16-9">
+        <video
+          id="cinema-video"
+          class="cinema-video"
+          src={cinemaCategories[0].films[0].videoSrc}
+          controls
+          poster="/favicon.png"
+          preload="metadata"
+        ></video>
+      </div>
+    </div>
+
+    <!-- 当前放映影片信息条 -->
+    <div class="feature-bar">
+      <div class="feature-info">
+        <div class="feature-badge" id="feature-badge">{cinemaCategories[0].films[0].badge}</div>
+        <h1 id="feature-title" class="feature-title">{cinemaCategories[0].films[0].title}</h1>
+        <div class="feature-meta">
+          <span id="feature-year">{cinemaCategories[0].films[0].year}</span>
+          <span>•</span>
+          <span id="feature-duration">{cinemaCategories[0].films[0].duration}</span>
+          <span>•</span>
+          <span id="feature-director">导演：{cinemaCategories[0].films[0].director}</span>
+          <span class="rating-badge">★ <strong id="feature-rating">{cinemaCategories[0].films[0].rating}</strong></span>
+        </div>
+      </div>
+      <p id="feature-summary" class="feature-summary">
+        {cinemaCategories[0].films[0].summary}
+      </p>
+    </div>
+  </div>
+
+  <!-- 2. 精选放映片单库 (Curated Film Showcase) -->
+  <div class="showcase-section">
+    {cinemaCategories.map((cat) => (
+      <div class="category-block">
+        <div class="category-title-row">
+          <span class="category-dot"></span>
+          <h2 class="category-name">{cat.name}</h2>
+        </div>
+
+        <div class="film-grid">
+          {cat.films.map((film) => (
+            <div class="film-card theme-card" data-id={film.id}>
+              <div class="film-card__poster-box">
+                <img src={film.cover} alt={film.title} class="film-poster" />
+                <span class="poster-badge">{film.badge}</span>
+                <span class="poster-rating">★ {film.rating}</span>
+              </div>
+
+              <div class="film-card__body">
+                <h3 class="film-title">{film.title}</h3>
+                <div class="film-meta">
+                  <span>{film.year}</span>
+                  <span>•</span>
+                  <span>{film.duration}</span>
+                  <span>•</span>
+                  <span>{film.genre}</span>
+                </div>
+                <p class="film-desc">{film.summary}</p>
+
+                <div class="film-card__foot">
+                  <button
+                    class="watch-btn"
+                    type="button"
+                    data-title={film.title}
+                    data-year={film.year}
+                    data-duration={film.duration}
+                    data-director={film.director}
+                    data-rating={film.rating}
+                    data-badge={film.badge}
+                    data-summary={film.summary}
+                    data-src={film.videoSrc}
+                  >
+                    <span>▶ 载入放映台</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    ))}
+  </div>
+</section>
+
+<script is:inline>
+  (() => {
+    // 关灯模式
+    const btnLights = document.getElementById('btn-toggle-lights');
+    const lightsText = document.getElementById('lights-btn-text');
+    let isLightsOff = false;
+
+    if (btnLights) {
+      btnLights.addEventListener('click', () => {
+        isLightsOff = !isLightsOff;
+        document.body.classList.toggle('cinema-lights-off', isLightsOff);
+        if (lightsText) {
+          lightsText.textContent = isLightsOff ? '开灯恢复' : '关灯模式';
+        }
+      });
+    }
+
+    // 画幅切换 (16:9 vs 21:9)
+    const btnRatio = document.getElementById('btn-toggle-ratio');
+    const ratioText = document.getElementById('ratio-btn-text');
+    const screen = document.getElementById('screen-container');
+    let is21to9 = false;
+
+    if (btnRatio && screen) {
+      btnRatio.addEventListener('click', () => {
+        is21to9 = !is21to9;
+        if (is21to9) {
+          screen.className = 'screen-container ratio-21-9';
+          if (ratioText) ratioText.textContent = '16:9 标准画幅';
+        } else {
+          screen.className = 'screen-container ratio-16-9';
+          if (ratioText) ratioText.textContent = '21:9 宽银幕';
+        }
+      });
+    }
+
+    // 载入放映台逻辑
+    const watchBtns = document.querySelectorAll('.watch-btn');
+    const video = document.getElementById('cinema-video');
+    const fTitle = document.getElementById('feature-title');
+    const fYear = document.getElementById('feature-year');
+    const fDuration = document.getElementById('feature-duration');
+    const fDirector = document.getElementById('feature-director');
+    const fRating = document.getElementById('feature-rating');
+    const fBadge = document.getElementById('feature-badge');
+    const fSummary = document.getElementById('feature-summary');
+
+    watchBtns.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const d = btn.dataset;
+        if (fTitle) fTitle.textContent = d.title;
+        if (fYear) fYear.textContent = d.year;
+        if (fDuration) fDuration.textContent = d.duration;
+        if (fDirector) fDirector.textContent = '导演：' + d.director;
+        if (fRating) fRating.textContent = d.rating;
+        if (fBadge) fBadge.textContent = d.badge;
+        if (fSummary) fSummary.textContent = d.summary;
+
+        if (video && d.src) {
+          video.src = d.src;
+          video.play().catch(() => {});
+        }
+
+        const stage = document.getElementById('cinema-dashboard');
+        if (stage) stage.scrollIntoView({ behavior: 'smooth' });
+      });
+    });
+  })();
+</script>
+
+<style>
+  .cinema-dashboard {
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 32px 20px 80px;
+    box-sizing: border-box;
+  }
+
+  /* 关灯模式全局样式 */
+  :global(body.cinema-lights-off) {
+    background-color: #07090e !important;
+  }
+  :global(body.cinema-lights-off #nav) {
+    opacity: 0.15;
+    transition: opacity 0.4s ease;
+  }
+  :global(body.cinema-lights-off #nav:hover) {
+    opacity: 1;
+  }
+  :global(body.cinema-lights-off .showcase-section) {
+    opacity: 0.3;
+    transition: opacity 0.4s ease;
+  }
+  :global(body.cinema-lights-off .showcase-section:hover) {
+    opacity: 1;
+  }
+
+  /* 1. 放映舞台 */
+  .theater-stage {
+    padding: 36px 40px;
+    border-radius: 12px;
+    background: var(--card-bg, #ffffff);
+    border: 1px solid var(--style-border, #e2e8f0);
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+    margin-bottom: 40px;
+  }
+
+  :root[data-theme='dark'] .theater-stage {
+    background: #181c27;
+    border-color: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+  }
+
+  .theater-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .theater-marquee {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    font-weight: 800;
+    font-family: var(--font-family-code, monospace);
+    color: #425aef;
+    background: rgba(66, 90, 239, 0.08);
+    padding: 6px 14px;
+    border-radius: 6px;
+    letter-spacing: 0.05em;
+  }
+
+  :root[data-theme='dark'] .theater-marquee {
+    color: #a5b4fc;
+    background: rgba(99, 102, 241, 0.15);
+  }
+
+  .neon-bulb {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #ef4444;
+    box-shadow: 0 0 8px #ef4444;
+    animation: neonBlink 1.5s infinite alternate;
+  }
+
+  @keyframes neonBlink {
+    0% { opacity: 0.4; }
+    100% { opacity: 1; box-shadow: 0 0 12px #ef4444; }
+  }
+
+  .theater-controls {
+    display: flex;
+    gap: 10px;
+  }
+
+  .theater-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 6px;
+    border: 1px solid var(--style-border, #cbd5e1);
+    background: var(--card-bg, #ffffff);
+    color: var(--font-color, #1e293b);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .theater-btn:hover {
+    border-color: #425aef;
+    color: #425aef;
+    transform: translateY(-2px);
+  }
+
+  :root[data-theme='dark'] .theater-btn {
+    background: #1e2433;
+    border-color: rgba(255, 255, 255, 0.1);
+    color: #f1f5f9;
+  }
+
+  /* 银幕容器 */
+  .screen-wrap {
+    position: relative;
+    width: 100%;
+    margin-bottom: 28px;
+    display: flex;
+    justify-content: center;
+  }
+
+  .projector-glow {
+    position: absolute;
+    inset: -20px;
+    background: radial-gradient(circle, rgba(66, 90, 239, 0.2) 0%, transparent 70%);
+    filter: blur(40px);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .screen-container {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 1100px;
+    background: #000000;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+    transition: all 0.4s ease;
+  }
+
+  .screen-container.ratio-16-9 {
+    aspect-ratio: 16 / 9;
+  }
+
+  .screen-container.ratio-21-9 {
+    aspect-ratio: 21 / 9;
+  }
+
+  .cinema-video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  /* 影片信息条 */
+  .feature-bar {
+    border-top: 1px solid var(--style-border, #e2e8f0);
+    padding-top: 24px;
+  }
+
+  :root[data-theme='dark'] .feature-bar {
+    border-color: rgba(255, 255, 255, 0.08);
+  }
+
+  .feature-badge {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: rgba(16, 185, 129, 0.1);
+    color: #059669;
+    margin-bottom: 8px;
+  }
+
+  .feature-title {
+    font-size: 26px;
+    font-weight: 800;
+    color: var(--font-color, #1e293b);
+    margin: 0 0 8px;
+  }
+
+  :root[data-theme='dark'] .feature-title {
+    color: #f1f5f9;
+  }
+
+  .feature-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: #64748b;
+    margin-bottom: 12px;
+  }
+
+  :root[data-theme='dark'] .feature-meta {
+    color: #94a3b8;
+  }
+
+  .rating-badge {
+    color: #f59e0b;
+    font-weight: 700;
+  }
+
+  .feature-summary {
+    font-size: 14px;
+    line-height: 1.6;
+    color: #475569;
+    margin: 0;
+  }
+
+  :root[data-theme='dark'] .feature-summary {
+    color: #cbd5e1;
+  }
+
+  /* 2. 片单展板 */
+  .category-block {
+    margin-bottom: 36px;
+  }
+
+  .category-title-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+
+  .category-dot {
+    width: 6px;
+    height: 18px;
+    background: #425aef;
+    border-radius: 3px;
+  }
+
+  .category-name {
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--font-color, #1e293b);
+    margin: 0;
+  }
+
+  :root[data-theme='dark'] .category-name {
+    color: #f1f5f9;
+  }
+
+  .film-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+
+  .film-card {
+    display: flex;
+    gap: 20px;
+    padding: 20px;
+    border-radius: 10px;
+    background: var(--card-bg, #ffffff);
+    border: 1px solid var(--style-border, #e2e8f0);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .film-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+  }
+
+  :root[data-theme='dark'] .film-card {
+    background: #181c27;
+    border-color: rgba(255, 255, 255, 0.08);
+  }
+
+  .film-card__poster-box {
+    position: relative;
+    width: 110px;
+    height: 155px;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #000000;
+    flex-shrink: 0;
+  }
+
+  .film-poster {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .poster-badge {
+    position: absolute;
+    top: 6px;
+    left: 6px;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: rgba(0, 0, 0, 0.7);
+    color: #ffffff;
+    backdrop-filter: blur(4px);
+  }
+
+  .poster-rating {
+    position: absolute;
+    bottom: 6px;
+    right: 6px;
+    font-size: 11px;
+    font-weight: 800;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: rgba(245, 158, 11, 0.9);
+    color: #ffffff;
+  }
+
+  .film-card__body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .film-title {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--font-color, #1e293b);
+    margin: 0 0 6px;
+  }
+
+  :root[data-theme='dark'] .film-title {
+    color: #f1f5f9;
+  }
+
+  .film-meta {
+    font-size: 12px;
+    color: #64748b;
+    margin-bottom: 8px;
+    display: flex;
+    gap: 6px;
+  }
+
+  :root[data-theme='dark'] .film-meta {
+    color: #94a3b8;
+  }
+
+  .film-desc {
+    font-size: 13px;
+    line-height: 1.5;
+    color: #475569;
+    margin: 0 0 12px;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  :root[data-theme='dark'] .film-desc {
+    color: #94a3b8;
+  }
+
+  .watch-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 6px;
+    background: rgba(66, 90, 239, 0.08);
+    color: #425aef;
+    border: 1px solid rgba(66, 90, 239, 0.2);
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    width: fit-content;
+  }
+
+  .watch-btn:hover {
+    background: #425aef;
+    color: #ffffff;
+  }
+
+  @media (max-width: 900px) {
+    .film-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .theater-stage {
+      padding: 24px 20px;
+    }
+  }
+</style>

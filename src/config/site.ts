@@ -421,7 +421,7 @@ export const siteConfig = {
         children: [
           { label: '友人帐', href: '/friends/', description: '博友名片与互链档案', icon: 'link' },
           { label: '朋友圈', href: '/moments/', description: '友邻动态雷达与漫游', icon: 'rss' },
-          { label: '留言板', href: '/lab/', description: '界面与功能的试验场', icon: 'message' },
+          { label: '留言板', href: '/guestbook/', description: '弹幕互动与祝福留言墙', icon: 'message' },
         ],
       },
       {
@@ -430,9 +430,9 @@ export const siteConfig = {
         description: 'LAB',
         icon: 'flask',
         children: [
-          { label: '实验田', href: '/lab/', description: '界面与功能的试验场', icon: 'flask' },
-          { label: '留声机', href: '/lab/', description: '音乐播放器', icon: 'music' },
-          { label: '放映室', href: '/lab/', description: '视频播放器', icon: 'video' },
+          { label: '实验田', href: '/lab/', description: '组件与交互物理试验场', icon: 'flask' },
+          { label: '留声机', href: '/music/', description: '沉浸黑胶与环境白噪音', icon: 'music' },
+          { label: '放映室', href: '/cinema/', description: '经典极客影像与放映厅', icon: 'video' },
         ],
       },
       {

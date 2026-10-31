@@ -1,0 +1,20 @@
+---
+import { getCollection } from 'astro:content';
+import BlogLayout from '../layouts/BlogLayout.astro';
+import GuestbookDashboard from '../components/theme/GuestbookDashboard.astro';
+import { getPublicPosts } from '../lib/content';
+import { createSidebarData } from '../lib/theme';
+
+const posts = getPublicPosts(await getCollection('posts'));
+const sidebarData = createSidebarData(posts);
+---
+
+<BlogLayout
+  title="留言板 | 尺素寸心 · 弹幕留言墙"
+  description="欢迎来到 EpoCanvas 读者留言板。留下你的足迹、想法与问候，与数字花园一同生长。"
+  showAside={false}
+  pageType="page"
+  sidebarData={sidebarData}
+>
+  <GuestbookDashboard />
+</BlogLayout>

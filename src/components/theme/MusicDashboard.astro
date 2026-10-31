@@ -1,0 +1,1022 @@
+---
+import { siteConfig } from '../../config/site';
+
+const site = siteConfig.site;
+
+const tracks = [
+  {
+    id: 1,
+    title: 'Neon Rain · 赛博夜雨',
+    artist: 'EpoCanvas Audio Lab',
+    album: 'Geek Soundtrack Vol.1',
+    duration: '03:42',
+    bpm: 78,
+    genre: 'Synthwave / Lofi',
+    cover: '/favicon.png',
+  },
+  {
+    id: 2,
+    title: 'Deep Focus · 沉浸心流',
+    artist: 'EpoCanvas Audio Lab',
+    album: 'Geek Soundtrack Vol.1',
+    duration: '04:15',
+    bpm: 65,
+    genre: 'Ambient / Piano',
+    cover: '/favicon.png',
+  },
+  {
+    id: 3,
+    title: 'Midnight Code · 午夜终端',
+    artist: 'EpoCanvas Audio Lab',
+    album: 'Geek Soundtrack Vol.1',
+    duration: '03:18',
+    bpm: 84,
+    genre: 'Chillhop / Beats',
+    cover: '/favicon.png',
+  },
+  {
+    id: 4,
+    title: 'Starlight Orbit · 星轨漫步',
+    artist: 'EpoCanvas Audio Lab',
+    album: 'Geek Soundtrack Vol.1',
+    duration: '04:50',
+    bpm: 60,
+    genre: 'Space Drone',
+    cover: '/favicon.png',
+  },
+];
+
+const ambientGenerators = [
+  { id: 'rain', icon: '🌧️', name: '细雨微濛', desc: '窗外沥沥细雨' },
+  { id: 'cafe', icon: '☕', name: '街角咖啡', desc: '咖啡厅白噪音' },
+  { id: 'fire', icon: '🔥', name: '温暖壁炉', desc: '炭火噼啪微响' },
+  { id: 'wind', icon: '🌲', name: '静谧山风', desc: '林梢微风穿梭' },
+];
+---
+
+<section id="music-dashboard" class="music-dashboard">
+  <!-- 1. 顶部播放器主舞台 (Vinyl Player & Visualizer) -->
+  <div class="music-stage theme-card">
+    <div class="vinyl-column">
+      <div class="turntable-box">
+        <div id="vinyl-disc" class="vinyl-disc">
+          <div class="vinyl-groove"></div>
+          <div class="vinyl-center">
+            <img id="vinyl-cover" src="/favicon.png" alt="Album Cover" class="vinyl-album-img" />
+            <div class="vinyl-hole"></div>
+          </div>
+        </div>
+        <div id="tonearm" class="tonearm">
+          <div class="tonearm-base"></div>
+          <div class="tonearm-rod"></div>
+          <div class="tonearm-head"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="player-column">
+      <div class="player-badge">
+        <span class="badge-dot"></span>
+        <span>GRAMOPHONE · 留声机黑胶台</span>
+      </div>
+
+      <div class="track-info">
+        <h1 id="track-title" class="track-title">{tracks[0].title}</h1>
+        <div class="track-meta">
+          <span id="track-artist" class="track-artist">{tracks[0].artist}</span>
+          <span class="track-divider">•</span>
+          <span id="track-album" class="track-album">{tracks[0].album}</span>
+          <span class="track-genre-badge" id="track-genre">{tracks[0].genre}</span>
+        </div>
+      </div>
+
+      <!-- 实时音频波形动效画布 -->
+      <div class="visualizer-container">
+        <canvas id="audio-visualizer-canvas" class="visualizer-canvas" width="600" height="70"></canvas>
+      </div>
+
+      <!-- 进度条与时间 -->
+      <div class="progress-wrap">
+        <div class="time-display">
+          <span id="curr-time">00:00</span>
+          <span id="total-time">{tracks[0].duration}</span>
+        </div>
+        <div id="progress-bar-track" class="progress-bar-track">
+          <div id="progress-bar-fill" class="progress-bar-fill" style="width: 0%;"></div>
+          <div id="progress-thumb" class="progress-thumb" style="left: 0%;"></div>
+        </div>
+      </div>
+
+      <!-- 控制按键组 -->
+      <div class="player-controls">
+        <button id="btn-shuffle" class="ctrl-btn is-mode" type="button" title="随机播放">🔀</button>
+        <button id="btn-prev" class="ctrl-btn" type="button" title="上一曲">⏮</button>
+        <button id="btn-play" class="ctrl-btn is-play-main" type="button" title="播放 / 暂停">
+          <span id="play-icon">▶</span>
+        </button>
+        <button id="btn-next" class="ctrl-btn" type="button" title="下一曲">⏭</button>
+        <button id="btn-loop" class="ctrl-btn is-mode is-active" type="button" title="列表循环">🔁</button>
+      </div>
+
+      <!-- 音量控制 -->
+      <div class="volume-row">
+        <span class="vol-icon">🔊</span>
+        <input id="volume-slider" class="volume-slider" type="range" min="0" max="100" value="80" aria-label="音量调节" />
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. 下方分栏：双通道环境白噪音调音台 + 播放列表 -->
+  <div class="music-sub-grid">
+    <!-- 环境白噪音调音台 (Web Audio 独立生成) -->
+    <div class="ambient-mixer-card theme-card">
+      <div class="card-header">
+        <div class="card-title-group">
+          <span class="card-icon">🎧</span>
+          <h2 class="card-title">沉浸环境音调音台 (Ambient Mixer)</h2>
+        </div>
+        <span class="card-desc">与音乐叠加混音，打造专注心流空间</span>
+      </div>
+
+      <div class="ambient-grid">
+        {ambientGenerators.map((gen) => (
+          <div class="ambient-channel" data-id={gen.id}>
+            <div class="channel-header">
+              <span class="channel-icon">{gen.icon}</span>
+              <div class="channel-info">
+                <strong>{gen.name}</strong>
+                <small>{gen.desc}</small>
+              </div>
+              <button class="ambient-toggle-btn" type="button" data-id={gen.id}>开启</button>
+            </div>
+            <div class="channel-volume">
+              <input type="range" class="ambient-slider" min="0" max="100" value="50" disabled data-id={gen.id} aria-label={`${gen.name}音量`} />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+
+    <!-- 播放列表卡片 -->
+    <div class="playlist-card theme-card">
+      <div class="card-header">
+        <div class="card-title-group">
+          <span class="card-icon">🎵</span>
+          <h2 class="card-title">精选曲目列表 (Playlist)</h2>
+        </div>
+        <span class="card-desc">共 {tracks.length} 首高保真音频</span>
+      </div>
+
+      <div class="playlist-items">
+        {tracks.map((t, idx) => (
+          <div class={`playlist-row ${idx === 0 ? 'is-active' : ''}`} data-index={idx}>
+            <div class="row-num">{idx + 1}</div>
+            <div class="row-main">
+              <div class="row-title">{t.title}</div>
+              <div class="row-sub">{t.artist}</div>
+            </div>
+            <div class="row-duration">{t.duration}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+</section>
+
+<script is:inline>
+  (() => {
+    // 曲目数据
+    const playlist = [
+      {
+        title: 'Neon Rain · 赛博夜雨',
+        artist: 'EpoCanvas Audio Lab',
+        album: 'Geek Soundtrack Vol.1',
+        duration: '03:42',
+        genre: 'Synthwave / Lofi',
+      },
+      {
+        title: 'Deep Focus · 沉浸心流',
+        artist: 'EpoCanvas Audio Lab',
+        album: 'Geek Soundtrack Vol.1',
+        duration: '04:15',
+        genre: 'Ambient / Piano',
+      },
+      {
+        title: 'Midnight Code · 午夜终端',
+        artist: 'EpoCanvas Audio Lab',
+        album: 'Geek Soundtrack Vol.1',
+        duration: '03:18',
+        genre: 'Chillhop / Beats',
+      },
+      {
+        title: 'Starlight Orbit · 星轨漫步',
+        artist: 'EpoCanvas Audio Lab',
+        album: 'Geek Soundtrack Vol.1',
+        duration: '04:50',
+        genre: 'Space Drone',
+      },
+    ];
+
+    let currentTrackIdx = 0;
+    let isPlaying = false;
+    let playTimer = null;
+    let currentSeconds = 0;
+    const trackLengths = [222, 255, 198, 290]; // 秒
+
+    // DOM 元素
+    const vinyl = document.getElementById('vinyl-disc');
+    const tonearm = document.getElementById('tonearm');
+    const btnPlay = document.getElementById('btn-play');
+    const playIcon = document.getElementById('play-icon');
+    const btnPrev = document.getElementById('btn-prev');
+    const btnNext = document.getElementById('btn-next');
+    const trackTitle = document.getElementById('track-title');
+    const trackArtist = document.getElementById('track-artist');
+    const trackAlbum = document.getElementById('track-album');
+    const trackGenre = document.getElementById('track-genre');
+    const currTimeEl = document.getElementById('curr-time');
+    const totalTimeEl = document.getElementById('total-time');
+    const progressFill = document.getElementById('progress-bar-fill');
+    const progressThumb = document.getElementById('progress-thumb');
+    const progressTrack = document.getElementById('progress-bar-track');
+    const playlistRows = document.querySelectorAll('.playlist-row');
+
+    function formatTime(sec) {
+      const m = Math.floor(sec / 60);
+      const s = Math.floor(sec % 60);
+      return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+    }
+
+    function updateTrackUI() {
+      const cur = playlist[currentTrackIdx];
+      if (trackTitle) trackTitle.textContent = cur.title;
+      if (trackArtist) trackArtist.textContent = cur.artist;
+      if (trackAlbum) trackAlbum.textContent = cur.album;
+      if (trackGenre) trackGenre.textContent = cur.genre;
+      if (totalTimeEl) totalTimeEl.textContent = cur.duration;
+      currentSeconds = 0;
+      updateProgress();
+
+      playlistRows.forEach((row, i) => {
+        row.classList.toggle('is-active', i === currentTrackIdx);
+      });
+    }
+
+    function updateProgress() {
+      const total = trackLengths[currentTrackIdx] || 200;
+      const pct = Math.min(100, (currentSeconds / total) * 100);
+      if (currTimeEl) currTimeEl.textContent = formatTime(currentSeconds);
+      if (progressFill) progressFill.style.width = pct + '%';
+      if (progressThumb) progressThumb.style.left = pct + '%';
+    }
+
+    function play() {
+      isPlaying = true;
+      if (playIcon) playIcon.textContent = '⏸';
+      if (vinyl) vinyl.classList.add('is-spinning');
+      if (tonearm) tonearm.classList.add('is-playing');
+
+      if (!playTimer) {
+        playTimer = setInterval(() => {
+          const total = trackLengths[currentTrackIdx] || 200;
+          currentSeconds += 1;
+          if (currentSeconds >= total) {
+            next();
+          } else {
+            updateProgress();
+          }
+        }, 1000);
+      }
+    }
+
+    function pause() {
+      isPlaying = false;
+      if (playIcon) playIcon.textContent = '▶';
+      if (vinyl) vinyl.classList.remove('is-spinning');
+      if (tonearm) tonearm.classList.remove('is-playing');
+      if (playTimer) {
+        clearInterval(playTimer);
+        playTimer = null;
+      }
+    }
+
+    function togglePlay() {
+      if (isPlaying) pause();
+      else play();
+    }
+
+    function next() {
+      currentTrackIdx = (currentTrackIdx + 1) % playlist.length;
+      updateTrackUI();
+      if (isPlaying) play();
+    }
+
+    function prev() {
+      currentTrackIdx = (currentTrackIdx - 1 + playlist.length) % playlist.length;
+      updateTrackUI();
+      if (isPlaying) play();
+    }
+
+    if (btnPlay) btnPlay.addEventListener('click', togglePlay);
+    if (btnNext) btnNext.addEventListener('click', next);
+    if (btnPrev) btnPrev.addEventListener('click', prev);
+
+    playlistRows.forEach((row) => {
+      row.addEventListener('click', () => {
+        const idx = parseInt(row.dataset.index, 10);
+        if (!isNaN(idx)) {
+          currentTrackIdx = idx;
+          updateTrackUI();
+          play();
+        }
+      });
+    });
+
+    if (progressTrack) {
+      progressTrack.addEventListener('click', (e) => {
+        const rect = progressTrack.getBoundingClientRect();
+        const clickX = e.clientX - rect.left;
+        const totalW = rect.width;
+        const pct = Math.max(0, Math.min(1, clickX / totalW));
+        const total = trackLengths[currentTrackIdx] || 200;
+        currentSeconds = Math.floor(pct * total);
+        updateProgress();
+      });
+    }
+
+    // 频谱动效模拟 (Canvas Visualizer)
+    const canvas = document.getElementById('audio-visualizer-canvas');
+    if (canvas) {
+      const ctx = canvas.getContext('2d');
+      const barCount = 48;
+
+      function drawVisualizer() {
+        requestAnimationFrame(drawVisualizer);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        const barWidth = canvas.width / barCount - 2;
+        for (let i = 0; i < barCount; i++) {
+          let h = isPlaying
+            ? Math.abs(Math.sin(Date.now() / 200 + i * 0.3)) * 50 + Math.random() * 15
+            : 4;
+          h = Math.max(4, h);
+
+          const gradient = ctx.createLinearGradient(0, canvas.height, 0, 0);
+          gradient.addColorStop(0, '#425aef');
+          gradient.addColorStop(1, '#a5b4fc');
+
+          ctx.fillStyle = gradient;
+          ctx.fillRect(i * (barWidth + 2), canvas.height - h, barWidth, h);
+        }
+      }
+      drawVisualizer();
+    }
+
+    // 环境白噪音 Web Audio 合成器
+    let audioCtx = null;
+    const ambientNodes = {};
+
+    function initAudioContext() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+    }
+
+    function createWhiteNoiseNode() {
+      if (!audioCtx) return null;
+      const bufferSize = 2 * audioCtx.sampleRate;
+      const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+      const output = noiseBuffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) {
+        output[i] = Math.random() * 2 - 1;
+      }
+      const whiteNoise = audioCtx.createBufferSource();
+      whiteNoise.buffer = noiseBuffer;
+      whiteNoise.loop = true;
+
+      const filter = audioCtx.createBiquadFilter();
+      filter.type = 'lowpass';
+      filter.frequency.setValueAtTime(800, audioCtx.currentTime);
+
+      const gain = audioCtx.createGain();
+      gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+
+      whiteNoise.connect(filter);
+      filter.connect(gain);
+      gain.connect(audioCtx.destination);
+      whiteNoise.start(0);
+
+      return { source: whiteNoise, gain, filter };
+    }
+
+    const ambientToggles = document.querySelectorAll('.ambient-toggle-btn');
+    ambientToggles.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        initAudioContext();
+        if (audioCtx && audioCtx.state === 'suspended') {
+          audioCtx.resume();
+        }
+
+        const id = btn.dataset.id;
+        const slider = document.querySelector(`.ambient-slider[data-id="${id}"]`);
+
+        if (ambientNodes[id]) {
+          // 关闭
+          try {
+            ambientNodes[id].source.stop();
+            ambientNodes[id].source.disconnect();
+          } catch (e) {}
+          delete ambientNodes[id];
+          btn.textContent = '开启';
+          btn.classList.remove('is-active');
+          if (slider) slider.disabled = true;
+        } else {
+          // 开启
+          const node = createWhiteNoiseNode();
+          if (node) {
+            ambientNodes[id] = node;
+            btn.textContent = '已开启';
+            btn.classList.add('is-active');
+            if (slider) {
+              slider.disabled = false;
+              node.gain.gain.setValueAtTime(slider.value / 100 * 0.4, audioCtx.currentTime);
+            }
+          }
+        }
+      });
+    });
+
+    const ambientSliders = document.querySelectorAll('.ambient-slider');
+    ambientSliders.forEach((slider) => {
+      slider.addEventListener('input', () => {
+        const id = slider.dataset.id;
+        if (ambientNodes[id] && audioCtx) {
+          ambientNodes[id].gain.gain.setValueAtTime(slider.value / 100 * 0.4, audioCtx.currentTime);
+        }
+      });
+    });
+  })();
+</script>
+
+<style>
+  .music-dashboard {
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 32px 20px 80px;
+    box-sizing: border-box;
+  }
+
+  /* 1. 主舞台 */
+  .music-stage {
+    display: grid;
+    grid-template-columns: 420px 1fr;
+    gap: 40px;
+    padding: 40px;
+    border-radius: 12px;
+    background: var(--card-bg, #ffffff);
+    border: 1px solid var(--style-border, #e2e8f0);
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+    margin-bottom: 24px;
+    align-items: center;
+  }
+
+  :root[data-theme='dark'] .music-stage {
+    background: #181c27;
+    border-color: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.35);
+  }
+
+  /* 黑胶转盘舞台 */
+  .vinyl-column {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .turntable-box {
+    position: relative;
+    width: 320px;
+    height: 320px;
+  }
+
+  .vinyl-disc {
+    width: 300px;
+    height: 300px;
+    border-radius: 50%;
+    background: radial-gradient(circle, #2b2b2b 0%, #111111 70%, #050505 100%);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4), inset 0 0 10px rgba(255, 255, 255, 0.05);
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 3px solid #333333;
+    transition: transform 0.3s ease;
+  }
+
+  .vinyl-disc.is-spinning {
+    animation: rotateVinyl 12s linear infinite;
+  }
+
+  @keyframes rotateVinyl {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+
+  .vinyl-groove {
+    position: absolute;
+    inset: 18px;
+    border-radius: 50%;
+    border: 1px dashed rgba(255, 255, 255, 0.12);
+    box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8);
+  }
+
+  .vinyl-center {
+    width: 110px;
+    height: 110px;
+    border-radius: 50%;
+    background: #425aef;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 12px rgba(0, 0, 0, 0.3);
+  }
+
+  .vinyl-album-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .vinyl-hole {
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #ffffff;
+    box-shadow: 0 0 4px rgba(0, 0, 0, 0.6);
+  }
+
+  /* 唱臂 */
+  .tonearm {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 60px;
+    height: 150px;
+    transform-origin: top right;
+    transform: rotate(-25deg);
+    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: none;
+  }
+
+  .tonearm.is-playing {
+    transform: rotate(12deg);
+  }
+
+  .tonearm-base {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #64748b;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  }
+
+  .tonearm-rod {
+    position: absolute;
+    top: 24px;
+    right: 12px;
+    width: 6px;
+    height: 120px;
+    background: linear-gradient(to bottom, #94a3b8, #cbd5e1);
+    border-radius: 3px;
+  }
+
+  .tonearm-head {
+    position: absolute;
+    bottom: 0;
+    right: 6px;
+    width: 18px;
+    height: 24px;
+    background: #1e293b;
+    border-radius: 4px;
+  }
+
+  /* 播放器控制栏 */
+  .player-column {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .player-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    font-family: var(--font-family-code, monospace);
+    color: #425aef;
+    background: rgba(66, 90, 239, 0.08);
+    padding: 4px 10px;
+    border-radius: 6px;
+    margin-bottom: 16px;
+    width: fit-content;
+  }
+
+  :root[data-theme='dark'] .player-badge {
+    color: #a5b4fc;
+    background: rgba(99, 102, 241, 0.15);
+  }
+
+  .badge-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #425aef;
+  }
+
+  .track-title {
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--font-color, #1e293b);
+    margin: 0 0 8px;
+    letter-spacing: -0.02em;
+  }
+
+  :root[data-theme='dark'] .track-title {
+    color: #f1f5f9;
+  }
+
+  .track-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: #64748b;
+    margin-bottom: 20px;
+  }
+
+  :root[data-theme='dark'] .track-meta {
+    color: #94a3b8;
+  }
+
+  .track-genre-badge {
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: rgba(16, 185, 129, 0.1);
+    color: #059669;
+    font-weight: 600;
+  }
+
+  /* 频谱可视化 */
+  .visualizer-container {
+    width: 100%;
+    height: 70px;
+    background: rgba(0, 0, 0, 0.02);
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 20px;
+    border: 1px solid rgba(0, 0, 0, 0.04);
+  }
+
+  :root[data-theme='dark'] .visualizer-container {
+    background: rgba(255, 255, 255, 0.02);
+    border-color: rgba(255, 255, 255, 0.06);
+  }
+
+  .visualizer-canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  /* 进度条 */
+  .progress-wrap {
+    margin-bottom: 20px;
+  }
+
+  .time-display {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    font-family: var(--font-family-code, monospace);
+    color: #64748b;
+    margin-bottom: 6px;
+  }
+
+  :root[data-theme='dark'] .time-display {
+    color: #94a3b8;
+  }
+
+  .progress-bar-track {
+    width: 100%;
+    height: 6px;
+    border-radius: 3px;
+    background: rgba(0, 0, 0, 0.08);
+    position: relative;
+    cursor: pointer;
+  }
+
+  :root[data-theme='dark'] .progress-bar-track {
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  .progress-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    background: #425aef;
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+
+  .progress-thumb {
+    position: absolute;
+    top: 50%;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #425aef;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 0 4px rgba(66, 90, 239, 0.5);
+  }
+
+  /* 控制栏 */
+  .player-controls {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+
+  .ctrl-btn {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 1px solid var(--style-border, #cbd5e1);
+    background: var(--card-bg, #ffffff);
+    color: var(--font-color, #1e293b);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .ctrl-btn:hover {
+    transform: translateY(-2px);
+    border-color: #425aef;
+    color: #425aef;
+  }
+
+  .ctrl-btn.is-play-main {
+    width: 56px;
+    height: 56px;
+    background: #425aef;
+    color: #ffffff;
+    border-color: #425aef;
+    font-size: 20px;
+    box-shadow: 0 4px 14px rgba(66, 90, 239, 0.35);
+  }
+
+  .ctrl-btn.is-play-main:hover {
+    background: #364bc9;
+    color: #ffffff;
+  }
+
+  :root[data-theme='dark'] .ctrl-btn {
+    background: #1e2433;
+    border-color: rgba(255, 255, 255, 0.1);
+    color: #f1f5f9;
+  }
+
+  .volume-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 200px;
+  }
+
+  .vol-icon {
+    font-size: 16px;
+  }
+
+  .volume-slider {
+    flex: 1;
+    cursor: pointer;
+    accent-color: #425aef;
+  }
+
+  /* 2. 下半部网格 */
+  .music-sub-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+
+  .ambient-mixer-card,
+  .playlist-card {
+    padding: 28px;
+    border-radius: 10px;
+    background: var(--card-bg, #ffffff);
+    border: 1px solid var(--style-border, #e2e8f0);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
+  }
+
+  :root[data-theme='dark'] .ambient-mixer-card,
+  :root[data-theme='dark'] .playlist-card {
+    background: #181c27;
+    border-color: rgba(255, 255, 255, 0.08);
+  }
+
+  .card-header {
+    margin-bottom: 20px;
+  }
+
+  .card-title-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+  }
+
+  .card-title {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--font-color, #1e293b);
+    margin: 0;
+  }
+
+  :root[data-theme='dark'] .card-title {
+    color: #f1f5f9;
+  }
+
+  .card-desc {
+    font-size: 13px;
+    color: #64748b;
+  }
+
+  :root[data-theme='dark'] .card-desc {
+    color: #94a3b8;
+  }
+
+  /* 白噪音项 */
+  .ambient-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .ambient-channel {
+    padding: 12px 16px;
+    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.02);
+    border: 1px solid rgba(0, 0, 0, 0.04);
+  }
+
+  :root[data-theme='dark'] .ambient-channel {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 255, 255, 0.06);
+  }
+
+  .channel-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+  }
+
+  .channel-icon {
+    font-size: 20px;
+  }
+
+  .channel-info {
+    flex: 1;
+  }
+
+  .channel-info strong {
+    display: block;
+    font-size: 14px;
+    color: var(--font-color, #1e293b);
+  }
+
+  :root[data-theme='dark'] .channel-info strong {
+    color: #f1f5f9;
+  }
+
+  .channel-info small {
+    font-size: 12px;
+    color: #64748b;
+  }
+
+  .ambient-toggle-btn {
+    padding: 4px 12px;
+    border-radius: 6px;
+    border: 1px solid var(--style-border, #cbd5e1);
+    background: #ffffff;
+    color: var(--font-color, #334155);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .ambient-toggle-btn.is-active {
+    background: #10b981;
+    color: #ffffff;
+    border-color: #10b981;
+  }
+
+  :root[data-theme='dark'] .ambient-toggle-btn {
+    background: #1e2433;
+    border-color: rgba(255, 255, 255, 0.1);
+    color: #cbd5e1;
+  }
+
+  .ambient-slider {
+    width: 100%;
+    accent-color: #10b981;
+    cursor: pointer;
+  }
+
+  /* 播放列表 */
+  .playlist-items {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .playlist-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 10px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .playlist-row:hover {
+    background: rgba(66, 90, 239, 0.06);
+  }
+
+  .playlist-row.is-active {
+    background: rgba(66, 90, 239, 0.1);
+    border-left: 3px solid #425aef;
+  }
+
+  .row-num {
+    font-size: 13px;
+    font-weight: 700;
+    font-family: var(--font-family-code, monospace);
+    color: #64748b;
+    width: 20px;
+  }
+
+  .row-main {
+    flex: 1;
+  }
+
+  .row-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--font-color, #1e293b);
+  }
+
+  :root[data-theme='dark'] .row-title {
+    color: #f1f5f9;
+  }
+
+  .row-sub {
+    font-size: 12px;
+    color: #64748b;
+  }
+
+  :root[data-theme='dark'] .row-sub {
+    color: #94a3b8;
+  }
+
+  .row-duration {
+    font-size: 12px;
+    font-family: var(--font-family-code, monospace);
+    color: #64748b;
+  }
+
+  @media (max-width: 900px) {
+    .music-stage {
+      grid-template-columns: 1fr;
+      padding: 24px 20px;
+    }
+
+    .music-sub-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
