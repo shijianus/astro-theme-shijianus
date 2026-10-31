@@ -167,14 +167,14 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
         data-origin={item.origin || ''}
         data-origin-api={item.originApi || ''}
       >
-        <!-- 卡片头部：作者、身份徽标、心情与设备来源小尾巴 -->
+        <!-- 卡片头部：作者、身份徽标、心情与设备来源小尾巴 (点击就地打开说说详情，杜绝外部跳转) -->
         <div class="moment-card__header">
-          <a
+          <div
             class="moment-author-link"
-            href={item.authorUrl}
-            target={item.isOwner ? undefined : '_blank'}
-            rel={item.isOwner ? undefined : 'noopener noreferrer'}
-            title={`访问 ${item.author}`}
+            data-open-detail={item.id}
+            role="button"
+            tabindex="0"
+            title="查看说说完整图文详情与互动 (QQ空间模式)"
           >
             <div class="author-avatar-wrap">
               <img class="moment-avatar" src={item.avatar} alt={item.author} loading="lazy" />
@@ -199,7 +199,7 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
                 {item.device && <span class="device-pill">{item.device}</span>}
               </div>
             </div>
-          </a>
+          </div>
 
           <div class="moment-category-tag">
             {item.category === 'tech' && '💻 技术'}
@@ -556,6 +556,9 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
 <!-- 全局轻量通知吐司容器 -->
 <div id="moments-toast" class="moments-toast hidden"></div>
 
+<!-- 注入 Moments 完整数据源 (供 QQ 空间无跳转详情模态框使用) -->
+<script type="application/json" id="moments-data-json" set:html={JSON.stringify(moments)} />
+
 <!-- 互动脚本：QQ空间串门漫游、多视图筛选、点赞、就地评论异步联动与友邻雷达同步 -->
 <script is:inline>
   (() => {
@@ -816,9 +819,36 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
     // 7. QQ 空间式就地展开评论楼层与异步 D1 / 跨站主权路由联动
     const loadedCommentsMap = new Map();
 
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    function bindReplyButtons(container, momentId) {
+      container.querySelectorAll('.btn-reply-comment').forEach((rBtn) => {
+        rBtn.addEventListener('click', () => {
+          const replyTo = rBtn.dataset.replyTo;
+          const modalTextarea = modalQuickForm?.querySelector('.comment-textarea');
+          const cardForm = document.querySelector(`.moment-quick-comment-form[data-moment-id="${momentId}"]`);
+          const cardTextarea = cardForm?.querySelector('.comment-textarea');
+          const target = (currentActiveMomentId === momentId && modalTextarea) ? modalTextarea : cardTextarea;
+          if (target) {
+            target.value = `@${replyTo} ` + target.value;
+            target.focus();
+            showToast(`已就地引用 @${replyTo}`);
+          }
+        });
+      });
+    }
+
     async function loadMomentComments(momentId) {
       const listContainer = document.getElementById(`comments-list-${momentId}`);
-      if (!listContainer) return;
+      const modalListContainer = document.getElementById('modal-comments-list');
 
       const card = document.querySelector(`.moment-card[data-id="${momentId}"]`);
       const isOwner = card?.dataset.isOwner === 'true';
@@ -843,66 +873,63 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
 
         renderCommentsList(momentId, comments);
       } catch (err) {
-        listContainer.innerHTML = `
+        const fallbackHtml = `
           <div class="comments-empty-notice">
             <span class="empty-icon">💭</span>
             <span>暂无访客留言，快来留下第一个脚印吧！</span>
           </div>
         `;
+        if (listContainer) listContainer.innerHTML = fallbackHtml;
+        if (currentActiveMomentId === momentId && modalListContainer) {
+          modalListContainer.innerHTML = fallbackHtml;
+        }
       }
     }
 
     function renderCommentsList(momentId, comments) {
       const listContainer = document.getElementById(`comments-list-${momentId}`);
-      if (!listContainer) return;
+      const modalListContainer = document.getElementById('modal-comments-list');
 
-      if (!comments || comments.length === 0) {
-        listContainer.innerHTML = `
+      const isEmpty = !comments || comments.length === 0;
+      const html = isEmpty
+        ? `
           <div class="comments-empty-notice">
             <span class="empty-icon">💭</span>
             <span>还没有人留下足迹，快来抢沙发抢个前排吧～</span>
           </div>
-        `;
-        return;
+        `
+        : comments
+            .map((c) => {
+              const isMaster = c.authorRole === 'admin' || (c.authorName && c.authorName.includes('站长'));
+              const avatarUrl = c.authorAvatar || `https://api.dicebear.com/7.x/identicon/svg?seed=${encodeURIComponent(c.authorName || 'visitor')}`;
+              return `
+                <div class="comment-item ${isMaster ? 'is-master-comment' : ''}" data-comment-id="${c.id}">
+                  <img class="comment-avatar" src="${avatarUrl}" alt="${escapeHtml(c.authorName)}" loading="lazy" />
+                  <div class="comment-content-wrap">
+                    <div class="comment-header-row">
+                      <span class="comment-author-name">${escapeHtml(c.authorName)}</span>
+                      ${isMaster ? '<span class="comment-role-badge is-master">👑 站长回复</span>' : '<span class="comment-role-badge">访客</span>'}
+                      ${c.ipCountry ? `<span class="comment-geo-flag">${c.ipCountry}</span>` : ''}
+                      <span class="comment-time">${c.timeAgo || '刚刚'}</span>
+                    </div>
+                    <div class="comment-message-body">${escapeHtml(c.message)}</div>
+                    <div class="comment-item-actions">
+                      <button type="button" class="btn-reply-comment" data-moment-id="${momentId}" data-reply-to="${escapeHtml(c.authorName)}">💬 回复</button>
+                    </div>
+                  </div>
+                </div>
+              `;
+            })
+            .join('');
+
+      if (listContainer) {
+        listContainer.innerHTML = html;
+        bindReplyButtons(listContainer, momentId);
       }
-
-      listContainer.innerHTML = comments
-        .map((c) => {
-          const isMaster = c.authorRole === 'admin' || c.authorName.includes('站长');
-          const avatarUrl = c.authorAvatar || `https://api.dicebear.com/7.x/identicon/svg?seed=${encodeURIComponent(c.authorName)}`;
-          return `
-            <div class="comment-item ${isMaster ? 'is-master-comment' : ''}" data-comment-id="${c.id}">
-              <img class="comment-avatar" src="${avatarUrl}" alt="${c.authorName}" loading="lazy" />
-              <div class="comment-content-wrap">
-                <div class="comment-header-row">
-                  <span class="comment-author-name">${c.authorName}</span>
-                  ${isMaster ? '<span class="comment-role-badge is-master">👑 站长回复</span>' : '<span class="comment-role-badge">访客</span>'}
-                  ${c.ipCountry ? `<span class="comment-geo-flag">${c.ipCountry}</span>` : ''}
-                  <span class="comment-time">${c.timeAgo || '刚刚'}</span>
-                </div>
-                <div class="comment-message-body">${c.message}</div>
-                <div class="comment-item-actions">
-                  <button type="button" class="btn-reply-comment" data-moment-id="${momentId}" data-reply-to="${c.authorName}">💬 回复</button>
-                </div>
-              </div>
-            </div>
-          `;
-        })
-        .join('');
-
-      // 绑定就地回复按钮
-      listContainer.querySelectorAll('.btn-reply-comment').forEach((rBtn) => {
-        rBtn.addEventListener('click', () => {
-          const replyTo = rBtn.dataset.replyTo;
-          const form = document.querySelector(`.moment-quick-comment-form[data-moment-id="${momentId}"]`);
-          const textarea = form?.querySelector('.comment-textarea');
-          if (textarea) {
-            textarea.value = `@${replyTo} ` + textarea.value;
-            textarea.focus();
-            showToast(`已就地引用 @${replyTo}`);
-          }
-        });
-      });
+      if (currentActiveMomentId === momentId && modalListContainer) {
+        modalListContainer.innerHTML = html;
+        bindReplyButtons(modalListContainer, momentId);
+      }
     }
 
     // 绑定展开/折叠评论抽屉按钮
