@@ -6686,6 +6686,9 @@
   1. 在 `scripts/sync-friends-moments.mjs` 为 4 位独立博友注入个性化设备小尾巴（MacBook Pro、ChromeOS、iPhone 16 Pro、Linux Desktop），还原 QQ 空间浓厚社交氛围。
 - [x] **自动化测试与全链路审计**:
   1. 更新 `scripts/verify-moments-space.mjs` 测试套件，覆盖跨站反代接口、本地发评持久化、大图画廊模态呼出与关闭测试，100% PASS。
+- [x] **全量部署 Cloudflare Pages 与生产端 (https://blog.epocanvas.com/moments/) 实机验证**:
+  1. 通过 Wrangler 部署至生产边缘节点（部署别名 `https://1d6757a8.shijianus-blog.pages.dev/moments/`）；
+  2. 针对生产真实域名 `https://blog.epocanvas.com/moments/` 执行无头浏览器全链路 E2E 审计 (`scripts/verify-prod-moments.mjs`)，HTTP 200，UI、反代、去弹窗页面内详情与画廊全量通过 (`deadc84`)。
 
 
 
