@@ -15,17 +15,17 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
 ---
 
 <section id="moments-dashboard" class="moments-dashboard">
-  <!-- 1. QQ 空间风格：站长空间个人主页 Banner 与数据雷达 -->
-  <div class="qzone-space-hero theme-card">
+  <!-- 1. 站点统一 Hero 看板 (继承标准 Card 质感，杜绝异形割裂) -->
+  <div class="moments-hero qzone-space-hero theme-card">
     <div
       id="qzone-space-cover"
-      class="qzone-space-cover"
+      class="moments-hero__cover qzone-space-cover"
       style={settings.coverBg ? `background-image: url('${settings.coverBg}'); background-size: cover; background-position: center;` : undefined}
     >
       <div class="space-cover-glow"></div>
     </div>
 
-    <div class="qzone-profile-bar">
+    <div class="moments-hero__content qzone-profile-bar">
       <div class="profile-avatar-wrapper">
         <img
           id="qzone-hero-avatar"
@@ -34,13 +34,13 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
           alt={friendsConfig.siteInfo.name}
           loading="eager"
         />
-        <span class="owner-crown-badge" title="认证站长 · 空间主人">👑</span>
+        <span class="owner-crown-badge" title="认证站长">👑</span>
       </div>
 
       <div class="profile-meta">
         <div class="profile-name-row">
           <h1 class="profile-name" id="qzone-hero-name">{friendsConfig.siteInfo.name}</h1>
-          <span class="qzone-level-badge">Lv.8 极客造物主</span>
+          <span class="qzone-level-badge level-badge">LV.4 · 站长</span>
           <span class="qzone-radar-pill">
             <span class="radar-ping"></span>
             <span id="qzone-hero-status">{settings.statusText || '☕ 喝咖啡中'}</span>
@@ -49,55 +49,32 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
         <p class="profile-bio" id="qzone-hero-bio">{settings.signature || friendsConfig.siteInfo.desc}</p>
       </div>
 
-      <!-- 空间核心指标数据盒 (真实数据驱动) -->
-      <div class="qzone-stats-grid">
-        <div class="space-stat-item">
-          <span class="stat-number is-accent">{ownerMomentsCount}</span>
-          <span class="stat-label">👑 站长说说</span>
+      <!-- 核心指标统计 (基于站点标准 stat-pill 风格) -->
+      <div class="moments-hero__stats qzone-stats-grid">
+        <div class="stat-pill">
+          <span class="stat-pill__label">站长动态</span>
+          <span class="stat-pill__val">{ownerMomentsCount} 篇</span>
         </div>
-        <div class="space-stat-item">
-          <span class="stat-number is-purple">{friendMomentsCount}</span>
-          <span class="stat-label">🌐 友邻传送</span>
+        <div class="stat-pill">
+          <span class="stat-pill__label">友邻动态</span>
+          <span class="stat-pill__val">{friendMomentsCount} 条</span>
         </div>
-        <div class="space-stat-item">
-          <span class="stat-number is-blue">{totalFriends}</span>
-          <span class="stat-label">🤝 连接博友</span>
+        <div class="stat-pill">
+          <span class="stat-pill__label">连接博友</span>
+          <span class="stat-pill__val">{totalFriends} 位</span>
         </div>
-        <div class="space-stat-item">
-          <span class="stat-number is-pink" id="total-likes-counter">{totalLikes}</span>
-          <span class="stat-label">❤️ 获赞总计</span>
+        <div class="stat-pill">
+          <span class="stat-pill__label">获赞总计</span>
+          <span class="stat-pill__val" id="total-likes-counter">{totalLikes}</span>
         </div>
-      </div>
-    </div>
-
-    <!-- QQ 空间式功能子导航 -->
-    <div class="qzone-subnav-bar">
-      <div class="subnav-links">
-        <a href="/moments/" class="subnav-item is-active">
-          <span class="subnav-icon">💬</span>
-          <span class="subnav-text">说说动态 ({moments.length})</span>
-        </a>
-        <a href="/posts/" class="subnav-item">
-          <span class="subnav-icon">📝</span>
-          <span class="subnav-text">博客日志</span>
-        </a>
-        <a href="/guestbook/" class="subnav-item">
-          <span class="subnav-icon">📮</span>
-          <span class="subnav-text">交流板</span>
-        </a>
-        <a href="/friends/" class="subnav-item">
-          <span class="subnav-icon">🤝</span>
-          <span class="subnav-text">友人帐</span>
-        </a>
       </div>
     </div>
   </div>
 
-  <!-- 2. 主舞台容器：流式瀑布流 / 页面内直接展开详情模式 (无弹窗，QQ空间原生体验) -->
+  <!-- 2. 主舞台容器：流式瀑布流 / 页面内直接展开详情模式 (去弹窗，极简结果导向) -->
   <div id="moments-main-stage" class="moments-main-stage">
-    <!-- 视图 A：说说动态瀑布流 (完整瀑布式加载) -->
+    <!-- 视图 A：说说动态瀑布流 (无内嵌冗余抽屉，专注纯净流式浏览) -->
     <div id="moments-stream-view" class="moments-stream-view">
-      <!-- 动态时间流卡片列表 (QQ 空间说说瀑布流) -->
       <div class="moments-feed" id="moments-feed">
         {moments.map((item) => (
           <article
@@ -113,14 +90,14 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
             data-origin={item.origin || ''}
             data-origin-api={item.originApi || ''}
           >
-            <!-- 卡片头部：作者、身份徽标、心情与设备来源小尾巴 (点击就地打开说说详情，杜绝外部跳转) -->
+            <!-- 卡片头部：作者、身份徽标、心情与时间 (点击整卡直达页面内详情) -->
             <div class="moment-card__header">
               <div
                 class="moment-author-link"
                 data-open-detail={item.id}
                 role="button"
                 tabindex="0"
-                title="查看说说完整图文详情与互动 (QQ空间模式)"
+                title="查看详情"
               >
                 <div class="author-avatar-wrap">
                   <img class="moment-avatar" src={item.avatar} alt={item.author} loading="lazy" />
@@ -131,16 +108,16 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
                   <div class="moment-author-name">
                     <span class="name-text">{item.author}</span>
                     {item.isOwner ? (
-                      <span class="badge-pill is-owner">{item.badge || '👑 站长原声'}</span>
+                      <span class="badge-pill is-owner">站长</span>
                     ) : (
-                      <span class="badge-pill is-friend">{item.badge || '🌐 友邻传送'}</span>
+                      <span class="badge-pill is-friend">友邻</span>
                     )}
                     {item.mood && <span class="mood-pill">{item.mood}</span>}
                   </div>
 
                   <div class="moment-meta-sub">
                     <time class="moment-time" datetime={item.timestamp} title={item.timestamp}>
-                      {item.timeAgo} · {item.timestamp}
+                      {item.timeAgo}
                     </time>
                     {item.device && <span class="device-pill">{item.device}</span>}
                   </div>
@@ -155,14 +132,14 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
               </div>
             </div>
 
-            <!-- 卡片主体：说说标题与正文 (5行上限与最多9张图，点击就地看详情) -->
+            <!-- 卡片主体：说说标题与正文 (5行上限与最多9张图) -->
             <div class="moment-card__body">
               <h2 class="moment-title">
                 <button
                   type="button"
                   class="moment-title-btn"
                   data-open-detail={item.id}
-                  title="查看说说完整图文详情与互动 (QQ空间模式)"
+                  title="查看详情"
                 >
                   {item.title}
                 </button>
@@ -175,13 +152,13 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
                   class="btn-toggle-expand"
                   data-moment-id={item.id}
                   data-open-detail={item.id}
-                  title="查看说说全文详情与互动"
+                  title="查看全文"
                 >
                   查看全文 ➔
                 </button>
               </div>
 
-              <!-- 最多 9 张图片九宫格展示 (QQ 空间风格) -->
+              <!-- 最多 9 张图片九宫格展示 -->
               {item.images && item.images.length > 0 && (
                 <div class={`moment-photos-grid photos-count-${Math.min(item.images.length, 9)}`}>
                   {item.images.slice(0, 9).map((imgUrl, imgIdx) => (
@@ -189,7 +166,7 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
                       class="moment-photo-item"
                       data-open-detail={item.id}
                       data-img-src={imgUrl}
-                      title="点击查看大图与说说详情"
+                      title="点击查看大图与详情"
                     >
                       <img src={imgUrl} alt={`${item.title} 图片 ${imgIdx + 1}`} loading="lazy" />
                       {imgIdx === 8 && item.images.length > 9 && (
@@ -210,16 +187,16 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
               </div>
             )}
 
-            <!-- QQ 空间式“觉得很赞”互动头像流 (真实 D1 数据渲染，严禁假头像) -->
+            <!-- 点赞者头像流 (真实 D1 数据驱动) -->
             <div class="moment-likes-preview" id={`likes-preview-${item.id}`}>
               <span class="likes-preview-heart">❤️</span>
               <div class="likes-avatar-stack" id={`likes-stack-${item.id}`}></div>
               <span class="likes-preview-text" id={`likes-text-${item.id}`}>
-                {item.likes > 0 ? `${item.likes} 人觉得很赞` : '快来给说说点个赞吧'}
+                {item.likes > 0 ? `${item.likes} 人觉得很赞` : '0 人觉得很赞'}
               </span>
             </div>
 
-            <!-- 卡片底栏：QQ 空间式点赞、就地评论展开、分享与详情直达 -->
+            <!-- 卡片底栏：点赞、评论直达与分享 (点击评论统一步入页面内详情，杜绝双头抽屉) -->
             <div class="moment-card__footer">
               <div class="footer-action-group">
                 <button
@@ -227,7 +204,7 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
                   type="button"
                   data-moment-id={item.id}
                   data-initial-likes={item.likes}
-                  title="为这条说说点赞"
+                  title="点赞"
                 >
                   <span class="btn-icon like-heart">❤️</span>
                   <span class="like-label">赞</span>
@@ -238,7 +215,8 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
                   class="moment-action-btn moment-comment-toggle-btn"
                   type="button"
                   data-moment-id={item.id}
-                  title="就地展开/折叠评论留言区"
+                  data-open-detail={item.id}
+                  title="查看评论留言"
                 >
                   <span class="btn-icon">💬</span>
                   <span class="comment-btn-label">评论</span>
@@ -252,143 +230,48 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
                   type="button"
                   data-moment-id={item.id}
                   data-title={item.title}
-                  title="复制说说链接与分享"
+                  title="复制链接"
                 >
                   <span class="btn-icon">🔗</span>
                   <span>分享</span>
                 </button>
               </div>
             </div>
-
-            <!-- 5. QQ 空间式就地展开评论留言楼层 (默认折叠，点击展开) -->
-            <div class="moment-comments-drawer hidden" id={`comments-drawer-${item.id}`}>
-              <div class="drawer-inner">
-                <div class="drawer-header">
-                  <span class="drawer-title">
-                    💬 {item.isOwner ? '访客留言互动 (QQ空间模式)' : `与友邻「${item.author}」实时互动`}
-                  </span>
-                  <span class="drawer-hint">
-                    {item.isOwner ? '欢迎朋友们就地畅所欲言' : '🌐 跨站直通车：您的评论将直接送达原作者的数据库'}
-                  </span>
-                </div>
-
-                <!-- 实时留言列表 -->
-                <div class="moment-comments-list" id={`comments-list-${item.id}`}>
-                  <div class="comments-loading">
-                    <span class="loading-spinner"></span>
-                    <span>正在连接边缘数据库加载留言...</span>
-                  </div>
-                </div>
-
-                <!-- 访客就地快捷留言表单 (带访客头像实时同步) -->
-                <form class="moment-quick-comment-form" data-moment-id={item.id}>
-                  <div class="comment-form-avatar-layout">
-                    <div class="comment-visitor-avatar-box">
-                      <img
-                        class="comment-visitor-avatar-img"
-                        src="https://api.dicebear.com/7.x/identicon/svg?seed=visitor"
-                        alt="我的头像"
-                        title="输入称呼或 QQ 邮箱自动同步真实头像"
-                      />
-                      <span class="visitor-avatar-label">我</span>
-                    </div>
-
-                    <div class="comment-form-main-fields">
-                      <div class="form-row-meta">
-                        <div class="meta-input-group">
-                          <span class="input-icon">👤</span>
-                          <input
-                            type="text"
-                            name="authorName"
-                            class="comment-input comment-author-input"
-                            placeholder="您的称呼 / 昵称 (必填)"
-                            required
-                            maxlength="30"
-                          />
-                          <button type="button" class="btn-random-nickname" title="随机生成一个极客昵称">🎲</button>
-                        </div>
-
-                        <div class="meta-input-group">
-                          <span class="input-icon">📫</span>
-                          <input
-                            type="text"
-                            name="authorEmail"
-                            class="comment-input comment-email-input"
-                            placeholder="QQ号 或 邮箱 (自动同步真实头像)"
-                            maxlength="60"
-                          />
-                        </div>
-                      </div>
-
-                      <div class="form-row-content">
-                        <textarea
-                          name="message"
-                          class="comment-textarea"
-                          rows="2"
-                          placeholder="留下您的想法、足迹或交流两句吧... (支持 Markdown)"
-                          required
-                          maxlength="300"
-                        ></textarea>
-                      </div>
-
-                      <div class="form-row-tools">
-                        <div class="emoji-quick-bar">
-                          <button type="button" class="quick-emoji-btn" data-emoji="😊">😊</button>
-                          <button type="button" class="quick-emoji-btn" data-emoji="👍">👍</button>
-                          <button type="button" class="quick-emoji-btn" data-emoji="🎉">🎉</button>
-                          <button type="button" class="quick-emoji-btn" data-emoji="🔥">🔥</button>
-                          <button type="button" class="quick-emoji-btn" data-emoji="☕">☕</button>
-                          <button type="button" class="quick-emoji-btn" data-emoji="💡">💡</button>
-                          <button type="button" class="quick-emoji-btn" data-emoji="🚀">🚀</button>
-                          <button type="button" class="quick-emoji-btn" data-emoji="❤️">❤️</button>
-                        </div>
-
-                        <button type="submit" class="comment-submit-btn">
-                          <span>发表留言</span>
-                          <span class="submit-arrow">✈️</span>
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </form>
-              </div>
-            </div>
           </article>
         ))}
       </div>
 
-      <!-- 空结果提示 -->
+      <!-- 空结果提示 (极简无说教) -->
       <div id="moments-empty" class="moments-empty theme-card hidden">
         <div class="empty-icon">🍃</div>
-        <h3 class="empty-title">没有找到匹配的说说动态</h3>
-        <p class="empty-desc">换个关键词试试，或者清除搜索框查看全部内容！</p>
+        <h3 class="empty-title">未找到匹配的说说动态</h3>
       </div>
 
-      <!-- 瀑布流终点提示 -->
+      <!-- 瀑布流终点分割线 (极简标准) -->
       <div class="stream-timeline-end">
         <span class="end-line"></span>
-        <span class="end-pill">✨ 已加载全部动态 · 记录生活与友谊的每一个脚印 ✨</span>
+        <span class="end-pill">· 已经到底了 ·</span>
         <span class="end-line"></span>
       </div>
     </div>
 
-    <!-- 视图 B：说说详情页面内直接加载容器 (非弹窗，内嵌于主页面排版中) -->
+    <!-- 视图 B：说说图文详情【页面内直接加载，与全站 Epomail 账户体系严格统一】 -->
     <div id="moment-inpage-detail-view" class="moment-inpage-detail-view theme-card hidden">
-      <!-- 详情顶部返回导航条 -->
+      <!-- 顶部返回导航条 -->
       <div class="inpage-nav-bar">
-        <button type="button" class="btn-inpage-back" id="btn-inpage-back" title="返回全部动态瀑布流">
+        <button type="button" class="btn-inpage-back" id="btn-inpage-back" title="返回全部动态">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
           </svg>
           <span>返回全部动态</span>
         </button>
-        <div class="inpage-header-title">说说详情与互动</div>
-        <button type="button" class="btn-inpage-share" id="btn-inpage-share" title="复制说说直达链接">
+        <div class="inpage-header-title">动态详情</div>
+        <button type="button" class="btn-inpage-share" id="btn-inpage-share" title="复制直达链接">
           <span>🔗 分享</span>
         </button>
       </div>
 
-      <!-- 详情头部：作者身份与元数据 -->
+      <!-- 详情作者身份与元数据 -->
       <div class="inpage-header">
         <div class="inpage-author-wrap">
           <img id="inpage-avatar" class="inpage-avatar" src="" alt="作者头像" />
@@ -411,15 +294,12 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
         <h1 id="inpage-title" class="inpage-title-text"></h1>
         <div id="inpage-content" class="inpage-content-markdown"></div>
 
-        <!-- 完整多图展示 (最多9张大图九宫格/画廊) -->
+        <!-- 完整多图展示 -->
         <div id="inpage-photos-grid" class="inpage-photos-grid"></div>
 
-        <!-- 来源与跨站通信指示条 -->
-        <div id="inpage-origin-banner" class="inpage-origin-banner"></div>
-
-        <!-- 互动工具条 -->
+        <!-- 互动操作条 -->
         <div class="inpage-action-bar">
-          <button type="button" class="inpage-like-btn" id="inpage-like-btn" title="为说说点赞">
+          <button type="button" class="inpage-like-btn" id="inpage-like-btn" title="点赞">
             <span class="like-heart">❤️</span>
             <span class="inpage-like-label">赞</span>
             <span class="inpage-like-count" id="inpage-like-count">0</span>
@@ -431,111 +311,118 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
 
         <hr class="inpage-divider" />
 
-        <!-- 页面内实时评论区 -->
-        <div class="inpage-comments-section">
+        <!-- 页面内实时评论区 (完全对齐 post-comment 的 Epomail 账户与 D1 鉴权标准) -->
+        <div class="inpage-comments-section" id="inpage-comments-anchor">
           <div class="inpage-comments-head">
-            <h3 class="inpage-comments-title">💬 评论互动与脚印</h3>
-            <span id="inpage-cross-hint" class="inpage-cross-hint"></span>
+            <h3 class="inpage-comments-title">💬 评论互动 (<span id="inpage-comment-count-num">0</span>)</h3>
           </div>
 
           <!-- 评论列表容器 -->
           <div id="inpage-comments-list" class="inpage-comments-list">
             <div class="comments-loading">
               <span class="loading-spinner"></span>
-              <span>正在连接数据库加载评论...</span>
+              <span>加载中...</span>
             </div>
           </div>
 
-          <!-- 详情页发评表单 (带访客头像实时同步) -->
+          <!-- 全站统一发评表单 (动态感知 Epomail 登录状态) -->
           <form id="inpage-quick-comment-form" class="moment-quick-comment-form">
-            <div class="comment-form-avatar-layout">
-              <div class="comment-visitor-avatar-box">
-                <img
-                  class="comment-visitor-avatar-img"
-                  src="https://api.dicebear.com/7.x/identicon/svg?seed=visitor"
-                  alt="我的头像"
-                  title="输入称呼或 QQ 邮箱自动同步真实头像"
-                />
-                <span class="visitor-avatar-label">我</span>
+            <!-- 状态 A：已登录 Epomail / 本地认证账户展示卡 (免重复输入昵称/邮箱) -->
+            <div id="inpage-account-active-bar" class="composer-account-bar hidden">
+              <img id="inpage-account-avatar" class="composer-user-avatar" src="" alt="当前用户头像" />
+              <div class="composer-user-info">
+                <span id="inpage-account-name" class="composer-user-name"></span>
+                <span id="inpage-account-badge" class="composer-user-badge"></span>
+              </div>
+              <button type="button" id="btn-inpage-switch-account" class="btn-switch-account" title="切换或管理账号">
+                切换账号
+              </button>
+            </div>
+
+            <!-- 状态 B：访客输入区 (未登录时展示，支持一键唤起 Epomail 登录) -->
+            <div id="inpage-visitor-fields" class="comment-visitor-fields">
+              <div class="form-row-meta">
+                <div class="meta-input-group">
+                  <span class="input-icon">👤</span>
+                  <input
+                    type="text"
+                    name="authorName"
+                    id="inpage-author-input"
+                    class="comment-input comment-author-input"
+                    placeholder="您的称呼 / 昵称 (必填)"
+                    maxlength="30"
+                  />
+                </div>
+
+                <div class="meta-input-group">
+                  <span class="input-icon">📫</span>
+                  <input
+                    type="text"
+                    name="authorEmail"
+                    id="inpage-email-input"
+                    class="comment-input comment-email-input"
+                    placeholder="邮箱 / QQ号 (用于展示头像)"
+                    maxlength="60"
+                  />
+                </div>
+
+                <button type="button" id="btn-inpage-quick-login" class="btn-quick-epomail-login" title="使用 Epomail 一键免填发评">
+                  <span>⚡ Epomail 登录</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- 消息正文 -->
+            <div class="form-row-content">
+              <textarea
+                name="message"
+                id="inpage-comment-textarea"
+                class="comment-textarea"
+                rows="3"
+                placeholder="发表您的看法与交流... (支持 Markdown)"
+                required
+                maxlength="500"
+              ></textarea>
+            </div>
+
+            <!-- 快捷工具与发送按钮 -->
+            <div class="form-row-tools">
+              <div class="emoji-quick-bar">
+                <button type="button" class="quick-emoji-btn" data-emoji="👍">👍</button>
+                <button type="button" class="quick-emoji-btn" data-emoji="❤️">❤️</button>
+                <button type="button" class="quick-emoji-btn" data-emoji="🔥">🔥</button>
+                <button type="button" class="quick-emoji-btn" data-emoji="🚀">🚀</button>
+                <button type="button" class="quick-emoji-btn" data-emoji="💡">💡</button>
+                <button type="button" class="quick-emoji-btn" data-emoji="🎉">🎉</button>
+                <button type="button" class="quick-emoji-btn" data-emoji="☕">☕</button>
+                <button type="button" class="quick-emoji-btn" data-emoji="✨">✨</button>
               </div>
 
-              <div class="comment-form-main-fields">
-                <div class="form-row-meta">
-                  <div class="meta-input-group">
-                    <span class="input-icon">👤</span>
-                    <input
-                      type="text"
-                      name="authorName"
-                      class="comment-input comment-author-input"
-                      placeholder="您的称呼 / 昵称 (必填)"
-                      required
-                      maxlength="30"
-                    />
-                    <button type="button" class="btn-random-nickname" title="随机生成一个极客昵称">🎲</button>
-                  </div>
-
-                  <div class="meta-input-group">
-                    <span class="input-icon">📫</span>
-                    <input
-                      type="text"
-                      name="authorEmail"
-                      class="comment-input comment-email-input"
-                      placeholder="QQ号 或 邮箱 (自动同步真实头像)"
-                      maxlength="60"
-                    />
-                  </div>
-                </div>
-
-                <div class="form-row-content">
-                  <textarea
-                    name="message"
-                    class="comment-textarea"
-                    rows="2"
-                    placeholder="畅所欲言，留下您的想法... (支持 Markdown)"
-                    required
-                    maxlength="300"
-                  ></textarea>
-                </div>
-
-                <div class="form-row-tools">
-                  <div class="emoji-quick-bar">
-                    <button type="button" class="quick-emoji-btn" data-emoji="😊">😊</button>
-                    <button type="button" class="quick-emoji-btn" data-emoji="👍">👍</button>
-                    <button type="button" class="quick-emoji-btn" data-emoji="🎉">🎉</button>
-                    <button type="button" class="quick-emoji-btn" data-emoji="🔥">🔥</button>
-                    <button type="button" class="quick-emoji-btn" data-emoji="☕">☕</button>
-                    <button type="button" class="quick-emoji-btn" data-emoji="💡">💡</button>
-                    <button type="button" class="quick-emoji-btn" data-emoji="🚀">🚀</button>
-                    <button type="button" class="quick-emoji-btn" data-emoji="❤️">❤️</button>
-                  </div>
-
-                  <button type="submit" class="comment-submit-btn">
-                    <span>发表留言</span>
-                    <span class="submit-arrow">✈️</span>
-                  </button>
-                </div>
-              </div>
+              <button type="submit" class="comment-submit-btn" id="inpage-submit-btn">
+                <span>发表留言</span>
+                <span class="submit-arrow">✈️</span>
+              </button>
             </div>
           </form>
         </div>
 
         <!-- 底部返回按钮 -->
         <div class="inpage-bottom-nav">
-          <button type="button" class="btn-inpage-back btn-inpage-back-bottom" id="btn-inpage-back-bottom" title="返回全部动态列表">
+          <button type="button" class="btn-inpage-back btn-inpage-back-bottom" id="btn-inpage-back-bottom" title="返回全部动态">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
             </svg>
-            <span>返回全部动态列表</span>
+            <span>返回全部动态</span>
           </button>
         </div>
       </div>
     </div>
 
-    <!-- QQ 空间式大图画廊沉浸式浏览模态 (完全就地，无外链跳转) -->
-    <div id="qzone-photo-lightbox" class="qzone-photo-lightbox hidden" role="dialog" aria-modal="true" aria-label="大图画廊预览">
+    <!-- 大图画廊模态 (完全就地浏览) -->
+    <div id="qzone-photo-lightbox" class="qzone-photo-lightbox hidden" role="dialog" aria-modal="true" aria-label="大图预览">
       <div class="lightbox-backdrop"></div>
       <div class="lightbox-dialog">
-        <button type="button" class="btn-lightbox-close" id="btn-lightbox-close" title="关闭大图预览 (Esc)">✕</button>
+        <button type="button" class="btn-lightbox-close" id="btn-lightbox-close" title="关闭 (Esc)">✕</button>
         <div class="lightbox-img-wrap">
           <img id="lightbox-img" class="lightbox-img" src="" alt="大图预览" />
         </div>
@@ -549,16 +436,16 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
   </div>
 </section>
 
-<!-- 全局轻量通知吐司容器 -->
+<!-- 全局轻量吐司容器 -->
 <div id="moments-toast" class="moments-toast hidden"></div>
 
-<!-- 注入 Moments 完整数据源 (供 QQ 空间页面内无跳转详情使用) -->
+<!-- 注入 Moments 数据源 -->
 <script type="application/json" id="moments-data-json" set:html={JSON.stringify(moments)} />
 
-<!-- 互动脚本：QQ空间沉浸式界面、页面内直接加载说说详情、点赞、就地评论与雷达同步 -->
+<!-- 交互脚本：全站统一 Epomail 账户同步、去弹窗页面内详情、真实 D1 读写与最小信息密度 -->
 <script is:inline>
   (() => {
-    // 轻量吐司通知
+    // 1. 轻量吐司通知
     const toastEl = document.getElementById('moments-toast');
     function showToast(msg, duration = 2500) {
       if (!toastEl) return;
@@ -571,7 +458,35 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
       }, duration);
     }
 
-    // 1. 顶栏搜索过滤联动 (嵌入 site-page social-icon search，0 多余按钮)
+    // 2. 读取全站统一 Epomail 身份与会话凭证 (严格打通 comment-client.ts)
+    function readUnifiedAccount() {
+      try {
+        const raw = localStorage.getItem('shijianus-comment-account') || localStorage.getItem('shijianus-comment-identity');
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed && typeof parsed === 'object') return parsed;
+        }
+      } catch {}
+      return null;
+    }
+
+    function getSessionToken() {
+      const acc = readUnifiedAccount();
+      return (acc && acc.token) || localStorage.getItem('shijianus-auth-token') || '';
+    }
+
+    // 访客头像计算 (QQ邮箱解析或 Dicebear)
+    function computeVisitorAvatar(nameOrEmail) {
+      if (!nameOrEmail) return 'https://api.dicebear.com/7.x/identicon/svg?seed=visitor';
+      const clean = String(nameOrEmail).trim();
+      const qqMatch = clean.match(/^(\d{5,12})(@qq\.com)?$/i);
+      if (qqMatch && qqMatch[1]) {
+        return `https://q1.qlogo.cn/g?b=qq&nk=${qqMatch[1]}&s=100`;
+      }
+      return `https://api.dicebear.com/7.x/identicon/svg?seed=${encodeURIComponent(clean)}`;
+    }
+
+    // 3. 顶栏搜索过滤联动 (0 多余按钮)
     const cards = document.querySelectorAll('.moment-card');
     const emptyBox = document.getElementById('moments-empty');
     let searchQuery = '';
@@ -602,7 +517,6 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
       }
     }
 
-    // 接收全局搜索面板广播与详情直达
     window.addEventListener('shijianus:moments-filter', (e) => {
       searchQuery = (e.detail?.query || '').trim().toLowerCase();
       filterMoments();
@@ -615,225 +529,9 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
       }
     });
 
-    // 2. QQ 空间式访客头像计算与全页面实时同步 (支持 QQ 邮箱头像与自定义称呼)
-    function computeVisitorAvatar(nameOrEmail) {
-      if (!nameOrEmail) return 'https://api.dicebear.com/7.x/identicon/svg?seed=visitor';
-      const clean = String(nameOrEmail).trim();
-      const qqMatch = clean.match(/^(\d{5,12})(@qq\.com)?$/i);
-      if (qqMatch && qqMatch[1]) {
-        return `https://q1.qlogo.cn/g?b=qq&nk=${qqMatch[1]}&s=100`;
-      }
-      return `https://api.dicebear.com/7.x/identicon/svg?seed=${encodeURIComponent(clean)}`;
-    }
-
-    function syncAllVisitorAvatars(url) {
-      document.querySelectorAll('.comment-visitor-avatar-img').forEach((img) => {
-        img.src = url;
-      });
-    }
-
-    // 渲染点赞者真实头像队列 (来自 Cloudflare D1 边缘数据库真实记录)
-    function renderLikersStack(container, likers, count) {
-      if (!container) return;
-      container.innerHTML = '';
-      if (!Array.isArray(likers) || likers.length === 0) return;
-      likers.slice(0, 8).forEach((l) => {
-        const img = document.createElement('img');
-        img.className = 'likes-avatar';
-        img.src = l.authorAvatar || computeVisitorAvatar(l.authorName);
-        img.alt = l.authorName || '赞者';
-        img.title = `${l.authorName || '热心博友'} 觉得很赞`;
-        container.appendChild(img);
-      });
-    }
-
-    // 动态拉取 Cloudflare D1 全站说说统计数据 (真实点赞数与评论数)
-    function loadMomentsD1Stats() {
-      fetch('/api/comments?action=moments_stats')
-        .then((res) => res.json())
-        .then((data) => {
-          if (data && data.ok && data.stats) {
-            let totalLikes = 0;
-            for (const [rawId, stat] of Object.entries(data.stats)) {
-              totalLikes += (stat.likesCount || 0);
-              const card = document.querySelector(`.moment-card[data-id="${rawId}"]`);
-              if (card) {
-                const countEl = card.querySelector('.like-count');
-                if (countEl) countEl.textContent = String(stat.likesCount || 0);
-                const commentBadge = document.getElementById(`comment-count-${rawId}`);
-                if (commentBadge) commentBadge.textContent = String(stat.commentCount || 0);
-                const likesText = document.getElementById(`likes-text-${rawId}`);
-                if (likesText) {
-                  likesText.textContent = (stat.likesCount || 0) > 0 ? `${stat.likesCount} 人觉得很赞` : '快来给说说点个赞吧';
-                }
-              }
-            }
-            const totalLikesEl = document.getElementById('total-likes-counter');
-            if (totalLikesEl) totalLikesEl.textContent = String(totalLikes);
-          }
-        })
-        .catch(() => {});
-    }
-
-    loadMomentsD1Stats();
-
-    // 3. 点赞微动效与真实 D1 持久化 (QQ 空间赞者头像队列联动)
-    document.querySelectorAll('.moment-like-btn').forEach((btn) => {
-      const id = btn.dataset.momentId;
-      const key = `moment_liked_${id}`;
-      const countEl = btn.querySelector('.like-count');
-      const stackEl = document.getElementById(`likes-stack-${id}`);
-      const likesTextEl = document.getElementById(`likes-text-${id}`);
-      let isLiked = localStorage.getItem(key) === 'true';
-
-      if (isLiked) {
-        btn.classList.add('is-liked');
-      }
-
-      btn.addEventListener('click', async () => {
-        const savedName = localStorage.getItem('shijianus_comment_author_name') || '';
-        const savedEmail = localStorage.getItem('shijianus_comment_author_email') || '';
-        const authorIdentity = savedEmail || savedName || 'visitor';
-        const userAvatarUrl = computeVisitorAvatar(authorIdentity);
-
-        try {
-          const res = await fetch('/api/comments', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              action: 'moment_like',
-              slug: id,
-              authorName: savedName || '热心博友',
-              authorAvatar: userAvatarUrl,
-            }),
-          });
-          const data = await res.json();
-          if (data && data.ok) {
-            isLiked = Boolean(data.liked);
-            localStorage.setItem(key, isLiked ? 'true' : 'false');
-            if (isLiked) {
-              btn.classList.add('is-liked');
-              const heart = btn.querySelector('.like-heart');
-              if (heart) {
-                heart.classList.add('heart-burst');
-                setTimeout(() => heart.classList.remove('heart-burst'), 600);
-              }
-              showToast('感谢您的点赞支持！❤️');
-            } else {
-              btn.classList.remove('is-liked');
-              showToast('已取消点赞');
-            }
-
-            const realCount = typeof data.likesCount === 'number' ? data.likesCount : 0;
-            if (countEl) countEl.textContent = String(realCount);
-            if (likesTextEl) {
-              likesTextEl.textContent = realCount > 0 ? `${realCount} 人觉得很赞` : '快来给说说点个赞吧';
-            }
-            if (stackEl && Array.isArray(data.likers)) {
-              renderLikersStack(stackEl, data.likers, realCount);
-            }
-            loadMomentsD1Stats();
-
-            // 同步详情页内的赞状态（如果当前正在查看详情）
-            if (currentActiveMomentId === id && inpageLikeCount && inpageLikeBtn) {
-              inpageLikeCount.textContent = String(realCount);
-              if (isLiked) {
-                inpageLikeBtn.classList.add('is-liked');
-              } else {
-                inpageLikeBtn.classList.remove('is-liked');
-              }
-            }
-          }
-        } catch (err) {
-          console.error('Like failed', err);
-        }
-      });
-    });
-
-    // 4. 分享按钮：一键复制动态链接
-    document.querySelectorAll('.moment-share-btn').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        const id = btn.dataset.momentId;
-        const title = btn.dataset.title || '站长朋友圈说说';
-        const url = `${window.location.origin}/moments/#moment-${id}`;
-        
-        if (navigator.clipboard) {
-          navigator.clipboard.writeText(`${title} - ${url}`).then(() => {
-            showToast('说说链接已复制到剪贴板！📋');
-          }).catch(() => {
-            showToast(`分享链接：${url}`);
-          });
-        } else {
-          showToast(`分享链接：${url}`);
-        }
-      });
-    });
-
-    // 5. 随机昵称生成器与自动回填
-    const adjectives = ['极客', '赛博', '灵感', '代码', '深夜', '咖啡', '漫游', '星际', '优雅', '无界'];
-    const nouns = ['行者', '探索家', '架构师', '思想者', '筑梦师', '旅人', '观察员', '创造者', '极客'];
-    function getRandomNickname() {
-      const adj = adjectives[Math.floor(Math.random() * adjectives.length)];
-      const noun = nouns[Math.floor(Math.random() * nouns.length)];
-      const num = Math.floor(Math.random() * 900) + 100;
-      return `${adj}${noun}_${num}`;
-    }
-
-    const savedName = localStorage.getItem('shijianus_comment_author_name') || '';
-    const savedEmail = localStorage.getItem('shijianus_comment_author_email') || '';
-
-    // 初始化已保存的访客头像
-    if (savedEmail || savedName) {
-      syncAllVisitorAvatars(computeVisitorAvatar(savedEmail || savedName));
-    }
-
-    function initCommentForm(form) {
-      const nameInput = form.querySelector('.comment-author-input');
-      const emailInput = form.querySelector('.comment-email-input');
-      const randomBtn = form.querySelector('.btn-random-nickname');
-      const textarea = form.querySelector('.comment-textarea');
-
-      if (nameInput && savedName) nameInput.value = savedName;
-      if (emailInput && savedEmail) emailInput.value = savedEmail;
-
-      function onIdentityChange() {
-        const val = emailInput?.value.trim() || nameInput?.value.trim() || '';
-        const avatarUrl = computeVisitorAvatar(val);
-        syncAllVisitorAvatars(avatarUrl);
-      }
-
-      if (emailInput) emailInput.addEventListener('input', onIdentityChange);
-      if (nameInput) nameInput.addEventListener('input', onIdentityChange);
-
-      if (randomBtn && nameInput) {
-        randomBtn.addEventListener('click', () => {
-          nameInput.value = getRandomNickname();
-          onIdentityChange();
-          showToast(`已为您随机生成昵称：${nameInput.value}`);
-        });
-      }
-
-      form.querySelectorAll('.quick-emoji-btn').forEach((emojiBtn) => {
-        emojiBtn.addEventListener('click', () => {
-          const emoji = emojiBtn.dataset.emoji || '';
-          if (textarea) {
-            textarea.value = (textarea.value || '') + emoji;
-            textarea.focus();
-          }
-        });
-      });
-    }
-
-    document.querySelectorAll('.moment-quick-comment-form').forEach(initCommentForm);
-
-    // 6. 空间 Hero 与“账号中心”的“个人资料/状态”实时双向同步 (原生持久化打通)
+    // 4. Hero 个人资料与状态全站实时双向同步
     function syncHeroProfile() {
-      let identity = null;
-      try {
-        const raw = localStorage.getItem('shijianus-comment-account');
-        if (raw) identity = JSON.parse(raw);
-      } catch {}
-
+      const identity = readUnifiedAccount();
       let statusObj = null;
       try {
         const raw = localStorage.getItem('shijianus-user-status');
@@ -871,347 +569,151 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
       }
     });
 
-    // 5. QQ 空间式评论楼层与异步 D1 / 跨站主权路由联动
-    const loadedCommentsMap = new Map();
-
-    function escapeHtml(str) {
-      if (!str) return '';
-      return String(str)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#039;');
-    }
-
-    function bindReplyButtons(container, momentId) {
-      container.querySelectorAll('.btn-reply-comment').forEach((rBtn) => {
-        rBtn.addEventListener('click', () => {
-          const replyTo = rBtn.dataset.replyTo;
-          const inpageTextarea = inpageQuickForm?.querySelector('.comment-textarea');
-          const cardForm = document.querySelector(`.moment-quick-comment-form[data-moment-id="${momentId}"]`);
-          const cardTextarea = cardForm?.querySelector('.comment-textarea');
-          const target = (currentActiveMomentId === momentId && inpageTextarea) ? inpageTextarea : cardTextarea;
-          if (target) {
-            target.value = `@${replyTo} ` + target.value;
-            target.focus();
-            showToast(`已就地引用 @${replyTo}`);
-          }
-        });
+    // 5. 渲染点赞者真实头像队列 (来自 Cloudflare D1 边缘数据库)
+    function renderLikersStack(container, likers, count) {
+      if (!container) return;
+      container.innerHTML = '';
+      if (!Array.isArray(likers) || likers.length === 0) return;
+      likers.slice(0, 8).forEach((l) => {
+        const img = document.createElement('img');
+        img.className = 'likes-avatar';
+        img.src = l.authorAvatar || computeVisitorAvatar(l.authorName);
+        img.alt = l.authorName || '赞者';
+        img.title = `${l.authorName || '博友'} 觉得很赞`;
+        container.appendChild(img);
       });
     }
 
-    async function loadMomentComments(momentId) {
-      const listContainer = document.getElementById(`comments-list-${momentId}`);
-      const inpageListContainer = document.getElementById('inpage-comments-list');
-
-      const card = document.querySelector(`.moment-card[data-id="${momentId}"]`);
-      const isOwner = card?.dataset.isOwner === 'true';
-      const originApi = card?.dataset.originApi;
-      const slug = `moment_${momentId}`;
-
-      let fetchUrl = `/api/comments?slug=${encodeURIComponent(slug)}&sort=new`;
-      if (!isOwner && originApi && !originApi.includes('blog.epocanvas.com')) {
-        fetchUrl = `/api/cross-comment?originApi=${encodeURIComponent(originApi)}&slug=${encodeURIComponent(momentId)}`;
-      }
-
-      try {
-        const res = await fetch(fetchUrl);
-        if (!res.ok) throw new Error('网络请求异常');
-        const data = await res.json();
-        let comments = (data && (data.comments || data.items || data.data?.comments)) || [];
-
-        // 合并本地访客刚刚发表的留言缓存 (确保跨站或延迟时依然秒级可见)
-        try {
-          const localSavedRaw = localStorage.getItem('shijianus_moment_comments_' + momentId);
-          if (localSavedRaw) {
-            const localSaved = JSON.parse(localSavedRaw);
-            if (Array.isArray(localSaved) && localSaved.length > 0) {
-              const existingTexts = new Set(comments.map((c) => (c.message || '').trim()));
-              for (const lc of localSaved) {
-                if (!existingTexts.has((lc.message || '').trim())) {
-                  comments.unshift(lc);
+    // 动态拉取 Cloudflare D1 全站说说统计数据 (真实点赞数与评论数)
+    function loadMomentsD1Stats() {
+      fetch('/api/comments?action=moments_stats')
+        .then((res) => res.json())
+        .then((data) => {
+          if (data && data.ok && data.stats) {
+            let totalLikes = 0;
+            for (const [rawId, stat] of Object.entries(data.stats)) {
+              totalLikes += (stat.likesCount || 0);
+              const card = document.querySelector(`.moment-card[data-id="${rawId}"]`);
+              if (card) {
+                const countEl = card.querySelector('.like-count');
+                if (countEl) countEl.textContent = String(stat.likesCount || 0);
+                const commentBadge = document.getElementById(`comment-count-${rawId}`);
+                if (commentBadge) commentBadge.textContent = String(stat.commentCount || 0);
+                const likesText = document.getElementById(`likes-text-${rawId}`);
+                if (likesText) {
+                  likesText.textContent = `${stat.likesCount || 0} 人觉得很赞`;
                 }
               }
             }
+            const totalLikesEl = document.getElementById('total-likes-counter');
+            if (totalLikesEl) totalLikesEl.textContent = String(totalLikes);
           }
-        } catch (_) {}
-
-        loadedCommentsMap.set(momentId, comments);
-
-        // 更新卡片上的留言计数
-        const countBadge = document.getElementById(`comment-count-${momentId}`);
-        if (countBadge) countBadge.textContent = String(comments.length);
-
-        // 同步拉取到的真实 D1 点赞队列与获赞数
-        if (data && Array.isArray(data.likers)) {
-          const stackEl = document.getElementById(`likes-stack-${momentId}`);
-          renderLikersStack(stackEl, data.likers, data.likesCount);
-        }
-        if (data && typeof data.likesCount === 'number') {
-          const countEl = card?.querySelector('.like-count');
-          if (countEl) countEl.textContent = String(data.likesCount);
-          const likesText = document.getElementById(`likes-text-${momentId}`);
-          if (likesText) {
-            likesText.textContent = data.likesCount > 0 ? `${data.likesCount} 人觉得很赞` : '快来给说说点个赞吧';
-          }
-        }
-
-        renderCommentsList(momentId, comments);
-      } catch (err) {
-        // 网络异常时，优雅读取本地留言记录
-        let fallbackComments = [];
-        try {
-          const localSavedRaw = localStorage.getItem('shijianus_moment_comments_' + momentId);
-          if (localSavedRaw) fallbackComments = JSON.parse(localSavedRaw) || [];
-        } catch (_) {}
-
-        if (fallbackComments.length > 0) {
-          loadedCommentsMap.set(momentId, fallbackComments);
-          renderCommentsList(momentId, fallbackComments);
-          const countBadge = document.getElementById(`comment-count-${momentId}`);
-          if (countBadge) countBadge.textContent = String(fallbackComments.length);
-        } else {
-          const fallbackHtml = `
-            <div class="comments-empty-notice">
-              <span class="empty-icon">💭</span>
-              <span>暂无访客留言，快来留下第一个脚印吧！</span>
-            </div>
-          `;
-          if (listContainer) listContainer.innerHTML = fallbackHtml;
-          if (currentActiveMomentId === momentId && inpageListContainer) {
-            inpageListContainer.innerHTML = fallbackHtml;
-          }
-        }
-      }
+        })
+        .catch(() => {});
     }
 
-    function renderCommentsList(momentId, comments) {
-      const listContainer = document.getElementById(`comments-list-${momentId}`);
-      const inpageListContainer = document.getElementById('inpage-comments-list');
+    loadMomentsD1Stats();
 
-      const isEmpty = !comments || comments.length === 0;
-      const html = isEmpty
-        ? `
-          <div class="comments-empty-notice">
-            <span class="empty-icon">💭</span>
-            <span>还没有人留下足迹，快来抢沙发抢个前排吧～</span>
-          </div>
-        `
-        : comments
-            .map((c) => {
-              const isMaster = c.authorRole === 'admin' || (c.authorName && c.authorName.includes('站长'));
-              const avatarUrl = c.authorAvatar || `https://api.dicebear.com/7.x/identicon/svg?seed=${encodeURIComponent(c.authorName || 'visitor')}`;
-              return `
-                <div class="comment-item ${isMaster ? 'is-master-comment' : ''}" data-comment-id="${c.id}">
-                  <img class="comment-avatar" src="${avatarUrl}" alt="${escapeHtml(c.authorName)}" loading="lazy" />
-                  <div class="comment-content-wrap">
-                    <div class="comment-header-row">
-                      <span class="comment-author-name">${escapeHtml(c.authorName)}</span>
-                      ${isMaster ? '<span class="comment-role-badge is-master">👑 站长回复</span>' : '<span class="comment-role-badge">访客</span>'}
-                      ${c.ipCountry ? `<span class="comment-geo-flag">${c.ipCountry}</span>` : ''}
-                      <span class="comment-time">${c.timeAgo || '刚刚'}</span>
-                    </div>
-                    <div class="comment-message-body">${escapeHtml(c.message)}</div>
-                    <div class="comment-item-actions">
-                      <button type="button" class="btn-reply-comment" data-moment-id="${momentId}" data-reply-to="${escapeHtml(c.authorName)}">💬 回复</button>
-                    </div>
-                  </div>
-                </div>
-              `;
-            })
-            .join('');
+    // 6. 卡片快速点赞 (D1 持久化)
+    document.querySelectorAll('.moment-like-btn').forEach((btn) => {
+      const id = btn.dataset.momentId;
+      const key = `moment_liked_${id}`;
+      const countEl = btn.querySelector('.like-count');
+      const stackEl = document.getElementById(`likes-stack-${id}`);
+      const likesTextEl = document.getElementById(`likes-text-${id}`);
+      let isLiked = localStorage.getItem(key) === 'true';
 
-      if (listContainer) {
-        listContainer.innerHTML = html;
-        bindReplyButtons(listContainer, momentId);
+      if (isLiked) {
+        btn.classList.add('is-liked');
       }
-      if (currentActiveMomentId === momentId && inpageListContainer) {
-        inpageListContainer.innerHTML = html;
-        bindReplyButtons(inpageListContainer, momentId);
-      }
-    }
 
-    // 绑定展开/折叠评论抽屉按钮
-    document.querySelectorAll('.moment-comment-toggle-btn').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        const id = btn.dataset.momentId;
-        const drawer = document.getElementById(`comments-drawer-${id}`);
-        if (!drawer) return;
-
-        const isCurrentlyHidden = drawer.classList.contains('hidden');
-        if (isCurrentlyHidden) {
-          drawer.classList.remove('hidden');
-          drawer.classList.add('is-expanded');
-          btn.classList.add('is-active');
-          loadMomentComments(id);
-        } else {
-          drawer.classList.remove('is-expanded');
-          drawer.classList.add('hidden');
-          btn.classList.remove('is-active');
-        }
-      });
-    });
-
-    // 6. 提交访客留言表单 (异步打通 /api/comments)
-    document.querySelectorAll('.moment-quick-comment-form').forEach((form) => {
-      form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const momentId = form.dataset.momentId || currentActiveMomentId;
-        if (!momentId) return;
-
-        const nameInput = form.querySelector('.comment-author-input');
-        const emailInput = form.querySelector('.comment-email-input');
-        const textarea = form.querySelector('.comment-textarea');
-        const submitBtn = form.querySelector('.comment-submit-btn');
-
-        const authorName = (nameInput?.value || '').trim();
-        const authorEmail = (emailInput?.value || '').trim();
-        const message = (textarea?.value || '').trim();
-
-        if (!authorName) {
-          showToast('请先输入您的称呼/昵称！');
-          if (nameInput) nameInput.focus();
-          return;
-        }
-
-        if (!message) {
-          showToast('留言内容不能为空哦！');
-          if (textarea) textarea.focus();
-          return;
-        }
-
-        // 保存昵称与邮箱至本地
-        localStorage.setItem('shijianus_comment_author_name', authorName);
-        if (authorEmail) localStorage.setItem('shijianus_comment_author_email', authorEmail);
-
-        const localCommentObj = {
-          id: 'local_' + Date.now(),
-          authorName,
-          authorAvatar: computeVisitorAvatar(authorEmail || authorName),
-          authorRole: 'visitor',
-          message,
-          timeAgo: '刚刚',
-          timestamp: new Date().toISOString(),
-        };
-
-        // 无论远端网络如何，先在 localStorage 保存本地副本，确保瞬间可见且不丢失
-        try {
-          const localKey = 'shijianus_moment_comments_' + momentId;
-          const currentSaved = JSON.parse(localStorage.getItem(localKey) || '[]');
-          currentSaved.unshift(localCommentObj);
-          localStorage.setItem(localKey, JSON.stringify(currentSaved.slice(0, 50)));
-        } catch (_) {}
-
-        if (submitBtn) {
-          submitBtn.disabled = true;
-          submitBtn.innerHTML = '<span>发送中...</span><span class="loading-spinner-sm"></span>';
-        }
-
-        const card = document.querySelector(`.moment-card[data-id="${momentId}"]`);
-        const isOwner = card?.dataset.isOwner === 'true';
-        const originApi = card?.dataset.originApi;
-        const author = card?.dataset.author || '友邻';
-
-        let submitUrl = '/api/comments';
-        let submitPayload = {
-          slug: `moment_${momentId}`,
-          post_type: 'comment',
-          author_name: authorName,
-          author_email: authorEmail,
-          message,
-        };
-
-        if (!isOwner && originApi && !originApi.includes('blog.epocanvas.com')) {
-          submitUrl = '/api/cross-comment';
-          submitPayload = {
-            targetApi: originApi,
-            slug: momentId,
-            author: authorName,
-            email: authorEmail,
-            content: message,
-            fromSite: window.location.origin,
-          };
-        }
+      btn.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        const account = readUnifiedAccount();
+        const authorName = account?.name || '热心博友';
+        const userAvatarUrl = account?.avatar || computeVisitorAvatar(authorName);
+        const token = getSessionToken();
 
         try {
-          const res = await fetch(submitUrl, {
+          const headers = { 'Content-Type': 'application/json' };
+          if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+            headers['X-Comment-Session-Token'] = token;
+          }
+
+          const res = await fetch('/api/comments', {
             method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(submitPayload),
+            headers,
+            body: JSON.stringify({
+              action: 'moment_like',
+              slug: id,
+              authorName,
+              authorAvatar: userAvatarUrl,
+            }),
           });
+          const data = await res.json();
+          if (data && data.ok) {
+            isLiked = Boolean(data.liked);
+            localStorage.setItem(key, isLiked ? 'true' : 'false');
+            if (isLiked) {
+              btn.classList.add('is-liked');
+              const heart = btn.querySelector('.like-heart');
+              if (heart) {
+                heart.classList.add('heart-burst');
+                setTimeout(() => heart.classList.remove('heart-burst'), 600);
+              }
+              showToast('感谢点赞！❤️');
+            } else {
+              btn.classList.remove('is-liked');
+              showToast('已取消点赞');
+            }
 
-          if (!res.ok) {
-            throw new Error('提交失败，请重试');
-          }
+            const realCount = typeof data.likesCount === 'number' ? data.likesCount : 0;
+            if (countEl) countEl.textContent = String(realCount);
+            if (likesTextEl) {
+              likesTextEl.textContent = `${realCount} 人觉得很赞`;
+            }
+            if (stackEl && Array.isArray(data.likers)) {
+              renderLikersStack(stackEl, data.likers, realCount);
+            }
+            loadMomentsD1Stats();
 
-          if (!isOwner && originApi && !originApi.includes('blog.epocanvas.com')) {
-            showToast(`🚀 串门评论已成功直达【${author}】的博客数据库！`);
-          } else {
-            showToast('🎉 留言发表成功！感谢您的分享！');
-          }
-
-          if (textarea) textarea.value = '';
-          await loadMomentComments(momentId);
-        } catch (err) {
-          showToast('留言发表成功（本地已即时记录）！');
-          if (textarea) textarea.value = '';
-          await loadMomentComments(momentId);
-        } finally {
-          if (submitBtn) {
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = '<span>发表留言</span><span class="submit-arrow">✈️</span>';
-          }
-        }
-      });
-    });
-
-    // 7. 友邻朋友圈多源探测与雷达刷新机制
-    const btnSyncRadar = document.getElementById('btn-sync-friends-radar');
-    if (btnSyncRadar) {
-      btnSyncRadar.addEventListener('click', async () => {
-        btnSyncRadar.classList.add('is-syncing');
-        const syncText = btnSyncRadar.querySelector('.sync-btn-text');
-        if (syncText) syncText.textContent = '雷达探测中...';
-
-        try {
-          let syncOk = false;
-          let count = 4;
-
-          try {
-            const apiRes = await fetch('/api/moments-sync');
-            if (apiRes.ok) {
-              const apiData = await apiRes.json();
-              if (apiData.ok && apiData.items) {
-                count = apiData.items.length;
-                syncOk = true;
+            if (currentActiveMomentId === id && inpageLikeCount && inpageLikeBtn) {
+              inpageLikeCount.textContent = String(realCount);
+              if (isLiked) {
+                inpageLikeBtn.classList.add('is-liked');
+              } else {
+                inpageLikeBtn.classList.remove('is-liked');
               }
             }
-          } catch (e) {
-            const fallbackRes = await fetch('/data/friends-moments.json');
-            if (fallbackRes.ok) {
-              const fallbackData = await fallbackRes.json();
-              count = fallbackData.total || count;
-              syncOk = true;
-            }
           }
-
-          setTimeout(() => {
-            btnSyncRadar.classList.remove('is-syncing');
-            if (syncText) syncText.textContent = '探测友邻更新';
-            showToast(`🎉 雷达扫描完毕：已成功同步 ${count} 条友邻最新分享！`);
-          }, 800);
         } catch (err) {
-          btnSyncRadar.classList.remove('is-syncing');
-          if (syncText) syncText.textContent = '探测友邻更新';
-          showToast('友邻动态雷达已是最新状态！✨');
+          console.error('Like failed', err);
         }
       });
-    }
+    });
 
-    // 8. QQ 空间模式：说说图文详情【页面内直接加载，杜绝弹窗】
+    // 7. 分享按钮：一键复制直达链接
+    document.querySelectorAll('.moment-share-btn').forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const id = btn.dataset.momentId;
+        const title = btn.dataset.title || '说说动态';
+        const url = `${window.location.origin}/moments/#moment-${id}`;
+        
+        if (navigator.clipboard) {
+          navigator.clipboard.writeText(`${title} - ${url}`).then(() => {
+            showToast('说说链接已复制！📋');
+          }).catch(() => {
+            showToast(`分享链接：${url}`);
+          });
+        } else {
+          showToast(`分享链接：${url}`);
+        }
+      });
+    });
+
+    // 8. 页面内详情展开 (完全就地，无弹窗，收敛交互路径)
     const momentsDataJsonEl = document.getElementById('moments-data-json');
     const momentsList = momentsDataJsonEl ? JSON.parse(momentsDataJsonEl.textContent || '[]') : [];
     const momentsById = new Map(momentsList.map((m) => [m.id, m]));
@@ -1233,16 +735,342 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
     const inpageTitle = document.getElementById('inpage-title');
     const inpageContent = document.getElementById('inpage-content');
     const inpagePhotosGrid = document.getElementById('inpage-photos-grid');
-    const inpageOriginBanner = document.getElementById('inpage-origin-banner');
     const inpageLikeBtn = document.getElementById('inpage-like-btn');
     const inpageLikeCount = document.getElementById('inpage-like-count');
     const inpageExternalLink = document.getElementById('inpage-external-link');
-    const inpageCrossHint = document.getElementById('inpage-cross-hint');
+    const inpageCommentCountNum = document.getElementById('inpage-comment-count-num');
+    const inpageCommentsList = document.getElementById('inpage-comments-list');
     const inpageQuickForm = document.getElementById('inpage-quick-comment-form');
 
     let currentActiveMomentId = null;
 
-    function showMomentInPage(momentId) {
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    // 9. 全站统一发评表单身份展示逻辑 (Epomail vs 访客)
+    function syncCommentFormAccountState() {
+      const account = readUnifiedAccount();
+      const activeBar = document.getElementById('inpage-account-active-bar');
+      const visitorFields = document.getElementById('inpage-visitor-fields');
+      const accAvatar = document.getElementById('inpage-account-avatar');
+      const accName = document.getElementById('inpage-account-name');
+      const accBadge = document.getElementById('inpage-account-badge');
+
+      const authorInput = document.getElementById('inpage-author-input');
+      const emailInput = document.getElementById('inpage-email-input');
+
+      // 已登录 Epomail 或本地认证用户
+      if (account && (account.isLoggedIn || account.provider === 'epomail' || account.role === 'admin' || account.token)) {
+        if (activeBar) activeBar.classList.remove('hidden');
+        if (visitorFields) visitorFields.classList.add('hidden');
+
+        if (accAvatar) accAvatar.src = account.avatar || '/media/shijianus/avatar.jpg';
+        if (accName) accName.textContent = account.name;
+        if (accBadge) {
+          if (account.role === 'admin') {
+            accBadge.textContent = '👑 站长';
+            accBadge.className = 'composer-user-badge is-admin';
+          } else if (account.provider === 'epomail') {
+            accBadge.textContent = '⚡ Epomail 认证';
+            accBadge.className = 'composer-user-badge is-epomail';
+          } else {
+            accBadge.textContent = '读者';
+            accBadge.className = 'composer-user-badge is-reader';
+          }
+        }
+        if (authorInput) authorInput.removeAttribute('required');
+      } else {
+        // 未登录访客状态
+        if (activeBar) activeBar.classList.add('hidden');
+        if (visitorFields) visitorFields.classList.remove('hidden');
+        if (authorInput) {
+          authorInput.setAttribute('required', 'true');
+          const savedVisitorName = localStorage.getItem('shijianus_comment_author_name') || '';
+          if (savedVisitorName && !authorInput.value) authorInput.value = savedVisitorName;
+        }
+        if (emailInput) {
+          const savedVisitorEmail = localStorage.getItem('shijianus_comment_author_email') || '';
+          if (savedVisitorEmail && !emailInput.value) emailInput.value = savedVisitorEmail;
+        }
+      }
+    }
+
+    syncCommentFormAccountState();
+    window.addEventListener('shijianus:comment-account-change', syncCommentFormAccountState);
+
+    // 绑定“切换账号”与“一键 Epomail 登录”按钮直接唤起全站统一账号中心
+    const btnSwitchAccount = document.getElementById('btn-inpage-switch-account');
+    if (btnSwitchAccount) {
+      btnSwitchAccount.addEventListener('click', () => {
+        window.dispatchEvent(new CustomEvent('shijianus:open-account-drawer'));
+      });
+    }
+
+    const btnQuickLogin = document.getElementById('btn-inpage-quick-login');
+    if (btnQuickLogin) {
+      btnQuickLogin.addEventListener('click', () => {
+        window.dispatchEvent(new CustomEvent('shijianus:open-account-drawer'));
+      });
+    }
+
+    // 表单 Emoji 快速输入
+    document.querySelectorAll('.quick-emoji-btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const emoji = btn.dataset.emoji || '';
+        const textarea = document.getElementById('inpage-comment-textarea');
+        if (textarea) {
+          textarea.value = (textarea.value || '') + emoji;
+          textarea.focus();
+        }
+      });
+    });
+
+    // 10. 拉取并渲染指定说说的评论树 (来自 Cloudflare D1 边缘数据库)
+    async function loadInpageComments(momentId) {
+      if (!inpageCommentsList) return;
+      inpageCommentsList.innerHTML = `
+        <div class="comments-loading">
+          <span class="loading-spinner"></span>
+          <span>加载中...</span>
+        </div>
+      `;
+
+      const card = document.querySelector(`.moment-card[data-id="${momentId}"]`);
+      const isOwner = card?.dataset.isOwner === 'true';
+      const originApi = card?.dataset.originApi;
+      const slug = `moment_${momentId}`;
+
+      let fetchUrl = `/api/comments?slug=${encodeURIComponent(slug)}&sort=new`;
+      if (!isOwner && originApi && !originApi.includes('blog.epocanvas.com')) {
+        fetchUrl = `/api/cross-comment?originApi=${encodeURIComponent(originApi)}&slug=${encodeURIComponent(momentId)}`;
+      }
+
+      const token = getSessionToken();
+      const headers = {};
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+        headers['X-Comment-Session-Token'] = token;
+      }
+
+      try {
+        const res = await fetch(fetchUrl, { headers });
+        if (!res.ok) throw new Error('网络请求异常');
+        const data = await res.json();
+        const comments = (data && (data.comments || data.items || data.data?.comments)) || [];
+
+        if (inpageCommentCountNum) inpageCommentCountNum.textContent = String(comments.length);
+        const countBadge = document.getElementById(`comment-count-${momentId}`);
+        if (countBadge) countBadge.textContent = String(comments.length);
+
+        renderInpageComments(comments, momentId);
+      } catch (err) {
+        if (inpageCommentCountNum) inpageCommentCountNum.textContent = '0';
+        inpageCommentsList.innerHTML = `
+          <div class="comments-empty-notice">
+            <span>暂无留言，欢迎交流探讨</span>
+          </div>
+        `;
+      }
+    }
+
+    function renderInpageComments(comments, momentId) {
+      if (!inpageCommentsList) return;
+      if (!comments || comments.length === 0) {
+        inpageCommentsList.innerHTML = `
+          <div class="comments-empty-notice">
+            <span>暂无留言，欢迎交流探讨</span>
+          </div>
+        `;
+        return;
+      }
+
+      const currentAcc = readUnifiedAccount();
+      const currentToken = getSessionToken();
+
+      inpageCommentsList.innerHTML = comments.map((c) => {
+        const isMaster = c.authorRole === 'admin' || (c.authorName && (c.authorName === 'shijianus' || c.authorName.includes('站长')));
+        const isEpomail = c.authorRole === 'reader' || (c.authorEmail && (c.authorEmail.includes('@epomail') || c.authorEmail.endsWith('@epomail.bond')));
+        const avatarUrl = isMaster ? '/media/shijianus/avatar.jpg' : (c.authorAvatar || computeVisitorAvatar(c.authorName || 'visitor'));
+        const isMyComment = Boolean(
+          (currentToken && c.sessionToken === currentToken) ||
+          (currentAcc && (currentAcc.role === 'admin' || currentAcc.name === c.authorName))
+        );
+
+        return `
+          <div class="comment-item ${isMaster ? 'is-master-comment' : ''}" data-comment-id="${c.id}">
+            <img class="comment-avatar ${isMaster ? 'is-webmaster-avatar' : 'is-user-avatar'}" src="${avatarUrl}" alt="${escapeHtml(c.authorName)}" loading="lazy" style="${isMaster ? 'border-radius: 8px !important;' : 'border-radius: 50% !important;'}" />
+            <div class="comment-content-wrap">
+              <div class="comment-header-row">
+                <span class="comment-author-name">${escapeHtml(c.authorName)}</span>
+                ${isMaster ? '<span class="comment-role-badge is-master">👑 站长</span>' : (isEpomail ? '<span class="comment-role-badge is-epomail">⚡ Epomail 认证</span>' : '<span class="comment-role-badge">访客</span>')}
+                ${c.ipCountryFlag ? `<span class="comment-geo-flag" title="${escapeHtml(c.ipCountryName || '')}">${c.ipCountryFlag} ${escapeHtml(c.ipCountryName || '')}</span>` : ''}
+                <time class="comment-time">${c.timeAgo || '刚刚'}</time>
+              </div>
+              <div class="comment-message-body">${escapeHtml(c.message)}</div>
+              <div class="comment-item-actions">
+                <button type="button" class="btn-reply-comment" data-reply-to="${escapeHtml(c.authorName)}">💬 回复</button>
+                ${isMyComment ? `<button type="button" class="btn-delete-comment" data-comment-id="${c.id}">🗑️ 删除</button>` : ''}
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      inpageCommentsList.querySelectorAll('.btn-reply-comment').forEach((rBtn) => {
+        rBtn.addEventListener('click', () => {
+          const replyTo = rBtn.dataset.replyTo;
+          const textarea = document.getElementById('inpage-comment-textarea');
+          if (textarea) {
+            textarea.value = `@${replyTo} ` + textarea.value;
+            textarea.focus();
+            showToast(`已引用 @${replyTo}`);
+          }
+        });
+      });
+
+      inpageCommentsList.querySelectorAll('.btn-delete-comment').forEach((dBtn) => {
+        dBtn.addEventListener('click', async () => {
+          const commentId = dBtn.dataset.commentId;
+          if (!confirm('确认删除这条留言吗？')) return;
+
+          const token = getSessionToken();
+          try {
+            const res = await fetch('/api/comments', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                ...(token ? { 'Authorization': `Bearer ${token}`, 'X-Comment-Session-Token': token } : {}),
+              },
+              body: JSON.stringify({
+                action: 'delete',
+                id: commentId,
+                sessionToken: token,
+              }),
+            });
+            const data = await res.json().catch(() => null);
+            if (data && data.ok) {
+              showToast('🗑️ 留言已删除');
+              await loadInpageComments(momentId);
+              loadMomentsD1Stats();
+            } else {
+              showToast(`❌ ${data?.error || '删除失败'}`);
+            }
+          } catch {
+            showToast('❌ 网络连接异常');
+          }
+        });
+      });
+    }
+
+    // 11. 提交发评表单 (严格打通 D1 与 Epomail 会话，杜绝假数据)
+    if (inpageQuickForm) {
+      inpageQuickForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        if (!currentActiveMomentId) return;
+
+        const account = readUnifiedAccount();
+        const textarea = document.getElementById('inpage-comment-textarea');
+        const submitBtn = document.getElementById('inpage-submit-btn');
+        const message = (textarea?.value || '').trim();
+
+        if (!message) {
+          showToast('留言内容不能为空');
+          if (textarea) textarea.focus();
+          return;
+        }
+
+        let authorName = '';
+        let authorEmail = '';
+        let authorAvatar = '';
+        let authorWebsite = '';
+        let authorRole = 'visitor';
+
+        if (account && (account.isLoggedIn || account.provider === 'epomail' || account.role === 'admin' || account.token)) {
+          authorName = account.name;
+          authorEmail = account.email || '';
+          authorAvatar = account.avatar || (account.role === 'admin' ? '/media/shijianus/avatar.jpg' : '');
+          authorWebsite = account.website || '';
+          authorRole = account.role || (account.provider === 'epomail' ? 'reader' : 'visitor');
+        } else {
+          const authorInput = document.getElementById('inpage-author-input');
+          const emailInput = document.getElementById('inpage-email-input');
+          authorName = (authorInput?.value || '').trim();
+          authorEmail = (emailInput?.value || '').trim();
+          if (!authorName) {
+            showToast('请先输入您的昵称');
+            if (authorInput) authorInput.focus();
+            return;
+          }
+          authorAvatar = computeVisitorAvatar(authorEmail || authorName);
+          authorRole = 'visitor';
+          localStorage.setItem('shijianus_comment_author_name', authorName);
+          if (authorEmail) localStorage.setItem('shijianus_comment_author_email', authorEmail);
+        }
+
+        const token = getSessionToken();
+
+        if (submitBtn) {
+          submitBtn.disabled = true;
+          submitBtn.innerHTML = '<span>发送中...</span>';
+        }
+
+        try {
+          const headers = { 'Content-Type': 'application/json' };
+          if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+            headers['X-Comment-Session-Token'] = token;
+          }
+
+          const res = await fetch('/api/comments', {
+            method: 'POST',
+            headers,
+            body: JSON.stringify({
+              action: 'create',
+              slug: `moment_${currentActiveMomentId}`,
+              postType: 'comment',
+              tag: 'general',
+              message,
+              sessionToken: token || undefined,
+              authorName,
+              authorEmail,
+              authorAvatar,
+              authorWebsite,
+              authorRole,
+            }),
+          });
+
+          const data = await res.json().catch(() => null);
+
+          if (!res.ok || !data || !data.ok) {
+            const errReason = data?.error || `发送失败 (${res.status})`;
+            showToast(`❌ ${errReason}`);
+            return;
+          }
+
+          showToast('🎉 留言发表成功！');
+          if (textarea) textarea.value = '';
+          await loadInpageComments(currentActiveMomentId);
+          loadMomentsD1Stats();
+        } catch (err) {
+          showToast('❌ 网络连接异常，请重试');
+        } finally {
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<span>发表留言</span><span class="submit-arrow">✈️</span>';
+          }
+        }
+      });
+    }
+
+    // 12. 切换页面内详情视图 (去弹窗)
+    function showMomentInPage(momentId, scrollToComments = false) {
       const item = momentsById.get(momentId);
       if (!item || !inpageDetailEl || !streamViewEl) return;
       currentActiveMomentId = momentId;
@@ -1254,7 +1082,7 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
       }
       if (inpageAuthorName) inpageAuthorName.textContent = item.author;
       if (inpageAuthorBadge) {
-        inpageAuthorBadge.textContent = item.isOwner ? (item.badge || '👑 站长原声') : (item.badge || '🌐 友邻传送');
+        inpageAuthorBadge.textContent = item.isOwner ? '站长' : '友邻';
         inpageAuthorBadge.className = `inpage-badge-pill ${item.isOwner ? 'is-owner' : 'is-friend'}`;
       }
       if (inpageMood) {
@@ -1265,9 +1093,7 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
           inpageMood.style.display = 'none';
         }
       }
-      if (inpageTime) {
-        inpageTime.textContent = `${item.timeAgo} · ${item.timestamp}`;
-      }
+      if (inpageTime) inpageTime.textContent = item.timeAgo;
       if (inpageDevice) {
         inpageDevice.textContent = item.device || '';
         inpageDevice.style.display = item.device ? 'inline-block' : 'none';
@@ -1287,7 +1113,7 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
       if (inpagePhotosGrid) {
         if (item.images && item.images.length > 0) {
           inpagePhotosGrid.innerHTML = item.images.map((imgUrl, idx) => `
-            <div class="inpage-photo-item" data-photo-idx="${idx}" title="点击沉浸式浏览大图">
+            <div class="inpage-photo-item" data-photo-idx="${idx}" title="查看大图">
               <img src="${imgUrl}" alt="${escapeHtml(item.title)} 图片 ${idx + 1}" loading="lazy" />
             </div>
           `).join('');
@@ -1300,20 +1126,6 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
         }
       }
 
-      if (inpageOriginBanner) {
-        if (item.isOwner) {
-          inpageOriginBanner.innerHTML = `
-            <span class="banner-icon">👑</span>
-            <span class="banner-text">这是站长在数字空间的原创说说与思考，欢迎畅所欲言发表留言！</span>
-          `;
-        } else {
-          inpageOriginBanner.innerHTML = `
-            <span class="banner-icon">🌐</span>
-            <span class="banner-text">本动态来自博友「<strong>${escapeHtml(item.author)}</strong>」，支持全站反代无缝留言，数据将实时直通其博客。</span>
-          `;
-        }
-      }
-
       if (inpageExternalLink) {
         if (!item.isOwner && item.originUrl) {
           inpageExternalLink.href = item.originUrl;
@@ -1321,12 +1133,6 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
         } else {
           inpageExternalLink.classList.add('hidden');
         }
-      }
-
-      if (inpageCrossHint) {
-        inpageCrossHint.textContent = item.isOwner
-          ? '欢迎朋友们留下足迹'
-          : `🌐 跨站直通车：直达「${item.author}」博客数据库`;
       }
 
       // 点赞状态同步
@@ -1343,23 +1149,29 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
         }
       }
 
-      if (inpageQuickForm) {
-        inpageQuickForm.dataset.momentId = momentId;
-      }
+      // 载入真实 D1 评论
+      loadInpageComments(momentId);
+      syncCommentFormAccountState();
 
-      // 实时拉取评论
-      loadMomentComments(momentId);
-
-      // 切换视图：隐藏瀑布流，展示页面内详情
+      // 切换主容器状态
       streamViewEl.classList.add('hidden');
       inpageDetailEl.classList.remove('hidden');
 
-      // 更新 URL hash
       if (window.location.hash !== `#moment-${momentId}`) {
         history.replaceState(null, '', `#moment-${momentId}`);
       }
 
-      // 平滑滚动至主舞台顶部
+      if (scrollToComments) {
+        const anchor = document.getElementById('inpage-comments-anchor');
+        if (anchor) {
+          const topPos = anchor.getBoundingClientRect().top + window.pageYOffset - 80;
+          window.scrollTo({ top: topPos, behavior: 'smooth' });
+          const textarea = document.getElementById('inpage-comment-textarea');
+          if (textarea) textarea.focus();
+          return;
+        }
+      }
+
       if (mainStageEl) {
         const stageTop = mainStageEl.getBoundingClientRect().top + window.pageYOffset - 80;
         window.scrollTo({ top: stageTop, behavior: 'smooth' });
@@ -1408,83 +1220,51 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
       btnInpageShare.addEventListener('click', () => {
         if (!currentActiveMomentId) return;
         const item = momentsById.get(currentActiveMomentId);
-        const title = item?.title || '站长朋友圈说说';
+        const title = item?.title || '说说动态';
         const url = `${window.location.origin}/moments/#moment-${currentActiveMomentId}`;
         if (navigator.clipboard) {
           navigator.clipboard.writeText(`${title} - ${url}`).then(() => {
-            showToast('说说直达链接已复制到剪贴板！📋');
+            showToast('说说链接已复制！📋');
           }).catch(() => {
-            showToast(`直达链接：${url}`);
+            showToast(`分享链接：${url}`);
           });
         } else {
-          showToast(`直达链接：${url}`);
+          showToast(`分享链接：${url}`);
         }
       });
     }
 
-    // 整卡点击进入详情 (除点赞、评论抽屉等交互按钮外，整卡任意区域点击均直达详情)
+    // 13. 整卡点击与“评论”按钮直达页面内详情
     document.querySelectorAll('.moment-card').forEach((card) => {
       card.addEventListener('click', (e) => {
         if (
           e.target.closest('.moment-like-btn') ||
-          e.target.closest('.moment-comment-toggle-btn') ||
           e.target.closest('.moment-share-btn') ||
-          e.target.closest('.moment-comments-drawer') ||
-          e.target.closest('.btn-reply-comment') ||
-          e.target.closest('form') ||
-          e.target.closest('input') ||
-          e.target.closest('textarea') ||
-          e.target.closest('button.btn-random-nickname') ||
-          e.target.closest('button.quick-emoji-btn') ||
-          e.target.closest('button.comment-submit-btn') ||
           e.target.closest('a')
         ) {
           return;
         }
         const id = card.dataset.id;
         if (id) {
-          showMomentInPage(id);
+          const isCommentBtn = Boolean(e.target.closest('.moment-comment-toggle-btn'));
+          showMomentInPage(id, isCommentBtn);
         }
       });
     });
 
-    // 绑定所有触发查看详情的元素 (包含标题、作者栏、图片网格、查看全文按钮)
     document.querySelectorAll('[data-open-detail]').forEach((el) => {
       el.addEventListener('click', (e) => {
         e.preventDefault();
         e.stopPropagation();
         const id = el.getAttribute('data-open-detail');
         if (id) {
-          showMomentInPage(id);
+          const isCommentBtn = el.classList.contains('moment-comment-toggle-btn');
+          showMomentInPage(id, isCommentBtn);
         }
       });
     });
 
-    // “查看全文”专门按钮点击直达详情 (无弹窗内嵌详情)
-    document.querySelectorAll('.btn-toggle-expand').forEach((btn) => {
-      btn.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        const id = btn.dataset.momentId || btn.getAttribute('data-open-detail');
-        if (id) {
-          showMomentInPage(id);
-        }
-      });
-    });
-
-    // 智能检查：如果内容不足 5 行（未产生截断溢出），自动隐藏“展开全文”按钮
-    document.querySelectorAll('.moment-summary-bubble').forEach((bubble) => {
-      const summary = bubble.querySelector('.moment-summary');
-      const btn = bubble.querySelector('.btn-toggle-expand');
-      if (summary && btn) {
-        if (summary.textContent.trim().length < 130 && summary.scrollHeight <= summary.clientHeight + 4) {
-          btn.style.display = 'none';
-          bubble.classList.remove('is-clamped');
-        }
-      }
-    });
-
-    // 9. QQ 空间大图画廊沉浸式预览 (Lightbox, 杜绝外部跳出)
+    // 14. 大图画廊模态 (沉浸式预览)
     const lightboxEl = document.getElementById('qzone-photo-lightbox');
     const lightboxImg = document.getElementById('lightbox-img');
     const lightboxCounter = document.getElementById('lightbox-counter');
@@ -1563,7 +1343,7 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
       }
     });
 
-    // 路由监听：通过 URL hash (#moment-...) 自动在页面内展示说说详情
+    // 15. URL Hash 深度直达路由
     function handleHashRoute() {
       const hash = window.location.hash;
       if (hash && (hash.startsWith('#moment-') || hash.startsWith('#m_'))) {
@@ -1583,7 +1363,7 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
 
 <style>
   /* ========================================================
-     QQ 空间模式朋友圈整体架构与高级质感
+     站点统一规范：朋友圈社交流与极简详情架构
      ======================================================== */
   .moments-dashboard {
     max-width: 1320px;
@@ -1599,75 +1379,70 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
   .theme-card {
     background: var(--card-bg, rgba(255, 255, 255, 0.85));
     border: 1px solid var(--border-color, rgba(66, 90, 239, 0.15));
-    border-radius: 12px;
+    border-radius: 8px;
     backdrop-filter: blur(18px);
     -webkit-backdrop-filter: blur(18px);
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
   }
 
-  /* 1. 站长空间主页 Hero Banner */
-  .qzone-space-hero {
+  /* 1. 顶部 Hero 看板 (继承全站一致设计语言) */
+  .moments-hero {
     overflow: hidden;
     position: relative;
-    border-radius: 14px;
-    background: linear-gradient(135deg, rgba(66, 90, 239, 0.06) 0%, rgba(255, 255, 255, 0.95) 100%);
+    border-radius: 8px;
+    padding: 2rem;
+    background: linear-gradient(135deg, rgba(66, 90, 239, 0.04) 0%, rgba(255, 255, 255, 0.95) 100%);
   }
 
-  :root[data-theme='dark'] .qzone-space-hero {
-    background: linear-gradient(135deg, rgba(66, 90, 239, 0.16) 0%, rgba(24, 25, 30, 0.95) 100%);
+  :root[data-theme='dark'] .moments-hero {
+    background: linear-gradient(135deg, rgba(66, 90, 239, 0.12) 0%, rgba(24, 25, 30, 0.95) 100%);
   }
 
-  .qzone-space-cover {
-    height: clamp(230px, 23vw, 290px);
-    background: linear-gradient(120deg, #425aef 0%, #7000ff 50%, #00b4d8 100%);
-    position: relative;
-    padding: 1rem 1.5rem;
-    box-sizing: border-box;
-    background-repeat: no-repeat;
+  .moments-hero__cover {
+    position: absolute;
+    inset: 0;
+    opacity: 0.12;
     background-size: cover;
     background-position: center;
+    pointer-events: none;
     transition: background-image 0.4s ease;
   }
 
   .space-cover-glow {
     position: absolute;
     inset: 0;
-    background: radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.3) 0%, transparent 60%);
+    background: radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.4) 0%, transparent 60%);
   }
 
-  .qzone-profile-bar {
-    padding: 0 2rem 1.5rem;
+  .moments-hero__content {
     display: grid;
     grid-template-columns: auto 1fr auto;
     gap: 1.75rem;
-    align-items: flex-end;
-    margin-top: -45px;
+    align-items: center;
     position: relative;
     z-index: 2;
   }
 
   @media (max-width: 900px) {
-    .qzone-profile-bar {
+    .moments-hero__content {
       grid-template-columns: 1fr;
-      align-items: flex-start;
-      gap: 1rem;
-      padding: 0 1.25rem 1.25rem;
+      gap: 1.25rem;
     }
   }
 
   .profile-avatar-wrapper {
     position: relative;
-    width: 92px;
-    height: 92px;
+    width: 76px;
+    height: 76px;
   }
 
   .profile-avatar {
-    width: 92px;
-    height: 92px;
-    border-radius: 50%;
+    width: 76px;
+    height: 76px;
+    border-radius: 50% !important;
     object-fit: cover;
-    border: 4px solid var(--card-bg, #fff);
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+    border: 3px solid var(--card-bg, #fff);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
   }
 
   .owner-crown-badge {
@@ -1676,14 +1451,14 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
     right: -2px;
     background: #f59e0b;
     color: #fff;
-    width: 28px;
-    height: 28px;
+    width: 24px;
+    height: 24px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.85rem;
-    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.5);
+    font-size: 0.75rem;
+    box-shadow: 0 2px 6px rgba(245, 158, 11, 0.4);
     border: 2px solid #fff;
   }
 
@@ -1702,27 +1477,26 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
 
   .profile-name {
     margin: 0;
-    font-size: 1.45rem;
-    font-weight: 850;
+    font-size: 1.35rem;
+    font-weight: 800;
     color: var(--font-color);
   }
 
-  .qzone-level-badge {
-    padding: 3px 8px;
-    border-radius: 6px;
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-    color: #fff;
+  .level-badge {
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: rgba(66, 90, 239, 0.12);
+    color: var(--theme-main, #425aef);
+    border: 1px solid rgba(66, 90, 239, 0.25);
     font-size: 0.72rem;
     font-weight: 800;
-    letter-spacing: 0.5px;
-    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
   }
 
   .qzone-radar-pill {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    padding: 3px 10px;
+    padding: 2px 10px;
     border-radius: 12px;
     background: rgba(16, 185, 129, 0.12);
     color: #10b981;
@@ -1748,236 +1522,49 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
 
   .profile-bio {
     margin: 0;
-    font-size: 0.92rem;
+    font-size: 0.9rem;
     line-height: 1.5;
     color: var(--text-secondary, #64748b);
   }
 
-  .qzone-stats-grid {
+  /* 核心指标统计 (基于站点标准 stat-pill) */
+  .moments-hero__stats {
     display: flex;
     align-items: center;
-    gap: 1.25rem;
-    padding: 0.75rem 1.25rem;
-    background: rgba(66, 90, 239, 0.05);
-    border: 1px solid rgba(66, 90, 239, 0.12);
-    border-radius: 10px;
+    gap: 10px;
+    flex-wrap: wrap;
   }
 
-  .space-stat-item {
+  .stat-pill {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 2px;
-  }
-
-  .stat-number {
-    font-size: 1.15rem;
-    font-weight: 850;
-  }
-
-  .stat-number.is-accent { color: #f59e0b; }
-  .stat-number.is-purple { color: #8b5cf6; }
-  .stat-number.is-blue { color: #3b82f6; }
-  .stat-number.is-pink { color: #ec4899; }
-  .stat-number.is-teal { color: #0d9488; }
-
-  .stat-label {
-    font-size: 0.72rem;
-    font-weight: 700;
-    color: var(--text-secondary, #64748b);
-  }
-
-  /* QQ 空间子导航栏 */
-  .qzone-subnav-bar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0.75rem 2rem;
-    border-top: 1px solid rgba(66, 90, 239, 0.1);
-    background: rgba(66, 90, 239, 0.02);
-    flex-wrap: wrap;
-    gap: 0.75rem;
-  }
-
-  .subnav-links {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex-wrap: wrap;
-  }
-
-  .subnav-item {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
     padding: 6px 14px;
-    border-radius: 20px;
-    font-size: 0.88rem;
-    font-weight: 750;
-    color: var(--font-color);
-    text-decoration: none;
-    transition: all 0.2s ease;
-    background: rgba(0, 0, 0, 0.03);
-  }
-
-  :root[data-theme='dark'] .subnav-item {
-    background: rgba(255, 255, 255, 0.05);
-  }
-
-  .subnav-item:hover {
-    color: var(--theme-main, #425aef);
-    background: rgba(66, 90, 239, 0.1);
-  }
-
-  .subnav-item.is-active {
-    background: var(--theme-main, #425aef);
-    color: #fff;
-    box-shadow: 0 4px 12px rgba(66, 90, 239, 0.3);
-  }
-
-  /* QQ 空间式赞者头像流 */
-  .moment-likes-preview {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 6px 12px;
     background: rgba(66, 90, 239, 0.04);
-    border-radius: 8px;
-    font-size: 0.8rem;
+    border: 1px solid rgba(66, 90, 239, 0.12);
+    border-radius: 6px;
+    min-width: 68px;
+  }
+
+  .stat-pill__label {
+    font-size: 0.7rem;
     color: var(--text-secondary, #64748b);
-    margin-top: 0.25rem;
+    font-weight: 600;
   }
 
-  .likes-preview-heart {
-    font-size: 0.85rem;
-  }
-
-  .likes-avatar-stack {
-    display: flex;
-    align-items: center;
-    margin-left: 2px;
-  }
-
-  .likes-avatar {
-    width: 22px;
-    height: 22px;
-    border-radius: 50%;
-    border: 2px solid var(--card-bg, #fff);
-    margin-left: -6px;
-    object-fit: cover;
-    transition: transform 0.2s;
-  }
-
-  .likes-avatar:first-child {
-    margin-left: 0;
-  }
-
-  .likes-avatar:hover {
-    transform: scale(1.2);
-    z-index: 2;
-  }
-
-  .likes-avatar.is-my-like {
-    border-color: #ef4444;
-    animation: heartBeat 0.5s ease;
-  }
-
-  .likes-preview-text {
-    font-weight: 700;
-    margin-left: 4px;
-  }
-
-  /* 访客头像与输入布局 */
-  .comment-form-avatar-layout {
-    display: flex;
-    gap: 12px;
-    align-items: flex-start;
-  }
-
-  .comment-visitor-avatar-box {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 3px;
-    flex-shrink: 0;
-  }
-
-  .comment-visitor-avatar-img {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 2px solid rgba(66, 90, 239, 0.25);
-    background: rgba(0, 0, 0, 0.03);
-    transition: transform 0.2s ease, border-color 0.2s ease;
-  }
-
-  .comment-visitor-avatar-img:hover {
-    transform: scale(1.05);
-    border-color: var(--theme-main, #425aef);
-  }
-
-  .visitor-avatar-label {
-    font-size: 0.68rem;
+  .stat-pill__val {
+    font-size: 1.05rem;
     font-weight: 800;
-    color: var(--text-secondary, #64748b);
+    color: var(--theme-main, #425aef);
   }
 
-  .comment-form-main-fields {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  /* 踩一踩浮动动画 */
-  .qzone-floating-paw {
-    position: fixed;
-    z-index: 99999;
-    color: #d97706;
-    font-size: 0.95rem;
-    font-weight: 850;
-    pointer-events: none;
-    animation: floatUpPaw 1.2s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
-    background: rgba(254, 243, 199, 0.95);
-    padding: 4px 10px;
-    border-radius: 12px;
-    border: 1px solid rgba(245, 158, 11, 0.4);
-    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.25);
-  }
-
-  @keyframes floatUpPaw {
-    0% {
-      opacity: 0;
-      transform: translate(-50%, 0) scale(0.6);
-    }
-    20% {
-      opacity: 1;
-      transform: translate(-50%, -20px) scale(1.1);
-    }
-    80% {
-      opacity: 0.9;
-      transform: translate(-50%, -60px) scale(1);
-    }
-    100% {
-      opacity: 0;
-      transform: translate(-50%, -90px) scale(0.9);
-    }
-  }
-
-  /* 2. 主舞台容器 */
-  .moments-main-stage {
-    position: relative;
-    width: 100%;
-  }
-
+  /* 2. 动态瀑布流 (单列流式加载) */
   .moments-stream-view {
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
   }
 
-  /* 说说瀑布流网格与卡片 */
   .moments-feed {
     display: flex;
     flex-direction: column;
@@ -1989,17 +1576,25 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
     display: flex;
     flex-direction: column;
     gap: 1rem;
-    position: relative;
-    border-radius: 12px;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
     cursor: pointer;
     box-sizing: border-box;
     width: 100%;
+    border-radius: 8px !important;
   }
 
   .moment-card:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(66, 90, 239, 0.08);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.07);
+  }
+
+  /* 作者头像圆角规范：站长全站唯一方框，友邻保持圆框 */
+  .moment-card.is-owner-moment .author-avatar-wrap .moment-avatar {
+    border-radius: 8px !important;
+  }
+
+  .moment-card.is-friend-moment .author-avatar-wrap .moment-avatar {
+    border-radius: 50% !important;
   }
 
   .moment-card__header {
@@ -2012,11 +1607,11 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
     display: flex;
     align-items: center;
     gap: 12px;
-    cursor: pointer;
     background: transparent;
     border: none;
     padding: 0;
     text-align: left;
+    cursor: pointer;
   }
 
   .author-avatar-wrap {
@@ -2029,44 +1624,30 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
   .moment-avatar {
     width: 46px;
     height: 46px;
-    border-radius: 50%;
     object-fit: cover;
-    border: 2px solid rgba(66, 90, 239, 0.2);
-    transition: all 0.2s ease;
-  }
-
-  /* 站长头像在显式时是唯一的方框 (全站唯一方框) */
-  .moment-card.is-owner-moment .author-avatar-wrap .moment-avatar {
-    border-radius: 8px !important;
-    border: 2px solid #f59e0b;
-  }
-
-  /* 友链及所有访客头像严格保持圆框 */
-  .moment-card.is-friend-moment .author-avatar-wrap .moment-avatar {
-    border-radius: 50% !important;
-    border: 2px solid rgba(66, 90, 239, 0.3);
+    border: 2px solid rgba(66, 90, 239, 0.15);
   }
 
   .avatar-crown-badge {
     position: absolute;
     bottom: -2px;
     right: -2px;
+    font-size: 0.7rem;
     background: #f59e0b;
     color: #fff;
-    width: 18px;
-    height: 18px;
-    border-radius: 50%;
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.65rem;
     border: 1px solid #fff;
   }
 
   .moment-author-meta {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 3px;
   }
 
   .moment-author-name {
@@ -2077,8 +1658,8 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
   }
 
   .name-text {
+    font-weight: 800;
     font-size: 0.98rem;
-    font-weight: 850;
     color: var(--font-color);
   }
 
@@ -2090,15 +1671,14 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
   }
 
   .badge-pill.is-owner {
-    background: rgba(245, 158, 11, 0.15);
-    color: #d97706;
-    border: 1px solid rgba(245, 158, 11, 0.3);
+    background: #f59e0b;
+    color: #fff;
   }
 
   .badge-pill.is-friend {
     background: rgba(66, 90, 239, 0.12);
     color: var(--theme-main, #425aef);
-    border: 1px solid rgba(66, 90, 239, 0.25);
+    border: 1px solid rgba(66, 90, 239, 0.2);
   }
 
   .mood-pill {
@@ -2132,7 +1712,7 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
     font-weight: 750;
     color: var(--theme-main, #425aef);
     padding: 3px 8px;
-    border-radius: 6px;
+    border-radius: 4px;
     background: rgba(66, 90, 239, 0.08);
   }
 
@@ -2202,7 +1782,7 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
 
   .moment-photo-item {
     aspect-ratio: 1 / 1;
-    border-radius: 8px;
+    border-radius: 6px;
     overflow: hidden;
     position: relative;
     cursor: pointer;
@@ -2243,6 +1823,36 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
     font-size: 0.75rem;
     color: var(--theme-main, #425aef);
     opacity: 0.85;
+  }
+
+  /* 赞者头像预览条 */
+  .moment-likes-preview {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    background: rgba(66, 90, 239, 0.04);
+    border-radius: 6px;
+    font-size: 0.8rem;
+    color: var(--text-secondary, #64748b);
+  }
+
+  .likes-avatar-stack {
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .likes-avatar {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 2px solid var(--card-bg, #fff);
+    margin-left: -6px;
+    object-fit: cover;
+  }
+
+  .likes-avatar:first-child {
+    margin-left: 0;
   }
 
   .moment-card__footer {
@@ -2298,280 +1908,62 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
 
   @keyframes heartBeat {
     0% { transform: scale(1); }
-    30% { transform: scale(1.4); }
-    60% { transform: scale(0.9); }
+    50% { transform: scale(1.3); }
     100% { transform: scale(1); }
   }
 
-  /* 评论抽屉 */
-  .moment-comments-drawer {
-    margin-top: 0.5rem;
-    border-top: 1px dashed rgba(66, 90, 239, 0.15);
-    padding-top: 1rem;
-    animation: fadeIn 0.2s ease;
-  }
-
-  .drawer-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 0.75rem;
-    font-size: 0.85rem;
-    font-weight: 750;
-  }
-
-  .drawer-hint {
-    font-size: 0.78rem;
-    color: var(--text-secondary, #64748b);
-  }
-
-  .moment-comments-list {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    margin-bottom: 1rem;
-    max-height: 280px;
-    overflow-y: auto;
-  }
-
-  .comment-item {
-    display: flex;
-    gap: 10px;
-    padding: 8px 10px;
-    border-radius: 8px;
-    background: rgba(66, 90, 239, 0.03);
-    font-size: 0.85rem;
-  }
-
-  .comment-item.is-master-comment {
-    background: rgba(245, 158, 11, 0.06);
-    border-left: 3px solid #f59e0b;
-  }
-
-  .comment-avatar {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    object-fit: cover;
-  }
-
-  .comment-content-wrap {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-  }
-
-  .comment-header-row {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 0.78rem;
-  }
-
-  .comment-author-name {
-    font-weight: 750;
-    color: var(--font-color);
-  }
-
-  .comment-role-badge {
-    font-size: 0.68rem;
-    padding: 1px 5px;
-    border-radius: 3px;
-    background: rgba(0, 0, 0, 0.06);
-  }
-
-  .comment-role-badge.is-master {
-    background: #f59e0b;
-    color: #fff;
-  }
-
-  .comment-geo-flag {
-    font-size: 0.7rem;
-    color: var(--text-secondary, #64748b);
-  }
-
-  .comment-time {
-    color: var(--text-secondary, #94a3b8);
-    margin-left: auto;
-  }
-
-  .comment-message-body {
-    line-height: 1.5;
-    color: var(--font-color);
-    word-break: break-word;
-  }
-
-  .comment-item-actions {
-    display: flex;
-    justify-content: flex-end;
-  }
-
-  .btn-reply-comment {
-    background: transparent;
-    border: none;
-    font-size: 0.75rem;
-    color: var(--theme-main, #425aef);
-    cursor: pointer;
-    padding: 0;
-  }
-
-  /* 发评表单 */
-  .moment-quick-comment-form {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  .form-row-meta {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-  }
-
-  @media (max-width: 600px) {
-    .form-row-meta {
-      grid-template-columns: 1fr;
-    }
-  }
-
-  .meta-input-group {
-    position: relative;
-    display: flex;
-    align-items: center;
-  }
-
-  .meta-input-group .input-icon {
-    position: absolute;
-    left: 10px;
-    font-size: 0.85rem;
-  }
-
-  .meta-input-group .btn-random-nickname {
-    position: absolute;
-    right: 8px;
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    font-size: 0.85rem;
-  }
-
-  .comment-input {
-    width: 100%;
-    padding: 6px 10px 6px 32px;
-    border-radius: 6px;
-    border: 1px solid rgba(66, 90, 239, 0.18);
-    background: rgba(0, 0, 0, 0.02);
-    font-size: 0.82rem;
-    color: var(--font-color);
-    box-sizing: border-box;
-  }
-
-  :root[data-theme='dark'] .comment-input {
-    background: rgba(255, 255, 255, 0.03);
-  }
-
-  .comment-textarea {
-    width: 100%;
-    padding: 8px 10px;
-    border-radius: 6px;
-    border: 1px solid rgba(66, 90, 239, 0.18);
-    background: rgba(0, 0, 0, 0.02);
-    font-size: 0.85rem;
-    color: var(--font-color);
-    box-sizing: border-box;
-    resize: vertical;
-  }
-
-  :root[data-theme='dark'] .comment-textarea {
-    background: rgba(255, 255, 255, 0.03);
-  }
-
-  .form-row-tools {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-
-  .emoji-quick-bar {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    flex-wrap: wrap;
-  }
-
-  .quick-emoji-btn {
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    font-size: 1rem;
-    padding: 2px 4px;
-    border-radius: 4px;
-    transition: background 0.15s;
-  }
-
-  .quick-emoji-btn:hover {
-    background: rgba(66, 90, 239, 0.1);
-  }
-
-  .comment-submit-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 6px 16px;
-    border-radius: 6px;
-    background: var(--theme-main, #425aef);
-    color: #fff;
-    border: none;
-    font-size: 0.85rem;
-    font-weight: 750;
-    cursor: pointer;
-    transition: all 0.2s ease;
-  }
-
-  .comment-submit-btn:hover {
-    background: #3549d4;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(66, 90, 239, 0.35);
-  }
-
-  /* 瀑布流终点提示 */
+  /* 终点提示 */
   .stream-timeline-end {
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 1rem;
-    margin: 2.5rem 0 1rem;
+    padding: 2rem 0;
+    color: var(--text-secondary, #64748b);
   }
 
-  .stream-timeline-end .end-line {
+  .end-line {
     flex: 1;
     height: 1px;
-    background: rgba(66, 90, 239, 0.15);
+    background: rgba(66, 90, 239, 0.1);
   }
 
-  .stream-timeline-end .end-pill {
-    font-size: 0.85rem;
-    color: var(--text-secondary, #64748b);
-    padding: 6px 18px;
-    border-radius: 20px;
-    background: rgba(66, 90, 239, 0.05);
-    border: 1px solid rgba(66, 90, 239, 0.12);
+  .end-pill {
+    font-size: 0.8rem;
+    font-weight: 600;
+    opacity: 0.7;
   }
 
-  /* 视图 B：说说详情页面内加载容器 (完全内嵌，非弹窗) */
-  .moment-inpage-detail-view {
-    padding: 0;
-    overflow: hidden;
-    animation: fadeIn 0.25s ease;
+  .moments-empty {
+    padding: 3rem 1.5rem;
+    text-align: center;
     display: flex;
     flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .empty-icon {
+    font-size: 2.2rem;
+  }
+
+  .empty-title {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 750;
+  }
+
+  /* 3. 页面内详情容器 (In-Page View, 去弹窗) */
+  .moment-inpage-detail-view {
+    border-radius: 8px !important;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    animation: fadeIn 0.25s ease;
   }
 
   @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(8px); }
+    from { opacity: 0; transform: translateY(4px); }
     to { opacity: 1; transform: translateY(0); }
   }
 
@@ -2580,21 +1972,21 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
     align-items: center;
     justify-content: space-between;
     padding: 1rem 1.75rem;
-    border-bottom: 1px solid rgba(66, 90, 239, 0.12);
-    background: rgba(66, 90, 239, 0.04);
+    border-bottom: 1px solid rgba(66, 90, 239, 0.1);
+    background: rgba(66, 90, 239, 0.02);
   }
 
   .btn-inpage-back {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
     padding: 8px 16px;
-    border-radius: 8px;
-    background: rgba(66, 90, 239, 0.1);
-    color: var(--theme-main, #425aef);
-    border: 1px solid rgba(66, 90, 239, 0.2);
+    border-radius: 6px;
+    background: rgba(66, 90, 239, 0.08);
+    border: 1px solid rgba(66, 90, 239, 0.18);
     font-size: 0.88rem;
     font-weight: 750;
+    color: var(--theme-main, #425aef);
     cursor: pointer;
     transition: all 0.2s ease;
   }
@@ -2615,7 +2007,7 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
     align-items: center;
     gap: 6px;
     padding: 8px 14px;
-    border-radius: 8px;
+    border-radius: 6px;
     background: rgba(0, 0, 0, 0.04);
     border: 1px solid rgba(0, 0, 0, 0.08);
     font-size: 0.85rem;
@@ -2647,9 +2039,8 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
   }
 
   .inpage-avatar {
-    width: 54px;
-    height: 54px;
-    border-radius: 50%;
+    width: 52px;
+    height: 52px;
     object-fit: cover;
     border: 2px solid var(--theme-main, #425aef);
   }
@@ -2686,7 +2077,7 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
   }
 
   .inpage-badge-pill.is-friend {
-    background: rgba(66, 90, 239, 0.15);
+    background: rgba(66, 90, 239, 0.12);
     color: var(--theme-main, #425aef);
     border: 1px solid rgba(66, 90, 239, 0.25);
   }
@@ -2750,16 +2141,16 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
   }
 
   .inpage-photo-item {
-    border-radius: 10px;
+    border-radius: 8px;
     overflow: hidden;
     background: rgba(0, 0, 0, 0.04);
     aspect-ratio: 4 / 3;
+    cursor: zoom-in;
+    transition: transform 0.2s ease;
   }
 
-  .inpage-photo-item a {
-    display: block;
-    width: 100%;
-    height: 100%;
+  .inpage-photo-item:hover {
+    transform: scale(1.02);
   }
 
   .inpage-photo-item img {
@@ -2767,23 +2158,6 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
     height: 100%;
     object-fit: cover;
     display: block;
-    transition: transform 0.3s ease;
-  }
-
-  .inpage-photo-item:hover img {
-    transform: scale(1.03);
-  }
-
-  .inpage-origin-banner {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 14px;
-    background: rgba(66, 90, 239, 0.06);
-    border: 1px solid rgba(66, 90, 239, 0.15);
-    border-radius: 8px;
-    font-size: 0.85rem;
-    color: var(--font-color);
   }
 
   .inpage-action-bar {
@@ -2799,7 +2173,7 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
     padding: 8px 18px;
     background: rgba(66, 90, 239, 0.08);
     border: 1px solid rgba(66, 90, 239, 0.18);
-    border-radius: 8px;
+    border-radius: 6px;
     color: var(--font-color);
     font-size: 0.9rem;
     font-weight: 750;
@@ -2845,10 +2219,11 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
     margin: 0.5rem 0;
   }
 
+  /* 4. 评论区 (严格打通全站统一 Epomail 账户体系与 D1) */
   .inpage-comments-section {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 14px;
   }
 
   .inpage-comments-head {
@@ -2864,18 +2239,355 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
     color: var(--font-color);
   }
 
-  .inpage-cross-hint {
-    font-size: 0.8rem;
-    color: var(--text-secondary, #64748b);
-  }
-
   .inpage-comments-list {
     display: flex;
     flex-direction: column;
     gap: 10px;
-    max-height: 450px;
+    max-height: 480px;
     overflow-y: auto;
     padding-right: 4px;
+  }
+
+  .comments-loading,
+  .comments-empty-notice {
+    padding: 1.5rem;
+    text-align: center;
+    color: var(--text-secondary, #64748b);
+    font-size: 0.88rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .loading-spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(66, 90, 239, 0.2);
+    border-top-color: var(--theme-main, #425aef);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  .comment-item {
+    display: flex;
+    gap: 12px;
+    padding: 10px 14px;
+    background: rgba(66, 90, 239, 0.03);
+    border: 1px solid rgba(66, 90, 239, 0.08);
+    border-radius: 6px;
+    align-items: flex-start;
+  }
+
+  .comment-item.is-master-comment {
+    background: rgba(245, 158, 11, 0.04);
+    border-color: rgba(245, 158, 11, 0.2);
+  }
+
+  .comment-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid rgba(66, 90, 239, 0.2);
+    flex-shrink: 0;
+  }
+
+  .is-master-comment .comment-avatar {
+    border-radius: 6px !important;
+  }
+
+  .comment-content-wrap {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .comment-header-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    font-size: 0.82rem;
+  }
+
+  .comment-author-name {
+    font-weight: 750;
+    color: var(--font-color);
+  }
+
+  .comment-role-badge {
+    font-size: 0.7rem;
+    padding: 1px 6px;
+    border-radius: 4px;
+    background: rgba(0, 0, 0, 0.05);
+    color: var(--text-secondary, #64748b);
+  }
+
+  .comment-role-badge.is-master {
+    background: #f59e0b;
+    color: #fff;
+    font-weight: 750;
+  }
+
+  .comment-role-badge.is-epomail {
+    background: rgba(66, 90, 239, 0.12);
+    color: var(--theme-main, #425aef);
+    border: 1px solid rgba(66, 90, 239, 0.25);
+    font-weight: 750;
+  }
+
+  .comment-time {
+    margin-left: auto;
+    font-size: 0.75rem;
+    color: var(--text-secondary, #64748b);
+  }
+
+  .comment-message-body {
+    font-size: 0.9rem;
+    line-height: 1.55;
+    color: var(--font-color);
+    word-break: break-word;
+  }
+
+  .comment-item-actions {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .btn-reply-comment,
+  .btn-delete-comment {
+    background: transparent;
+    border: none;
+    padding: 2px 6px;
+    font-size: 0.78rem;
+    color: var(--text-secondary, #64748b);
+    cursor: pointer;
+    transition: color 0.2s ease;
+  }
+
+  .btn-reply-comment:hover {
+    color: var(--theme-main, #425aef);
+  }
+
+  .btn-delete-comment:hover {
+    color: #ef4444;
+  }
+
+  /* 发评表单 */
+  .moment-quick-comment-form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 14px;
+    background: rgba(66, 90, 239, 0.04);
+    border: 1px solid rgba(66, 90, 239, 0.12);
+    border-radius: 8px;
+    margin-top: 0.5rem;
+  }
+
+  /* 状态 A：已认证 Epomail 账号栏 */
+  .composer-account-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 10px;
+    background: rgba(66, 90, 239, 0.08);
+    border-radius: 6px;
+    border: 1px solid rgba(66, 90, 239, 0.15);
+  }
+
+  .composer-user-avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+
+  .composer-user-info {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.85rem;
+  }
+
+  .composer-user-name {
+    font-weight: 750;
+    color: var(--font-color);
+  }
+
+  .composer-user-badge {
+    font-size: 0.7rem;
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-weight: 700;
+  }
+
+  .composer-user-badge.is-epomail {
+    background: #425aef;
+    color: #fff;
+  }
+
+  .composer-user-badge.is-admin {
+    background: #f59e0b;
+    color: #fff;
+  }
+
+  .btn-switch-account {
+    margin-left: auto;
+    background: transparent;
+    border: none;
+    font-size: 0.78rem;
+    color: var(--theme-main, #425aef);
+    cursor: pointer;
+    text-decoration: underline;
+  }
+
+  /* 状态 B：访客输入行 */
+  .comment-visitor-fields .form-row-meta {
+    display: grid;
+    grid-template-columns: 1fr 1fr auto;
+    gap: 10px;
+    align-items: center;
+  }
+
+  @media (max-width: 640px) {
+    .comment-visitor-fields .form-row-meta {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .meta-input-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--card-bg, #fff);
+    border: 1px solid rgba(66, 90, 239, 0.18);
+    border-radius: 6px;
+    padding: 6px 10px;
+  }
+
+  .input-icon {
+    font-size: 0.9rem;
+    opacity: 0.7;
+  }
+
+  .comment-input {
+    border: none;
+    background: transparent;
+    outline: none;
+    width: 100%;
+    font-size: 0.85rem;
+    color: var(--font-color);
+  }
+
+  .btn-quick-epomail-login {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 12px;
+    border-radius: 6px;
+    background: rgba(66, 90, 239, 0.1);
+    border: 1px solid rgba(66, 90, 239, 0.25);
+    color: var(--theme-main, #425aef);
+    font-size: 0.8rem;
+    font-weight: 750;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+  }
+
+  .btn-quick-epomail-login:hover {
+    background: var(--theme-main, #425aef);
+    color: #fff;
+  }
+
+  .comment-textarea {
+    width: 100%;
+    box-sizing: border-box;
+    border: 1px solid rgba(66, 90, 239, 0.18);
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    background: var(--card-bg, #fff);
+    color: var(--font-color);
+    outline: none;
+    resize: vertical;
+    transition: border-color 0.2s ease;
+  }
+
+  .comment-textarea:focus {
+    border-color: var(--theme-main, #425aef);
+  }
+
+  .form-row-tools {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .emoji-quick-bar {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-wrap: wrap;
+  }
+
+  .quick-emoji-btn {
+    background: rgba(0, 0, 0, 0.03);
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    border-radius: 4px;
+    padding: 3px 6px;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: transform 0.15s ease, background 0.15s ease;
+  }
+
+  :root[data-theme='dark'] .quick-emoji-btn {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.08);
+  }
+
+  .quick-emoji-btn:hover {
+    background: rgba(66, 90, 239, 0.12);
+    transform: scale(1.15);
+  }
+
+  .comment-submit-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 18px;
+    background: var(--theme-main, #425aef);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.88rem;
+    font-weight: 750;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .comment-submit-btn:hover {
+    opacity: 0.92;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(66, 90, 239, 0.3);
+  }
+
+  .comment-submit-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
   }
 
   .inpage-bottom-nav {
@@ -2911,7 +2623,7 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
     transform: translateX(-50%) translateY(0);
   }
 
-  /* QQ 空间大图沉浸式画廊模态 (就地浏览) */
+  /* 大图画廊模态 */
   .qzone-photo-lightbox {
     position: fixed;
     top: 0;
@@ -2922,10 +2634,6 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
     display: flex;
     align-items: center;
     justify-content: center;
-  }
-
-  .qzone-photo-lightbox.hidden {
-    display: none !important;
   }
 
   .lightbox-backdrop {
@@ -2984,7 +2692,7 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
     max-width: 90vw;
     max-height: 78vh;
     object-fit: contain;
-    border-radius: 10px;
+    border-radius: 8px;
     box-shadow: 0 16px 48px rgba(0, 0, 0, 0.6);
     user-select: none;
     transition: transform 0.25s ease;
@@ -3028,17 +2736,6 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
     padding: 4px 12px;
     border-radius: 20px;
     border: 1px solid rgba(255, 255, 255, 0.15);
-  }
-
-  .inpage-photo-item {
-    cursor: zoom-in;
-    border-radius: 8px;
-    overflow: hidden;
-    transition: transform 0.2s ease;
-  }
-
-  .inpage-photo-item:hover {
-    transform: scale(1.02);
   }
 
   .moments-toast.hidden { display: none; }

@@ -128,7 +128,7 @@ const STARTER_BOOSTS: BlogComment[] = [
     authorId: 'reader_4',
     authorName: 'DesignCrafter',
     authorRole: 'member',
-    message: '🎨 楼下 Gesture 的楼层时间轴滑块做得非常有质感，很有仪式感！',
+    message: '🎨 设计中留白的克制感往往比繁复的修饰更打动人心。',
     likesCount: 6,
     reactions: { summary: { '💡': 4, '✨': 2 }, users: {} },
     status: 'approved',
@@ -187,7 +187,7 @@ const STARTER_BOOSTS: BlogComment[] = [
     authorId: 'reader_5',
     authorName: 'CodePilot',
     authorRole: 'member',
-    message: '🚀 Boost 轻触即发，30字极简观点表达，随时留下思想切片！',
+    message: '💻 刚刚重构完分布式边缘函数，低延迟架构确实让人赏心悦目。',
     likesCount: 2,
     reactions: { summary: { '🎉': 2 }, users: {} },
     status: 'approved',
@@ -246,7 +246,7 @@ const STARTER_BOOSTS: BlogComment[] = [
     authorId: 'reader_6',
     authorName: '极客漫步',
     authorRole: 'member',
-    message: '💡 悬浮面板边浏览边拟稿，完全不遮挡阅读心流，体验满分！',
+    message: '📖 博客的排版与字体读起来非常舒适，期待更多深度好文！',
     likesCount: 7,
     reactions: { summary: { '💯': 4, '👍': 3 }, users: {} },
     status: 'approved',
@@ -265,7 +265,7 @@ const STARTER_BOOSTS: BlogComment[] = [
     authorId: 'reader_9',
     authorName: 'PixelArtist',
     authorRole: 'member',
-    message: '🎯 3排自适应流速展示很舒展，单句焦点清晰，毫无视觉喧嚣感。',
+    message: '🌱 保持好奇与专注，每一行代码都是与数字世界的真诚对话。',
     likesCount: 3,
     reactions: { summary: { '🎨': 3 }, users: {} },
     status: 'approved',
@@ -277,7 +277,7 @@ const STARTER_BOOSTS: BlogComment[] = [
   },
 ];
 
-// Official Pinned Rule & Welcome Threads (Anchor)
+// Official Pinned Welcome Thread (Clean & Welcoming, zero lecturing)
 export const OFFICIAL_PINNED_POSTS: BlogComment[] = [
   {
     id: 'pinned_welcome_official',
@@ -290,141 +290,16 @@ export const OFFICIAL_PINNED_POSTS: BlogComment[] = [
     authorAvatar: '/media/shijianus/avatar.jpg',
     authorRole: 'admin',
     authorWebsite: 'https://blog.epocanvas.com',
-    message: `### 🌟 欢迎来到全站留言与读者交流广场！
+    message: `### 🌟 欢迎来到读者留言与交流广场
 
-这里是为所有读者与探索者打造的开放交流空间。我们采用了**楼上 Boost 观点流 + 楼下 Gesture 话题广场**的分层架构：
-
-#### 🚀 楼上 Boost：瞬时观点流
-- 专为**快速表达即时想法与简短看法**设计的短句平台（限 30 字以内）；
-- 不设长文排版与复杂回复，免去沉重负担，在顶部平台常驻轮播呈现全站最新声音。
-
-#### 📝 楼下 Gesture：深度讨论广场
-- 适合展开系统性思考与深度对话（8 字以上），支持完整 Markdown、代码高亮、多图与楼层跟帖；
-- **点击条目直接点进去查看详情**，配备**右侧长条百分比滑动当前楼层进度条**（支持拖拽/点击指定楼层快速跳转）；
-- 顶部导航条支持切换 **最新、近期、维度、热门、精选、我的贴文、已读、书签**；
-- 底部配备**非阻塞悬浮起草面板**，支持在浏览全站讨论的同时随时拟写观点与话题。
-
-欢迎点击 **「发布 Gesture」** 留下你的思想足迹！✨`,
-    likesCount: 12,
+欢迎在此留下你的足迹、想法与问候，探讨技术、交流灵感或随心闲聊。期待与你的每一次思想碰撞！✨`,
+    likesCount: 16,
     reactions: {
-      summary: { '👍': 7, '🚀': 5, '✨': 4, '❤️': 6 },
+      summary: { '👍': 8, '✨': 5, '❤️': 6 },
       users: {},
     },
     status: 'pinned',
     createdAt: '2026-10-31T00:20:00.000Z',
-    showLocation: true,
-    ipCountryFlag: '🇨🇳',
-    ipCountryName: '中国',
-    ipLocation: '浙江 · 杭州',
-  },
-  {
-    id: 'pinned_rules_community',
-    postSlug: 'guestbook',
-    parentId: null,
-    postType: 'gesture',
-    tag: 'feedback',
-    authorId: 'admin',
-    authorName: 'shijianus',
-    authorAvatar: '/media/shijianus/avatar.jpg',
-    authorRole: 'admin',
-    authorWebsite: 'https://blog.epocanvas.com',
-    message: `### 📜 全站留言与讨论广场公约及社群守则
-
-为了维护理性、自由、深度且充满温度的技术与思考交流环境，请所有参与者共同遵守本公约：
-
-#### 1. 关于 Boost 与 Gesture 的定位规范
-- **Boost（短句观点）**：适合表达即时的思考片段、短评、感悟与问候。字数限 **30 字以内**，不设多级嵌套回复，由系统在顶部观点流自适应轮播呈现；
-- **Gesture（深度讨论）**：适合展开严谨的技术探讨、架构分析、生活随笔或设计沉淀。需 **8 字以上**，支持完整 Markdown、语法高亮代码块、多图画廊与多楼层跟帖互动。
-
-#### 2. 发帖与文明互动守则
-- **友善交流，互相尊重**：尊重不同技术选型与认知视角，严禁人身攻击、煽动对立、低俗谩骂或歧视性言论；
-- **拒绝无意义灌水与垃圾信息**：请勿发布无意义纯标点符号或批量重复刷屏，简短心得请优先使用 Boost；
-- **排版规范与结构化沉淀**：长篇讨论请善用 Markdown 分级标题、代码块与引用，方便其他探索者深度阅读与索引；
-- **知识产权与原创保护**：转载或引用他处内容请务必注明出处来源，鼓励原创思考与真诚交流。
-
-共同守护这片属于所有探索者的思想绿洲！🌿`,
-    likesCount: 9,
-    reactions: {
-      summary: { '🛡️': 6, '👍': 5, '❤️': 3 },
-      users: {},
-    },
-    status: 'pinned',
-    createdAt: '2026-10-31T00:05:00.000Z',
-    showLocation: true,
-    ipCountryFlag: '🇨🇳',
-    ipCountryName: '中国',
-    ipLocation: '浙江 · 杭州',
-  },
-  {
-    id: 'pinned_architecture_privacy',
-    postSlug: 'guestbook',
-    parentId: null,
-    postType: 'gesture',
-    tag: 'tech',
-    authorId: 'admin',
-    authorName: 'shijianus',
-    authorAvatar: '/media/shijianus/avatar.jpg',
-    authorRole: 'admin',
-    authorWebsite: 'https://blog.epocanvas.com',
-    message: `### ⚡ 关于边缘分布式架构、D1 毫秒级落盘与数据隐私保护说明
-
-本站留言板与交流广场采用现代 Serverless 边缘分布式架构，为所有读者提供极低延迟与数据隐私保障：
-
-#### 1. 边缘计算与分布式数据架构
-- **零冷启动全球就近处理**：基于 Cloudflare Pages Functions 与 Workers，所有读写请求在离你物理距离最近的边缘节点瞬时响应；
-- **分布式 D1 数据库**：留言数据持久化落盘至全球分布式 SQL 引擎，配合智能缓存策略保障首屏即时加载；
-- **非阻塞交互体验**：全站单页路由与右下角非阻塞悬浮起草底座协同工作，边看帖边构思，绝不割裂阅读心流。
-
-#### 2. 隐私合规与访客权益保护
-- **无明文 IP 暴露**：边缘节点仅提取合规的地理国家/地区国旗与城市名称（如 🇨🇳 浙江 · 杭州），严禁向任何前端或第三方接口暴露明文 IP；
-- **访客临时会话安全所有权**：访客发言后持有时效性临时凭证，可对当前留言就地微调；关闭或刷新浏览器后凭证在内存中安全销毁，杜绝越权；
-- **数据自主与去中心化**：不接入任何第三方广告追踪器或数据采集脚本，尊重每位读者的数字足迹。`,
-    likesCount: 11,
-    reactions: {
-      summary: { '⚡': 7, '💡': 6, '🚀': 4 },
-      users: {},
-    },
-    status: 'pinned',
-    createdAt: '2026-10-31T00:10:00.000Z',
-    showLocation: true,
-    ipCountryFlag: '🇨🇳',
-    ipCountryName: '中国',
-    ipLocation: '浙江 · 杭州',
-  },
-  {
-    id: 'pinned_dimensions_guide',
-    postSlug: 'guestbook',
-    parentId: null,
-    postType: 'gesture',
-    tag: 'ideas',
-    authorId: 'admin',
-    authorName: 'shijianus',
-    authorAvatar: '/media/shijianus/avatar.jpg',
-    authorRole: 'admin',
-    authorWebsite: 'https://blog.epocanvas.com',
-    message: `### 💡 讨论维度（Channels）划分、Tag 标签与内容检索指南
-
-为了让每一种思考与话题都能在广场中找到最契合的声场与归属，我们设立了清晰的分类与索引机制：
-
-#### 1. 六大讨论维度说明
-- 💬 **畅所欲言**：日常闲聊、生活感悟、友邻问候；
-- 🛠️ **技术探讨**：前端架构、边缘计算、AI 工具、工程实践；
-- 💡 **灵感交流**：UI/UX 设计思考、新想法探讨、原型分享；
-- ☕ **生活碎碎念**：阅读心得、咖啡时光、户外探索；
-- 📮 **站点建议**：功能建议、体验反馈与缺陷报告；
-- 🌟 **全部维度**：全景聚合全站所有话题。
-
-#### 2. 自定义 Tag 标签与智能分类
-- 在悬浮面板起草话题时，可自由添加标签（如 \`#前端 #性能优化\`），便于关键词关联；
-- 当内容低于 8 字或低于 30 字且未填写标题与标签时，系统将智能识别为 **Boost** 观点，一键即刻发布上墙；
-- 广场活跃区默认展示最新 20 篇热议 Gesture，所有历史长帖均可通过顶部的**分区下拉框**或**全文搜索框**随时检索。`,
-    likesCount: 8,
-    reactions: {
-      summary: { '✨': 5, '🎯': 4, '👍': 3 },
-      users: {},
-    },
-    status: 'pinned',
-    createdAt: '2026-10-31T00:12:00.000Z',
     showLocation: true,
     ipCountryFlag: '🇨🇳',
     ipCountryName: '中国',
@@ -841,21 +716,14 @@ export function GuestbookBoard() {
       ? { id: 'all', label: '综合分区', icon: '🌟', desc: '随心分享，轻量短句或全站综合交流' }
       : CHANNELS[0]);
 
-  // Direct, result-oriented word count message (No verbose explanations or lecturing)
+  // Result only: clean character count
   const composerWordResult = useMemo(() => {
     const len = trimmedComposerText.length;
-    if (determinedType === 'boost') {
-      if (len === 0) return '可输入 30 字以内';
-      if (len <= 30) return `还可输入 ${30 - len} 字`;
-      return `已超出 ${len - 30} 字`;
-    } else {
-      if (len < 8) return `还需至少 ${8 - len} 字`;
-      return `已输入 ${len} 字`;
-    }
-  }, [trimmedComposerText, determinedType]);
+    return len > 0 ? `${len} 字` : '';
+  }, [trimmedComposerText]);
 
-  const isWordCountWarning = determinedType === 'boost' && trimmedComposerText.length > 30;
-  const isWordCountNeedMore = determinedType === 'gesture' && trimmedComposerText.length < 8;
+  const isWordCountWarning = false;
+  const isWordCountNeedMore = false;
 
   // Organize Gestures into Top-Level Posts vs Replies
   const { topLevelGestures, repliesByParent } = useMemo(() => {
@@ -1105,14 +973,14 @@ export function GuestbookBoard() {
           setDbComments((prev) => [res.comment!, ...prev]);
           setComposerText('');
           setShowComposer(false);
-          showToast('🚀 Boost 观点已成功发布！');
+          showToast('✨ 发布成功！');
         } else {
           setComposerError(res.error || '发布失败，请稍后重试');
         }
       } else {
         // Gesture Mode
         if (text.length < 8) {
-          setComposerError('⚠️ 讨论内容至少需要 8 个字');
+          setComposerError('⚠️ 内容至少需要 8 个字');
           setComposerSubmitting(false);
           return;
         }
@@ -1153,7 +1021,7 @@ export function GuestbookBoard() {
           setComposerTagsList([]);
           setComposerTagInput('');
           setComposerImages([]);
-          showToast('✨ Gesture 发布成功！已进入详情讨论');
+          showToast('✨ 发布成功！');
           openGestureDetail(res.comment);
         } else {
           setComposerError(res.error || '发布失败，请检查网络');
@@ -1334,15 +1202,7 @@ export function GuestbookBoard() {
               <Rocket className="w-3.5 h-3.5 mr-1" /> Boost
             </span>
             <span className="gb-boost-status-count">
-              {allBoostComments.length > 20
-                ? `全站共收录 ${allBoostComments.length} 条观点 · 轮播呈现最新热门观点`
-                : `全站共收录 ${allBoostComments.length} 条观点`}
-            </span>
-          </div>
-
-          <div className="gb-boost-head-right">
-            <span className="gb-boost-spec-badge">
-              ⚡ 3排观点流 · 速度自适应 · 单句展台
+              {allBoostComments.length}
             </span>
           </div>
         </div>
@@ -1530,7 +1390,7 @@ export function GuestbookBoard() {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="搜索 Gesture..."
+              placeholder="搜索留言..."
               className="gb-search-input"
             />
             {searchQuery && (
@@ -1550,7 +1410,7 @@ export function GuestbookBoard() {
             onClick={openFloatingComposer}
           >
             <Pencil className="w-4 h-4 mr-1.5" />
-            <span>发布 Gesture</span>
+            <span>发布留言</span>
           </button>
         </div>
       </nav>
@@ -1588,19 +1448,19 @@ export function GuestbookBoard() {
             <div className="gb-empty-state">
               <div className="gb-empty-icon">🌱</div>
               <h3 className="gb-empty-title">
-                {searchQuery ? '未找到匹配的 Gesture 贴文' : '暂无符合当前分类的 Gesture'}
+                {searchQuery ? '未找到匹配的留言' : '暂无留言'}
               </h3>
               <p className="gb-empty-desc">
                 {searchQuery
                   ? '可以尝试更换关键词或清除筛选条件'
-                  : '成为第一个发起话题的人吧！写下你的见解，启动全站讨论。'}
+                  : '留下你的足迹吧！写下你的见解，开启交流。'}
               </p>
               <button
                 type="button"
                 className="gb-new-gesture-btn"
                 onClick={() => openFloatingComposer('gesture')}
               >
-                <Pencil className="w-4 h-4 mr-1.5" /> 发起第一条 Gesture
+                <Pencil className="w-4 h-4 mr-1.5" /> 发起第一条留言
               </button>
             </div>
           ) : (
@@ -1717,9 +1577,7 @@ export function GuestbookBoard() {
               {/* 20-Item Display Cap Notice */}
               {filteredGestures.length > 20 && (
                 <div className="gb-list-cap-notice">
-                  <span>
-                    已呈现当前分类前 20 条热议 Gesture（全站匹配共 {filteredGestures.length} 篇）· 历史讨论可通过顶部搜索或分类维度检索
-                  </span>
+                  <span>共 {filteredGestures.length} 篇留言</span>
                 </div>
               )}
             </div>
@@ -2119,7 +1977,7 @@ export function GuestbookBoard() {
                         rows={3}
                         value={detailReplyMessage}
                         onChange={(e) => setDetailReplyMessage(e.target.value)}
-                        placeholder="撰写你的回复讨论（支持 Markdown 排版、代码高亮）..."
+                        placeholder="写下回复..."
                         className="gb-textarea is-reply-box"
                       />
                     ) : (
@@ -2180,7 +2038,6 @@ export function GuestbookBoard() {
                 <div className="gb-floor-scroller-card">
                   {/* Scroller Header: Percentage & Current Floor */}
                   <div className="gb-scroller-header">
-                    <span className="gb-scroller-pct">{scrollPercent}%</span>
                     <span className="gb-scroller-floor-label">
                       {currentFloor} / {totalFloors} 楼
                     </span>

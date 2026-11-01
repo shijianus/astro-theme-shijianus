@@ -1,6 +1,6 @@
 {
   "ok": true,
-  "generatedAt": "2026-11-01T01:11:58.141Z",
+  "generatedAt": "2026-11-01T16:04:26.126Z",
   "stats": {
     "posts": 30,
     "totalWords": 100922,
@@ -162,55 +162,6 @@
     }
   },
   "activity": [
-    {
-      "date": "2025-11-02",
-      "displayDate": "2025/11/2",
-      "level": 0,
-      "posts": [],
-      "isFuture": false
-    },
-    {
-      "date": "2025-11-03",
-      "displayDate": "2025/11/3",
-      "level": 0,
-      "posts": [],
-      "isFuture": false
-    },
-    {
-      "date": "2025-11-04",
-      "displayDate": "2025/11/4",
-      "level": 0,
-      "posts": [],
-      "isFuture": false
-    },
-    {
-      "date": "2025-11-05",
-      "displayDate": "2025/11/5",
-      "level": 0,
-      "posts": [],
-      "isFuture": false
-    },
-    {
-      "date": "2025-11-06",
-      "displayDate": "2025/11/6",
-      "level": 0,
-      "posts": [],
-      "isFuture": false
-    },
-    {
-      "date": "2025-11-07",
-      "displayDate": "2025/11/7",
-      "level": 0,
-      "posts": [],
-      "isFuture": false
-    },
-    {
-      "date": "2025-11-08",
-      "displayDate": "2025/11/8",
-      "level": 0,
-      "posts": [],
-      "isFuture": false
-    },
     {
       "date": "2025-11-09",
       "displayDate": "2025/11/9",
@@ -3090,6 +3041,55 @@
       "level": 0,
       "posts": [],
       "isFuture": false
+    },
+    {
+      "date": "2026-11-01",
+      "displayDate": "2026/11/1",
+      "level": 0,
+      "posts": [],
+      "isFuture": false
+    },
+    {
+      "date": "2026-11-02",
+      "displayDate": "2026/11/2",
+      "level": 0,
+      "posts": [],
+      "isFuture": true
+    },
+    {
+      "date": "2026-11-03",
+      "displayDate": "2026/11/3",
+      "level": 0,
+      "posts": [],
+      "isFuture": true
+    },
+    {
+      "date": "2026-11-04",
+      "displayDate": "2026/11/4",
+      "level": 0,
+      "posts": [],
+      "isFuture": true
+    },
+    {
+      "date": "2026-11-05",
+      "displayDate": "2026/11/5",
+      "level": 0,
+      "posts": [],
+      "isFuture": true
+    },
+    {
+      "date": "2026-11-06",
+      "displayDate": "2026/11/6",
+      "level": 0,
+      "posts": [],
+      "isFuture": true
+    },
+    {
+      "date": "2026-11-07",
+      "displayDate": "2026/11/7",
+      "level": 0,
+      "posts": [],
+      "isFuture": true
     }
   ],
   "posts": [

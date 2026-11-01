@@ -6754,6 +6754,28 @@
   1. 更新 `scripts/verify-guestbook-board.mjs`，断言 100% 实体背景色、手柄无多余静态文字、分区紧凑单选与多 Tag 胶囊添加/删除全流程；
   2. 本地测试全绿通过。
 
+### Task 119: 朋友圈 (/moments/) UI 设计底线深度整改：最小信息密度与只展示结果脱水、全站 Epomail 账户与 D1 数据库严格统一鉴权、消除站中站与二级导航割裂
+- [x] **最小信息密度与只展示结果 (彻底脱水净化说教与开发黑话)**：
+  1. 彻底清除正文、说说摘要、清单与组件中所有对用户解释技术原理的说教（严禁包含“在设计过程中”、“默认遵循 QQ 空间规范”、“通过边缘反代保持在本站”等内部设计说明）；
+  2. 将 `src/content/moments/*.md` 站长原生说说重构为极客技术随想、架构思考与数字生活真情实感，通过 `scripts/sync-friends-moments.mjs` 重新编译输出标准 `public/shijianus-moments.json` 与 `public/data/friends-moments.json`；
+  3. 清除 `(QQ空间模式)`、`跨站直通车`、`正在连接边缘数据库`、`记录生活与友谊的每一个脚印` 等口号式异物。
+- [x] **全站统一 Epomail 账户体系与 Cloudflare D1 数据库严格统一**：
+  1. 彻底删除 `MomentsDashboard.astro` 中手写本地伪造 `shijianus_moment_comments_*` 假缓存与假成功拦截，严禁未存入数据库即展示虚假发评结果；
+  2. 严格对接站点统一 `shijianus-comment-account`、`readCommentIdentity()` 与 Epomail 会话，发评时严格携带 `sessionToken`、`authorRole`、`authorEmail`、`authorAvatar` 与 `Authorization: Bearer` 授权头；
+  3. 发评与点赞 100% 直通 Cloudflare D1 `comments` 边缘数据库（`post_slug: moment_${id}`），真实记录用户等级与角色徽章（`👑 站长` / `⚡ Epomail 认证` / `访客`）；
+  4. 支持登录用户/管理员对自身留言执行原生 D1 就地删除（`btn-delete-comment`）与回复（`btn-reply-comment`）；
+  5. 遇异常真实反馈 API 错误信息，严禁吞报掩耳盗铃。
+- [x] **消除站中站割裂与设计系统统一**：
+  1. 彻底移除二级子导航栏 `.qzone-subnav-bar`，全站导航严格统一至 `#nav` 顶栏；
+  2. 移除卡片内多头嵌套抽屉表单，整卡或“💬 评论”统一步入页面内详情页（In-Page Detail View）；
+  3. 站长头像严格遵守“全站唯一方框小圆角 (8px)”原则，友邻与访客头像全站一致为圆框（50% 圆角），空间 Hero 主头像保留圆框；
+  4. 站长 Hero 状态严格全站同步为 `☕ 喝咖啡中`，杜绝脱靶硬编码；
+  5. 统一搜索直接复用顶栏搜索广播（`shijianus:moments-filter`），杜绝页面内私造异形搜索框。
+- [x] **Playwright 自动化全链路 E2E 验证全绿通过**：
+  1. 编写与完善 `scripts/verify-moments-space.mjs`，全量覆盖 13 大维度（Hero 资料与状态同步、去二级子导航、去传送门与分类指示器、真实说说瀑布流、方圆头像规范与卡片宽度一致、整卡直达页面内详情、画廊大图模态、URL Hash 双向联动、Epomail 账户与发评、顶栏搜索过滤联动、最小信息密度与只展示结果断言）；
+  2. 本地测试 13 项全量通过，0 致命报错。
+
+
 
 
 

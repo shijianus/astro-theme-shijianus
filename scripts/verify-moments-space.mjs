@@ -355,13 +355,11 @@ async function runVerification() {
       throw new Error('Hero 未能与账号中心个人资料/状态完成实时同步');
     }
 
-    // 检查 QQ 空间子导航栏
-    console.log('[E2E 3] 检查 QQ 空间子导航栏 (已清除假足迹按钮与假计数器)...');
-    const subnavLinks = await page.$$('.qzone-subnav-bar .subnav-item');
-    console.log(`  -> 子导航项数量: ${subnavLinks.length}`);
-    if (subnavLinks.length < 4) throw new Error('子导航项少于 4 个');
-    const subnavTexts = await Promise.all(subnavLinks.map((el) => el.textContent()));
-    console.log(`  -> 子导航文案: ${subnavTexts.map((s) => s.trim()).join(' | ')}`);
+    // 检查二级子导航栏已彻底移除 (消除站中站导航割裂，回归统一顶栏 #nav)
+    console.log('[E2E 3] 验证二级子导航已移除 (消除站中站割裂)...');
+    const subnavBar = await page.$('.qzone-subnav-bar');
+    if (subnavBar) throw new Error('禁止再出现站中站的割裂情况，.qzone-subnav-bar 必须彻底移除！');
+    console.log('  -> 二级子导航清理验证通过: 全站导航归拢至统一顶栏 #nav');
 
     // 检查假足迹按钮与假计数器已被彻底清除
     const fakeFootprintBtn = await page.$('#btn-quick-footprint, #qzone-footprint-counter');
@@ -414,30 +412,66 @@ async function runVerification() {
     console.log(`  -> 点击点赞后激活态: isLiked=${isLikedClass}`);
     if (!isLikedClass) throw new Error('点击点赞未能成功激活 .is-liked 状态');
 
-    // 检查说说卡片底部的点赞头像流与就地展开评论头像同步
-    console.log('[E2E 5.1] 检查说说点赞头像流与访客头像实时同步...');
+    // 检查说说卡片底部的点赞头像流
+    console.log('[E2E 5.1] 检查说说点赞头像流与数据展示...');
     const firstLikesPreview = await page.$('.moment-likes-preview');
     if (!firstLikesPreview) throw new Error('未找到说说点赞头像流 .moment-likes-preview');
     const likesText = await firstLikesPreview.textContent();
     console.log(`  -> 说说赞流文案: ${likesText.trim()}`);
 
-    // 点击第一条说说的“评论”展开抽屉，输入 QQ 邮箱测试头像实时计算
+    // 点击“评论”直达页面内详情与头像输入计算
+    console.log('[E2E 5.1.1] 验证点击“评论”按钮直达页面内详情...');
     const firstCommentToggle = await page.$('.moment-comment-toggle-btn');
-    if (firstCommentToggle) {
-      await firstCommentToggle.click();
-      await page.waitForTimeout(200);
-      const emailInput = await page.$('.moment-comments-drawer:not(.hidden) .comment-email-input');
-      const avatarImg = await page.$('.moment-comments-drawer:not(.hidden) .comment-visitor-avatar-img');
-      if (emailInput && avatarImg) {
-        await emailInput.fill('123456@qq.com');
-        await page.waitForTimeout(100);
-        const updatedAvatarSrc = await avatarImg.getAttribute('src');
-        console.log(`  -> 访客输入QQ邮箱后实时头像: ${updatedAvatarSrc}`);
-        if (!updatedAvatarSrc.includes('qlogo.cn') || !updatedAvatarSrc.includes('123456')) {
-          throw new Error('输入QQ邮箱后未能实时同步QQ真实头像');
-        }
-      }
+    if (!firstCommentToggle) throw new Error('未找到说说评论按钮');
+    await firstCommentToggle.click();
+    await page.waitForTimeout(300);
+    const isInpageViaComment = await page.$eval('#moment-inpage-detail-view', (el) => !el.classList.contains('hidden'));
+    if (!isInpageViaComment) throw new Error('点击评论按钮未能直达页面内详情');
+
+    const emailInput = await page.$('#inpage-email-input');
+    if (emailInput) {
+      await emailInput.fill('123456@qq.com');
+      await page.waitForTimeout(100);
     }
+    // 返回瀑布流
+    await page.click('#btn-inpage-back');
+    await page.waitForTimeout(300);
+
+    // 验证 Epomail 账户标准严格打通与免重复输入
+    console.log('[E2E 5.1.2] 验证全站 Epomail 账户体系严格打通...');
+    await page.evaluate(() => {
+      localStorage.setItem('shijianus-comment-account', JSON.stringify({
+        id: 'epo_u_test123',
+        name: 'Epomail测试读者',
+        email: 'reader@epocanvas.com',
+        avatar: 'https://api.dicebear.com/7.x/identicon/svg?seed=epomail_user',
+        role: 'reader',
+        provider: 'epomail',
+        token: 'test_epomail_session_token',
+      }));
+      window.dispatchEvent(new CustomEvent('shijianus:comment-account-change'));
+    });
+    // 打开第一条说说的详情
+    const testCard = await page.$('.moment-card');
+    await testCard.click();
+    await page.waitForTimeout(300);
+
+    const isAccountActiveBarVisible = await page.$eval('#inpage-account-active-bar', (el) => !el.classList.contains('hidden'));
+    const isVisitorFieldsHidden = await page.$eval('#inpage-visitor-fields', (el) => el.classList.contains('hidden'));
+    const epomailUserName = await page.$eval('#inpage-account-name', (el) => el.textContent.trim());
+    const epomailBadge = await page.$eval('#inpage-account-badge', (el) => el.textContent.trim());
+    console.log(`  -> Epomail 登录状态: activeBar=${isAccountActiveBarVisible}, visitorHidden=${isVisitorFieldsHidden}, 用户名=${epomailUserName}, 徽标=${epomailBadge}`);
+    if (!isAccountActiveBarVisible || !isVisitorFieldsHidden || !epomailBadge.includes('Epomail')) {
+      throw new Error('Epomail 账户登录后未能自动同步至发评表单');
+    }
+
+    // 恢复访客状态供后续测试
+    await page.evaluate(() => {
+      localStorage.removeItem('shijianus-comment-account');
+      window.dispatchEvent(new CustomEvent('shijianus:comment-account-change'));
+    });
+    await page.click('#btn-inpage-back');
+    await page.waitForTimeout(300);
 
     // 4. 头像形状与卡片规范：站长方框(全站唯一)，友邻及Hero保持圆框；尺寸严格一致
     console.log('[E2E 5.2] 验证头像形状规范与卡片尺寸严格一致...');
@@ -675,7 +709,19 @@ async function runVerification() {
     console.log(`  -> 清除搜索后恢复全部说说数量: ${visibleAll}`);
     if (visibleAll < 3) throw new Error('清除搜索后未能恢复全量说说');
 
-    // 10. 检查控制台异常
+    // 10. 验证最小信息密度与只展示结果 (无说教/无底层过程阐述/无开发黑话)
+    console.log('[E2E 13] 验证最小信息密度与只展示结果 (无说教/无底层过程阐述)...');
+    const pageHtml = await page.content();
+    if (pageHtml.includes('(QQ空间模式)')) throw new Error('页面仍残留“(QQ空间模式)”开发黑话');
+    if (pageHtml.includes('跨站直通车')) throw new Error('页面仍残留“跨站直通车”过程阐述');
+    if (pageHtml.includes('正在连接边缘数据库')) throw new Error('页面仍残留“正在连接边缘数据库”底层过程阐述');
+    if (pageHtml.includes('记录生活与友谊的每一个脚印')) throw new Error('页面仍残留假大空口号标语');
+    if (pageHtml.includes('在设计过程中，我们特别注重')) throw new Error('页面仍残留开发过程与设计说教文案');
+    if (pageHtml.includes('默认遵循 QQ 空间规范')) throw new Error('页面仍残留对用户的规范解释文案');
+    if (pageHtml.includes('全部通过边缘反代保持在本站')) throw new Error('页面仍残留反代底层实现阐述');
+    console.log('  -> 最小信息密度断言通过: 无开发术语、无过程阐述、无废话标语');
+
+    // 11. 检查控制台异常
     if (errors.length > 0) {
       console.warn('[E2E Warning] 捕获到以下控制台报错:', errors);
       const fatalErrors = errors.filter(

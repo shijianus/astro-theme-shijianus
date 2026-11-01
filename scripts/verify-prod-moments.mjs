@@ -89,13 +89,11 @@ async function verifyLiveMoments() {
       throw new Error(`生产端在线状态未统一同步为“☕ 喝咖啡中”，当前为: "${radarPill}"`);
     }
 
-    // 2. 验证 QQ 空间子导航栏与互动清理
-    console.log('[Prod E2E 2] 验证 QQ 空间子导航栏与假交互清理...');
-    const subnavLinks = await page.$$('.qzone-subnav-bar .subnav-item');
-    console.log(`  -> 生产端子导航项数量: ${subnavLinks.length}`);
-    if (subnavLinks.length < 4) throw new Error('子导航项少于 4 个');
-    const subnavTexts = await Promise.all(subnavLinks.map((el) => el.textContent()));
-    console.log(`  -> 子导航项目: ${subnavTexts.map((s) => s.trim()).join(' | ')}`);
+    // 2. 验证二级子导航已彻底移除 (消除站中站导航割裂，回归统一顶栏 #nav)
+    console.log('[Prod E2E 2] 验证二级子导航已彻底移除 (消除站中站割裂)...');
+    const subnavBar = await page.$('.qzone-subnav-bar');
+    if (subnavBar) throw new Error('生产端禁止再出现站中站的割裂情况，.qzone-subnav-bar 必须彻底移除！');
+    console.log('  -> 二级子导航清理验证通过: 全站导航归拢至统一顶栏 #nav');
 
     // 检查空间装扮切换按钮已移除
     const btnToggleSkin = await page.$('#btn-toggle-skin, .space-skin-switcher-wrap');
@@ -278,7 +276,19 @@ async function verifyLiveMoments() {
       throw new Error('URL Hash 直达未能自动在页面内加载说说详情');
     }
 
-    // 8. 检查致命控制台报错
+    // 8. 验证最小信息密度与只展示结果 (无说教/无底层过程阐述/无开发黑话)
+    console.log('[Prod E2E 8.1] 验证最小信息密度与只展示结果 (无说教/无底层过程阐述)...');
+    const pageHtml = await page.content();
+    if (pageHtml.includes('(QQ空间模式)')) throw new Error('生产端仍残留“(QQ空间模式)”开发黑话');
+    if (pageHtml.includes('跨站直通车')) throw new Error('生产端仍残留“跨站直通车”过程阐述');
+    if (pageHtml.includes('正在连接边缘数据库')) throw new Error('生产端仍残留“正在连接边缘数据库”底层过程阐述');
+    if (pageHtml.includes('记录生活与友谊的每一个脚印')) throw new Error('生产端仍残留假大空口号标语');
+    if (pageHtml.includes('在设计过程中，我们特别注重')) throw new Error('生产端仍残留开发过程与设计说教文案');
+    if (pageHtml.includes('默认遵循 QQ 空间规范')) throw new Error('生产端仍残留对用户的规范解释文案');
+    if (pageHtml.includes('全部通过边缘反代保持在本站')) throw new Error('生产端仍残留反代底层实现阐述');
+    console.log('  -> 生产端最小信息密度断言通过: 无开发术语、无过程阐述、无废话标语');
+
+    // 9. 检查致命控制台报错
     const fatalErrors = errors.filter(
       (e) => !e.includes('favicon') && !e.includes('404') && !e.includes('Failed to load resource') && !e.includes('net::')
     );
