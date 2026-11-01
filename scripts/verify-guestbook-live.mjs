@@ -122,8 +122,8 @@ async function verifyLive() {
     if (rowCount > 20) throw new Error(`Gesture count on screen exceeds 20: ${rowCount}`);
     console.log('[Live Verify] ✓ Confirmed Gesture feed is capped at at most 20 items on live');
 
-    // 6. Test Single Publish Button & Dynamic Smart Identification
-    console.log('[Live Verify] 6. Testing Floating Composer with Dynamic Smart Identification...');
+    // 6. Test Single Publish Button, Drag Handle, Partition Guidance & Result Word Count
+    console.log('[Live Verify] 6. Testing Floating Composer (Drag Button, Partition Guidance, Result Word Count)...');
     const newGestureBtn = await page.$('.gb-new-gesture-btn');
     if (!newGestureBtn) throw new Error('Single publish button (.gb-new-gesture-btn) missing on live');
     await newGestureBtn.click();
@@ -132,24 +132,68 @@ async function verifyLive() {
     const floatingComposer = await page.$('.gb-floating-composer');
     if (!floatingComposer) throw new Error('Floating composer failed to open on live');
 
-    // Verify initial state detects Boost (< 8 chars)
-    let badgeText = await page.textContent('.gb-smart-type-badge');
-    console.log(`[Live Verify] Initial Dynamic Badge on live: "${badgeText?.trim()}"`);
-    if (!badgeText?.includes('Boost')) {
-      throw new Error(`Expected empty input to detect Boost on live, got "${badgeText}"`);
+    // 6.1 Verify dedicated drag handle button
+    const dragBtn = await page.$('.gb-drag-handle-btn');
+    if (!dragBtn) throw new Error('Dedicated drag handle button (.gb-drag-handle-btn) missing on live');
+    console.log('[Live Verify] ✓ Confirmed dedicated drag handle button is present on live');
+
+    // 6.2 Verify lecturing banners are eliminated
+    const smartBadgeCount = await page.$$eval('.gb-smart-type-badge', (els) => els.length);
+    const smartHintCount = await page.$$eval('.gb-composer-smart-hint', (els) => els.length);
+    if (smartBadgeCount > 0 || smartHintCount > 0) {
+      throw new Error('Lecturing smart badge / hint banners should be completely removed on live');
+    }
+    console.log('[Live Verify] ✓ Confirmed smart badge & lecturing hint banners are completely eliminated on live');
+
+    // 6.3 Verify initial result-oriented word count and submit button
+    let wordCountText = await page.textContent('.gb-word-count');
+    let submitBtnText = await page.textContent('.gb-modal-foot .gb-submit-btn');
+    console.log(`[Live Verify] Initial Word Result: "${wordCountText?.trim()}", Button: "${submitBtnText?.trim()}"`);
+    if (!wordCountText?.includes('30 字')) {
+      throw new Error(`Expected result word count to include "30 字", got "${wordCountText}"`);
+    }
+    if (!submitBtnText?.includes('发射 Boost')) {
+      throw new Error(`Expected submit button to say "发射 Boost" on live, got "${submitBtnText}"`);
     }
 
-    // Verify typing title switches to Gesture
+    // 6.4 Verify Partition Trigger & Light Descriptions
+    const channelTrigger = await page.$('.gb-composer-channel-trigger');
+    if (!channelTrigger) throw new Error('Partition dropdown trigger missing on live');
+    await channelTrigger.click();
+    await page.waitForTimeout(200);
+
+    const channelMenu = await page.$('.gb-composer-channel-dropdown-menu');
+    if (!channelMenu) throw new Error('Partition dropdown menu failed to open on live');
+
+    const descCount = await page.$$eval('.gb-ch-opt-desc', (els) => els.length);
+    console.log(`[Live Verify] Live partition scope descriptions count: ${descCount}`);
+    if (descCount < 5) throw new Error('Expected partition options to show fine purpose descriptions on live');
+
+    // Select "技术探讨"
+    const techOpt = await page.$('.gb-composer-channel-option:has-text("技术探讨")');
+    if (techOpt) await techOpt.click();
+    await page.waitForTimeout(200);
+
+    wordCountText = await page.textContent('.gb-word-count');
+    submitBtnText = await page.textContent('.gb-modal-foot .gb-submit-btn');
+    console.log(`[Live Verify] After partition selection: Word Result: "${wordCountText?.trim()}", Button: "${submitBtnText?.trim()}"`);
+    if (!wordCountText?.includes('还需至少 8 字')) {
+      throw new Error(`Expected word count to say "还需至少 8 字", got "${wordCountText}"`);
+    }
+    if (!submitBtnText?.includes('发布 Gesture')) {
+      throw new Error('Expected submit button to switch to "发布 Gesture" on live');
+    }
+
+    // 6.5 Fill title and tag
     const titleInput = await page.$('.gb-modal-title-input');
     if (titleInput) {
       await titleInput.fill('Live E2E Verification Title');
-      await page.waitForTimeout(200);
-
-      badgeText = await page.textContent('.gb-smart-type-badge');
-      console.log(`[Live Verify] With title Dynamic Badge on live: "${badgeText?.trim()}"`);
-      if (!badgeText?.includes('Gesture')) {
-        throw new Error('Expected entering title to switch badge to Gesture on live');
-      }
+      await page.waitForTimeout(100);
+    }
+    const tagInput = await page.$('.gb-composer-tag-mini-input');
+    if (tagInput) {
+      await tagInput.fill('#架构验证');
+      await page.waitForTimeout(100);
     }
 
     // Test Minimize to dock pill

@@ -37,6 +37,7 @@ import {
   Minus,
   Maximize2,
   Minimize2,
+  GripVertical,
 } from 'lucide-react';
 import {
   fetchComments,
@@ -537,6 +538,13 @@ export function GuestbookBoard() {
   const [showComposer, setShowComposer] = useState(false);
   const [isComposerMinimized, setIsComposerMinimized] = useState(false);
   const [isComposerMaximized, setIsComposerMaximized] = useState(false);
+  const [composerPos, setComposerPos] = useState<{ x: number; y: number } | null>(null);
+  const [showComposerChannelDropdown, setShowComposerChannelDropdown] = useState(false);
+
+  const composerRef = useRef<HTMLDivElement>(null);
+  const composerChannelDropdownRef = useRef<HTMLDivElement>(null);
+  const isDraggingComposerRef = useRef(false);
+  const dragStartOffsetRef = useRef({ x: 0, y: 0 });
 
   // Unified Draft inputs for Composer (Intelligently detects Boost vs Gesture)
   const [composerTitle, setComposerTitle] = useState('');
@@ -549,6 +557,69 @@ export function GuestbookBoard() {
   const [composerShowEmoji, setComposerShowEmoji] = useState(false);
   const [composerSubmitting, setComposerSubmitting] = useState(false);
   const [composerError, setComposerError] = useState<string | null>(null);
+
+  // Dedicated Drag Handler for Composer (Only drag button moves the window)
+  const handleComposerDragStart = (e: React.PointerEvent<HTMLButtonElement>) => {
+    if (e.button !== 0) return;
+    e.preventDefault();
+    e.stopPropagation();
+
+    const composerEl = composerRef.current;
+    if (!composerEl) return;
+
+    const rect = composerEl.getBoundingClientRect();
+    dragStartOffsetRef.current = {
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top,
+    };
+    isDraggingComposerRef.current = true;
+
+    const handlePointerMove = (moveEvt: PointerEvent) => {
+      if (!isDraggingComposerRef.current) return;
+      const width = rect.width;
+      const height = rect.height;
+
+      let newX = moveEvt.clientX - dragStartOffsetRef.current.x;
+      let newY = moveEvt.clientY - dragStartOffsetRef.current.y;
+
+      // Keep within screen viewport
+      const minX = 10;
+      const maxX = Math.max(10, window.innerWidth - width - 10);
+      const minY = 10;
+      const maxY = Math.max(10, window.innerHeight - height - 10);
+
+      newX = Math.max(minX, Math.min(maxX, newX));
+      newY = Math.max(minY, Math.min(maxY, newY));
+
+      setComposerPos({ x: newX, y: newY });
+    };
+
+    const handlePointerUp = () => {
+      isDraggingComposerRef.current = false;
+      window.removeEventListener('pointermove', handlePointerMove);
+      window.removeEventListener('pointerup', handlePointerUp);
+    };
+
+    window.addEventListener('pointermove', handlePointerMove);
+    window.addEventListener('pointerup', handlePointerUp);
+  };
+
+  // Clamp composer position on window resize
+  useEffect(() => {
+    const handleResize = () => {
+      setComposerPos((prev) => {
+        if (!prev) return null;
+        const maxX = Math.max(10, window.innerWidth - 690);
+        const maxY = Math.max(10, window.innerHeight - 500);
+        return {
+          x: Math.min(prev.x, maxX),
+          y: Math.min(prev.y, maxY),
+        };
+      });
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // Gesture Detail View State
   const [detailReplyMessage, setDetailReplyMessage] = useState('');
@@ -579,6 +650,12 @@ export function GuestbookBoard() {
         !dimensionDropdownRef.current.contains(target)
       ) {
         setShowDimensionDropdown(false);
+      }
+      if (
+        composerChannelDropdownRef.current &&
+        !composerChannelDropdownRef.current.contains(target)
+      ) {
+        setShowComposerChannelDropdown(false);
       }
     };
 
@@ -730,6 +807,28 @@ export function GuestbookBoard() {
     }
     return 'gesture';
   }, [trimmedComposerText, hasComposerTitle, hasComposerTags, hasComposerImages, hasComposerSpecificDim]);
+
+  const currentComposerDimObj =
+    CHANNELS.find((c) => c.id === composerDimension) ||
+    (composerDimension === 'all'
+      ? { id: 'all', label: '默认分区 (未指定)', icon: '🌟', desc: '随心分享，轻量短句或全站综合交流' }
+      : CHANNELS[0]);
+
+  // Direct, result-oriented word count message (No verbose explanations or lecturing)
+  const composerWordResult = useMemo(() => {
+    const len = trimmedComposerText.length;
+    if (determinedType === 'boost') {
+      if (len === 0) return '可输入 30 字以内';
+      if (len <= 30) return `还可输入 ${30 - len} 字`;
+      return `已超出 ${len - 30} 字`;
+    } else {
+      if (len < 8) return `还需至少 ${8 - len} 字`;
+      return `已输入 ${len} 字`;
+    }
+  }, [trimmedComposerText, determinedType]);
+
+  const isWordCountWarning = determinedType === 'boost' && trimmedComposerText.length > 30;
+  const isWordCountNeedMore = determinedType === 'gesture' && trimmedComposerText.length < 8;
 
   // Organize Gestures into Top-Level Posts vs Replies
   const { topLevelGestures, repliesByParent } = useMemo(() => {
@@ -962,7 +1061,7 @@ export function GuestbookBoard() {
 
       if (determinedType === 'boost') {
         if (text.length > 30) {
-          setComposerError('🚀 Boost 不能超过 30 个字');
+          setComposerError('⚠️ 短句不能超过 30 个字');
           setComposerSubmitting(false);
           return;
         }
@@ -986,7 +1085,7 @@ export function GuestbookBoard() {
       } else {
         // Gesture Mode
         if (text.length < 8) {
-          setComposerError('📝 Gesture 讨论内容至少需要 8 个字');
+          setComposerError('⚠️ 讨论内容至少需要 8 个字');
           setComposerSubmitting(false);
           return;
         }
@@ -1355,11 +1454,8 @@ export function GuestbookBoard() {
                       role="option"
                       aria-selected={isSelected}
                     >
-                      <span className="mr-2.5 text-base flex-shrink-0">{ch.icon}</span>
-                      <div className="gb-dim-text-wrap">
-                        <span className="gb-dropdown-item__label">{ch.label}</span>
-                        <span className="gb-dropdown-item__desc">{ch.desc}</span>
-                      </div>
+                      <span className="mr-2 text-base flex-shrink-0">{ch.icon}</span>
+                      <span className="gb-dropdown-item__label">{ch.label}</span>
                       {isSelected && <span className="gb-dropdown-item__check">✓</span>}
                     </button>
                   );
@@ -2169,24 +2265,34 @@ export function GuestbookBoard() {
             </div>
           </div>
         ) : (
-          <div className={`gb-floating-composer ${isComposerMaximized ? 'is-maximized' : ''}`}>
-            {/* Composer Header: Title & Dynamic Smart Indicator */}
+          <div
+            ref={composerRef}
+            className={`gb-floating-composer ${isComposerMaximized ? 'is-maximized' : ''} ${composerPos ? 'is-dragged' : ''}`}
+            style={
+              !isComposerMaximized && composerPos
+                ? {
+                    left: `${composerPos.x}px`,
+                    top: `${composerPos.y}px`,
+                    right: 'auto',
+                    bottom: 'auto',
+                    transform: 'none',
+                  }
+                : undefined
+            }
+          >
+            {/* Composer Header: Drag Handle, Title & Window Tools */}
             <div className="gb-composer-header">
-              <div className="gb-composer-header-title">
-                <span className="gb-composer-title-main">起草讨论 / 观点</span>
-                <span className={`gb-smart-type-badge ${determinedType === 'boost' ? 'is-boost' : 'is-gesture'}`}>
-                  {determinedType === 'boost' ? (
-                    <>
-                      <Rocket className="w-3.5 h-3.5 mr-1 text-amber-500" />
-                      <span>智能识别：Boost (短句观点流)</span>
-                    </>
-                  ) : (
-                    <>
-                      <MessageSquare className="w-3.5 h-3.5 mr-1 text-indigo-500" />
-                      <span>智能识别：Gesture (讨论长帖)</span>
-                    </>
-                  )}
-                </span>
+              <div className="gb-composer-header-left">
+                <button
+                  type="button"
+                  className="gb-drag-handle-btn"
+                  title="按住拖拽窗口位置"
+                  onPointerDown={handleComposerDragStart}
+                >
+                  <GripVertical className="w-3.5 h-3.5" />
+                  <span className="gb-drag-tip">拖拽</span>
+                </button>
+                <span className="gb-composer-title-main">发表留言</span>
               </div>
 
               <div className="gb-composer-window-tools">
@@ -2219,67 +2325,80 @@ export function GuestbookBoard() {
 
             {/* Composer Content Body */}
             <div className="gb-composer-body">
-              {/* Dynamic Type Hint Banner */}
-              <div className="gb-composer-smart-hint">
-                {determinedType === 'boost' ? (
-                  <span>
-                    💡 <strong>Boost 模式已激活</strong>：当前内容处于 30 字内且未填写标题/分类/Tag，将作为即时轻量短句发布至顶部观点流。
-                  </span>
-                ) : (
-                  <span>
-                    📝 <strong>Gesture 模式已激活</strong>：
-                    {hasComposerTitle
-                      ? ' 已包含标题'
-                      : hasComposerTags
-                      ? ' 已添加自定义 Tag'
-                      : hasComposerSpecificDim
-                      ? ' 已选择专属讨论维度'
-                      : trimmedComposerText.length > 30
-                      ? ' 字数已达到 30 字以上'
-                      : ' 准备沉淀为讨论长帖'}
-                    ，将沉淀为广场深度长帖（支持楼层跟帖互动与时间轴滑块）。
-                  </span>
-                )}
-              </div>
-
               {/* Title Input */}
               <div className="gb-modal-row">
                 <input
                   type="text"
                   value={composerTitle}
                   onChange={(e) => setComposerTitle(e.target.value)}
-                  placeholder="话题标题（可选，添加标题将自动识别为 Gesture）..."
+                  placeholder="话题标题（可选，添加标题自动转为 Gesture 讨论长帖）..."
                   maxLength={100}
                   className="gb-modal-title-input"
                 />
               </div>
 
-              {/* Dimension & Custom Tag Row */}
+              {/* Partition Selection & Tag Row */}
               <div className="gb-composer-meta-row">
-                <div className="gb-composer-dim-selector">
-                  <label className="gb-composer-field-label">讨论维度：</label>
-                  <select
-                    value={composerDimension}
-                    onChange={(e) => setComposerDimension(e.target.value)}
-                    className="gb-composer-select"
-                  >
-                    <option value="all">🌟 默认 / 全部维度</option>
-                    {CHANNELS.filter((ch) => ch.id !== 'all').map((ch) => (
-                      <option key={ch.id} value={ch.id}>
-                        {ch.icon} {ch.label}
-                      </option>
-                    ))}
-                  </select>
+                <div className="gb-composer-channel-picker-wrap" ref={composerChannelDropdownRef}>
+                  <label className="gb-composer-field-label">分区：</label>
+                  <div className="gb-composer-channel-dropdown-box">
+                    <button
+                      type="button"
+                      className="gb-composer-channel-trigger"
+                      onClick={() => setShowComposerChannelDropdown((prev) => !prev)}
+                      aria-haspopup="listbox"
+                      aria-expanded={showComposerChannelDropdown}
+                    >
+                      <span className="gb-composer-ch-icon">{currentComposerDimObj.icon}</span>
+                      <span className="gb-composer-ch-name">{currentComposerDimObj.label}</span>
+                      <span className="gb-composer-ch-desc-inline">
+                        — {currentComposerDimObj.desc}
+                      </span>
+                      <ChevronDown className={`w-3.5 h-3.5 ml-auto text-slate-400 transition-transform ${showComposerChannelDropdown ? 'rotate-180' : ''}`} />
+                    </button>
+
+                    {showComposerChannelDropdown && (
+                      <div className="gb-composer-channel-dropdown-menu" role="listbox">
+                        {CHANNELS.map((ch) => {
+                          const isSelected =
+                            composerDimension === ch.id ||
+                            (composerDimension === 'all' && ch.id === 'all');
+                          return (
+                            <button
+                              key={ch.id}
+                              type="button"
+                              className={`gb-composer-channel-option ${isSelected ? 'is-selected' : ''}`}
+                              onClick={() => {
+                                setComposerDimension(ch.id);
+                                setShowComposerChannelDropdown(false);
+                              }}
+                              role="option"
+                              aria-selected={isSelected}
+                            >
+                              <span className="gb-ch-opt-icon">{ch.icon}</span>
+                              <div className="gb-ch-opt-text">
+                                <span className="gb-ch-opt-name">{ch.label}</span>
+                                <span className="gb-ch-opt-desc">{ch.desc}</span>
+                              </div>
+                              {isSelected && <span className="gb-ch-opt-check">✓</span>}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
                 </div>
 
-                <div className="gb-composer-tag-input-wrap">
-                  <Tag className="w-3.5 h-3.5 text-slate-400 mr-1.5 flex-shrink-0" />
+                {/* Minimalist Tag Input */}
+                <div className="gb-composer-tag-mini-wrap">
+                  <Tag className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
                   <input
                     type="text"
                     value={composerTags}
                     onChange={(e) => setComposerTags(e.target.value)}
-                    placeholder="话题标签 Tag（可选，如 #前端 #设计，空格分隔）..."
-                    className="gb-composer-tag-input"
+                    placeholder="#标签"
+                    maxLength={30}
+                    className="gb-composer-tag-mini-input"
                   />
                 </div>
               </div>
@@ -2472,9 +2591,16 @@ export function GuestbookBoard() {
 
               {/* Footer */}
               <div className="gb-modal-foot">
-                <span className="gb-word-count">
-                  当前字数: {trimmedComposerText.length} 字
-                  {determinedType === 'boost' ? ' (Boost 限 30 字内)' : ' (Gesture 需最少 8 字)'}
+                <span
+                  className={`gb-word-count ${
+                    isWordCountWarning
+                      ? 'is-warning'
+                      : isWordCountNeedMore
+                      ? 'is-need-more'
+                      : ''
+                  }`}
+                >
+                  {composerWordResult}
                 </span>
                 <div className="gb-modal-actions">
                   <button
@@ -2493,7 +2619,7 @@ export function GuestbookBoard() {
                       className="gb-submit-btn is-boost-btn"
                     >
                       <Rocket className="w-3.5 h-3.5 mr-1" />
-                      <span>{composerSubmitting ? '发布中...' : '发布为 Boost'}</span>
+                      <span>{composerSubmitting ? '发射中...' : '发射 Boost'}</span>
                     </button>
                   ) : (
                     <button
@@ -2503,7 +2629,7 @@ export function GuestbookBoard() {
                       className="gb-submit-btn"
                     >
                       <Send className="w-3.5 h-3.5 mr-1" />
-                      <span>{composerSubmitting ? '发布中...' : '发布为 Gesture'}</span>
+                      <span>{composerSubmitting ? '发布中...' : '发布 Gesture'}</span>
                     </button>
                   )}
                 </div>

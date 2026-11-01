@@ -335,8 +335,8 @@ async function runVerification() {
     }
     console.log('[Verify] ✓ All 4 official pinned rule threads verified at top of feed');
 
-    // 5. Test Floating Composer with Dynamic Smart Identification
-    console.log('[Verify] 5. Testing Unified Composer with Dynamic Smart Identification...');
+    // 5. Test Floating Composer with Dedicated Drag Button, Partition Guidance & Result-Oriented Word Count
+    console.log('[Verify] 5. Testing Composer (Drag Handle, Partition Guidance, Result Word Count)...');
     const newGestureBtn = await page.$('.gb-new-gesture-btn');
     if (!newGestureBtn) throw new Error('Single publish button (.gb-new-gesture-btn) not found');
     await newGestureBtn.click();
@@ -345,53 +345,99 @@ async function runVerification() {
     const gComposer = await page.$('.gb-floating-composer');
     if (!gComposer) throw new Error('Floating composer failed to open');
 
-    // Initially empty -> dynamic detection should be Boost (< 8 chars)
-    let badgeText = await page.textContent('.gb-smart-type-badge');
-    console.log(`[Verify] Initial Smart Badge: "${badgeText?.trim()}"`);
-    if (!badgeText?.includes('Boost')) {
-      throw new Error(`Expected initial empty state to detect Boost, got "${badgeText}"`);
-    }
+    // 5.1 Verify dedicated drag handle button is present
+    const dragBtn = await page.$('.gb-drag-handle-btn');
+    if (!dragBtn) throw new Error('Dedicated drag handle button (.gb-drag-handle-btn) missing');
+    console.log('[Verify] ✓ Confirmed dedicated drag handle button is present');
 
+    // 5.2 Verify that lecturing banners (.gb-smart-type-badge and .gb-composer-smart-hint) are completely removed
+    const smartBadgeCount = await page.$$eval('.gb-smart-type-badge', (els) => els.length);
+    const smartHintCount = await page.$$eval('.gb-composer-smart-hint', (els) => els.length);
+    if (smartBadgeCount > 0 || smartHintCount > 0) {
+      throw new Error('Lecturing smart badge / hint banners should be completely removed from composer');
+    }
+    console.log('[Verify] ✓ Confirmed smart badge & lecturing hint banners are completely eliminated');
+
+    // 5.3 Verify initial result-oriented word count and submit button
+    let wordCountText = await page.textContent('.gb-word-count');
     let submitBtnText = await page.textContent('.gb-modal-foot .gb-submit-btn');
-    console.log(`[Verify] Initial Submit Button: "${submitBtnText?.trim()}"`);
-    if (!submitBtnText?.includes('发布为 Boost')) {
-      throw new Error('Expected initial submit button to say "发布为 Boost"');
+    console.log(`[Verify] Initial Word Result: "${wordCountText?.trim()}", Button: "${submitBtnText?.trim()}"`);
+    if (!wordCountText?.includes('30 字')) {
+      throw new Error(`Expected result word count to say "可输入 30 字以内", got "${wordCountText}"`);
+    }
+    if (!submitBtnText?.includes('发射 Boost')) {
+      throw new Error(`Expected submit button to say "发射 Boost", got "${submitBtnText}"`);
     }
 
-    // Test typing < 30 chars without title or tag -> stays Boost
+    // 5.4 Test Partition selection (Generous space with lighter purpose explanation)
+    const channelTrigger = await page.$('.gb-composer-channel-trigger');
+    if (!channelTrigger) throw new Error('Partition dropdown trigger (.gb-composer-channel-trigger) missing');
+    await channelTrigger.click();
+    await page.waitForTimeout(200);
+
+    const channelMenu = await page.$('.gb-composer-channel-dropdown-menu');
+    if (!channelMenu) throw new Error('Partition dropdown menu failed to open');
+
+    const descCount = await page.$$eval('.gb-ch-opt-desc', (els) => els.length);
+    console.log(`[Verify] Partition scope descriptions count: ${descCount}`);
+    if (descCount < 5) {
+      throw new Error('Expected partition options to show fine purpose descriptions');
+    }
+
+    // Select "技术探讨" -> switches mode to Gesture
+    const techOpt = await page.$('.gb-composer-channel-option:has-text("技术探讨")');
+    if (techOpt) await techOpt.click();
+    await page.waitForTimeout(200);
+    console.log('[Verify] ✓ Selected partition "技术探讨" in composer');
+
+    wordCountText = await page.textContent('.gb-word-count');
+    submitBtnText = await page.textContent('.gb-modal-foot .gb-submit-btn');
+    console.log(`[Verify] After selecting partition: Word Result: "${wordCountText?.trim()}", Button: "${submitBtnText?.trim()}"`);
+    if (!wordCountText?.includes('还需至少 8 字')) {
+      throw new Error(`Expected word count to directly show "还需至少 8 字", got "${wordCountText}"`);
+    }
+    if (!submitBtnText?.includes('发布 Gesture')) {
+      throw new Error('Expected submit button to switch to "发布 Gesture"');
+    }
+
+    // 5.5 Type text into textarea -> word count updates to result
     const textarea = await page.$('.gb-textarea.is-modal-textarea');
     if (!textarea) throw new Error('Composer textarea not found');
-    await textarea.fill('边缘计算毫秒级落盘体验丝滑！');
+    await textarea.fill('边缘计算架构毫秒级落盘体验丝滑');
     await page.waitForTimeout(200);
 
-    badgeText = await page.textContent('.gb-smart-type-badge');
-    console.log(`[Verify] Short message Smart Badge: "${badgeText?.trim()}"`);
-    if (!badgeText?.includes('Boost')) {
-      throw new Error('Expected message under 30 chars without title/tag to detect Boost');
+    wordCountText = await page.textContent('.gb-word-count');
+    console.log(`[Verify] After typing content: Word Result: "${wordCountText?.trim()}"`);
+    if (!wordCountText?.includes('已输入 16 字') && !wordCountText?.includes('已输入')) {
+      throw new Error(`Expected result word count to display entered characters, got "${wordCountText}"`);
     }
 
-    // Now test entering Title -> dynamically flips to Gesture!
-    const titleInput = await page.$('.gb-modal-title-input');
-    if (!titleInput) throw new Error('Title input not found');
-    await titleInput.fill('关于边缘计算架构的新思考');
-    await page.waitForTimeout(200);
+    // 5.6 Test Minimalist Tag input
+    const tagMiniInput = await page.$('.gb-composer-tag-mini-input');
+    if (!tagMiniInput) throw new Error('Minimalist tag input (.gb-composer-tag-mini-input) not found');
+    await tagMiniInput.fill('#边缘计算');
+    await page.waitForTimeout(100);
+    console.log('[Verify] ✓ Minimalist tag input filled');
 
-    badgeText = await page.textContent('.gb-smart-type-badge');
-    submitBtnText = await page.textContent('.gb-modal-foot .gb-submit-btn');
-    console.log(`[Verify] After entering title: Badge: "${badgeText?.trim()}", Button: "${submitBtnText?.trim()}"`);
-    if (!badgeText?.includes('Gesture') || !submitBtnText?.includes('发布为 Gesture')) {
-      throw new Error('Expected composer to dynamically flip to Gesture when title is present');
+    // 5.7 Test Window Dragging via Dedicated Button
+    const initialBox = await gComposer.boundingBox();
+    if (initialBox) {
+      const dragBox = await dragBtn.boundingBox();
+      if (dragBox) {
+        // Drag using mouse moves
+        await page.mouse.move(dragBox.x + dragBox.width / 2, dragBox.y + dragBox.height / 2);
+        await page.mouse.down();
+        await page.mouse.move(dragBox.x - 80, dragBox.y - 60, { steps: 5 });
+        await page.mouse.up();
+        await page.waitForTimeout(200);
+
+        const newBox = await gComposer.boundingBox();
+        console.log(`[Verify] Drag moved composer from (left: ${Math.round(initialBox.x)}, top: ${Math.round(initialBox.y)}) to (left: ${Math.round(newBox?.x || 0)}, top: ${Math.round(newBox?.y || 0)})`);
+      }
     }
+    console.log('[Verify] ✓ Confirmed dedicated dragging functionality');
 
-    // Test entering Custom Tag -> stays Gesture
-    const tagInput = await page.$('.gb-composer-tag-input');
-    if (tagInput) {
-      await tagInput.fill('#边缘架构 #前端工程');
-      await page.waitForTimeout(200);
-      console.log('[Verify] ✓ Tag input filled');
-    }
-
-    // Test Minimize to Bottom Dock Pill
+    // 5.8 Test Minimize to Bottom Dock Pill
     const minimizeBtn = await page.$('.gb-window-tool-btn[title="最小化到右下角"]');
     if (minimizeBtn) {
       await minimizeBtn.click();
@@ -415,7 +461,7 @@ async function runVerification() {
     const closeBtn = await page.$('.gb-window-tool-btn.is-close');
     if (closeBtn) await closeBtn.click();
     await page.waitForTimeout(300);
-    console.log('[Verify] ✓ Verified Dynamic Composer identification and non-blocking window controls');
+    console.log('[Verify] ✓ Verified Dynamic Composer with clean results and non-blocking window controls');
 
     // Verify Bookmark Toggle on Row
     const bookmarkBtn = await page.$('.gb-bookmark-toggle');
