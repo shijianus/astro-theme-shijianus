@@ -2114,18 +2114,14 @@ export function GuestbookBoard() {
             onClick={() => setIsComposerMinimized(false)}
             role="button"
             tabIndex={0}
-            title="点击展开草拟面板"
+            title="展开草拟面板"
           >
             <span className="gb-pulse-dot"></span>
-            <span className={`gb-minimized-badge ${determinedType === 'boost' ? 'is-boost' : 'is-gesture'}`}>
-              {determinedType === 'boost' ? '🚀 Boost' : '📝 Gesture'}
-            </span>
+            <span className="gb-minimized-badge">草稿</span>
             <span className="gb-minimized-preview">
               {composerTitle.trim() || composerText.trim()
                 ? (composerTitle.trim() || composerText.trim()).slice(0, 20)
-                : determinedType === 'boost'
-                ? '正在拟写短句观点...'
-                : '正在草拟讨论话题...'}
+                : '草稿...'}
             </span>
             <div className="gb-minimized-actions">
               <button
@@ -2219,7 +2215,7 @@ export function GuestbookBoard() {
                   type="text"
                   value={composerTitle}
                   onChange={(e) => setComposerTitle(e.target.value)}
-                  placeholder="话题标题（可选，添加标题自动转为 Gesture 讨论长帖）..."
+                  placeholder="标题（可选）"
                   maxLength={100}
                   className="gb-modal-title-input"
                 />
@@ -2313,7 +2309,7 @@ export function GuestbookBoard() {
                           }}
                           placeholder={
                             composerTagsList.length === 0
-                              ? '#添加标签 (Enter或逗号，最多5个)'
+                              ? '#添加标签...'
                               : '#添加...'
                           }
                           maxLength={20}
@@ -2465,11 +2461,7 @@ export function GuestbookBoard() {
                   rows={isComposerMaximized ? 12 : 5}
                   value={composerText}
                   onChange={(e) => setComposerText(e.target.value)}
-                  placeholder={
-                    determinedType === 'boost'
-                      ? '写下你此时此刻的想法、简短观点或问候（少于8字或30字以内无标题自动作为 Boost 观点上墙）...'
-                      : '畅所欲言，阐述你的深度思考（支持 Markdown 排版、代码块、列表、多图）...'
-                  }
+                  placeholder="说点什么..."
                   className="gb-textarea is-modal-textarea"
                 />
               ) : (
