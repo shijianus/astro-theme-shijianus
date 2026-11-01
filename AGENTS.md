@@ -6754,7 +6754,7 @@
   1. 更新 `scripts/verify-guestbook-board.mjs`，断言 100% 实体背景色、手柄无多余静态文字、分区紧凑单选与多 Tag 胶囊添加/删除全流程；
   2. 本地测试全绿通过。
 
-### Task 119: 朋友圈 (/moments/) UI 设计底线深度整改：最小信息密度与只展示结果脱水、全站 Epomail 账户与 D1 数据库严格统一鉴权、消除站中站与二级导航割裂
+### Task 119: 朋友圈 (/moments/) UI 设计底线深度整改：最小信息密度与只展示结果脱水、全站 Epomail 账户与 D1 数据库严格统一鉴权、消除站中站与二级导航割裂 (`24f9f74`)
 - [x] **最小信息密度与只展示结果 (彻底脱水净化说教与开发黑话)**：
   1. 彻底清除正文、说说摘要、清单与组件中所有对用户解释技术原理的说教（严禁包含“在设计过程中”、“默认遵循 QQ 空间规范”、“通过边缘反代保持在本站”等内部设计说明）；
   2. 将 `src/content/moments/*.md` 站长原生说说重构为极客技术随想、架构思考与数字生活真情实感，通过 `scripts/sync-friends-moments.mjs` 重新编译输出标准 `public/shijianus-moments.json` 与 `public/data/friends-moments.json`；
