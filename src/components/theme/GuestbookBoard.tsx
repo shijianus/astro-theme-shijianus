@@ -550,13 +550,40 @@ export function GuestbookBoard() {
   const [composerTitle, setComposerTitle] = useState('');
   const [composerText, setComposerText] = useState('');
   const [composerDimension, setComposerDimension] = useState<string>('all');
-  const [composerTags, setComposerTags] = useState('');
+  const [composerTagsList, setComposerTagsList] = useState<string[]>([]);
+  const [composerTagInput, setComposerTagInput] = useState('');
   const [composerImages, setComposerImages] = useState<string[]>([]);
   const [composerUploading, setComposerUploading] = useState(false);
   const [composerPreviewTab, setComposerPreviewTab] = useState<'write' | 'preview'>('write');
   const [composerShowEmoji, setComposerShowEmoji] = useState(false);
   const [composerSubmitting, setComposerSubmitting] = useState(false);
   const [composerError, setComposerError] = useState<string | null>(null);
+
+  // Multi-tag helper methods (max 5 tags, max 20 chars per tag)
+  const handleAddTag = (raw: string) => {
+    const cleaned = raw.trim().replace(/^#+/, '').trim().slice(0, 20);
+    if (!cleaned) return;
+    if (composerTagsList.length >= 5) return;
+    if (composerTagsList.includes(cleaned)) {
+      setComposerTagInput('');
+      return;
+    }
+    setComposerTagsList((prev) => [...prev, cleaned]);
+    setComposerTagInput('');
+  };
+
+  const handleRemoveTag = (tagToRemove: string) => {
+    setComposerTagsList((prev) => prev.filter((t) => t !== tagToRemove));
+  };
+
+  const handleTagKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' || e.key === ',' || e.key === '，' || e.key === ' ') {
+      e.preventDefault();
+      handleAddTag(composerTagInput);
+    } else if (e.key === 'Backspace' && !composerTagInput && composerTagsList.length > 0) {
+      setComposerTagsList((prev) => prev.slice(0, -1));
+    }
+  };
 
   // Dedicated Drag Handler for Composer (Only drag button moves the window)
   const handleComposerDragStart = (e: React.PointerEvent<HTMLButtonElement>) => {
@@ -788,7 +815,7 @@ export function GuestbookBoard() {
   // - otherwise: Gesture
   const trimmedComposerText = composerText.trim();
   const hasComposerTitle = composerTitle.trim().length > 0;
-  const hasComposerTags = composerTags.trim().length > 0;
+  const hasComposerTags = composerTagsList.length > 0 || composerTagInput.trim().length > 0;
   const hasComposerImages = composerImages.length > 0;
   const hasComposerSpecificDim = composerDimension !== 'all' && composerDimension !== '';
 
@@ -811,7 +838,7 @@ export function GuestbookBoard() {
   const currentComposerDimObj =
     CHANNELS.find((c) => c.id === composerDimension) ||
     (composerDimension === 'all'
-      ? { id: 'all', label: '默认分区 (未指定)', icon: '🌟', desc: '随心分享，轻量短句或全站综合交流' }
+      ? { id: 'all', label: '综合分区', icon: '🌟', desc: '随心分享，轻量短句或全站综合交流' }
       : CHANNELS[0]);
 
   // Direct, result-oriented word count message (No verbose explanations or lecturing)
@@ -1094,10 +1121,13 @@ export function GuestbookBoard() {
         if (composerTitle.trim()) {
           finalMessage = `### ${composerTitle.trim()}\n\n${finalMessage}`;
         }
-        if (composerTags.trim()) {
-          const formattedTags = composerTags
-            .split(/[\s,，]+/)
-            .filter(Boolean)
+        const allTags = [...composerTagsList];
+        const pending = composerTagInput.trim().replace(/^#+/, '').trim().slice(0, 20);
+        if (pending && !allTags.includes(pending) && allTags.length < 5) {
+          allTags.push(pending);
+        }
+        if (allTags.length > 0) {
+          const formattedTags = allTags
             .map((t) => (t.startsWith('#') ? t : `#${t}`))
             .join(' ');
           finalMessage = `${finalMessage}\n\n${formattedTags}`;
@@ -1120,7 +1150,8 @@ export function GuestbookBoard() {
           setShowComposer(false);
           setComposerTitle('');
           setComposerText('');
-          setComposerTags('');
+          setComposerTagsList([]);
+          setComposerTagInput('');
           setComposerImages([]);
           showToast('✨ Gesture 发布成功！已进入详情讨论');
           openGestureDetail(res.comment);
@@ -2287,10 +2318,10 @@ export function GuestbookBoard() {
                   type="button"
                   className="gb-drag-handle-btn"
                   title="按住拖拽窗口位置"
+                  aria-label="按住拖拽窗口位置"
                   onPointerDown={handleComposerDragStart}
                 >
-                  <GripVertical className="w-3.5 h-3.5" />
-                  <span className="gb-drag-tip">拖拽</span>
+                  <GripVertical className="w-4 h-4" />
                 </button>
                 <span className="gb-composer-title-main">发表留言</span>
               </div>
@@ -2337,8 +2368,9 @@ export function GuestbookBoard() {
                 />
               </div>
 
-              {/* Partition Selection & Tag Row */}
+              {/* Partition Selection & Multi-Tag Row */}
               <div className="gb-composer-meta-row">
+                {/* Partition (Compact: 1 partition at most, does not take excessive room) */}
                 <div className="gb-composer-channel-picker-wrap" ref={composerChannelDropdownRef}>
                   <label className="gb-composer-field-label">分区：</label>
                   <div className="gb-composer-channel-dropdown-box">
@@ -2348,13 +2380,11 @@ export function GuestbookBoard() {
                       onClick={() => setShowComposerChannelDropdown((prev) => !prev)}
                       aria-haspopup="listbox"
                       aria-expanded={showComposerChannelDropdown}
+                      title={`当前选择分区: ${currentComposerDimObj.label}`}
                     >
                       <span className="gb-composer-ch-icon">{currentComposerDimObj.icon}</span>
                       <span className="gb-composer-ch-name">{currentComposerDimObj.label}</span>
-                      <span className="gb-composer-ch-desc-inline">
-                        — {currentComposerDimObj.desc}
-                      </span>
-                      <ChevronDown className={`w-3.5 h-3.5 ml-auto text-slate-400 transition-transform ${showComposerChannelDropdown ? 'rotate-180' : ''}`} />
+                      <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform ${showComposerChannelDropdown ? 'rotate-180' : ''}`} />
                     </button>
 
                     {showComposerChannelDropdown && (
@@ -2389,17 +2419,56 @@ export function GuestbookBoard() {
                   </div>
                 </div>
 
-                {/* Minimalist Tag Input */}
-                <div className="gb-composer-tag-mini-wrap">
-                  <Tag className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
-                  <input
-                    type="text"
-                    value={composerTags}
-                    onChange={(e) => setComposerTags(e.target.value)}
-                    placeholder="#标签"
-                    maxLength={30}
-                    className="gb-composer-tag-mini-input"
-                  />
+                {/* Multi-Tag Input (Flexible space, up to 5 tags, max 20 chars per tag) */}
+                <div className="gb-composer-tag-picker-wrap">
+                  <label className="gb-composer-field-label">标签：</label>
+                  <div className="gb-composer-tags-container">
+                    {composerTagsList.map((tag) => (
+                      <span key={tag} className="gb-composer-tag-chip">
+                        <span className="gb-tag-hash">#</span>
+                        <span className="gb-tag-name">{tag}</span>
+                        <button
+                          type="button"
+                          className="gb-tag-chip-remove"
+                          title={`移除标签 #${tag}`}
+                          aria-label={`移除标签 #${tag}`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleRemoveTag(tag);
+                          }}
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </span>
+                    ))}
+
+                    {composerTagsList.length < 5 ? (
+                      <div className="gb-tag-inline-input-box">
+                        <input
+                          type="text"
+                          value={composerTagInput}
+                          onChange={(e) => setComposerTagInput(e.target.value.replace(/[\s,，]+/g, ''))}
+                          onKeyDown={handleTagKeyDown}
+                          onBlur={() => {
+                            if (composerTagInput.trim()) {
+                              handleAddTag(composerTagInput);
+                            }
+                          }}
+                          placeholder={
+                            composerTagsList.length === 0
+                              ? '#添加标签 (Enter或逗号，最多5个)'
+                              : '#添加...'
+                          }
+                          maxLength={20}
+                          className="gb-composer-tag-input"
+                        />
+                      </div>
+                    ) : (
+                      <span className="gb-tag-max-hint" title="已达 5 个标签上限">
+                        已满(5/5)
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
 

@@ -345,12 +345,28 @@ async function runVerification() {
     const gComposer = await page.$('.gb-floating-composer');
     if (!gComposer) throw new Error('Floating composer failed to open');
 
-    // 5.1 Verify dedicated drag handle button is present
+    // 5.1 Verify that composer is 100% solid opaque (NOT transparent in light mode)
+    const composerBg = await page.$eval('.gb-floating-composer', (el) => window.getComputedStyle(el).backgroundColor);
+    console.log(`[Verify] Floating composer background: "${composerBg}"`);
+    if (composerBg.includes('rgba') && !composerBg.includes('rgba(255, 255, 255, 1)')) {
+      throw new Error(`Composer should have solid opaque background, got translucent: "${composerBg}"`);
+    }
+    console.log('[Verify] ✓ Confirmed floating composer has solid opaque background');
+
+    // 5.2 Verify dedicated drag handle button is present without static text explanation
     const dragBtn = await page.$('.gb-drag-handle-btn');
     if (!dragBtn) throw new Error('Dedicated drag handle button (.gb-drag-handle-btn) missing');
-    console.log('[Verify] ✓ Confirmed dedicated drag handle button is present');
+    const dragTipCount = await page.$$eval('.gb-drag-tip', (els) => els.length);
+    if (dragTipCount > 0) {
+      throw new Error('Drag handle button should not display static Chinese text, only hover explanation');
+    }
+    const dragTitle = await dragBtn.getAttribute('title');
+    if (!dragTitle?.includes('拖拽')) {
+      throw new Error(`Expected drag handle button to have tooltip title, got "${dragTitle}"`);
+    }
+    console.log('[Verify] ✓ Confirmed dedicated drag handle button is icon-only with hover tooltip');
 
-    // 5.2 Verify that lecturing banners (.gb-smart-type-badge and .gb-composer-smart-hint) are completely removed
+    // 5.3 Verify that lecturing banners (.gb-smart-type-badge and .gb-composer-smart-hint) are completely removed
     const smartBadgeCount = await page.$$eval('.gb-smart-type-badge', (els) => els.length);
     const smartHintCount = await page.$$eval('.gb-composer-smart-hint', (els) => els.length);
     if (smartBadgeCount > 0 || smartHintCount > 0) {
@@ -358,7 +374,7 @@ async function runVerification() {
     }
     console.log('[Verify] ✓ Confirmed smart badge & lecturing hint banners are completely eliminated');
 
-    // 5.3 Verify initial result-oriented word count and submit button
+    // 5.4 Verify initial result-oriented word count and submit button
     let wordCountText = await page.textContent('.gb-word-count');
     let submitBtnText = await page.textContent('.gb-modal-foot .gb-submit-btn');
     console.log(`[Verify] Initial Word Result: "${wordCountText?.trim()}", Button: "${submitBtnText?.trim()}"`);
@@ -369,9 +385,15 @@ async function runVerification() {
       throw new Error(`Expected submit button to say "发射 Boost", got "${submitBtnText}"`);
     }
 
-    // 5.4 Test Partition selection (Generous space with lighter purpose explanation)
+    // 5.5 Test Partition selection (Compact trigger, max 1 partition, fine purpose descriptions in menu)
     const channelTrigger = await page.$('.gb-composer-channel-trigger');
     if (!channelTrigger) throw new Error('Partition dropdown trigger (.gb-composer-channel-trigger) missing');
+    const triggerBox = await channelTrigger.boundingBox();
+    console.log(`[Verify] Partition trigger width: ${Math.round(triggerBox?.width || 0)}px`);
+    if ((triggerBox?.width || 0) > 200) {
+      throw new Error(`Partition trigger should be compact and not take excessive room, got width ${triggerBox?.width}`);
+    }
+
     await channelTrigger.click();
     await page.waitForTimeout(200);
 
@@ -379,9 +401,9 @@ async function runVerification() {
     if (!channelMenu) throw new Error('Partition dropdown menu failed to open');
 
     const descCount = await page.$$eval('.gb-ch-opt-desc', (els) => els.length);
-    console.log(`[Verify] Partition scope descriptions count: ${descCount}`);
+    console.log(`[Verify] Partition scope descriptions count in menu: ${descCount}`);
     if (descCount < 5) {
-      throw new Error('Expected partition options to show fine purpose descriptions');
+      throw new Error('Expected partition options in menu to show purpose descriptions');
     }
 
     // Select "技术探讨" -> switches mode to Gesture
@@ -400,7 +422,7 @@ async function runVerification() {
       throw new Error('Expected submit button to switch to "发布 Gesture"');
     }
 
-    // 5.5 Type text into textarea -> word count updates to result
+    // 5.6 Type text into textarea -> word count updates to result
     const textarea = await page.$('.gb-textarea.is-modal-textarea');
     if (!textarea) throw new Error('Composer textarea not found');
     await textarea.fill('边缘计算架构毫秒级落盘体验丝滑');
@@ -412,14 +434,36 @@ async function runVerification() {
       throw new Error(`Expected result word count to display entered characters, got "${wordCountText}"`);
     }
 
-    // 5.6 Test Minimalist Tag input
-    const tagMiniInput = await page.$('.gb-composer-tag-mini-input');
-    if (!tagMiniInput) throw new Error('Minimalist tag input (.gb-composer-tag-mini-input) not found');
-    await tagMiniInput.fill('#边缘计算');
+    // 5.7 Test Multi-Tag input (Up to 5 tags, chip tags + removal)
+    const tagInput = await page.$('.gb-composer-tag-input');
+    if (!tagInput) throw new Error('Multi-tag input (.gb-composer-tag-input) not found');
+    await tagInput.fill('边缘计算');
+    await page.keyboard.press('Enter');
     await page.waitForTimeout(100);
-    console.log('[Verify] ✓ Minimalist tag input filled');
 
-    // 5.7 Test Window Dragging via Dedicated Button
+    await tagInput.fill('前端开发');
+    await page.keyboard.press('Enter');
+    await page.waitForTimeout(100);
+
+    let tagChipsCount = await page.$$eval('.gb-composer-tag-chip', (els) => els.length);
+    console.log(`[Verify] Tag chips added count: ${tagChipsCount}`);
+    if (tagChipsCount !== 2) {
+      throw new Error(`Expected 2 tag chips, got ${tagChipsCount}`);
+    }
+
+    // Remove one tag
+    const firstTagRemoveBtn = await page.$('.gb-composer-tag-chip .gb-tag-chip-remove');
+    if (firstTagRemoveBtn) await firstTagRemoveBtn.click();
+    await page.waitForTimeout(100);
+
+    tagChipsCount = await page.$$eval('.gb-composer-tag-chip', (els) => els.length);
+    console.log(`[Verify] Tag chips after removal: ${tagChipsCount}`);
+    if (tagChipsCount !== 1) {
+      throw new Error(`Expected 1 tag chip after removal, got ${tagChipsCount}`);
+    }
+    console.log('[Verify] ✓ Multi-tag input and chip deletion verified');
+
+    // 5.8 Test Window Dragging via Dedicated Button
     const initialBox = await gComposer.boundingBox();
     if (initialBox) {
       const dragBox = await dragBtn.boundingBox();

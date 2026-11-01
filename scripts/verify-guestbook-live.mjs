@@ -132,12 +132,28 @@ async function verifyLive() {
     const floatingComposer = await page.$('.gb-floating-composer');
     if (!floatingComposer) throw new Error('Floating composer failed to open on live');
 
-    // 6.1 Verify dedicated drag handle button
+    // 6.1 Verify solid opaque background on live
+    const composerBg = await page.$eval('.gb-floating-composer', (el) => window.getComputedStyle(el).backgroundColor);
+    console.log(`[Live Verify] Floating composer background: "${composerBg}"`);
+    if (composerBg.includes('rgba') && !composerBg.includes('rgba(255, 255, 255, 1)')) {
+      throw new Error(`Composer on live should have solid opaque background, got: "${composerBg}"`);
+    }
+    console.log('[Live Verify] ✓ Confirmed floating composer has solid opaque background on live');
+
+    // 6.2 Verify dedicated drag handle button (icon only, no static Chinese text)
     const dragBtn = await page.$('.gb-drag-handle-btn');
     if (!dragBtn) throw new Error('Dedicated drag handle button (.gb-drag-handle-btn) missing on live');
-    console.log('[Live Verify] ✓ Confirmed dedicated drag handle button is present on live');
+    const dragTipCount = await page.$$eval('.gb-drag-tip', (els) => els.length);
+    if (dragTipCount > 0) {
+      throw new Error('Drag button should not display static Chinese text, only hover tooltip');
+    }
+    const dragTitle = await dragBtn.getAttribute('title');
+    if (!dragTitle?.includes('拖拽')) {
+      throw new Error(`Expected drag handle button to have tooltip title, got "${dragTitle}"`);
+    }
+    console.log('[Live Verify] ✓ Confirmed dedicated drag handle button is icon-only with hover tooltip on live');
 
-    // 6.2 Verify lecturing banners are eliminated
+    // 6.3 Verify lecturing banners are eliminated
     const smartBadgeCount = await page.$$eval('.gb-smart-type-badge', (els) => els.length);
     const smartHintCount = await page.$$eval('.gb-composer-smart-hint', (els) => els.length);
     if (smartBadgeCount > 0 || smartHintCount > 0) {
@@ -145,7 +161,7 @@ async function verifyLive() {
     }
     console.log('[Live Verify] ✓ Confirmed smart badge & lecturing hint banners are completely eliminated on live');
 
-    // 6.3 Verify initial result-oriented word count and submit button
+    // 6.4 Verify initial result-oriented word count and submit button
     let wordCountText = await page.textContent('.gb-word-count');
     let submitBtnText = await page.textContent('.gb-modal-foot .gb-submit-btn');
     console.log(`[Live Verify] Initial Word Result: "${wordCountText?.trim()}", Button: "${submitBtnText?.trim()}"`);
@@ -156,9 +172,15 @@ async function verifyLive() {
       throw new Error(`Expected submit button to say "发射 Boost" on live, got "${submitBtnText}"`);
     }
 
-    // 6.4 Verify Partition Trigger & Light Descriptions
+    // 6.5 Verify Partition Trigger (Compact, 1 partition at most) & Light Descriptions in Menu
     const channelTrigger = await page.$('.gb-composer-channel-trigger');
     if (!channelTrigger) throw new Error('Partition dropdown trigger missing on live');
+    const triggerBox = await channelTrigger.boundingBox();
+    console.log(`[Live Verify] Live partition trigger width: ${Math.round(triggerBox?.width || 0)}px`);
+    if ((triggerBox?.width || 0) > 200) {
+      throw new Error(`Partition trigger should be compact on live, got width ${triggerBox?.width}`);
+    }
+
     await channelTrigger.click();
     await page.waitForTimeout(200);
 
@@ -184,16 +206,19 @@ async function verifyLive() {
       throw new Error('Expected submit button to switch to "发布 Gesture" on live');
     }
 
-    // 6.5 Fill title and tag
+    // 6.6 Fill title and multi-tag
     const titleInput = await page.$('.gb-modal-title-input');
     if (titleInput) {
       await titleInput.fill('Live E2E Verification Title');
       await page.waitForTimeout(100);
     }
-    const tagInput = await page.$('.gb-composer-tag-mini-input');
+    const tagInput = await page.$('.gb-composer-tag-input');
     if (tagInput) {
-      await tagInput.fill('#架构验证');
+      await tagInput.fill('架构验证');
+      await page.keyboard.press('Enter');
       await page.waitForTimeout(100);
+      const chipsCount = await page.$$eval('.gb-composer-tag-chip', (els) => els.length);
+      console.log(`[Live Verify] Live tag chips count: ${chipsCount}`);
     }
 
     // Test Minimize to dock pill
