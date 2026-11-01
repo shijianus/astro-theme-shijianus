@@ -203,11 +203,11 @@ async function runVerification() {
       throw new Error('Boost badge missing');
     }
 
-    // Verify Count Status text
+    // Verify Count Status text (Clean number of Boosts)
     const statusCountText = await page.textContent('.gb-boost-status-count');
     console.log(`[Verify] Boost Status Count text: "${statusCountText?.trim()}"`);
-    if (!statusCountText?.includes('全站共收录')) {
-      throw new Error(`Expected status count to include "全站共收录", got "${statusCountText}"`);
+    if (!statusCountText || isNaN(Number(statusCountText.trim()))) {
+      throw new Error(`Expected status count to be a clean numeric count, got "${statusCountText}"`);
     }
 
     // Verify separate Boost launch button is REMOVED as requested
@@ -217,11 +217,12 @@ async function runVerification() {
     }
     console.log('[Verify] ✓ Confirmed separate Boost launch button is removed; only single publish entry retained');
 
-    // Verify Boost spec badge on header right
+    // Verify Boost spec badge is completely REMOVED as requested (Minimum Information Density)
     const specBadge = await page.$('.gb-boost-spec-badge');
-    if (!specBadge) throw new Error('.gb-boost-spec-badge missing');
-    const specText = await page.textContent('.gb-boost-spec-badge');
-    console.log(`[Verify] Boost Spec Badge text: "${specText?.trim()}"`);
+    if (specBadge) {
+      throw new Error('.gb-boost-spec-badge should be completely removed (Minimum Information Density)');
+    }
+    console.log('[Verify] ✓ Confirmed spec badge (.gb-boost-spec-badge) is cleanly omitted');
 
     // Verify 3 rows container and all 3 tracks
     const marqueeContainer = await page.$('.gb-boost-marquee-container.is-three-rows');
@@ -315,25 +316,16 @@ async function runVerification() {
 
     const pinnedRowsCount = await page.$$eval('.gb-gesture-row.is-pinned-row', (els) => els.length);
     console.log(`[Verify] Pinned rule threads count: ${pinnedRowsCount}`);
-    if (pinnedRowsCount < 4) {
-      throw new Error(`Expected at least 4 pinned rule threads, got ${pinnedRowsCount}`);
+    if (pinnedRowsCount < 1) {
+      throw new Error(`Expected at least 1 pinned welcome thread, got ${pinnedRowsCount}`);
     }
 
     // Verify pinned topic titles
     const feedText = await page.textContent('.gb-gesture-table');
-    if (!feedText?.includes('欢迎来到全站留言与读者交流广场')) {
-      throw new Error('Official pinned topic 1 missing');
+    if (!feedText?.includes('欢迎来到读者留言与交流广场')) {
+      throw new Error('Official pinned welcome topic missing');
     }
-    if (!feedText?.includes('全站留言与讨论广场公约及社群守则')) {
-      throw new Error('Official pinned topic 2 missing');
-    }
-    if (!feedText?.includes('关于边缘分布式架构、D1 毫秒级落盘与数据隐私保护说明')) {
-      throw new Error('Official pinned topic 3 missing');
-    }
-    if (!feedText?.includes('讨论维度（Channels）划分、Tag 标签与内容检索指南')) {
-      throw new Error('Official pinned topic 4 missing');
-    }
-    console.log('[Verify] ✓ All 4 official pinned rule threads verified at top of feed');
+    console.log('[Verify] ✓ Official pinned welcome thread verified at top of feed');
 
     // 5. Test Floating Composer with Dedicated Drag Button, Partition Guidance & Result-Oriented Word Count
     console.log('[Verify] 5. Testing Composer (Drag Handle, Partition Guidance, Result Word Count)...');
@@ -378,11 +370,8 @@ async function runVerification() {
     let wordCountText = await page.textContent('.gb-word-count');
     let submitBtnText = await page.textContent('.gb-modal-foot .gb-submit-btn');
     console.log(`[Verify] Initial Word Result: "${wordCountText?.trim()}", Button: "${submitBtnText?.trim()}"`);
-    if (!wordCountText?.includes('30 字')) {
-      throw new Error(`Expected result word count to say "可输入 30 字以内", got "${wordCountText}"`);
-    }
-    if (!submitBtnText?.includes('发射 Boost')) {
-      throw new Error(`Expected submit button to say "发射 Boost", got "${submitBtnText}"`);
+    if (submitBtnText?.trim() !== '发布') {
+      throw new Error(`Expected submit button to say "发布", got "${submitBtnText}"`);
     }
 
     // 5.5 Test Partition selection (Compact trigger, max 1 partition, fine purpose descriptions in menu)
@@ -406,7 +395,7 @@ async function runVerification() {
       throw new Error('Expected partition options in menu to show purpose descriptions');
     }
 
-    // Select "技术探讨" -> switches mode to Gesture
+    // Select "技术探讨"
     const techOpt = await page.$('.gb-composer-channel-option:has-text("技术探讨")');
     if (techOpt) await techOpt.click();
     await page.waitForTimeout(200);
@@ -415,11 +404,8 @@ async function runVerification() {
     wordCountText = await page.textContent('.gb-word-count');
     submitBtnText = await page.textContent('.gb-modal-foot .gb-submit-btn');
     console.log(`[Verify] After selecting partition: Word Result: "${wordCountText?.trim()}", Button: "${submitBtnText?.trim()}"`);
-    if (!wordCountText?.includes('还需至少 8 字')) {
-      throw new Error(`Expected word count to directly show "还需至少 8 字", got "${wordCountText}"`);
-    }
-    if (!submitBtnText?.includes('发布 Gesture')) {
-      throw new Error('Expected submit button to switch to "发布 Gesture"');
+    if (submitBtnText?.trim() !== '发布') {
+      throw new Error(`Expected submit button to remain stable "发布", got "${submitBtnText}"`);
     }
 
     // 5.6 Type text into textarea -> word count updates to result
@@ -430,8 +416,8 @@ async function runVerification() {
 
     wordCountText = await page.textContent('.gb-word-count');
     console.log(`[Verify] After typing content: Word Result: "${wordCountText?.trim()}"`);
-    if (!wordCountText?.includes('已输入 16 字') && !wordCountText?.includes('已输入')) {
-      throw new Error(`Expected result word count to display entered characters, got "${wordCountText}"`);
+    if (!wordCountText?.includes('15 字')) {
+      throw new Error(`Expected result word count to display clean entered count "15 字", got "${wordCountText}"`);
     }
 
     // 5.7 Test Multi-Tag input (Up to 5 tags, chip tags + removal)
@@ -482,7 +468,7 @@ async function runVerification() {
     console.log('[Verify] ✓ Confirmed dedicated dragging functionality');
 
     // 5.8 Test Minimize to Bottom Dock Pill
-    const minimizeBtn = await page.$('.gb-window-tool-btn[title="最小化到右下角"]');
+    const minimizeBtn = await page.$('.gb-window-tool-btn[title="最小化"]');
     if (minimizeBtn) {
       await minimizeBtn.click();
       await page.waitForTimeout(300);
@@ -491,8 +477,8 @@ async function runVerification() {
 
       const pillBadge = await page.textContent('.gb-minimized-badge');
       console.log(`[Verify] Minimized Dock Pill Badge: "${pillBadge?.trim()}"`);
-      if (!pillBadge?.includes('Gesture')) {
-        throw new Error('Expected minimized pill to display Gesture badge');
+      if (!pillBadge?.includes('草稿')) {
+        throw new Error('Expected minimized pill to display 草稿 badge');
       }
 
       // Re-expand
@@ -518,7 +504,7 @@ async function runVerification() {
 
     // 6. Test Click to Enter Gesture Detail View & Floor Timeline Scroller
     console.log('[Verify] 6. Clicking Gesture row to enter Detail View...');
-    const welcomeRow = await page.$('.gb-gesture-row:has-text("欢迎来到全站留言")');
+    const welcomeRow = await page.$('.gb-gesture-row:has-text("欢迎来到读者留言")');
     if (welcomeRow) {
       await welcomeRow.click();
     } else {
@@ -541,9 +527,8 @@ async function runVerification() {
     // Verify Right-side Floor Timeline Scroller Widget
     const scrollerCard = await page.$('.gb-floor-scroller-card');
     if (!scrollerCard) throw new Error('Right-side floor scroller widget (.gb-floor-scroller-card) missing');
-    const pctText = await page.textContent('.gb-scroller-pct');
     const floorLabel = await page.textContent('.gb-scroller-floor-label');
-    console.log(`[Verify] Floor Scroller Widget: "${floorLabel?.trim()}" (${pctText?.trim()})`);
+    console.log(`[Verify] Floor Scroller Widget: "${floorLabel?.trim()}"`);
 
     // Test Floor Notches along the rail
     const notchesCount = await page.$$eval('.gb-scroller-notch', (els) => els.length);

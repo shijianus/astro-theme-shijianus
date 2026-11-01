@@ -41,8 +41,8 @@ async function verifyLive() {
 
     const statusCountText = await page.textContent('.gb-boost-status-count');
     console.log(`[Live Verify] Boost Status text: "${statusCountText?.trim()}"`);
-    if (!statusCountText?.includes('全站共收录')) {
-      throw new Error(`Expected status count to include "全站共收录", got "${statusCountText}"`);
+    if (!statusCountText || isNaN(Number(statusCountText.trim()))) {
+      throw new Error(`Expected status count to be a clean numeric count, got "${statusCountText}"`);
     }
 
     // Assert old subtitle and stamps are gone
@@ -57,11 +57,12 @@ async function verifyLive() {
     if (launchBoostBtn) throw new Error('Separate Launch Boost button should be removed from header on live');
     console.log('[Live Verify] ✓ Verified separate Boost launch button removed from header');
 
-    // Verify Boost spec badge on header right
+    // Verify Boost spec badge is completely REMOVED as requested (Minimum Information Density)
     const specBadge = await page.$('.gb-boost-spec-badge');
-    if (!specBadge) throw new Error('.gb-boost-spec-badge missing on live');
-    const specText = await page.textContent('.gb-boost-spec-badge');
-    console.log(`[Live Verify] Boost Spec Badge text: "${specText?.trim()}"`);
+    if (specBadge) {
+      throw new Error('.gb-boost-spec-badge should be completely removed on live');
+    }
+    console.log('[Live Verify] ✓ Confirmed spec badge (.gb-boost-spec-badge) is cleanly omitted on live');
 
     // Verify 3 rows container and all 3 tracks
     const track1 = await page.$('.gb-track-1');
@@ -109,10 +110,10 @@ async function verifyLive() {
     await page.waitForSelector('.gb-gesture-row', { timeout: 10000 });
     const pinnedRowsCount = await page.$$eval('.gb-gesture-row.is-pinned-row', (els) => els.length);
     console.log(`[Live Verify] Live pinned rule threads count: ${pinnedRowsCount}`);
-    if (pinnedRowsCount < 4) {
-      throw new Error(`Expected at least 4 pinned rule threads on live, got ${pinnedRowsCount}`);
+    if (pinnedRowsCount < 1) {
+      throw new Error(`Expected at least 1 pinned welcome thread on live, got ${pinnedRowsCount}`);
     }
-    console.log('[Live Verify] ✓ Verified 4 official pinned rule threads on live');
+    console.log('[Live Verify] ✓ Verified official pinned welcome thread on live');
 
     // 5. Audit Gesture Feed & 20-Item Display Cap
     console.log('[Live Verify] 5. Auditing Gesture Feed & 20-Item Display Cap...');
@@ -165,11 +166,8 @@ async function verifyLive() {
     let wordCountText = await page.textContent('.gb-word-count');
     let submitBtnText = await page.textContent('.gb-modal-foot .gb-submit-btn');
     console.log(`[Live Verify] Initial Word Result: "${wordCountText?.trim()}", Button: "${submitBtnText?.trim()}"`);
-    if (!wordCountText?.includes('30 字')) {
-      throw new Error(`Expected result word count to include "30 字", got "${wordCountText}"`);
-    }
-    if (!submitBtnText?.includes('发射 Boost')) {
-      throw new Error(`Expected submit button to say "发射 Boost" on live, got "${submitBtnText}"`);
+    if (submitBtnText?.trim() !== '发布') {
+      throw new Error(`Expected submit button to say "发布" on live, got "${submitBtnText}"`);
     }
 
     // 6.5 Verify Partition Trigger (Compact, 1 partition at most) & Light Descriptions in Menu
@@ -199,11 +197,8 @@ async function verifyLive() {
     wordCountText = await page.textContent('.gb-word-count');
     submitBtnText = await page.textContent('.gb-modal-foot .gb-submit-btn');
     console.log(`[Live Verify] After partition selection: Word Result: "${wordCountText?.trim()}", Button: "${submitBtnText?.trim()}"`);
-    if (!wordCountText?.includes('还需至少 8 字')) {
-      throw new Error(`Expected word count to say "还需至少 8 字", got "${wordCountText}"`);
-    }
-    if (!submitBtnText?.includes('发布 Gesture')) {
-      throw new Error('Expected submit button to switch to "发布 Gesture" on live');
+    if (submitBtnText?.trim() !== '发布') {
+      throw new Error('Expected submit button to remain stable "发布" on live');
     }
 
     // 6.6 Fill title and multi-tag
@@ -222,7 +217,7 @@ async function verifyLive() {
     }
 
     // Test Minimize to dock pill
-    const minimizeBtn = await page.$('.gb-window-tool-btn[title="最小化到右下角"]');
+    const minimizeBtn = await page.$('.gb-window-tool-btn[title="最小化"]');
     if (minimizeBtn) {
       await minimizeBtn.click();
       await page.waitForTimeout(300);
@@ -246,7 +241,7 @@ async function verifyLive() {
 
     // 7. Audit Click to Enter Detail View & Floor Timeline Scroller
     console.log('[Live Verify] 7. Auditing Gesture Detail View on live...');
-    const welcomeRow = await page.$('.gb-gesture-row:has-text("欢迎来到全站留言")');
+    const welcomeRow = await page.$('.gb-gesture-row:has-text("欢迎来到读者留言")');
     if (welcomeRow) {
       await welcomeRow.click();
     } else {
@@ -261,9 +256,8 @@ async function verifyLive() {
     const opFloor = await page.$('#floor-1.is-op-floor');
     if (!opFloor) throw new Error('OP floor missing in detail view');
 
-    const scrollerPct = await page.textContent('.gb-scroller-pct');
     const scrollerFloor = await page.textContent('.gb-scroller-floor-label');
-    console.log(`[Live Verify] Live Floor Scroller: "${scrollerFloor?.trim()}" (${scrollerPct?.trim()})`);
+    console.log(`[Live Verify] Live Floor Scroller: "${scrollerFloor?.trim()}"`);
 
     const notches = await page.$$eval('.gb-scroller-notch', (els) => els.length);
     console.log(`[Live Verify] Live Floor Notches: ${notches}`);

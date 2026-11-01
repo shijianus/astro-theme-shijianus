@@ -946,7 +946,7 @@ export function GuestbookBoard() {
     if (e) e.preventDefault();
     const text = composerText.trim();
     if (!text) {
-      setComposerError('⚠️ 请输入讨论或观点内容');
+      setComposerError('请输入内容');
       return;
     }
 
@@ -956,7 +956,7 @@ export function GuestbookBoard() {
 
       if (determinedType === 'boost') {
         if (text.length > 30) {
-          setComposerError('⚠️ 短句不能超过 30 个字');
+          setComposerError('短句不能超过 30 字');
           setComposerSubmitting(false);
           return;
         }
@@ -979,8 +979,8 @@ export function GuestbookBoard() {
         }
       } else {
         // Gesture Mode
-        if (text.length < 8) {
-          setComposerError('⚠️ 内容至少需要 8 个字');
+        if (text.length < 8 && !composerTitle.trim()) {
+          setComposerError('至少需要 8 字');
           setComposerSubmitting(false);
           return;
         }
@@ -2183,7 +2183,7 @@ export function GuestbookBoard() {
                 <button
                   type="button"
                   className="gb-window-tool-btn"
-                  title="最小化到右下角"
+                  title="最小化"
                   onClick={() => setIsComposerMinimized(true)}
                 >
                   <Minus className="w-4 h-4" />
@@ -2191,7 +2191,7 @@ export function GuestbookBoard() {
                 <button
                   type="button"
                   className="gb-window-tool-btn"
-                  title={isComposerMaximized ? '恢复大小' : '最大化'}
+                  title={isComposerMaximized ? '恢复' : '最大化'}
                   onClick={() => setIsComposerMaximized((prev) => !prev)}
                 >
                   {isComposerMaximized ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-3.5 h-3.5" />}
@@ -2199,7 +2199,7 @@ export function GuestbookBoard() {
                 <button
                   type="button"
                   className="gb-window-tool-btn is-close"
-                  title="关闭起草面板"
+                  title="关闭"
                   onClick={() => setShowComposer(false)}
                 >
                   <X className="w-4 h-4" />
@@ -2529,27 +2529,15 @@ export function GuestbookBoard() {
                     取消
                   </button>
 
-                  {determinedType === 'boost' ? (
-                    <button
-                      type="button"
-                      disabled={composerSubmitting || !trimmedComposerText || trimmedComposerText.length > 30}
-                      onClick={handleComposerSubmit}
-                      className="gb-submit-btn is-boost-btn"
-                    >
-                      <Rocket className="w-3.5 h-3.5 mr-1" />
-                      <span>{composerSubmitting ? '发射中...' : '发射 Boost'}</span>
-                    </button>
-                  ) : (
-                    <button
-                      type="button"
-                      disabled={composerSubmitting || trimmedComposerText.length < 8}
-                      onClick={handleComposerSubmit}
-                      className="gb-submit-btn"
-                    >
-                      <Send className="w-3.5 h-3.5 mr-1" />
-                      <span>{composerSubmitting ? '发布中...' : '发布 Gesture'}</span>
-                    </button>
-                  )}
+                  <button
+                    type="button"
+                    disabled={composerSubmitting || !trimmedComposerText}
+                    onClick={handleComposerSubmit}
+                    className="gb-submit-btn"
+                  >
+                    <Send className="w-3.5 h-3.5 mr-1" />
+                    <span>{composerSubmitting ? '发布中...' : '发布'}</span>
+                  </button>
                 </div>
               </div>
             </div>
