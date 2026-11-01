@@ -815,6 +815,25 @@ export function ThemeOverlays({
       .slice(0, 8);
   }, [posts, query]);
 
+  const isMomentsPage = typeof window !== 'undefined' && window.location.pathname.startsWith('/moments');
+
+  const filteredMoments = useMemo(() => {
+    if (!isMomentsPage || typeof document === 'undefined') return [];
+    try {
+      const el = document.getElementById('moments-data-json');
+      if (!el || !el.textContent) return [];
+      const list: any[] = JSON.parse(el.textContent);
+      const normalizedQuery = query.trim().toLowerCase();
+      if (!normalizedQuery) return list.slice(0, 8);
+      return list.filter((m) => {
+        const text = `${m.title || ''} ${m.summary || ''} ${m.author || ''} ${(m.tags || []).join(' ')}`.toLowerCase();
+        return text.includes(normalizedQuery);
+      }).slice(0, 10);
+    } catch {
+      return [];
+    }
+  }, [isMomentsPage, query, searchOpen]);
+
   // 1. 全站广播通告（每个人可见，构建期扫描渲染，0 DB 开销）
   const broadcastNotifications = useMemo(() => {
     const list: Array<{
@@ -1801,14 +1820,48 @@ export function ThemeOverlays({
               <input
                 ref={searchInputRef}
                 value={query}
-                onChange={(event) => setQuery(event.target.value)}
-                placeholder={t('search.placeholder', '搜索标题、摘要或分类')}
+                onChange={(event) => {
+                  const val = event.target.value;
+                  setQuery(val);
+                  if (isMomentsPage) {
+                    window.dispatchEvent(new CustomEvent('shijianus:moments-filter', { detail: { query: val } }));
+                  }
+                }}
+                placeholder={isMomentsPage ? '搜索说说动态、友邻分享或灵感关键词...' : t('search.placeholder', '搜索标题、摘要或分类')}
               />
               <span>Ctrl K</span>
             </label>
 
             <div className="search-result-list">
-              {filteredPosts.length > 0 ? (
+              {isMomentsPage && filteredMoments.length > 0 ? (
+                filteredMoments.map((moment) => (
+                  <a
+                    className="search-result-item is-moment-search-item"
+                    href={`/moments/#moment-${moment.id}`}
+                    key={moment.id}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setSearchOpen(false);
+                      window.location.hash = `#moment-${moment.id}`;
+                      window.dispatchEvent(new CustomEvent('shijianus:open-moment-detail', { detail: { id: moment.id } }));
+                    }}
+                  >
+                    <img
+                      src={moment.avatar || '/media/shijianus/avatar.jpg'}
+                      alt=""
+                      loading="lazy"
+                      style={{ borderRadius: moment.isOwner ? '6px' : '50%' }}
+                    />
+                    <span className="search-result-item__content">
+                      <span className="search-result-item__meta">
+                        {moment.isOwner ? '👑 站长说说' : `🌐 友邻·${moment.author}`} / {moment.timeAgo}
+                      </span>
+                      <strong>{moment.title}</strong>
+                      <span>{moment.summary}</span>
+                    </span>
+                  </a>
+                ))
+              ) : !isMomentsPage && filteredPosts.length > 0 ? (
                 filteredPosts.map((post) => (
                   <a className="search-result-item" href={post.href} key={post.href}>
                     <img

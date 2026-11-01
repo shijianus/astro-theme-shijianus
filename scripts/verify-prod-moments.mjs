@@ -72,14 +72,21 @@ async function verifyLiveMoments() {
     if (weatherPill) throw new Error('生产端不应再展示 .space-weather-pill 占位符');
     console.log('  -> 占位符清理断言通过: 天气药丸已清除');
 
+    // 检查站长专属皇冠，验证 .qzone-vip-badge 已彻底删除
     const crownBadge = await page.$('.owner-crown-badge');
     if (!crownBadge) throw new Error('未找到站长专属皇冠徽标 .owner-crown-badge');
 
     const vipBadge = await page.$('.qzone-vip-badge');
-    const vipText = await vipBadge.textContent();
-    console.log(`  -> 站长徽章: ${vipText}`);
-    if (!vipText.includes('空间主人') || !vipText.includes('SVIP')) {
-      throw new Error('未显示空间主人 · SVIP 徽章');
+    if (vipBadge) {
+      throw new Error('生产端 .qzone-vip-badge 等多余说明徽章必须删除！');
+    }
+    console.log('  -> 徽章精简验证通过: .qzone-vip-badge 已彻底移除');
+
+    // 检查统一在线状态 (必须同步为“☕ 喝咖啡中”，杜绝写死“专注”)
+    const radarPill = await page.$eval('.qzone-radar-pill', (el) => el.textContent.trim());
+    console.log(`  -> 生产端在线状态: ${radarPill}`);
+    if (!radarPill.includes('☕') || !radarPill.includes('喝咖啡中')) {
+      throw new Error(`生产端在线状态未统一同步为“☕ 喝咖啡中”，当前为: "${radarPill}"`);
     }
 
     // 2. 验证 QQ 空间子导航栏与互动清理
@@ -135,6 +142,61 @@ async function verifyLiveMoments() {
     }
     console.log('  -> 假点赞头像队列清除验证通过');
 
+    // 4.1 头像形状与卡片规范：站长方框(全站唯一)，友邻及Hero保持圆框；尺寸严格一致
+    console.log('[Prod E2E 4.1] 验证头像形状规范与卡片尺寸严格一致...');
+    const ownerAvatarRadius = await page.$eval(
+      '.moment-card.is-owner-moment .author-avatar-wrap .moment-avatar',
+      (el) => window.getComputedStyle(el).borderRadius
+    );
+    console.log(`  -> 站长说说头像圆角: ${ownerAvatarRadius} (方框圆角)`);
+    if (ownerAvatarRadius === '50%' || ownerAvatarRadius === '9999px') {
+      throw new Error(`站长说说头像必须为唯一的方框: ${ownerAvatarRadius}`);
+    }
+
+    const friendAvatarRadius = await page.$eval(
+      '.moment-card.is-friend-moment .author-avatar-wrap .moment-avatar',
+      (el) => window.getComputedStyle(el).borderRadius
+    );
+    console.log(`  -> 友邻说说头像圆角: ${friendAvatarRadius} (圆框)`);
+    if (!friendAvatarRadius.includes('50%') && !friendAvatarRadius.includes('23px')) {
+      throw new Error(`友邻说说头像必须为圆框: ${friendAvatarRadius}`);
+    }
+
+    const heroAvatarRadius = await page.$eval(
+      '.profile-avatar-wrapper .profile-avatar',
+      (el) => window.getComputedStyle(el).borderRadius
+    );
+    console.log(`  -> 空间Hero主头像圆角: ${heroAvatarRadius} (保留原圆框)`);
+    if (!heroAvatarRadius.includes('50%') && !heroAvatarRadius.includes('46px')) {
+      throw new Error(`空间Hero主头像必须保留原圆框: ${heroAvatarRadius}`);
+    }
+
+    // 验证卡片尺寸完全一致 (宽与盒模型相同)
+    const ownerCardWidth = await page.$eval('.moment-card.is-owner-moment', (el) => el.getBoundingClientRect().width);
+    const friendCardWidth = await page.$eval('.moment-card.is-friend-moment', (el) => el.getBoundingClientRect().width);
+    console.log(`  -> 生产端卡片宽度比对: 站长卡片=${ownerCardWidth}px, 友邻卡片=${friendCardWidth}px`);
+    if (Math.abs(ownerCardWidth - friendCardWidth) > 2) {
+      throw new Error(`生产端友邻与站长卡片宽度尺寸不一致: ${ownerCardWidth} vs ${friendCardWidth}`);
+    }
+
+    // 检查 moments-stream-header 与 footer-detail-group 已彻底删除
+    const streamHeader = await page.$('.moments-stream-header');
+    if (streamHeader) {
+      throw new Error('生产端 .moments-stream-header 卡片必须彻底删除！');
+    }
+    const footerDetailGroup = await page.$('.footer-detail-group');
+    if (footerDetailGroup) {
+      throw new Error('生产端 .footer-detail-group 及其查看详情按钮必须彻底删除！');
+    }
+    console.log('  -> 冗余卡片与底栏按钮删除验证通过: .moments-stream-header 与 .footer-detail-group 已彻底移除');
+
+    // 检查“查看全文”专门按钮
+    const expandBtnText = await page.$eval('.btn-toggle-expand', (el) => el.textContent.trim());
+    console.log(`  -> 生产端正文气泡直达按钮文案: "${expandBtnText}"`);
+    if (!expandBtnText.includes('查看全文')) {
+      throw new Error(`生产端按钮文案必须为“查看全文”，当前为: "${expandBtnText}"`);
+    }
+
     // 5. 关键验证：详情界面直接加载到页面内 (In-Page View)，杜绝单独弹窗！
     console.log('[Prod E2E 5] 关键验证：生产端页面内加载说说详情 (去弹窗架构审计)...');
     
@@ -159,11 +221,11 @@ async function verifyLiveMoments() {
       throw new Error('初始状态不匹配：应展示瀑布流并隐藏内嵌详情');
     }
 
-    // 点击第一条说说的“查看详情”按钮
-    console.log('[Prod E2E 6] 点击说说查看详情，验证生产端页面内无缝展开...');
-    const firstDetailBtn = await page.$('.moment-detail-open-btn');
-    if (!firstDetailBtn) throw new Error('未找到 .moment-detail-open-btn 按钮');
-    await firstDetailBtn.click();
+    // 点击第一条说说的整卡（整卡任意区域直达详情）
+    console.log('[Prod E2E 6] 测试生产端整卡点击任意区域直达页面内详情...');
+    const firstCard = await page.$('.moment-card');
+    if (!firstCard) throw new Error('未找到 .moment-card');
+    await firstCard.click();
     await page.waitForTimeout(400);
 
     // 检查视图切换

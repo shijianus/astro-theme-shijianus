@@ -77,18 +77,20 @@ export const PRESET_STATUS_OPTIONS: { emoji: string; text: string }[] = [
 ];
 
 export function readUserStatus(): UserStatus {
-  if (typeof window === 'undefined') return { emoji: '', text: '' };
+  if (typeof window === 'undefined') return { emoji: '☕', text: '喝咖啡中' };
   try {
     const raw = window.localStorage.getItem(USER_STATUS_STORAGE_KEY);
-    if (!raw) return { emoji: '', text: '' };
+    if (!raw) return { emoji: '☕', text: '喝咖啡中' };
     const parsed = JSON.parse(raw);
+    const emoji = typeof parsed.emoji === 'string' && parsed.emoji.trim() ? parsed.emoji.trim() : '☕';
+    const text = typeof parsed.text === 'string' && parsed.text.trim() ? parsed.text.trim() : '喝咖啡中';
     return {
-      emoji: typeof parsed.emoji === 'string' ? parsed.emoji : '',
-      text: typeof parsed.text === 'string' ? parsed.text : '',
+      emoji,
+      text,
       updatedAt: parsed.updatedAt,
     };
   } catch {
-    return { emoji: '', text: '' };
+    return { emoji: '☕', text: '喝咖啡中' };
   }
 }
 

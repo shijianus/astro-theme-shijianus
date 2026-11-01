@@ -216,6 +216,23 @@ function createServer() {
         return;
       }
 
+      // 模拟 /api/geo-profile, /api/auth/config, /api/music/*
+      if (reqPath === '/api/geo-profile') {
+        res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+        res.end(JSON.stringify({ ok: true, country: 'CN', region: 'Beijing', city: 'Beijing', ip: '127.0.0.1' }));
+        return;
+      }
+      if (reqPath === '/api/auth/config') {
+        res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+        res.end(JSON.stringify({ ok: true, enabled: false }));
+        return;
+      }
+      if (reqPath.startsWith('/api/music/')) {
+        res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+        res.end(JSON.stringify({ ok: true, list: [], lyric: '' }));
+        return;
+      }
+
       // 静态文件服务
       if (reqPath.endsWith('/')) {
         reqPath += 'index.html';
@@ -284,23 +301,22 @@ async function runVerification() {
     if (btnToggleSkin) throw new Error('不应再展示空间装扮切换按钮 #btn-toggle-skin');
     console.log('  -> 占位符清理断言通过: 天气药丸与装扮切换按钮已彻底移除');
 
-    // 检查站长专属皇冠与 SVIP 空间主人徽章
+    // 检查站长专属皇冠，确认多余的 .qzone-vip-badge 已彻底删除
     const crownBadge = await page.$('.owner-crown-badge');
     if (!crownBadge) throw new Error('未找到站长专属皇冠徽标 .owner-crown-badge');
 
     const vipBadge = await page.$('.qzone-vip-badge');
-    const vipText = await vipBadge.textContent();
-    console.log(`  -> 站长徽章: ${vipText}`);
-    if (!vipText.includes('空间主人') || !vipText.includes('SVIP')) {
-      throw new Error('未显示空间主人 · SVIP 徽章');
+    if (vipBadge) {
+      throw new Error('按照规范，.qzone-vip-badge 等多余说明徽章必须删除！');
     }
+    console.log('  -> 徽章精简验证通过: .qzone-vip-badge 已彻底移除');
 
     const levelBadge = await page.$('.qzone-level-badge');
     if (!levelBadge) throw new Error('未找到站长等级徽章 .qzone-level-badge');
     const levelText = await levelBadge.textContent();
     console.log(`  -> 站长空间等级: ${levelText}`);
 
-    // 检查站长头像与在线状态
+    // 检查站长头像与统一在线状态 (必须同步为“☕ 喝咖啡中”，杜绝写死“专注”)
     const masterAvatarSrc = await page.$eval('.profile-avatar', (el) => el.getAttribute('src') || '');
     console.log(`  -> 站长头像同步状态: ${masterAvatarSrc}`);
     if (!masterAvatarSrc.includes('shijianus/avatar.jpg') && !masterAvatarSrc.includes('avatar')) {
@@ -309,8 +325,8 @@ async function runVerification() {
 
     const radarPill = await page.$eval('.qzone-radar-pill', (el) => el.textContent.trim());
     console.log(`  -> 在线状态: ${radarPill}`);
-    if (!radarPill.includes('实时在线') || !radarPill.includes('专注重构中')) {
-      throw new Error('未正确同步实际在线状态');
+    if (!radarPill.includes('☕') || !radarPill.includes('喝咖啡中')) {
+      throw new Error(`在线状态未统一同步为“☕ 喝咖啡中”，当前为: "${radarPill}"`);
     }
 
     // 测试 Hero 与账号中心个人资料及状态实时双向同步
@@ -423,7 +439,62 @@ async function runVerification() {
       }
     }
 
-    // 4. 关键验证：详情界面直接加载到页面内 (In-Page View)，杜绝单独弹窗！
+    // 4. 头像形状与卡片规范：站长方框(全站唯一)，友邻及Hero保持圆框；尺寸严格一致
+    console.log('[E2E 5.2] 验证头像形状规范与卡片尺寸严格一致...');
+    const ownerAvatarRadius = await page.$eval(
+      '.moment-card.is-owner-moment .author-avatar-wrap .moment-avatar',
+      (el) => window.getComputedStyle(el).borderRadius
+    );
+    console.log(`  -> 站长说说头像圆角: ${ownerAvatarRadius} (方框圆角)`);
+    if (ownerAvatarRadius === '50%' || ownerAvatarRadius === '9999px') {
+      throw new Error(`站长说说头像必须为唯一的方框，不能为圆框: ${ownerAvatarRadius}`);
+    }
+
+    const friendAvatarRadius = await page.$eval(
+      '.moment-card.is-friend-moment .author-avatar-wrap .moment-avatar',
+      (el) => window.getComputedStyle(el).borderRadius
+    );
+    console.log(`  -> 友邻说说头像圆角: ${friendAvatarRadius} (圆框)`);
+    if (!friendAvatarRadius.includes('50%') && !friendAvatarRadius.includes('23px')) {
+      throw new Error(`友邻说说头像必须为圆框: ${friendAvatarRadius}`);
+    }
+
+    const heroAvatarRadius = await page.$eval(
+      '.profile-avatar-wrapper .profile-avatar',
+      (el) => window.getComputedStyle(el).borderRadius
+    );
+    console.log(`  -> 空间Hero主头像圆角: ${heroAvatarRadius} (保留原圆框)`);
+    if (!heroAvatarRadius.includes('50%') && !heroAvatarRadius.includes('46px')) {
+      throw new Error(`空间Hero主头像必须保留原圆框: ${heroAvatarRadius}`);
+    }
+
+    // 验证卡片尺寸完全一致 (宽与盒模型相同)
+    const ownerCardWidth = await page.$eval('.moment-card.is-owner-moment', (el) => el.getBoundingClientRect().width);
+    const friendCardWidth = await page.$eval('.moment-card.is-friend-moment', (el) => el.getBoundingClientRect().width);
+    console.log(`  -> 卡片宽度比对: 站长卡片=${ownerCardWidth}px, 友邻卡片=${friendCardWidth}px`);
+    if (Math.abs(ownerCardWidth - friendCardWidth) > 2) {
+      throw new Error(`友邻与站长卡片宽度尺寸不一致: ${ownerCardWidth} vs ${friendCardWidth}`);
+    }
+
+    // 检查 moments-stream-header 与 footer-detail-group 已彻底删除
+    const streamHeader = await page.$('.moments-stream-header');
+    if (streamHeader) {
+      throw new Error('按照规范，.moments-stream-header 卡片必须彻底删除！');
+    }
+    const footerDetailGroup = await page.$('.footer-detail-group');
+    if (footerDetailGroup) {
+      throw new Error('按照规范，.footer-detail-group 及其查看详情按钮必须彻底删除！');
+    }
+    console.log('  -> 冗余卡片与底栏按钮删除验证通过: .moments-stream-header 与 .footer-detail-group 已彻底移除');
+
+    // 检查“查看全文”专门按钮
+    const expandBtnText = await page.$eval('.btn-toggle-expand', (el) => el.textContent.trim());
+    console.log(`  -> 正文气泡直达按钮文案: "${expandBtnText}"`);
+    if (!expandBtnText.includes('查看全文')) {
+      throw new Error(`按钮文案必须为“查看全文”，当前为: "${expandBtnText}"`);
+    }
+
+    // 5. 关键验证：详情界面直接加载到页面内 (In-Page View)，杜绝单独弹窗！
     console.log('[E2E 6] 关键验证：页面内加载说说详情 (去弹窗架构审计)...');
     
     // 断言 DOM 中绝不存在 #moment-detail-modal
@@ -449,11 +520,11 @@ async function runVerification() {
       throw new Error('初始状态不匹配：应展示瀑布流并隐藏内嵌详情');
     }
 
-    // 点击第一条说说的“查看详情”按钮
-    console.log('[E2E 7] 点击说说查看详情，验证页面内无缝展开...');
-    const firstDetailBtn = await page.$('.moment-detail-open-btn');
-    if (!firstDetailBtn) throw new Error('未找到 .moment-detail-open-btn 按钮');
-    await firstDetailBtn.click();
+    // 点击第一条说说的整卡（整卡任意区域直达详情）
+    console.log('[E2E 7] 测试整卡点击任意区域直达页面内详情...');
+    const firstCard = await page.$('.moment-card');
+    if (!firstCard) throw new Error('未找到 .moment-card');
+    await firstCard.click();
     await page.waitForTimeout(300);
 
     // 检查视图切换：瀑布流被隐藏，页面内详情可见
@@ -461,7 +532,7 @@ async function runVerification() {
     const isInpageNowVisible = await inpageDetail.isVisible();
     console.log(`  -> 点击详情后状态: streamHidden=${isStreamNowHidden}, inpageDetailVisible=${isInpageNowVisible}`);
     if (!isStreamNowHidden || !isInpageNowVisible) {
-      throw new Error('点击详情后未能正确在页面内展示详情容器');
+      throw new Error('点击整卡后未能正确在页面内展示详情容器');
     }
 
     // 检查页面内详情的具体字段渲染
@@ -501,7 +572,7 @@ async function runVerification() {
       }
     }
 
-    // 5. 验证页面内详情的返回按钮（切回瀑布流）
+    // 6. 验证页面内详情的返回按钮（切回瀑布流）
     console.log('[E2E 8] 验证顶部返回按钮恢复瀑布流...');
     const btnInpageBack = await page.$('#btn-inpage-back');
     if (!btnInpageBack) throw new Error('未找到顶部返回按钮 #btn-inpage-back');
@@ -515,7 +586,20 @@ async function runVerification() {
       throw new Error('点击返回按钮后未成功恢复瀑布流列表');
     }
 
-    // 6. 验证直接通过 URL Hash (#moment-...) 访问自动进入页面内详情模式
+    // 7. 测试点击“查看全文”专门按钮也能直达详情
+    console.log('[E2E 8.1] 测试点击“查看全文 ➔”专门按钮直达详情...');
+    const btnViewFull = await page.$('.btn-toggle-expand');
+    if (btnViewFull) {
+      await btnViewFull.click();
+      await page.waitForTimeout(300);
+      const isVisibleViaBtn = await inpageDetail.isVisible();
+      if (!isVisibleViaBtn) throw new Error('点击“查看全文”专门按钮未能进入详情');
+      console.log('  -> 点击“查看全文 ➔”进入详情验证成功');
+      await page.click('#btn-inpage-back');
+      await page.waitForTimeout(300);
+    }
+
+    // 8. 验证直接通过 URL Hash (#moment-...) 访问自动进入页面内详情模式
     console.log('[E2E 9] 验证直接通过 URL Hash 访问在页面内加载详情...');
     await page.goto(`http://localhost:${PORT}/moments/#moment-m_20261031_01`, { waitUntil: 'networkidle' });
     await page.waitForTimeout(400);
@@ -562,20 +646,34 @@ async function runVerification() {
       throw new Error('点击底部返回按钮后未成功恢复瀑布流');
     }
 
-    // 9. 验证搜索功能
-    console.log('[E2E 12] 验证关键词搜索说说...');
-    const searchInput = await page.$('#moments-search-input');
-    if (searchInput) {
-      await searchInput.fill('架构');
-      await page.waitForTimeout(200);
-      const visibleAfterSearch = await page.$$eval('.moment-card', (els) =>
-        els.filter((e) => e.style.display !== 'none').length
-      );
-      console.log(`  -> 搜索“架构”后可见说说数量: ${visibleAfterSearch}`);
-      if (visibleAfterSearch === 0) throw new Error('搜索说说无匹配结果');
-      await searchInput.fill('');
-      await page.waitForTimeout(200);
+    // 9. 验证顶栏搜索功能联动 (杜绝页面内冗余输入框)
+    console.log('[E2E 12] 验证顶栏搜索功能与说说联动...');
+    const localSearchInput = await page.$('#moments-search-input');
+    if (localSearchInput) {
+      throw new Error('页面内不应存在独立 #moments-search-input 输入框，应统一集成至顶栏搜索！');
     }
+
+    // 触发顶栏搜索广播
+    await page.evaluate(() => {
+      window.dispatchEvent(new CustomEvent('shijianus:moments-filter', { detail: { query: '架构' } }));
+    });
+    await page.waitForTimeout(200);
+    const visibleAfterSearch = await page.$$eval('.moment-card', (els) =>
+      els.filter((e) => e.style.display !== 'none').length
+    );
+    console.log(`  -> 搜索“架构”后过滤可见说说数量: ${visibleAfterSearch}`);
+    if (visibleAfterSearch === 0) throw new Error('搜索说说未能成功过滤结果');
+
+    // 恢复全量展示
+    await page.evaluate(() => {
+      window.dispatchEvent(new CustomEvent('shijianus:moments-filter', { detail: { query: '' } }));
+    });
+    await page.waitForTimeout(200);
+    const visibleAll = await page.$$eval('.moment-card', (els) =>
+      els.filter((e) => e.style.display !== 'none').length
+    );
+    console.log(`  -> 清除搜索后恢复全部说说数量: ${visibleAll}`);
+    if (visibleAll < 3) throw new Error('清除搜索后未能恢复全量说说');
 
     // 10. 检查控制台异常
     if (errors.length > 0) {

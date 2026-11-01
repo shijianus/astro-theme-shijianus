@@ -40,11 +40,10 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
       <div class="profile-meta">
         <div class="profile-name-row">
           <h1 class="profile-name" id="qzone-hero-name">{friendsConfig.siteInfo.name}</h1>
-          <span class="qzone-vip-badge">空间主人 · SVIP</span>
           <span class="qzone-level-badge">Lv.8 极客造物主</span>
           <span class="qzone-radar-pill">
             <span class="radar-ping"></span>
-            <span id="qzone-hero-status">{settings.statusText || '实时在线 · 专注重构中'}</span>
+            <span id="qzone-hero-status">{settings.statusText || '☕ 喝咖啡中'}</span>
           </span>
         </div>
         <p class="profile-bio" id="qzone-hero-bio">{settings.signature || friendsConfig.siteInfo.desc}</p>
@@ -98,15 +97,6 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
   <div id="moments-main-stage" class="moments-main-stage">
     <!-- 视图 A：说说动态瀑布流 (完整瀑布式加载) -->
     <div id="moments-stream-view" class="moments-stream-view">
-      <div class="moments-stream-header theme-card">
-        <div class="moments-search-input-wrap">
-          <svg class="search-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-          </svg>
-          <input id="moments-search-input" type="text" placeholder="搜索说说、友邻或灵感关键词..." />
-        </div>
-      </div>
-
       <!-- 动态时间流卡片列表 (QQ 空间说说瀑布流) -->
       <div class="moments-feed" id="moments-feed">
         {moments.map((item) => (
@@ -184,9 +174,10 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
                   type="button"
                   class="btn-toggle-expand"
                   data-moment-id={item.id}
-                  title="展开查看完整内容"
+                  data-open-detail={item.id}
+                  title="查看说说全文详情与互动"
                 >
-                  展开全文 ▾
+                  查看全文 ➔
                 </button>
               </div>
 
@@ -266,32 +257,6 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
                   <span class="btn-icon">🔗</span>
                   <span>分享</span>
                 </button>
-              </div>
-
-              <div class="footer-detail-group">
-                <button
-                  type="button"
-                  class="moment-detail-open-btn"
-                  data-open-detail={item.id}
-                  title="在当前页面打开说说完整图文与互动详情"
-                >
-                  <span>查看详情</span>
-                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
-                  </svg>
-                </button>
-
-                {!item.isOwner && item.originUrl && (
-                  <a
-                    class="moment-origin-tag"
-                    href={item.originUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    title={`前往博友「${item.author}」原站`}
-                  >
-                    <span>原站 ↗</span>
-                  </a>
-                )}
               </div>
             </div>
 
@@ -606,8 +571,7 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
       }, duration);
     }
 
-    // 1. 搜索过滤
-    const searchInput = document.getElementById('moments-search-input');
+    // 1. 顶栏搜索过滤联动 (嵌入 site-page social-icon search，0 多余按钮)
     const cards = document.querySelectorAll('.moment-card');
     const emptyBox = document.getElementById('moments-empty');
     let searchQuery = '';
@@ -638,12 +602,18 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
       }
     }
 
-    if (searchInput) {
-      searchInput.addEventListener('input', (e) => {
-        searchQuery = e.target.value.trim().toLowerCase();
-        filterMoments();
-      });
-    }
+    // 接收全局搜索面板广播与详情直达
+    window.addEventListener('shijianus:moments-filter', (e) => {
+      searchQuery = (e.detail?.query || '').trim().toLowerCase();
+      filterMoments();
+    });
+
+    window.addEventListener('shijianus:open-moment-detail', (e) => {
+      const id = e.detail?.id;
+      if (id && typeof showMomentInPage === 'function') {
+        showMomentInPage(id);
+      }
+    });
 
     // 2. QQ 空间式访客头像计算与全页面实时同步 (支持 QQ 邮箱头像与自定义称呼)
     function computeVisitorAvatar(nameOrEmail) {
@@ -885,9 +855,10 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
         }
       }
 
-      if (statusObj && statusObj.text && heroStatus) {
-        const prefix = statusObj.emoji ? `${statusObj.emoji} ` : '';
-        heroStatus.textContent = `${prefix}${statusObj.text}`;
+      const currentEmoji = (statusObj && statusObj.emoji) || '☕';
+      const currentText = (statusObj && statusObj.text) || '喝咖啡中';
+      if (heroStatus) {
+        heroStatus.textContent = `${currentEmoji} ${currentText}`;
       }
     }
 
@@ -1279,6 +1250,7 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
       if (inpageAvatar) {
         inpageAvatar.src = item.avatar;
         inpageAvatar.alt = item.author;
+        inpageAvatar.style.borderRadius = item.isOwner ? '8px' : '50%';
       }
       if (inpageAuthorName) inpageAuthorName.textContent = item.author;
       if (inpageAuthorBadge) {
@@ -1450,7 +1422,33 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
       });
     }
 
-    // 绑定所有触发查看详情的元素 (包含标题、作者栏、图片网格、查看详情按钮)
+    // 整卡点击进入详情 (除点赞、评论抽屉等交互按钮外，整卡任意区域点击均直达详情)
+    document.querySelectorAll('.moment-card').forEach((card) => {
+      card.addEventListener('click', (e) => {
+        if (
+          e.target.closest('.moment-like-btn') ||
+          e.target.closest('.moment-comment-toggle-btn') ||
+          e.target.closest('.moment-share-btn') ||
+          e.target.closest('.moment-comments-drawer') ||
+          e.target.closest('.btn-reply-comment') ||
+          e.target.closest('form') ||
+          e.target.closest('input') ||
+          e.target.closest('textarea') ||
+          e.target.closest('button.btn-random-nickname') ||
+          e.target.closest('button.quick-emoji-btn') ||
+          e.target.closest('button.comment-submit-btn') ||
+          e.target.closest('a')
+        ) {
+          return;
+        }
+        const id = card.dataset.id;
+        if (id) {
+          showMomentInPage(id);
+        }
+      });
+    });
+
+    // 绑定所有触发查看详情的元素 (包含标题、作者栏、图片网格、查看全文按钮)
     document.querySelectorAll('[data-open-detail]').forEach((el) => {
       el.addEventListener('click', (e) => {
         e.preventDefault();
@@ -1462,21 +1460,14 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
       });
     });
 
-    // 5 行文字展开与收起
+    // “查看全文”专门按钮点击直达详情 (无弹窗内嵌详情)
     document.querySelectorAll('.btn-toggle-expand').forEach((btn) => {
       btn.addEventListener('click', (e) => {
         e.preventDefault();
         e.stopPropagation();
-        const id = btn.dataset.momentId;
-        const bubble = document.querySelector(`.moment-summary-bubble[data-moment-id="${id}"]`);
-        if (!bubble) return;
-        const isClamped = bubble.classList.contains('is-clamped');
-        if (isClamped) {
-          bubble.classList.remove('is-clamped');
-          btn.textContent = '收起 ▴';
-        } else {
-          bubble.classList.add('is-clamped');
-          btn.textContent = '展开全文 ▾';
+        const id = btn.dataset.momentId || btn.getAttribute('data-open-detail');
+        if (id) {
+          showMomentInPage(id);
         }
       });
     });
@@ -1714,17 +1705,6 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
     font-size: 1.45rem;
     font-weight: 850;
     color: var(--font-color);
-  }
-
-  .qzone-vip-badge {
-    padding: 3px 10px;
-    border-radius: 6px;
-    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-    color: #fff;
-    font-size: 0.75rem;
-    font-weight: 800;
-    letter-spacing: 0.5px;
-    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.35);
   }
 
   .qzone-level-badge {
@@ -1997,51 +1977,6 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
     gap: 1.5rem;
   }
 
-  .moments-stream-header {
-    padding: 0.85rem 1.25rem;
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-  }
-
-  .moments-search-input-wrap {
-    position: relative;
-    width: 100%;
-    max-width: 360px;
-  }
-
-  .moments-search-input-wrap .search-icon {
-    position: absolute;
-    left: 12px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 16px;
-    height: 16px;
-    color: var(--text-secondary, #94a3b8);
-  }
-
-  .moments-search-input-wrap input {
-    width: 100%;
-    padding: 8px 12px 8px 36px;
-    border-radius: 20px;
-    border: 1px solid rgba(66, 90, 239, 0.2);
-    background: rgba(0, 0, 0, 0.02);
-    font-size: 0.85rem;
-    color: var(--font-color);
-    box-sizing: border-box;
-    transition: all 0.2s ease;
-  }
-
-  :root[data-theme='dark'] .moments-search-input-wrap input {
-    background: rgba(255, 255, 255, 0.04);
-  }
-
-  .moments-search-input-wrap input:focus {
-    outline: none;
-    border-color: var(--theme-main, #425aef);
-    box-shadow: 0 0 0 3px rgba(66, 90, 239, 0.15);
-  }
-
   /* 说说瀑布流网格与卡片 */
   .moments-feed {
     display: flex;
@@ -2057,6 +1992,9 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
     position: relative;
     border-radius: 12px;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
+    cursor: pointer;
+    box-sizing: border-box;
+    width: 100%;
   }
 
   .moment-card:hover {
@@ -2085,6 +2023,7 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
     position: relative;
     width: 46px;
     height: 46px;
+    flex-shrink: 0;
   }
 
   .moment-avatar {
@@ -2093,6 +2032,19 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
     border-radius: 50%;
     object-fit: cover;
     border: 2px solid rgba(66, 90, 239, 0.2);
+    transition: all 0.2s ease;
+  }
+
+  /* 站长头像在显式时是唯一的方框 (全站唯一方框) */
+  .moment-card.is-owner-moment .author-avatar-wrap .moment-avatar {
+    border-radius: 8px !important;
+    border: 2px solid #f59e0b;
+  }
+
+  /* 友链及所有访客头像严格保持圆框 */
+  .moment-card.is-friend-moment .author-avatar-wrap .moment-avatar {
+    border-radius: 50% !important;
+    border: 2px solid rgba(66, 90, 239, 0.3);
   }
 
   .avatar-crown-badge {
@@ -2349,45 +2301,6 @@ const totalLikes = moments.reduce((acc, m) => acc + (m.likes || 0), 0);
     30% { transform: scale(1.4); }
     60% { transform: scale(0.9); }
     100% { transform: scale(1); }
-  }
-
-  .footer-detail-group {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-
-  .moment-detail-open-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    padding: 6px 14px;
-    border-radius: 6px;
-    background: rgba(66, 90, 239, 0.08);
-    border: 1px solid rgba(66, 90, 239, 0.18);
-    color: var(--theme-main, #425aef);
-    font-size: 0.85rem;
-    font-weight: 750;
-    cursor: pointer;
-    transition: all 0.2s ease;
-  }
-
-  .moment-detail-open-btn:hover {
-    background: var(--theme-main, #425aef);
-    color: #fff;
-  }
-
-  .moment-origin-tag {
-    font-size: 0.8rem;
-    color: var(--text-secondary, #64748b);
-    text-decoration: none;
-    padding: 4px 8px;
-    border-radius: 4px;
-    background: rgba(0, 0, 0, 0.04);
-  }
-
-  .moment-origin-tag:hover {
-    color: var(--theme-main, #425aef);
   }
 
   /* 评论抽屉 */

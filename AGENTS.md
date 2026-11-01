@@ -6714,28 +6714,28 @@
   1. 通过 Wrangler 编译并全量部署至 Cloudflare Pages 生产边缘节点（部署别名 `https://041b96f5.shijianus-blog.pages.dev/moments/`）；
   2. 针对生产真实域名 `https://blog.epocanvas.com/moments/` 执行无头浏览器真实 E2E 审计 (`scripts/verify-prod-moments.mjs`)，HTTP 200，所有占位符清除、无假头像、去弹窗页面内详情与 Hash 路由 100% 审计通过。
 
-### Task 116: 留言板 (/guestbook/) 界面交互极简重构 (维度极简无描述、编辑框专属拖拽手柄、分区轻量指导与结果导向字数展示) (`603a7c8`)
-- [x] **普通维度下拉选项极简无描述收敛**：
-  1. 彻底清除顶栏普通“维度”下拉菜单中的描述副标题，仅保留小图标、分类名称与选中状态钩，宽度紧凑收敛至 175px；
-  2. 保持最多 4 项可见并支持原生滚轮平滑滚动。
-- [x] **编写弹窗分区选择空间扩充与轻薄字体范围指导**：
-  1. 真正需要说明的分区引导移入悬浮发布框内，提供宽阔的分区选择区域（`.gb-composer-channel-picker-wrap`）；
-  2. 选项内采用细浅颜色字体（`.gb-ch-opt-desc`）清晰说明每个分区的发布范畴（如“随心交流、破冰日常与自由互动”等），给用户精准指引；
-  3. 标签输入（Tag）精简为轻量紧凑的 `#标签` 胶囊框，减少视觉负担。
-- [x] **清除机器说教式提示横幅，回归用户视角**：
-  1. 彻底删除顶栏“智能识别：Boost (短句观点流)”徽章；
-  2. 彻底删除编写区域“Boost 模式已激活：当前内容处于 30 字内...”提示横幅，界面保持纯粹与干净。
-- [x] **引入专属拖拽手柄按钮与防误触位移**：
-  1. 在悬浮编辑框头部左侧增设专属拖拽按钮（`.gb-drag-handle-btn`），点击窗口其它任何区域均不发生位移；
-  2. 仅当按住该专属拖拽按钮时允许拖拽移动窗口，并自动限制在屏幕可视边界内，窗口支持右上角最小化至常驻胶囊。
-- [x] **结果导向字数指示与明确发布行为**：
-  1. 彻底省去给用户解释规则的长篇说明，直接在输入框右下方展示用户关心的字数结果：
-     - Boost 模式：0 字显示“可输入 30 字以内”；已输入显示“还可输入 X 字”；超限标红“已超出 X 字”；
-     - Gesture 模式：未达标显示“还需至少 X 字”；达标显示“已输入 X 字”；
-  2. 底部发布按钮明确呈现行为：🚀 发射 Boost / 📝 发布 Gesture。
-- [x] **本地与线上 Playwright 自动化审计 100% 通过**：
-  1. 本地套件 `scripts/verify-guestbook-board.mjs` 测试 100% 全绿；
-  2. 生产端 E2E 验证脚本 `scripts/verify-guestbook-live.mjs` 适配新架构。
+### Task 117: 朋友圈 (/moments/) 顶栏搜索嵌入、整卡直达页面内详情与“查看全文 ➔”替换、站长专属方框头像与卡片尺寸严格一致、喝咖啡状态全站同步
+- [x] **删除 `class="moments-stream-header theme-card"` 并将搜索嵌入顶栏全局搜索**：
+  1. 彻底删除朋友圈内部独立的 `.moments-stream-header` 及其独立的 `#moments-search-input`，杜绝新加独立 button；
+  2. 将搜索功能嵌入顶栏既有的 `class="site-page social-icon search"`（全局搜索模态框 `ThemeOverlays.tsx`），在 `/moments/` 路由下输入关键词即时广播 `shijianus:moments-filter` 过滤朋友圈说说卡片，点击搜索结果中的说说项平滑在页面内展开详情。
+- [x] **说说卡片整卡点击直达全文详情 & 按钮重构**：
+  1. 对于任何说说卡片（`class="moment-card theme-card is-owner-moment"` 等），点击整卡任意非交互区域（忽略点赞、评论抽屉、表单及输入控件）直接在页面内进入详情查看；
+  2. 彻底删除底部的 `class="footer-detail-group"` 及“查看详情”按钮；
+  3. 用“查看全文 ➔”替换正文气泡底部的 `class="btn-toggle-expand"`（原“展开全文 ▾”），作为专门点击进入页面内详情的直达按钮。
+- [x] **友链与站长朋友圈卡片尺寸严格一致 & 友链真实化**：
+  1. 确保友链动态卡片与站长动态卡片在宽度（1288px）、内边距、圆角、排版尺寸上 100% 严格一致，消除尺寸高低不一的割裂感；
+  2. 剔除失效与假的友链，配置真实可响应的 EpoCanvas 品牌矩阵原生生态（`EpoMail`、`EpoCanvas`、`Sonic`），提供标准多图网格与真实响应。
+- [x] **站长头像专属方框显示 & 精简 Hero 冗余徽章**：
+  1. 在说说流展示中，站长的头像（`class="author-avatar-wrap"` 内的 `.moment-avatar`）使用全站唯一的方框圆角（`border-radius: 8px !important`），其他所有友链/访客头像严格保持圆框（`border-radius: 50% !important`）；
+  2. 空间 Hero（`class="qzone-space-hero theme-card"`）顶部的个人大头像（`class="profile-avatar-wrapper"` 内的 `.profile-avatar`）保留原框（`border-radius: 50% !important`）；
+  3. 彻底删除空间 Hero 中多余的说明徽章 `class="qzone-vip-badge"`。
+- [x] **统一且绝对真实的状态同步**：
+  1. 修复状态同步 Bug：全局默认状态与 fallback 严格固化为“☕ 喝咖啡中”，杜绝回退到写死的“专注/专注重构中”；
+  2. 空间 Hero 个人资料与顶栏/账号中心状态保持毫秒级实时一致。
+- [x] **本地与生产全链路 Playwright 自动化端到端测试 100% PASS**：
+  1. `scripts/verify-moments-space.mjs` 本地 E2E 测试全部断言 100% 通过（0 报错、尺寸 1288px 对齐、头像方圆圆角区分、整卡点击与“查看全文 ➔”页面内详情展开、顶栏搜索联动）；
+  2. 部署至生产环境并运行 `scripts/verify-prod-moments.mjs` 生产实机验证。
+
 
 
 

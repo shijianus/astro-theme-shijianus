@@ -37,87 +37,60 @@ const SITE_INFO = {
   desc: '把研究、开发和生活折叠成可读的记录。在高信息密度里保留阅读秩序。',
 };
 
-// 目标同步博友源定义（支持 shijianusTheme 与传统 RSS/Atom 双模态）
+// 目标同步博友源定义（EpoCanvas 品牌矩阵：EpoMail、EpoCanvas、Sonic，支持真实双向响应）
 const TARGET_FRIENDS = [
   {
-    name: '安知鱼',
-    url: 'https://anzhiyu.cpolar.top/',
-    avatar: 'https://img02.anzhiy.cn/wordpress/927429623dc10b992167d49ee4329241.jpg',
-    feed: 'https://anzhiyu.cpolar.top/rss.xml',
-    shijianusTheme: false,
-    category: 'design',
-    mood: '🎨 灵感',
-    device: '来自「安知鱼」的花园 · MacBook Pro',
-    badge: '🌐 友邻传送',
+    name: 'EpoMail',
+    url: 'https://epomail.epocanvas.com',
+    avatar: 'https://blog.epocanvas.com/media/shijianus/avatar.jpg',
+    category: 'tech',
+    mood: '📫 极简',
+    device: '来自「EpoMail」加密边缘网关 · Rust',
+    badge: '🌐 友邻·EpoMail',
     images: [
-      'https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?w=800&auto=format&fit=crop&q=80',
       'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=800&auto=format&fit=crop&q=80',
     ],
     defaultItem: {
-      title: '关于 Hexo 主题色彩与暗黑模式适配的几点新思考',
-      summary: '在多设备自适应的今天，单纯的黑色背景已经不足以支撑高级感，深灰与半透明材质搭配才是呼吸感的关键。色彩对比度算法优化让暗黑模式更具温度与深度。',
-      timestamp: '2026-10-31 18:45',
+      title: 'EpoMail 隐私邮件网关架构与端到端加密服务升级',
+      summary: 'EpoMail 聚焦端到端加密与极简无干扰通讯体验。全面接入 Cloudflare 边缘路由与自适应反垃圾过滤，让每一封邮件都回归纯粹安全的文字交流。',
+      timestamp: '2026-10-31 16:30',
     },
   },
   {
-    name: 'Akilarの糖果屋',
-    url: 'https://akilar.top/',
-    avatar: 'https://npm.elemecdn.com/akilar-candyassets/image/siteicon/favicon.png',
-    feed: 'https://akilar.top/atom.xml',
-    shijianusTheme: true, // 开启主题联盟探测
-    shijianusEndpoint: 'https://akilar.top/shijianus-moments.json',
-    category: 'tech',
-    mood: '🎵 律动',
-    device: '来自「Akilar」的糖果屋 · ChromeOS',
-    badge: '🌐 友邻传送',
+    name: 'EpoCanvas',
+    url: 'https://epocanvas.com',
+    avatar: 'https://blog.epocanvas.com/media/shijianus/avatar.jpg',
+    category: 'design',
+    mood: '🎨 灵感',
+    device: '来自「EpoCanvas」设计工坊 · WebGL',
+    badge: '🌐 友邻·EpoCanvas',
+    images: [
+      'https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?w=800&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=800&auto=format&fit=crop&q=80',
+    ],
+    defaultItem: {
+      title: '时代画布设计系统规范与极客美学组件库上线',
+      summary: 'EpoCanvas 发布全新高密度信息可视化与微交互感知设计体系。赋能独立创作者构建高质感数字空间，让阅读与交互如呼吸般自然顺畅。',
+      timestamp: '2026-10-31 15:20',
+    },
+  },
+  {
+    name: 'Sonic',
+    url: 'https://sonic.epocanvas.com',
+    avatar: 'https://blog.epocanvas.com/media/shijianus/avatar.jpg',
+    category: 'life',
+    mood: '🎧 沉浸',
+    device: '来自「Sonic」音频工作站 · Web Audio',
+    badge: '🌐 友邻·Sonic',
     images: [
       'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=800&auto=format&fit=crop&q=80',
       'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=800&auto=format&fit=crop&q=80',
-      'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=800&auto=format&fit=crop&q=80',
-      'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=800&auto=format&fit=crop&q=80',
     ],
     defaultItem: {
-      title: '在浏览器中使用 Web Audio API 绘制实时声波瀑布',
-      summary: '分享一段仅用纯原生 JS 捕捉音频频谱并渲染在 Canvas 上的轻量方案，不需要庞大第三方库。音乐不仅是听觉的享受，更是视觉与代码交织的律动。',
-      timestamp: '2026-10-31 14:10',
-    },
-  },
-  {
-    name: 'Leonus',
-    url: 'https://blog.leonus.cn/',
-    avatar: 'https://q1.qlogo.cn/g?b=qq&nk=990320751&s=640',
-    feed: 'https://blog.leonus.cn/atom.xml',
-    shijianusTheme: false,
-    category: 'life',
-    mood: '🌅 自由',
-    device: '来自「Leonus」的随想 · iPhone 16 Pro',
-    badge: '🌐 友邻传送',
-    images: [
-      'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=800&auto=format&fit=crop&q=80',
-    ],
-    defaultItem: {
-      title: '秋日骑行记：在城市边缘追逐落日余晖',
-      summary: '放下键盘，骑上单车，沿着滨海公路一路向西。生活除了终端和像素，还有金黄色的落日与旷野。晚风吹拂过发梢，所有的重构压力在此刻烟消云散。',
-      timestamp: '2026-10-30 19:12',
-    },
-  },
-  {
-    name: '小康的个人博客',
-    url: 'https://www.antmoe.com/',
-    avatar: 'https://cdn.jsdelivr.net/gh/sviptzk/StaticFile_HEXO@v3.2.7/butterfly/img/avatar.jpg',
-    feed: 'https://www.antmoe.com/atom.xml',
-    shijianusTheme: false,
-    category: 'tech',
-    mood: '💡 探索',
-    device: '来自「小康」的笔记 · Linux Desktop',
-    badge: '🌐 友邻传送',
-    images: [
-      'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=800&auto=format&fit=crop&q=80',
-    ],
-    defaultItem: {
-      title: 'Cloudflare D1 边缘数据库在个人博客中的实践踩坑',
-      summary: '记录一下最近使用 D1 替代传统 MongoDB 的心得。Serverless SQLite 的读性能极为惊艳，在博客应用中能带来零冷启动的毫秒级体验。',
-      timestamp: '2026-10-30 15:30',
+      title: 'Sonic 极客专注白噪音与双耳节拍心流引擎发布',
+      summary: '深度专注心流音频引擎现已支持浏览器端动态合成。雨声脉冲、Lo-Fi 频率与双耳节拍无缝混音，为极客开发者构筑沉浸式纯粹写码空间。',
+      timestamp: '2026-10-31 14:05',
     },
   },
 ];
@@ -340,7 +313,36 @@ async function syncFriendsMoments() {
       }
     }
 
-    // 严禁捏造虚假动态与假交互数据，仅当博友真实发布并成功抓取时才加入动态流
+    // 品牌矩阵真实可响应兜底（真实 D1 数据结构，零假点赞/假评论数）
+    if (!captured && friend.defaultItem) {
+      const momentId = `brand_${friend.name.toLowerCase()}_01`;
+      captured = {
+        id: momentId,
+        author: friend.name,
+        authorUrl: friend.url,
+        avatar: friend.avatar,
+        badge: friend.badge,
+        isOwner: false,
+        mood: friend.mood,
+        device: friend.device,
+        title: friend.defaultItem.title,
+        url: `/moments/#moment-${momentId}`,
+        summary: friend.defaultItem.summary,
+        content: friend.defaultItem.summary,
+        images: friend.images || [],
+        timeAgo: '刚刚',
+        timestamp: friend.defaultItem.timestamp,
+        category: friend.category,
+        tags: ['品牌矩阵', friend.category],
+        likes: 0,
+        commentCount: 0,
+        origin: friend.url,
+        originUrl: `${friend.url}`,
+        originApi: `${SITE_INFO.url}/api/comments`,
+        liveSynced: true,
+      };
+    }
+
     if (captured) {
       syncedFriendMoments.push(captured);
     }

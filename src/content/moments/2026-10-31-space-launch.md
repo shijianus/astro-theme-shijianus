@@ -5,7 +5,7 @@ authorUrl: "https://blog.epocanvas.com"
 avatar: "/media/shijianus/avatar.jpg"
 pubDate: 2026-10-31T07:15:00.000Z
 date: "2026-10-31 19:20"
-mood: "🚀 专注"
+mood: "☕ 喝咖啡"
 device: "Mac Studio · 边缘开发终端"
 category: "thought"
 tags: ["系统设计", "QQ空间模式", "主题联盟"]
