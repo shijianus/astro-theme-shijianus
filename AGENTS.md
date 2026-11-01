@@ -6714,7 +6714,7 @@
   1. 通过 Wrangler 编译并全量部署至 Cloudflare Pages 生产边缘节点（部署别名 `https://041b96f5.shijianus-blog.pages.dev/moments/`）；
   2. 针对生产真实域名 `https://blog.epocanvas.com/moments/` 执行无头浏览器真实 E2E 审计 (`scripts/verify-prod-moments.mjs`)，HTTP 200，所有占位符清除、无假头像、去弹窗页面内详情与 Hash 路由 100% 审计通过。
 
-### Task 117: 朋友圈 (/moments/) 顶栏搜索嵌入、整卡直达页面内详情与“查看全文 ➔”替换、站长专属方框头像与卡片尺寸严格一致、喝咖啡状态全站同步
+### Task 117: 朋友圈 (/moments/) 顶栏搜索嵌入、整卡直达页面内详情与“查看全文 ➔”替换、站长专属方框头像与卡片尺寸严格一致、喝咖啡状态全站同步 (`3f0a370`)
 - [x] **删除 `class="moments-stream-header theme-card"` 并将搜索嵌入顶栏全局搜索**：
   1. 彻底删除朋友圈内部独立的 `.moments-stream-header` 及其独立的 `#moments-search-input`，杜绝新加独立 button；
   2. 将搜索功能嵌入顶栏既有的 `class="site-page social-icon search"`（全局搜索模态框 `ThemeOverlays.tsx`），在 `/moments/` 路由下输入关键词即时广播 `shijianus:moments-filter` 过滤朋友圈说说卡片，点击搜索结果中的说说项平滑在页面内展开详情。
