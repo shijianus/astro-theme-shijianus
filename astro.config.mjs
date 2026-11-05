@@ -12,6 +12,7 @@ import autoprefixer from 'autoprefixer';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import { printBrandBanner } from './scripts/brand-banner.mjs';
+import { musicPlayerDemoIntegration } from './src/components/theme/music-player/demo/integration.mjs';
 
 function epocanvasBrandIntegration() {
   let hasPrinted = false;
@@ -720,6 +721,7 @@ export default defineConfig({
     commentsDevIntegration(),
     authDevIntegration(),
     imageUploadDevIntegration(),
+    musicPlayerDemoIntegration(),
     secureProtectedPostsIntegration(),
     react(),
     mdx(),

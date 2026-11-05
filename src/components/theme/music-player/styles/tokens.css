@@ -1,0 +1,42 @@
+.mp-root {
+  /* Player-only tokens. The 16px panel radius is the explicit exception to
+     the theme's 8px radius ceiling; every other radius stays within 8-12px. */
+  --mp-radius: 16px;
+  --mp-radius-md: 12px;
+  --mp-radius-sm: 8px;
+  --mp-radius-pill: 999px;
+
+  --mp-accent: var(--theme-main);
+  --mp-on-accent: var(--white);
+  --mp-accent-soft: color-mix(in srgb, var(--mp-accent) 14%, transparent);
+  --mp-accent-border: color-mix(in srgb, var(--mp-accent) 30%, transparent);
+  --mp-accent-glow: color-mix(in srgb, var(--mp-accent) 38%, transparent);
+  --mp-danger: var(--theme-red);
+
+  --mp-surface: var(--card-bg);
+  --mp-panel-bg: color-mix(in srgb, var(--card-bg) 30%, var(--global-bg));
+  --mp-border: var(--card-border);
+  --mp-text: var(--font-color);
+  --mp-text-soft: var(--text-soft);
+  --mp-text-muted: var(--text-muted);
+  --mp-track-color: color-mix(in srgb, var(--mp-text-soft) 24%, transparent);
+  --mp-hover: color-mix(in srgb, var(--mp-accent) 8%, transparent);
+  --mp-shadow: var(--shadow-card-hover);
+  --mp-cover-shadow: var(--shadow-card);
+  --mp-backdrop: var(--card-backdrop-filter);
+
+  --mp-z-bubble: 85;
+  --mp-z-panel: 95;
+  --mp-panel-width: 380px;
+  --mp-bubble-size: 48px;
+  --mp-motion: 240ms;
+}
+
+:root[data-theme='dark'] .mp-root {
+  --mp-on-accent: var(--black);
+}
+
+:root[data-card-style='solid'] .mp-root {
+  --mp-panel-bg: var(--card-bg);
+  --mp-backdrop: none;
+}

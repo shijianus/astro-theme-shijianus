@@ -27,6 +27,7 @@ type ThemeDockProps = {
   darkBackground: string;
   backgroundModes: readonly BackgroundMode[];
   pageType?: string;
+  musicPlayerVariant?: 'legacy' | 'redesign';
 };
 
 function calculateProgress() {
@@ -58,6 +59,8 @@ const DOCK_TRANSLATIONS: Record<
     backToTop: string;
     toggleMusicPocket: string;
     musicPocketActive: string;
+    expandMusicPanel: string;
+    collapseMusicPanel: string;
   }
 > = {
   'zh-CN': {
@@ -79,6 +82,8 @@ const DOCK_TRANSLATIONS: Record<
     backToTop: '返回顶部',
     toggleMusicPocket: '随身音乐口袋 (默认隐藏)',
     musicPocketActive: '隐藏音乐口袋',
+    expandMusicPanel: '展开播放器面板',
+    collapseMusicPanel: '收起播放器面板',
   },
   'zh-Hant': {
     exitReadMode: '退出閱讀模式',
@@ -99,6 +104,8 @@ const DOCK_TRANSLATIONS: Record<
     backToTop: '返回頂部',
     toggleMusicPocket: '隨身音樂口袋 (預設隱藏)',
     musicPocketActive: '隱藏音樂口袋',
+    expandMusicPanel: '展開播放器面板',
+    collapseMusicPanel: '收起播放器面板',
   },
   en: {
     exitReadMode: 'Exit Reading Mode',
@@ -119,6 +126,8 @@ const DOCK_TRANSLATIONS: Record<
     backToTop: 'Back to Top',
     toggleMusicPocket: 'Music Pocket (Hidden by default)',
     musicPocketActive: 'Hide Music Pocket',
+    expandMusicPanel: 'Expand player panel',
+    collapseMusicPanel: 'Collapse player panel',
   },
   fr: {
     exitReadMode: 'Quitter le mode lecture',
@@ -139,6 +148,8 @@ const DOCK_TRANSLATIONS: Record<
     backToTop: 'Retour en haut',
     toggleMusicPocket: 'Lecteur de musique (Masqué par défaut)',
     musicPocketActive: 'Masquer le lecteur de musique',
+    expandMusicPanel: 'Développer le panneau du lecteur',
+    collapseMusicPanel: 'Réduire le panneau du lecteur',
   },
   es: {
     exitReadMode: 'Salir del modo lectura',
@@ -159,6 +170,8 @@ const DOCK_TRANSLATIONS: Record<
     backToTop: 'Volver arriba',
     toggleMusicPocket: 'Reproductor de música (Oculto por defecto)',
     musicPocketActive: 'Ocultar reproductor de música',
+    expandMusicPanel: 'Expandir el panel del reproductor',
+    collapseMusicPanel: 'Contraer el panel del reproductor',
   },
   de: {
     exitReadMode: 'Lesemodus beenden',
@@ -179,6 +192,8 @@ const DOCK_TRANSLATIONS: Record<
     backToTop: 'Nach oben scrollen',
     toggleMusicPocket: 'Musik-Player (Standardmäßig ausgeblendet)',
     musicPocketActive: 'Musik-Player ausblenden',
+    expandMusicPanel: 'Player-Panel erweitern',
+    collapseMusicPanel: 'Player-Panel minimieren',
   },
 };
 
@@ -197,6 +212,8 @@ export function ThemeDock(_props: ThemeDockProps) {
   const [locale, setLocale] = useState<LocaleVariant>('zh-CN');
   const [tocDepth, setTocDepth] = useState('all');
   const [musicPocketVisible, setMusicPocketVisible] = useState(false);
+  const [musicPanelOpen, setMusicPanelOpen] = useState(false);
+  const isRedesignMusicPlayer = _props.musicPlayerVariant === 'redesign';
 
   const isPost = _props.pageType === 'post';
   const isDoc = _props.pageType === 'doc' || _props.pageType === 'standards';
@@ -244,6 +261,26 @@ export function ThemeDock(_props: ThemeDockProps) {
       window.removeEventListener('shijianus:music-pocket-visibility-change', onMusicPocketVis as EventListener);
     };
   }, []);
+
+  useEffect(() => {
+    if (!isRedesignMusicPlayer) return;
+
+    try {
+      setMusicPanelOpen(window.localStorage.getItem('shijianus-mp-expanded-v1') === 'true');
+    } catch {}
+
+    const onMusicPanelChange = (e: Event) => {
+      const detail = (e as CustomEvent<{ expanded?: boolean }>).detail;
+      if (detail && typeof detail.expanded === 'boolean') {
+        setMusicPanelOpen(detail.expanded);
+      }
+    };
+
+    window.addEventListener('shijianus:music-player-panel-change', onMusicPanelChange as EventListener);
+    return () => {
+      window.removeEventListener('shijianus:music-player-panel-change', onMusicPanelChange as EventListener);
+    };
+  }, [isRedesignMusicPlayer]);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -472,6 +509,13 @@ export function ThemeDock(_props: ThemeDockProps) {
   };
 
   const handleToggleMusicPocket = () => {
+    if (isRedesignMusicPlayer) {
+      const next = !musicPanelOpen;
+      setMusicPanelOpen(next);
+      window.dispatchEvent(new CustomEvent('shijianus:music-player-toggle-panel'));
+      return;
+    }
+
     const next = !musicPocketVisible;
     setMusicPocketVisible(next);
     try {
@@ -482,6 +526,14 @@ export function ThemeDock(_props: ThemeDockProps) {
   };
 
   const tD = DOCK_TRANSLATIONS[locale] || DOCK_TRANSLATIONS['zh-CN'];
+  const musicToggleLabel = isRedesignMusicPlayer
+    ? musicPanelOpen
+      ? tD.collapseMusicPanel
+      : tD.expandMusicPanel
+    : musicPocketVisible
+      ? tD.musicPocketActive
+      : tD.toggleMusicPocket;
+  const musicToggleActive = isRedesignMusicPlayer ? musicPanelOpen : musicPocketVisible;
 
   return (
     <>
@@ -673,9 +725,9 @@ export function ThemeDock(_props: ThemeDockProps) {
           <button
             type="button"
             id="toggle-music-pocket"
-            title={musicPocketVisible ? tD.musicPocketActive : tD.toggleMusicPocket}
-            aria-label={musicPocketVisible ? tD.musicPocketActive : tD.toggleMusicPocket}
-            className={musicPocketVisible ? 'is-active' : ''}
+            title={musicToggleLabel}
+            aria-label={musicToggleLabel}
+            className={musicToggleActive ? 'is-active' : ''}
             onClick={handleToggleMusicPocket}
           >
             <div style={{ position: 'relative', width: '16px', height: '16px' }}>

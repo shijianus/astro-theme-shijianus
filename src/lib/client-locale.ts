@@ -2726,6 +2726,20 @@ export const MULTILINGUAL_DICTIONARY: Record<string, TranslationDict> = {
   '当前': { en: 'Current', fr: 'Actuel', es: 'Actual', de: 'Aktuell' },
   '单曲': { en: 'Single', fr: 'Single', es: 'Sencillo', de: 'Single' },
 
+  // Music Player Redesign (Phase 1)
+  '歌曲来源': { en: 'Track source', fr: 'Source du morceau', es: 'Fuente de la pista', de: 'Titelquelle' },
+  '播放器面板': { en: 'Player panel', fr: 'Panneau du lecteur', es: 'Panel del reproductor', de: 'Player-Panel' },
+  '展开播放器面板': { en: 'Expand player panel', fr: 'Développer le panneau du lecteur', es: 'Expandir el panel del reproductor', de: 'Player-Panel erweitern' },
+  '收起播放器面板': { en: 'Collapse player panel', fr: 'Réduire le panneau du lecteur', es: 'Contraer el panel del reproductor', de: 'Player-Panel minimieren' },
+  '更多操作': { en: 'More actions', fr: 'Plus d’actions', es: 'Más acciones', de: 'Weitere Aktionen' },
+  '加载更多': { en: 'Load more', fr: 'Charger plus', es: 'Cargar más', de: 'Mehr laden' },
+  '没有更多了': { en: 'No more tracks', fr: 'Plus de morceaux', es: 'No hay más pistas', de: 'Keine weiteren Titel' },
+  '没有找到相关曲目': { en: 'No matching tracks', fr: 'Aucun morceau correspondant', es: 'No se encontraron pistas', de: 'Keine passenden Titel' },
+  '加载失败，请重试': { en: 'Failed to load. Please retry.', fr: 'Échec du chargement. Veuillez réessayer.', es: 'Error al cargar. Inténtalo de nuevo.', de: 'Laden fehlgeschlagen. Bitte erneut versuchen.' },
+  '重试': { en: 'Retry', fr: 'Réessayer', es: 'Reintentar', de: 'Erneut versuchen' },
+  '关闭循环': { en: 'Loop off', fr: 'Boucle désactivée', es: 'Bucle desactivado', de: 'Schleife aus' },
+  '定时关闭': { en: 'Sleep timer', fr: 'Minuteur de veille', es: 'Temporizador de apagado', de: 'Sleeptimer' },
+
   // Music Pocket Extended & HUD
   '定时休眠已到达，播放已暂停': { en: 'Sleep timer reached, playback paused', fr: 'Minuteur écoulé, lecture suspendue', es: 'Temporizador alcanzado, reproducción pausada', de: 'Sleeptimer abgelaufen, Wiedergabe pausiert' },
   '音频加载遇到问题，请重试': { en: 'Audio failed to load, please retry', fr: 'Échec de chargement audio, veuillez réessayer', es: 'Error al cargar audio, por favor reintente', de: 'Audio konnte nicht geladen werden, bitte erneut versuchen' },
@@ -3584,7 +3598,7 @@ for (const [foreign, zh] of Object.entries(LEGACY_SYNONYMS)) {
 
 const translatableAttributes = ['title', 'placeholder', 'aria-label', 'aria-description', 'alt', 'data-tooltip', 'data-shijianus-tooltip'] as const;
 const skipTags = new Set(['CODE', 'PRE', 'SCRIPT', 'STYLE', 'TEXTAREA', 'INPUT', 'SELECT', 'OPTION', 'KBD', 'SAMP', 'SVG', 'PATH']);
-const skipSelector = '.ignore-opencc,[data-no-translate="true"],.theme-account-overlay,.theme-account-drawer,#theme-overlays,#local-search,#console,#article-container,.article-body,.post-content';
+const skipSelector = '.ignore-opencc,[data-no-translate="true"],.theme-account-overlay,.theme-account-drawer,#theme-overlays,#local-search,#console,#article-container,.article-body,.post-content,.mp-root';
 
 type TranslateMutationOptions = {
   refreshBase?: boolean;

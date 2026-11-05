@@ -12,6 +12,7 @@ import CodeBlockEnhancer from '../components/CodeBlockEnhancer.astro';
 import MindmapEnhancer from '../components/MindmapEnhancer.astro';
 import Footer from '../components/theme/Footer.astro';
 import { MusicPocket } from '../components/theme/MusicPocket';
+import { MusicPlayer } from '../components/theme/music-player/MusicPlayer';
 import { RewardModal } from '../components/theme/RewardModal';
 import Sidebar from '../components/theme/Sidebar.astro';
 import MobileTocDrawer from '../components/theme/MobileTocDrawer.astro';
@@ -142,6 +143,11 @@ const bodyClasses = ['theme-body'];
 const rawRuntimeApiBase = process.env.PUBLIC_RUNTIME_API_BASE?.trim() || '';
 const runtimeApiBase = rawRuntimeApiBase.replace(/\/api\/?$/, '');
 const musicApiBase = runtimeApiBase ? `${runtimeApiBase}/api` : '/api';
+const musicPlayerEnvVariant = process.env.MUSIC_PLAYER_VARIANT;
+const musicPlayerVariant: 'legacy' | 'redesign' =
+  musicPlayerEnvVariant === 'legacy' || musicPlayerEnvVariant === 'redesign'
+    ? musicPlayerEnvVariant
+    : siteConfig.theme.musicPlayer.variant;
 if (overlayFeatures.centerConsole && consolePanel.enabled && consolePanel.defaultOpen) {
   bodyClasses.push('theme-overlay-open');
 }
@@ -458,6 +464,7 @@ const isMantleActiveOnThisPage = Boolean(
         darkBackground={siteConfig.theme.background.darkMode}
         backgroundModes={siteConfig.theme.background.modes}
         pageType={pageType}
+        musicPlayerVariant={musicPlayerVariant}
       />
       <ThemeOverlays
         client:load
@@ -495,7 +502,16 @@ const isMantleActiveOnThisPage = Boolean(
       />
     </div>
 
-    <MusicPocket client:only="react" apiBase={musicApiBase} />
+    {siteConfig.theme.musicPlayer.enabled && musicPlayerVariant === 'redesign' && (
+      <MusicPlayer
+        client:only="react"
+        apiBase={musicApiBase}
+        needle={siteConfig.theme.musicPlayer.needle}
+      />
+    )}
+    {siteConfig.theme.musicPlayer.enabled && musicPlayerVariant === 'legacy' && (
+      <MusicPocket client:only="react" apiBase={musicApiBase} />
+    )}
 
     <!-- Global Universal Activity & Anzhiyu Snackbar Notification (对应 id="nav" 顶部位置展示) -->
     <div

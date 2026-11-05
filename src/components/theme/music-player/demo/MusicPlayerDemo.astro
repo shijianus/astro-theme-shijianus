@@ -1,0 +1,325 @@
+---
+import '../../../../styles/global.css';
+import LocaleRuntime from '../../../LocaleRuntime.astro';
+import { MusicPlayer } from '../MusicPlayer';
+
+const locales = [
+  { value: 'zh-CN', label: '简中' },
+  { value: 'zh-Hant', label: '繁中' },
+  { value: 'en', label: 'EN' },
+  { value: 'fr', label: 'FR' },
+  { value: 'es', label: 'ES' },
+  { value: 'de', label: 'DE' },
+] as const;
+---
+
+<!doctype html>
+<html lang="zh-CN" data-theme="dark" data-card-style="transparent" data-locale-variant="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Music Player Redesign · Phase 1</title>
+  </head>
+  <body class="theme-body mp-demo-body">
+    <main class="mp-demo">
+      <header class="mp-demo__toolbar">
+        <div>
+          <p class="mp-demo__eyebrow">DEV ONLY · PHASE 1</p>
+          <h1 class="mp-demo__title">Music Player Redesign</h1>
+          <p class="mp-demo__note">Shell only. Audio, lyrics API and discover pagination land in later phases.</p>
+        </div>
+
+        <div class="mp-demo__controls" aria-label="Demo controls">
+          <div class="mp-demo__group">
+            <span>Theme</span>
+            <button type="button" data-demo-theme="light">Light</button>
+            <button type="button" data-demo-theme="dark" aria-pressed="true">Dark</button>
+          </div>
+          <div class="mp-demo__group">
+            <span>Card</span>
+            <button type="button" data-demo-card="solid">Solid</button>
+            <button type="button" data-demo-card="gray">Gray</button>
+            <button type="button" data-demo-card="transparent" aria-pressed="true">Transparent</button>
+          </div>
+          <div class="mp-demo__group">
+            <span>Locale</span>
+            {locales.map((locale) => (
+              <button
+                type="button"
+                data-demo-locale={locale.value}
+                aria-pressed={locale.value === 'zh-CN' ? 'true' : 'false'}
+              >
+                {locale.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      </header>
+
+      <section class="mp-demo__hero">
+        <div class="mp-demo__hero-copy">
+          <p class="mp-demo__eyebrow">AUDIO LAYER · PHASE 1</p>
+          <h2>Keep the player at the edge of the page.</h2>
+          <p>
+            A compact, theme-native player shell with a collapsed launcher, an expandable
+            four-tab panel, and a bottom-sheet layout on small screens.
+          </p>
+        </div>
+        <div class="mp-demo__hero-art" aria-hidden="true">
+          <span>PLAYER</span>
+          <strong>PHASE 1</strong>
+        </div>
+      </section>
+
+      <section class="mp-demo__grid">
+        <article class="mp-demo__card">
+          <p class="mp-demo__eyebrow">01 · SURFACE</p>
+          <h3>Token-driven glass</h3>
+          <p>Uses the site card background, border, shadow and backdrop tokens; solid mode disables blur.</p>
+        </article>
+        <article class="mp-demo__card">
+          <p class="mp-demo__eyebrow">02 · MOTION</p>
+          <h3>Small, restrained states</h3>
+          <p>The launcher, cover and lyrics only animate while playing; reduced motion turns them off.</p>
+        </article>
+        <article class="mp-demo__card">
+          <p class="mp-demo__eyebrow">03 · ACCESS</p>
+          <h3>Keyboard-first tabs</h3>
+          <p>Arrow keys, Home and End move the tabs. Escape collapses the panel and restores focus.</p>
+        </article>
+        <article class="mp-demo__card">
+          <p class="mp-demo__eyebrow">04 · POSITION</p>
+          <h3>Dock keep-out</h3>
+          <p>The launcher is draggable but keeps clear of the right-side floating controls.</p>
+        </article>
+      </section>
+    </main>
+
+    <MusicPlayer client:only="react" apiBase="/api" needle={true} startOpen={true} />
+    <LocaleRuntime />
+
+    <script is:inline>
+      (() => {
+        const root = document.documentElement;
+
+        const syncPressed = (selector, attribute, value) => {
+          document.querySelectorAll(selector).forEach((button) => {
+            button.setAttribute('aria-pressed', String(button.getAttribute(attribute) === value));
+          });
+        };
+
+        document.querySelectorAll('[data-demo-theme]').forEach((button) => {
+          button.addEventListener('click', () => {
+            root.dataset.theme = button.getAttribute('data-demo-theme') || 'dark';
+            syncPressed('[data-demo-theme]', 'data-demo-theme', root.dataset.theme);
+          });
+        });
+
+        document.querySelectorAll('[data-demo-card]').forEach((button) => {
+          button.addEventListener('click', () => {
+            root.dataset.cardStyle = button.getAttribute('data-demo-card') || 'transparent';
+            syncPressed('[data-demo-card]', 'data-demo-card', root.dataset.cardStyle);
+          });
+        });
+
+        document.querySelectorAll('[data-demo-locale]').forEach((button) => {
+          button.addEventListener('click', () => {
+            const locale = button.getAttribute('data-demo-locale') || 'zh-CN';
+            root.dataset.localeVariant = locale;
+            root.lang = locale;
+            syncPressed('[data-demo-locale]', 'data-demo-locale', locale);
+            window.dispatchEvent(new CustomEvent('shijianus:localechange', { detail: locale }));
+          });
+        });
+      })();
+    </script>
+
+    <style is:global>
+      .mp-demo-body {
+        min-height: 100vh;
+        margin: 0;
+        padding: 24px;
+        background:
+          radial-gradient(circle at 85% 12%, color-mix(in srgb, var(--theme-main) 10%, transparent), transparent 30%),
+          var(--global-bg);
+        color: var(--font-color);
+      }
+
+      .mp-demo {
+        width: min(1180px, 100%);
+        margin: 0 auto;
+      }
+
+      .mp-demo__toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 18px;
+        align-items: flex-start;
+        justify-content: space-between;
+        padding: 18px 20px;
+        border: 1px solid var(--card-border);
+        border-radius: var(--radius-md);
+        background: var(--card-bg);
+        box-shadow: var(--shadow-border);
+      }
+
+      .mp-demo__eyebrow {
+        margin: 0 0 6px;
+        color: var(--theme-main);
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+      }
+
+      .mp-demo__title {
+        margin: 0;
+        font-size: 24px;
+        line-height: 1.2;
+      }
+
+      .mp-demo__note {
+        margin: 6px 0 0;
+        color: var(--text-soft);
+        font-size: 13px;
+      }
+
+      .mp-demo__controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+
+      .mp-demo__group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+        align-items: center;
+        padding: 4px;
+        border: 1px solid var(--card-border);
+        border-radius: var(--radius-sm);
+        color: var(--text-soft);
+        font-size: 12px;
+      }
+
+      .mp-demo__group span {
+        padding: 0 4px;
+      }
+
+      .mp-demo__group button {
+        min-height: 28px;
+        padding: 0 8px;
+        border: 0;
+        border-radius: 4px;
+        background: transparent;
+        color: var(--text-soft);
+        font: inherit;
+        cursor: pointer;
+      }
+
+      .mp-demo__group button:hover,
+      .mp-demo__group button[aria-pressed='true'] {
+        background: var(--theme-op);
+        color: var(--theme-main);
+      }
+
+      .mp-demo__hero {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 280px;
+        gap: 18px;
+        margin-top: 18px;
+        padding: 34px;
+        overflow: hidden;
+        border: 1px solid var(--card-border);
+        border-radius: var(--radius-md);
+        background: var(--card-bg);
+        box-shadow: var(--shadow-border);
+      }
+
+      .mp-demo__hero-copy h2 {
+        max-width: 12ch;
+        margin: 0;
+        font-size: clamp(34px, 6vw, 62px);
+        line-height: 0.98;
+      }
+
+      .mp-demo__hero-copy > p:last-child {
+        max-width: 54ch;
+        margin: 18px 0 0;
+        color: var(--text-soft);
+        line-height: 1.8;
+      }
+
+      .mp-demo__hero-art {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 220px;
+        border: 1px solid var(--theme-op);
+        border-radius: var(--radius-md);
+        background:
+          linear-gradient(135deg, var(--theme-op), transparent 55%),
+          var(--secondbg);
+        color: var(--theme-main);
+        letter-spacing: 0.2em;
+      }
+
+      .mp-demo__hero-art strong {
+        font-size: 28px;
+        letter-spacing: 0;
+      }
+
+      .mp-demo__grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+        margin: 18px 0 300px;
+      }
+
+      .mp-demo__card {
+        padding: 20px;
+        border: 1px solid var(--card-border);
+        border-radius: var(--radius-md);
+        background: var(--card-bg);
+        box-shadow: var(--shadow-border);
+      }
+
+      .mp-demo__card h3 {
+        margin: 0 0 8px;
+        font-size: 18px;
+      }
+
+      .mp-demo__card p:last-child {
+        margin: 0;
+        color: var(--text-soft);
+        font-size: 13px;
+        line-height: 1.7;
+      }
+
+      @media (max-width: 760px) {
+        .mp-demo-body {
+          padding: 12px;
+        }
+
+        .mp-demo__toolbar {
+          padding: 14px;
+        }
+
+        .mp-demo__hero {
+          grid-template-columns: 1fr;
+          padding: 22px;
+        }
+
+        .mp-demo__hero-art {
+          min-height: 160px;
+        }
+
+        .mp-demo__grid {
+          grid-template-columns: 1fr;
+          margin-bottom: 420px;
+        }
+      }
+    </style>
+  </body>
+</html>

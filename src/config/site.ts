@@ -361,6 +361,20 @@ export const siteConfig = {
       bgLight: '#425AEF',
       bgDark: '#131B2E',
     },
+    /**
+     * 悬浮播放器版本开关 (Legacy / Redesign)
+     * - legacy: 保留现有 MusicPocket 行为
+     * - redesign: 使用新的 music-player 独立目录实现
+     * 仅影响悬浮播放器；旧实现不会删除。
+     */
+    musicPlayer: {
+      enabled: true,
+      variant: 'redesign' as 'legacy' | 'redesign',
+      /**
+       * 拟物唱针装饰，默认关闭；仅新播放器使用。
+       */
+      needle: false,
+    },
     consolePanel: {
       enabled: true,
       defaultOpen: false,
