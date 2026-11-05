@@ -1326,6 +1326,8 @@ export function MusicPocket({ apiBase }: Props) {
 
       setIsSonicConnected(true);
       sonicLinkRef.current = true;
+      setVisible(true);
+      setOpen(true);
 
       // 1. 音频链路：同步曲目元数据与流地址
       if (payload.track) {
@@ -1336,9 +1338,9 @@ export function MusicPocket({ apiBase }: Props) {
           artist: String(t.artist || t.singer || 'Sonic'),
           album: String(t.album || 'Sonic Stream'),
           source: 'sonic',
-          picId: String(t.picId || t.coverUrl || ''),
-          coverUrl: t.coverUrl || t.picUrl || undefined,
-          urlId: t.audioUrl || t.url || '',
+          picId: String(t.picId || t.coverUrl || t.cover || ''),
+          coverUrl: t.coverUrl || t.picUrl || t.cover || t.pic || undefined,
+          urlId: t.audioUrl || t.url || t.src || '',
           lrc: payload.lyrics?.lrc || undefined,
         };
 
@@ -1408,16 +1410,17 @@ export function MusicPocket({ apiBase }: Props) {
             audio.addEventListener('timeupdate', onFirstTimeUpdate, { once: true });
           }
         }
-        if (typeof pb.isPlaying === 'boolean') {
-          setIsPlaying(pb.isPlaying);
+        const isPBPlaying = typeof pb.isPlaying === 'boolean' ? pb.isPlaying : (typeof pb.paused === 'boolean' ? !pb.paused : undefined);
+        if (typeof isPBPlaying === 'boolean') {
+          setIsPlaying(isPBPlaying);
           if (audio) {
-            if (pb.isPlaying) {
+            if (isPBPlaying) {
               ensureAudioContext();
               const playPromise = audio.play();
               if (playPromise) {
                 playPromise.catch(() => {});
               }
-            } else if (!pb.isPlaying && !audio.paused) {
+            } else if (!isPBPlaying && !audio.paused) {
               audio.pause();
             }
           }
