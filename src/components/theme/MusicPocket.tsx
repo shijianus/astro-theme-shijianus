@@ -1127,6 +1127,10 @@ export function MusicPocket({ apiBase }: Props) {
   const [activeLyricIndex, setActiveLyricIndex] = useState(-1);
   const activeLyricIndexRef = useRef(-1);
 
+  // Sonic 跨应用音频与歌词链路互联状态
+  const [isSonicConnected, setIsSonicConnected] = useState(false);
+  const sonicLinkRef = useRef(false);
+
   useEffect(() => {
     parsedLyricsRef.current = parsedLyrics;
     lyricSyncTypeRef.current = lyricSyncType;
@@ -1141,8 +1145,11 @@ export function MusicPocket({ apiBase }: Props) {
       const candidate = track.urlId || localMatch?.urlId;
       if (candidate) return candidate;
     }
-    if (track.urlId && (track.urlId.startsWith('http://') || track.urlId.startsWith('https://') || track.urlId.startsWith('/'))) {
+    if (track.urlId && (track.urlId.startsWith('http://') || track.urlId.startsWith('https://') || track.urlId.startsWith('/') || track.urlId.startsWith('blob:'))) {
       return track.urlId;
+    }
+    if (track.source === 'sonic') {
+      return `https://sonic.epocanvas.com/api/music/stream?id=${encodeURIComponent(track.id)}&source=netease&quality=320`;
     }
     return `${apiBase}/music/stream?id=${encodeURIComponent(track.id)}&source=${encodeURIComponent(track.source || 'netease')}&quality=320`;
   }, [apiBase]);
@@ -1265,6 +1272,275 @@ export function MusicPocket({ apiBase }: Props) {
       // Graceful fallback for cross-origin or autoplay restrictions
     }
   }, []);
+
+  // Sonic 跨平台联动控制指令反向回传
+  const sendPocketCommand = useCallback(
+    (action: 'PLAY' | 'PAUSE' | 'SEEK' | 'VOLUME' | 'REQUEST_SYNC', time?: number, vol?: number) => {
+      if (typeof window === 'undefined') return;
+      const cmd = {
+        source: 'shijianus-music-pocket',
+        action,
+        currentTime: time,
+        volume: vol,
+        timestamp: Date.now(),
+      };
+      try {
+        const c1 = new BroadcastChannel('sonic_pocket_linkage');
+        c1.postMessage(cmd);
+        c1.close();
+      } catch {}
+      try {
+        const c2 = new BroadcastChannel('shijianus_sonic_bridge');
+        c2.postMessage(cmd);
+        c2.close();
+      } catch {}
+      try {
+        if (window.opener && window.opener !== window) window.opener.postMessage(cmd, '*');
+        if (window.parent && window.parent !== window) window.parent.postMessage(cmd, '*');
+        for (let i = 0; i < window.frames.length; i++) {
+          try {
+            window.frames[i].postMessage(cmd, '*');
+          } catch {}
+        }
+      } catch {}
+      try {
+        window.localStorage.setItem('sonic_pocket_command_event', JSON.stringify(cmd));
+      } catch {}
+      try {
+        window.dispatchEvent(new CustomEvent('sonic:pocket-command', { detail: cmd }));
+      } catch {}
+    },
+    [],
+  );
+
+  // Sonic 音频流与逐字/行级歌词链路全量接入处理
+  const handleSonicSyncPayload = useCallback(
+    (payload: any) => {
+      if (!payload || typeof payload !== 'object') return;
+      const isSonic =
+        payload.source === 'sonic-music-player' ||
+        payload.brand === 'Sonic' ||
+        payload.type === 'SONIC_AUDIO_SYNC' ||
+        payload.action;
+      if (!isSonic) return;
+
+      setIsSonicConnected(true);
+      sonicLinkRef.current = true;
+
+      // 1. 音频链路：同步曲目元数据与流地址
+      if (payload.track) {
+        const t = payload.track;
+        const sonicTrack: MusicTrack = {
+          id: String(t.id || 'sonic-linked-track'),
+          name: String(t.name || t.title || 'Sonic 音频'),
+          artist: String(t.artist || t.singer || 'Sonic'),
+          album: String(t.album || 'Sonic Stream'),
+          source: 'sonic',
+          picId: String(t.picId || t.coverUrl || ''),
+          coverUrl: t.coverUrl || t.picUrl || undefined,
+          urlId: t.audioUrl || t.url || '',
+          lrc: payload.lyrics?.lrc || undefined,
+        };
+
+        setQueue((prevQueue) => {
+          const existingIdx = prevQueue.findIndex((item) => String(item.id) === String(sonicTrack.id));
+          if (existingIdx !== -1) {
+            const updated = [...prevQueue];
+            updated[existingIdx] = { ...updated[existingIdx], ...sonicTrack };
+            setCurrentIndex(existingIdx);
+            return updated;
+          } else {
+            setCurrentIndex(0);
+            return [sonicTrack, ...prevQueue];
+          }
+        });
+
+        const audio = audioRef.current;
+        if (audio && sonicTrack.urlId) {
+          const currentSrc = audio.src;
+          const targetSrc = sonicTrack.urlId;
+          const isSame = currentSrc === targetSrc || currentSrc.endsWith(targetSrc);
+          if (!isSame) {
+            audio.src = targetSrc;
+          }
+        }
+      }
+
+      // 2. 音频链路：同步播放控制、起播、暂停与精准时间
+      if (payload.playback) {
+        const pb = payload.playback;
+        const audio = audioRef.current;
+        if (typeof pb.duration === 'number' && pb.duration > 0) {
+          setDuration(pb.duration);
+        }
+        if (typeof pb.currentTime === 'number') {
+          const targetTime = pb.currentTime;
+          setCurrentTime(targetTime);
+          audioClockRef.current.anchorAudioTime = targetTime;
+          audioClockRef.current.anchorPerfTime = performance.now();
+          if (audio) {
+            const seekAudio = () => {
+              try {
+                if (Math.abs(audio.currentTime - targetTime) > 0.3) {
+                  audio.currentTime = targetTime;
+                }
+              } catch {}
+            };
+
+            if (audio.readyState >= 2) {
+              seekAudio();
+            }
+
+            const onMediaReady = () => {
+              seekAudio();
+              audio.removeEventListener('canplay', onMediaReady);
+              audio.removeEventListener('playing', onMediaReady);
+            };
+            audio.addEventListener('canplay', onMediaReady, { once: true });
+            audio.addEventListener('playing', onMediaReady, { once: true });
+
+            const onFirstTimeUpdate = () => {
+              if (Math.abs(audio.currentTime - targetTime) > 1.0) {
+                seekAudio();
+              }
+              audio.removeEventListener('timeupdate', onFirstTimeUpdate);
+            };
+            audio.addEventListener('timeupdate', onFirstTimeUpdate, { once: true });
+          }
+        }
+        if (typeof pb.isPlaying === 'boolean') {
+          setIsPlaying(pb.isPlaying);
+          if (audio) {
+            if (pb.isPlaying) {
+              ensureAudioContext();
+              const playPromise = audio.play();
+              if (playPromise) {
+                playPromise.catch(() => {});
+              }
+            } else if (!pb.isPlaying && !audio.paused) {
+              audio.pause();
+            }
+          }
+        }
+      }
+
+      // 3. 字母链路 / 歌词链路：同步毫秒级高精度逐字与逐行时间戳
+      if (payload.lyrics) {
+        const ly = payload.lyrics;
+        if (Array.isArray(ly.lines) && ly.lines.length > 0) {
+          const normalized = normalizeLyricLines(ly.lines);
+          setParsedLyrics(normalized);
+          parsedLyricsRef.current = normalized;
+          const syncType = ly.syncType || (normalized.some((l) => l.words && l.words.length > 0) ? 'word' : 'line');
+          setLyricSyncType(syncType);
+          lyricSyncTypeRef.current = syncType;
+          const targetIndex =
+            typeof ly.activeLineIndex === 'number'
+              ? ly.activeLineIndex
+              : findActiveLyricIndex(payload.playback?.currentTime ?? 0, normalized);
+          if (targetIndex >= 0) {
+            setActiveLyricIndex(targetIndex);
+            activeLyricIndexRef.current = targetIndex;
+          }
+        } else if (ly.lrc && typeof ly.lrc === 'string') {
+          const parsedData = parseHighPrecisionLrc(ly.lrc);
+          const normalized = normalizeLyricLines(parsedData.lines);
+          setRawLyric(ly.lrc);
+          setParsedLyrics(normalized);
+          parsedLyricsRef.current = normalized;
+          setLyricSyncType(parsedData.syncType);
+          lyricSyncTypeRef.current = parsedData.syncType;
+          const targetIndex =
+            typeof ly.activeLineIndex === 'number'
+              ? ly.activeLineIndex
+              : findActiveLyricIndex(payload.playback?.currentTime ?? 0, normalized);
+          if (targetIndex >= 0) {
+            setActiveLyricIndex(targetIndex);
+            activeLyricIndexRef.current = targetIndex;
+          }
+        }
+      }
+
+      if (payload.action === 'CONNECT' || payload.action === 'TRACK_CHANGE') {
+        showToast(t('已连接 Sonic 音频并完成链路同步'));
+      }
+    },
+    [ensureAudioContext, showToast, t],
+  );
+
+  // 跨应用链路监听生命周期管理
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    let c1: BroadcastChannel | null = null;
+    let c2: BroadcastChannel | null = null;
+    try {
+      if (typeof BroadcastChannel !== 'undefined') {
+        c1 = new BroadcastChannel('sonic_pocket_linkage');
+        c2 = new BroadcastChannel('shijianus_sonic_bridge');
+        const onMsg = (e: MessageEvent) => handleSonicSyncPayload(e.data);
+        c1.onmessage = onMsg;
+        c2.onmessage = onMsg;
+      }
+    } catch {}
+
+    const onWindowMessage = (e: MessageEvent) => {
+      if (
+        e.data &&
+        typeof e.data === 'object' &&
+        (e.data.source === 'sonic-music-player' || e.data.type === 'SONIC_AUDIO_SYNC')
+      ) {
+        handleSonicSyncPayload(e.data);
+      }
+    };
+
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === 'sonic_pocket_sync_event' && e.newValue) {
+        try {
+          const data = JSON.parse(e.newValue);
+          handleSonicSyncPayload(data);
+        } catch {}
+      }
+    };
+
+    const onCustomConnect = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      handleSonicSyncPayload(detail);
+    };
+
+    window.addEventListener('message', onWindowMessage);
+    window.addEventListener('storage', onStorage);
+    window.addEventListener('shijianus:sonic-connect-audio', onCustomConnect);
+    window.addEventListener('sonic:audio-sync', onCustomConnect);
+
+    // 在 DOM 容器元素上直接挂载事件监听器，满足 class="shijianus-music-pocket" 直接接受连接
+    const container = pocketContainerRef.current;
+    if (container) {
+      container.addEventListener('sonic:connect', onCustomConnect);
+    }
+
+    // 暴露 window 全局桥接方法，便于外部脚本或测试控制
+    (window as any).__connectSonicAudio = (payload: any) => handleSonicSyncPayload(payload);
+    (window as any).__sonicPocketBridge = {
+      handleSync: handleSonicSyncPayload,
+      sendCommand: sendPocketCommand,
+    };
+
+    // 握手触发
+    sendPocketCommand('REQUEST_SYNC');
+
+    return () => {
+      if (c1) c1.close();
+      if (c2) c2.close();
+      window.removeEventListener('message', onWindowMessage);
+      window.removeEventListener('storage', onStorage);
+      window.removeEventListener('shijianus:sonic-connect-audio', onCustomConnect);
+      window.removeEventListener('sonic:audio-sync', onCustomConnect);
+      if (container) {
+        container.removeEventListener('sonic:connect', onCustomConnect);
+      }
+    };
+  }, [handleSonicSyncPayload, sendPocketCommand]);
 
   // 4. Web Audio API Canvas Visualizer 60FPS Render Loop (Dense 32-Bar Layout)
   useEffect(() => {
@@ -1534,6 +1810,9 @@ export function MusicPocket({ apiBase }: Props) {
         try {
           audio.currentTime = t;
         } catch {}
+        if (isSonicConnected) {
+          sendPocketCommand('SEEK', t);
+        }
       }
     };
 
@@ -1568,6 +1847,10 @@ export function MusicPocket({ apiBase }: Props) {
   // Track change & stream loading
   useEffect(() => {
     if (!currentTrack || !audioRef.current) return;
+    if (currentTrack.source === 'sonic') {
+      // Sonic audio & lyrics pipelines are managed directly by handleSonicSyncPayload
+      return;
+    }
     const audio = audioRef.current;
 
     const targetSrc = resolveTrackAudioSrc(currentTrack);
@@ -1612,6 +1895,12 @@ export function MusicPocket({ apiBase }: Props) {
 
     // 2. 无论是否为本地歌曲，优先使用 API 接入实际的高精度歌词跟随效果！
     let isCancelled = false;
+    if (currentTrack.source === 'sonic' && parsedLyricsRef.current.length > 0) {
+      // Sonic 原生逐字高精歌词已通过全链路同步直接注入，保持当前歌词链路不中断
+      return () => {
+        isCancelled = true;
+      };
+    }
     const lyricId = currentTrack.lyricId || localMatch?.lyricId || (currentTrack.source !== 'local' ? currentTrack.id : '');
     const songTitle = currentTrack.name || localMatch?.name || '';
     const songArtist = currentTrack.artist || localMatch?.artist || '';
@@ -2187,6 +2476,9 @@ export function MusicPocket({ apiBase }: Props) {
         audioRef.current.currentTime = targetTime;
       } catch {}
     }
+    if (isSonicConnected) {
+      sendPocketCommand('SEEK', targetTime);
+    }
   };
 
   const handleLyricClick = (time: number) => {
@@ -2220,6 +2512,9 @@ export function MusicPocket({ apiBase }: Props) {
         void audioRef.current.play().catch(() => {});
         setIsPlaying(true);
       }
+    }
+    if (isSonicConnected) {
+      sendPocketCommand('SEEK', time);
     }
 
     // 立即平滑居中展示所点击歌词
@@ -2267,8 +2562,14 @@ export function MusicPocket({ apiBase }: Props) {
         console.warn('Audio play interrupted or failed:', err);
         setIsPlaying(false);
       });
+      if (isSonicConnected) {
+        sendPocketCommand('PLAY');
+      }
     } else {
       audio.pause();
+      if (isSonicConnected) {
+        sendPocketCommand('PAUSE');
+      }
     }
   };
 
@@ -2354,6 +2655,8 @@ export function MusicPocket({ apiBase }: Props) {
 
   const getSourceLabel = (src: string) => {
     switch (src) {
+      case 'sonic':
+        return t('Sonic 联动');
       case 'local':
         return t('精选本地');
       case 'netease':
@@ -2482,9 +2785,12 @@ export function MusicPocket({ apiBase }: Props) {
     <>
       <div
         ref={pocketContainerRef}
-        className={`shijianus-music-pocket ${!visible ? 'is-hidden' : ''} ${open ? 'is-open' : ''} ${isPlaying ? 'is-playing' : ''} ${isDragging ? 'is-dragging' : ''}`}
-      style={containerStyle}
-    >
+        className={`shijianus-music-pocket ${!visible ? 'is-hidden' : ''} ${open ? 'is-open' : ''} ${isPlaying ? 'is-playing' : ''} ${isDragging ? 'is-dragging' : ''} ${isSonicConnected ? 'is-sonic-linked' : ''}`}
+        data-sonic-connected={isSonicConnected ? 'true' : 'false'}
+        data-sonic-linked={isSonicConnected ? 'true' : 'false'}
+        data-testid="shijianus-music-pocket"
+        style={containerStyle}
+      >
       <audio ref={audioRef} crossOrigin="anonymous" preload="none" />
 
       {/* 可拖动黑胶唱机浮动 Button */}
@@ -2881,6 +3187,21 @@ export function MusicPocket({ apiBase }: Props) {
                     aria-label={t('分享音乐')}
                   >
                     <Share2 size={15} />
+                  </button>
+
+                  {/* Sonic 联动专属状态与互联按钮 */}
+                  <button
+                    type="button"
+                    className={`shijianus-music-pocket__tool-btn ${isSonicConnected ? 'is-active is-sonic-linked' : ''}`}
+                    onClick={() => {
+                      sendPocketCommand('REQUEST_SYNC');
+                      showToast(isSonicConnected ? t('已保持与 Sonic 音乐平台实时互联') : t('正在请求连接 Sonic 音乐平台…'));
+                    }}
+                    title={isSonicConnected ? t('Sonic 音乐平台已连接 (音频与歌词链路完全同步)') : t('请求连接 Sonic 音乐平台')}
+                    aria-label={t('Sonic 联动状态')}
+                  >
+                    <Radio size={15} />
+                    {isSonicConnected && <span className="shijianus-music-pocket__tool-badge is-sonic">●</span>}
                   </button>
                 </div>
               </div>

@@ -449,6 +449,11 @@ export async function resolveMusicStream(env: AppEnv, id: string, source: string
     return localMatch.localPath;
   }
 
+  // Sonic 专属流媒体源支持
+  if (source === 'sonic') {
+    return `https://sonic.epocanvas.com/api/music/stream?id=${encodeURIComponent(id)}&source=netease&quality=${encodeURIComponent(quality || '320')}`;
+  }
+
   try {
     const payload = await fetchProviderJson(env, {
       types: 'url',
