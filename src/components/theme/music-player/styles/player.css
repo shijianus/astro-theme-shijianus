@@ -36,6 +36,32 @@
   border: 0;
 }
 
+.mp-audio {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.mp-notice {
+  margin: 8px 16px 4px;
+  padding: 7px 10px;
+  border: 1px solid var(--mp-accent-border);
+  border-radius: var(--mp-radius-sm);
+  background: var(--mp-accent-soft);
+  color: var(--mp-text);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.mp-notice--error {
+  border-color: color-mix(in srgb, var(--mp-danger) 35%, transparent);
+  background: color-mix(in srgb, var(--mp-danger) 10%, transparent);
+  color: var(--mp-danger);
+}
+
 /* Collapsed launcher */
 .mp-bubble {
   position: absolute;
@@ -380,6 +406,19 @@
   animation: mp-breathe 4.8s ease-in-out infinite;
 }
 
+.mp-cover__spinner {
+  position: absolute;
+  right: 6px;
+  bottom: 6px;
+  width: 14px;
+  height: 14px;
+  border: 2px solid color-mix(in srgb, var(--mp-on-accent) 35%, transparent);
+  border-top-color: var(--mp-accent);
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--mp-panel-bg) 80%, transparent);
+  animation: mp-spinner 700ms linear infinite;
+}
+
 @keyframes mp-breathe {
   0%,
   100% {
@@ -698,6 +737,26 @@
 .mp-control-btn:hover {
   color: var(--mp-accent);
   background: var(--mp-hover);
+}
+
+.mp-control-btn:disabled,
+.mp-play-btn:disabled {
+  opacity: 0.42;
+  cursor: default;
+}
+
+.mp-control-btn:disabled:hover {
+  color: var(--mp-text-soft);
+  background: transparent;
+}
+
+.mp-play-btn:disabled {
+  box-shadow: none;
+}
+
+.mp-play-btn:disabled:hover {
+  transform: none;
+  box-shadow: none;
 }
 
 .mp-loop.is-off::after {
@@ -1343,6 +1402,7 @@
 @media (prefers-reduced-motion: reduce) {
   .mp-bubble__disc,
   .mp-cover.is-playing,
+  .mp-cover__spinner,
   .mp-eq span,
   .mp-spinner {
     animation: none !important;

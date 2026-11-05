@@ -8,8 +8,8 @@ import {
   type KeyboardEvent as ReactKeyboardEvent,
 } from 'react';
 import { Music } from 'lucide-react';
+import { createMusicApi } from './api';
 import {
-  DEFAULT_PROGRESS_RATIO,
   FALLBACK_LYRICS,
   FALLBACK_TRACKS,
   LOOP_MODES,
@@ -18,9 +18,10 @@ import {
   SPEED_STEPS,
   TAB_ORDER,
 } from './config';
+import { useAudioController } from './hooks/useAudioController';
 import { useFloatingPosition } from './hooks/useFloatingPosition';
 import { usePlayerLocale } from './i18n';
-import { clamp, getProgressRatio } from './lib/audio';
+import { getProgressRatio } from './lib/audio';
 import { findActiveLyricIndex } from './lib/lyrics';
 import {
   readStoredBoolean,
@@ -45,6 +46,12 @@ type MusicPlayerProps = {
   apiBase: string;
   needle?: boolean;
   startOpen?: boolean;
+  skipPlaylist?: boolean;
+};
+
+type PlayerNotice = {
+  key: string;
+  kind: 'info' | 'error';
 };
 
 function readPlayMode(): PlayMode {
@@ -73,8 +80,9 @@ function readInitialExpanded(startOpen?: boolean): boolean {
   return typeof startOpen === 'boolean' ? startOpen : readStoredBoolean(PLAYER_STORAGE_KEYS.expanded, false);
 }
 
-export function MusicPlayer({ apiBase, needle = false, startOpen }: MusicPlayerProps) {
+export function MusicPlayer({ apiBase, needle = false, startOpen, skipPlaylist = false }: MusicPlayerProps) {
   const { t } = usePlayerLocale();
+  const api = useMemo(() => createMusicApi(apiBase), [apiBase]);
   const {
     position,
     dragging,
@@ -89,22 +97,17 @@ export function MusicPlayer({ apiBase, needle = false, startOpen }: MusicPlayerP
   const [activeTab, setActiveTab] = useState<PlayerTab>('player');
   const [queue, setQueue] = useState<MusicTrack[]>(FALLBACK_TRACKS);
   const [currentIndex, setCurrentIndex] = useState(readInitialTrackIndex);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [currentTime, setCurrentTime] = useState(() => {
-    const track = FALLBACK_TRACKS[readInitialTrackIndex()];
-    return Math.round((track?.duration ?? 0) * DEFAULT_PROGRESS_RATIO);
-  });
   const [volume, setVolume] = useState(() => readStoredNumber(PLAYER_STORAGE_KEYS.volume, 0.85));
   const [isMuted, setIsMuted] = useState(false);
   const [loopMode, setLoopMode] = useState<PlayMode>(readPlayMode);
   const [speed, setSpeed] = useState(readPlaybackSpeed);
   const [favorites, setFavorites] = useState<string[]>(readFavorites);
   const [sleepTimer, setSleepTimer] = useState<SleepTimerOption>(null);
+  const [sleepRemaining, setSleepRemaining] = useState<number | null>(null);
   const [showLyrics, setShowLyrics] = useState(true);
   const [discoverQuery, setDiscoverQuery] = useState('');
   const [discoverResults, setDiscoverResults] = useState<MusicTrack[]>(FALLBACK_TRACKS);
-  const [discoverLoading] = useState(false);
-  const [discoverError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<PlayerNotice | null>(null);
   const [viewport, setViewport] = useState(() => ({
     width: typeof window === 'undefined' ? 1280 : window.innerWidth,
     height: typeof window === 'undefined' ? 900 : window.innerHeight,
@@ -114,12 +117,70 @@ export function MusicPlayer({ apiBase, needle = false, startOpen }: MusicPlayerP
   const panelRef = useRef<HTMLDivElement>(null);
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
   const focusPanelOnOpenRef = useRef(false);
+  const noticeTimerRef = useRef<number | null>(null);
+  const tRef = useRef(t);
+  tRef.current = t;
 
   const currentTrack = currentIndex >= 0 && currentIndex < queue.length ? queue[currentIndex] : null;
-  const duration = currentTrack?.duration ?? 0;
+  const currentTrackRef = useRef<MusicTrack | null>(currentTrack);
+  currentTrackRef.current = currentTrack;
+
+  const showNotice = useCallback((key: string, kind: 'info' | 'error' = 'info', duration = 3200) => {
+    setNotice({ key, kind });
+
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(
+        new CustomEvent('shijianus:activity', {
+          detail: { message: tRef.current(key), duration: Math.min(duration, 4000) },
+        }),
+      );
+
+      if (noticeTimerRef.current !== null) window.clearTimeout(noticeTimerRef.current);
+      noticeTimerRef.current =
+        duration > 0
+          ? window.setTimeout(() => {
+              setNotice(null);
+              noticeTimerRef.current = null;
+            }, duration)
+          : null;
+    }
+  }, []);
+
+  const onSleepTimerConsumed = useCallback(() => {
+    setSleepTimer(null);
+  }, []);
+
+  const {
+    audioRef,
+    analyserRef,
+    isPlaying,
+    currentTime,
+    duration,
+    isBuffering,
+    spectrumAvailable,
+    togglePlay,
+    seekTo,
+    selectTrack,
+    skipTrack,
+    armAutoplay,
+    pausePlayback,
+    stopAndClear,
+  } = useAudioController({
+    api,
+    queue,
+    currentIndex,
+    currentTrack,
+    loopMode,
+    sleepTimer,
+    setCurrentIndex,
+    onSleepTimerConsumed,
+    showNotice,
+  });
+
   const progressRatio = getProgressRatio(currentTime, duration);
   const activeLyricIndex = findActiveLyricIndex(FALLBACK_LYRICS, currentTime);
   const favorite = Boolean(currentTrack && favorites.includes(currentTrack.id));
+  const spectrumActive = expanded && isPlaying && !isMuted && volume > 0 && spectrumAvailable;
 
   const tabs = useMemo(
     () => [
@@ -154,6 +215,84 @@ export function MusicPlayer({ apiBase, needle = false, startOpen }: MusicPlayerP
   useEffect(() => {
     if (currentTrack) writeStoredString(PLAYER_STORAGE_KEYS.track, currentTrack.id);
   }, [currentTrack]);
+
+  useEffect(() => {
+    return () => {
+      if (noticeTimerRef.current !== null) window.clearTimeout(noticeTimerRef.current);
+    };
+  }, []);
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    audio.volume = Math.min(1, Math.max(0, volume));
+    audio.muted = isMuted;
+  }, [audioRef, isMuted, volume]);
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    audio.playbackRate = speed;
+    if ('preservesPitch' in audio) audio.preservesPitch = true;
+  }, [audioRef, currentTrack?.id, speed]);
+
+  useEffect(() => {
+    if (skipPlaylist) return;
+    let cancelled = false;
+
+    const loadPlaylist = async () => {
+      try {
+        const tracks = await api.playlist();
+        if (cancelled) return;
+        if (tracks.length === 0) {
+          showNotice('播放列表为空，已使用本地曲目', 'info', 5000);
+          return;
+        }
+
+        const activeTrack = currentTrackRef.current;
+        const activeId = activeTrack?.id || readStoredString(PLAYER_STORAGE_KEYS.track);
+        let nextQueue = tracks;
+
+        if (activeId && !nextQueue.some((track) => track.id === activeId) && activeTrack) {
+          nextQueue = [...nextQueue, activeTrack];
+        }
+
+        setQueue(nextQueue);
+        const targetIndex = activeId ? nextQueue.findIndex((track) => track.id === activeId) : -1;
+        setCurrentIndex(targetIndex >= 0 ? targetIndex : 0);
+      } catch {
+        if (!cancelled) showNotice('播放列表加载失败，已使用本地曲目', 'error', 5000);
+      }
+    };
+
+    void loadPlaylist();
+    return () => {
+      cancelled = true;
+    };
+  }, [api, showNotice, skipPlaylist]);
+
+  useEffect(() => {
+    if (sleepTimer === null || sleepTimer === 'end') {
+      setSleepRemaining(null);
+      return;
+    }
+
+    const deadline = Date.now() + sleepTimer * 60 * 1000;
+    const tick = () => {
+      const remaining = Math.max(0, Math.ceil((deadline - Date.now()) / 1000));
+      setSleepRemaining(remaining);
+      if (remaining <= 0) {
+        pausePlayback();
+        setSleepTimer(null);
+        setSleepRemaining(null);
+        showNotice('定时休眠已到达，播放已暂停', 'info', 5000);
+      }
+    };
+
+    tick();
+    const interval = window.setInterval(tick, 1000);
+    return () => window.clearInterval(interval);
+  }, [pausePlayback, showNotice, sleepTimer]);
 
   useEffect(() => {
     document.body.classList.toggle('mp-panel-open', expanded);
@@ -205,17 +344,14 @@ export function MusicPlayer({ apiBase, needle = false, startOpen }: MusicPlayerP
 
       if (event.code === 'Space') {
         event.preventDefault();
-        if (!event.repeat) setIsPlaying((value) => !value);
+        if (!event.repeat) togglePlay();
         return;
       }
-      if (event.code === 'ArrowLeft') {
+      if (event.code === 'ArrowLeft' || event.code === 'ArrowRight') {
         event.preventDefault();
-        setCurrentTime((value) => clamp(value - 5, 0, duration));
-        return;
-      }
-      if (event.code === 'ArrowRight') {
-        event.preventDefault();
-        setCurrentTime((value) => clamp(value + 5, 0, duration));
+        const audio = audioRef.current;
+        if (!audio) return;
+        seekTo(audio.currentTime + (event.code === 'ArrowLeft' ? -5 : 5));
         return;
       }
       if (event.code === 'KeyM') {
@@ -226,7 +362,7 @@ export function MusicPlayer({ apiBase, needle = false, startOpen }: MusicPlayerP
 
     window.addEventListener('keydown', handleShortcut);
     return () => window.removeEventListener('keydown', handleShortcut);
-  }, [duration, expanded]);
+  }, [audioRef, expanded, seekTo, togglePlay]);
 
   const collapsePanel = useCallback(() => {
     setExpanded(false);
@@ -273,29 +409,6 @@ export function MusicPlayer({ apiBase, needle = false, startOpen }: MusicPlayerP
     setExpanded(true);
   }, [expanded, suppressClickRef]);
 
-  const seekTo = useCallback(
-    (time: number) => {
-      setCurrentTime(clamp(time, 0, duration || 0));
-    },
-    [duration],
-  );
-
-  const selectTrack = useCallback((index: number) => {
-    setCurrentIndex(index);
-    setCurrentTime(0);
-    setIsPlaying(true);
-  }, []);
-
-  const skipTrack = useCallback(
-    (direction: 1 | -1) => {
-      if (queue.length === 0) return;
-      setCurrentIndex((currentIndex + direction + queue.length) % queue.length);
-      setCurrentTime(0);
-      setIsPlaying(true);
-    },
-    [currentIndex, queue.length],
-  );
-
   const cycleLoop = useCallback(() => {
     setLoopMode((mode) => {
       const index = LOOP_MODES.indexOf(mode);
@@ -327,38 +440,46 @@ export function MusicPlayer({ apiBase, needle = false, startOpen }: MusicPlayerP
     (track: MusicTrack) => {
       const existingIndex = queue.findIndex((item) => item.id === track.id);
       if (existingIndex >= 0) {
+        armAutoplay();
         selectTrack(existingIndex);
         return;
       }
+
       const nextQueue = [...queue, track];
       setQueue(nextQueue);
       setCurrentIndex(nextQueue.length - 1);
-      setCurrentTime(0);
-      setIsPlaying(true);
+      armAutoplay();
     },
-    [queue, selectTrack],
+    [armAutoplay, queue, selectTrack],
   );
 
   const removeTrack = useCallback(
     (index: number) => {
       const nextQueue = queue.filter((_, itemIndex) => itemIndex !== index);
-      setQueue(nextQueue);
 
       if (nextQueue.length === 0) {
+        stopAndClear();
+        setQueue([]);
         setCurrentIndex(-1);
-        setCurrentTime(0);
-        setIsPlaying(false);
         return;
       }
 
       if (index < currentIndex) {
+        setQueue(nextQueue);
         setCurrentIndex(currentIndex - 1);
-      } else if (index === currentIndex) {
-        setCurrentIndex(Math.min(index, nextQueue.length - 1));
-        setCurrentTime(0);
+        return;
       }
+
+      if (index === currentIndex) {
+        if (isPlaying) armAutoplay();
+        setQueue(nextQueue);
+        setCurrentIndex(Math.min(index, nextQueue.length - 1));
+        return;
+      }
+
+      setQueue(nextQueue);
     },
-    [currentIndex, queue],
+    [armAutoplay, currentIndex, isPlaying, queue, stopAndClear],
   );
 
   const handleDiscoverSearch = useCallback(
@@ -393,6 +514,21 @@ export function MusicPlayer({ apiBase, needle = false, startOpen }: MusicPlayerP
     // Phase 3 replaces this static fallback with the paginated search API.
   }, []);
 
+  const handleSleepTimerChange = useCallback(
+    (value: SleepTimerOption) => {
+      setSleepTimer(value);
+      if (value === null) {
+        setSleepRemaining(null);
+        showNotice('定时休眠已关闭', 'info', 2500);
+      } else if (value === 'end') {
+        setSleepRemaining(null);
+      } else {
+        setSleepRemaining(value * 60);
+      }
+    },
+    [showNotice],
+  );
+
   const bubbleX = position?.x ?? 24;
   const bubbleY = position?.y ?? Math.max(24, viewport.height - 72);
   const horizontal = bubbleX + PANEL_WIDTH + 16 > viewport.width ? 'left' : 'right';
@@ -410,6 +546,16 @@ export function MusicPlayer({ apiBase, needle = false, startOpen }: MusicPlayerP
       data-needle={needle ? 'true' : 'false'}
       data-testid="mp-root"
     >
+      <audio
+        ref={audioRef}
+        className="mp-audio"
+        data-testid="mp-audio"
+        crossOrigin="anonymous"
+        preload="metadata"
+        playsInline
+        aria-hidden="true"
+      />
+
       <div className="mp-sr-only" aria-live="polite" aria-atomic="true">
         {isPlaying ? t('正在播放') : t('已暂停')}:{' '}
         {currentTrack ? `${currentTrack.name} — ${currentTrack.artist}` : t('暂无播放曲目')}
@@ -468,6 +614,7 @@ export function MusicPlayer({ apiBase, needle = false, startOpen }: MusicPlayerP
         role="region"
         aria-label={t('播放器面板')}
         aria-hidden={!expanded}
+        aria-busy={isBuffering}
         tabIndex={-1}
         data-testid="mp-panel"
       >
@@ -481,6 +628,17 @@ export function MusicPlayer({ apiBase, needle = false, startOpen }: MusicPlayerP
           t={t}
         />
 
+        {notice && (
+          <div
+            className={`mp-notice mp-notice--${notice.kind}`}
+            role="status"
+            aria-live="polite"
+            data-testid="mp-notice"
+          >
+            {t(notice.key)}
+          </div>
+        )}
+
         <div className="mp-panel__body">
           <div
             className="mp-tabpanel"
@@ -492,6 +650,7 @@ export function MusicPlayer({ apiBase, needle = false, startOpen }: MusicPlayerP
             <PlayerView
               track={currentTrack}
               isPlaying={isPlaying}
+              isBuffering={isBuffering}
               favorite={favorite}
               onToggleFavorite={toggleFavorite}
               currentTime={currentTime}
@@ -510,14 +669,18 @@ export function MusicPlayer({ apiBase, needle = false, startOpen }: MusicPlayerP
                 if (isMuted && value > 0) setIsMuted(false);
               }}
               onToggleMute={() => setIsMuted((value) => !value)}
-              onTogglePlay={() => setIsPlaying((value) => !value)}
+              onTogglePlay={togglePlay}
               onPrev={() => skipTrack(-1)}
               onNext={() => skipTrack(1)}
+              canSkip={queue.length > 1}
               speed={speed}
               onCycleSpeed={cycleSpeed}
               sleepTimer={sleepTimer}
-              onSleepTimerChange={setSleepTimer}
+              sleepRemaining={sleepRemaining}
+              onSleepTimerChange={handleSleepTimerChange}
               needle={needle}
+              analyserRef={analyserRef}
+              spectrumActive={spectrumActive}
             />
           </div>
 
@@ -564,8 +727,8 @@ export function MusicPlayer({ apiBase, needle = false, startOpen }: MusicPlayerP
               query={discoverQuery}
               onQueryChange={setDiscoverQuery}
               results={discoverResults}
-              loading={discoverLoading}
-              error={discoverError}
+              loading={false}
+              error={null}
               hasMore={false}
               onSearch={handleDiscoverSearch}
               onLoadMore={handleDiscoverLoadMore}

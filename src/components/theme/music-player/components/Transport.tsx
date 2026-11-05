@@ -6,6 +6,8 @@ type TransportProps = {
   loopMode: PlayMode;
   volume: number;
   isMuted: boolean;
+  canPlay: boolean;
+  canSkip: boolean;
   onTogglePlay: () => void;
   onPrev: () => void;
   onNext: () => void;
@@ -20,6 +22,8 @@ export function Transport({
   loopMode,
   volume,
   isMuted,
+  canPlay,
+  canSkip,
   onTogglePlay,
   onPrev,
   onNext,
@@ -54,6 +58,7 @@ export function Transport({
           type="button"
           className="mp-control-btn"
           onClick={onPrev}
+          disabled={!canSkip}
           title={t('上一首')}
           aria-label={t('上一首')}
           data-testid="mp-prev"
@@ -65,6 +70,7 @@ export function Transport({
           type="button"
           className="mp-play-btn"
           onClick={onTogglePlay}
+          disabled={!canPlay}
           title={isPlaying ? t('暂停') : t('播放')}
           aria-label={isPlaying ? t('暂停') : t('播放')}
           data-testid="mp-play"
@@ -80,6 +86,7 @@ export function Transport({
           type="button"
           className="mp-control-btn"
           onClick={onNext}
+          disabled={!canSkip}
           title={t('下一首')}
           aria-label={t('下一首')}
           data-testid="mp-next"

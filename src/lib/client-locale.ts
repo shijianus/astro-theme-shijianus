@@ -2739,6 +2739,12 @@ export const MULTILINGUAL_DICTIONARY: Record<string, TranslationDict> = {
   '重试': { en: 'Retry', fr: 'Réessayer', es: 'Reintentar', de: 'Erneut versuchen' },
   '关闭循环': { en: 'Loop off', fr: 'Boucle désactivée', es: 'Bucle desactivado', de: 'Schleife aus' },
   '定时关闭': { en: 'Sleep timer', fr: 'Minuteur de veille', es: 'Temporizador de apagado', de: 'Sleeptimer' },
+  '播放列表加载失败，已使用本地曲目': { en: 'Failed to load playlist. Using local tracks.', fr: 'Échec du chargement de la liste. Morceaux locaux utilisés.', es: 'No se pudo cargar la lista. Usando pistas locales.', de: 'Wiedergabeliste konnte nicht geladen werden. Lokale Titel werden verwendet.' },
+  '播放列表为空，已使用本地曲目': { en: 'Playlist is empty. Using local tracks.', fr: 'La liste est vide. Morceaux locaux utilisés.', es: 'La lista está vacía. Usando pistas locales.', de: 'Wiedergabeliste ist leer. Lokale Titel werden verwendet.' },
+  '播放失败，请点击播放重试': { en: 'Playback failed. Tap play to retry.', fr: 'Échec de la lecture. Touchez lecture pour réessayer.', es: 'Error de reproducción. Pulsa reproducir para reintentar.', de: 'Wiedergabe fehlgeschlagen. Tippe auf Wiedergabe, um es erneut zu versuchen.' },
+  '浏览器阻止了自动播放，请点击播放': { en: 'Autoplay was blocked. Tap play to start.', fr: 'La lecture automatique a été bloquée. Touchez lecture pour démarrer.', es: 'La reproducción automática está bloqueada. Pulsa reproducir.', de: 'Autoplay wurde blockiert. Tippe auf Wiedergabe, um zu starten.' },
+  '播放已结束': { en: 'Playback ended', fr: 'Lecture terminée', es: 'Reproducción finalizada', de: 'Wiedergabe beendet' },
+  '正在加载音频...': { en: 'Loading audio...', fr: 'Chargement de l’audio...', es: 'Cargando audio...', de: 'Audio wird geladen...' },
 
   // Music Pocket Extended & HUD
   '定时休眠已到达，播放已暂停': { en: 'Sleep timer reached, playback paused', fr: 'Minuteur écoulé, lecture suspendue', es: 'Temporizador alcanzado, reproducción pausada', de: 'Sleeptimer abgelaufen, Wiedergabe pausiert' },

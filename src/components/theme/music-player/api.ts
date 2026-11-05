@@ -81,3 +81,5 @@ export function createMusicApi(apiBase: string) {
     },
   };
 }
+
+export type MusicApi = ReturnType<typeof createMusicApi>;

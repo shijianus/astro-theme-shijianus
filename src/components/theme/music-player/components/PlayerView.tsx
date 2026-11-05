@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { FileText, Gauge, Heart, MoreHorizontal, Music } from 'lucide-react';
 import { SLEEP_OPTIONS } from '../config';
 import { usePlayerLocale } from '../i18n';
+import { formatTime } from '../lib/audio';
 import { getLyricWindow } from '../lib/lyrics';
 import { getSourceLabel } from '../lib/source';
 import type { LyricLine, MusicTrack, PlayMode, SleepTimerOption } from '../types';
@@ -12,6 +13,7 @@ import { WaveformProgress } from './WaveformProgress';
 type PlayerViewProps = {
   track: MusicTrack | null;
   isPlaying: boolean;
+  isBuffering: boolean;
   favorite: boolean;
   onToggleFavorite: () => void;
   currentTime: number;
@@ -30,16 +32,21 @@ type PlayerViewProps = {
   onTogglePlay: () => void;
   onPrev: () => void;
   onNext: () => void;
+  canSkip: boolean;
   speed: number;
   onCycleSpeed: () => void;
   sleepTimer: SleepTimerOption;
+  sleepRemaining: number | null;
   onSleepTimerChange: (value: SleepTimerOption) => void;
   needle: boolean;
+  analyserRef?: { current: AnalyserNode | null };
+  spectrumActive?: boolean;
 };
 
 export function PlayerView({
   track,
   isPlaying,
+  isBuffering,
   favorite,
   onToggleFavorite,
   currentTime,
@@ -58,16 +65,22 @@ export function PlayerView({
   onTogglePlay,
   onPrev,
   onNext,
+  canSkip,
   speed,
   onCycleSpeed,
   sleepTimer,
+  sleepRemaining,
   onSleepTimerChange,
   needle,
+  analyserRef,
+  spectrumActive = false,
 }: PlayerViewProps) {
   const { t } = usePlayerLocale();
   const [moreOpen, setMoreOpen] = useState(false);
   const moreRef = useRef<HTMLDivElement>(null);
   const lyricWindow = getLyricWindow(lyrics, activeLyricIndex);
+  const sleepTimerLabel =
+    sleepRemaining !== null ? `${t('定时关闭')} · ${formatTime(sleepRemaining)}` : t('定时关闭');
 
   useEffect(() => {
     if (!moreOpen) return;
@@ -83,7 +96,12 @@ export function PlayerView({
   }, [moreOpen]);
 
   return (
-    <div className="mp-player" data-testid="mp-player-view">
+    <div className="mp-player" data-testid="mp-player-view" aria-busy={isBuffering}>
+      {isBuffering && (
+        <span className="mp-sr-only" role="status">
+          {t('正在加载音频...')}
+        </span>
+      )}
       <div className="mp-track">
         {needle && track && (
           <span className="mp-needle" aria-hidden="true">
@@ -92,7 +110,7 @@ export function PlayerView({
           </span>
         )}
 
-        <div className={`mp-cover ${isPlaying ? 'is-playing' : ''}`}>
+        <div className={`mp-cover ${isPlaying ? 'is-playing' : ''} ${isBuffering ? 'is-buffering' : ''}`}>
           {track?.coverUrl ? (
             <img
               src={track.coverUrl}
@@ -105,6 +123,7 @@ export function PlayerView({
           ) : (
             <Music size={30} strokeWidth={1.5} aria-hidden="true" />
           )}
+          {isBuffering && <span className="mp-cover__spinner" aria-hidden="true" />}
         </div>
 
         <div className="mp-track__meta">
@@ -145,6 +164,8 @@ export function PlayerView({
         duration={duration}
         onSeek={onSeek}
         label={t('播放进度')}
+        analyserRef={analyserRef}
+        spectrumActive={spectrumActive}
       />
 
       {showLyrics && (
@@ -166,6 +187,8 @@ export function PlayerView({
         loopMode={loopMode}
         volume={volume}
         isMuted={isMuted}
+        canPlay={Boolean(track)}
+        canSkip={canSkip}
         onTogglePlay={onTogglePlay}
         onPrev={onPrev}
         onNext={onNext}
@@ -223,8 +246,8 @@ export function PlayerView({
           </button>
 
           {moreOpen && (
-            <div className="mp-menu" role="menu" aria-label={t('定时关闭')} data-testid="mp-more-menu">
-              <span className="mp-menu__label">{t('定时关闭')}</span>
+            <div className="mp-menu" role="menu" aria-label={sleepTimerLabel} data-testid="mp-more-menu">
+              <span className="mp-menu__label">{sleepTimerLabel}</span>
               {SLEEP_OPTIONS.map((option) => {
                 const checked = sleepTimer === option.value;
                 return (
