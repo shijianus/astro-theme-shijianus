@@ -1319,9 +1319,12 @@ export function MusicPocket({ apiBase }: Props) {
       if (!payload || typeof payload !== 'object') return;
       const isSonic =
         payload.source === 'sonic-music-player' ||
+        payload.source === 'sonic' ||
         payload.brand === 'Sonic' ||
         payload.type === 'SONIC_AUDIO_SYNC' ||
-        payload.action;
+        payload.track?.source === 'sonic' ||
+        Boolean(payload.track && (payload.playback || payload.lyrics)) ||
+        Boolean(payload.action);
       if (!isSonic) return;
 
       setIsSonicConnected(true);
