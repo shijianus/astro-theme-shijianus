@@ -3,11 +3,11 @@ import fs from 'node:fs'
 import path from 'node:path'
 
 const ARTIFACT_DIR = '/root/.gemini/antigravity-cli/brain/bd16d9db-c8fc-4a70-b753-b2084573ac03'
-const BLOG_CF_URL = process.env.BLOG_CF_URL || 'https://ab7e144f.shijianus-blog.pages.dev'
+const BLOG_CF_URL = process.env.BLOG_CF_URL || 'https://de69c416.shijianus-blog.pages.dev'
 const SONIC_CF_URL = process.env.SONIC_CF_URL || 'https://5e3dd847.cfsolara-dho.pages.dev'
 
-// Sample public MP3 with byte-range support for real HTML5 audio testing
-const SAMPLE_AUDIO_URL = 'https://assets.mixkit.co/music/preview/mixkit-tech-house-vibes-130.mp3'
+// Use blog's own deployed audio with byte-range 206 support
+const SAMPLE_AUDIO_URL = 'https://de69c416.shijianus-blog.pages.dev/media/audio/WayBackHome.flac'
 
 const sampleSonicPayload = {
   source: 'sonic-music-player',
@@ -155,10 +155,20 @@ async function runLiveVerification() {
     })
     console.log('[CF E2E] Live Audio Element Status:', audioStatus)
 
-    // Capture Desktop Live Screenshot
+    // Capture Desktop Live Screenshot (Player Tab)
     const desktopScreenshotPath = path.join(ARTIFACT_DIR, '04-cf-live-blog-sonic-connected.png')
     await page.screenshot({ path: desktopScreenshotPath, fullPage: false })
     console.log(`[CF E2E] Saved live desktop screenshot: ${desktopScreenshotPath}`)
+
+    // Switch to 歌词 Tab to verify synchronized lyrics panel
+    const lyricsTabBtn = page.locator('button:has-text("歌词"), [data-tab="lyrics"]').first()
+    if (await lyricsTabBtn.isVisible().catch(() => false)) {
+      await lyricsTabBtn.click()
+      await page.waitForTimeout(600)
+      const lyricsScreenshotPath = path.join(ARTIFACT_DIR, '07-cf-live-lyrics-sync.png')
+      await page.screenshot({ path: lyricsScreenshotPath, fullPage: false })
+      console.log(`[CF E2E] Saved live lyrics panel screenshot: ${lyricsScreenshotPath}`)
+    }
 
     // Capture Mobile Live Screenshot
     await page.setViewportSize({ width: 390, height: 844 })
