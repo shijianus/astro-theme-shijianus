@@ -1,3 +1,48 @@
+function resolveValidatedLabSandboxOrigin(
+  rawOrigin: unknown,
+  requestUrl: URL
+): string | null {
+  if (typeof rawOrigin !== 'string') return null;
+  const trimmed = rawOrigin.trim();
+  if (!trimmed || trimmed.includes('*') || /\s/.test(trimmed)) return null;
+
+  let parsed: URL;
+  try {
+    parsed = new URL(trimmed);
+  } catch {
+    return null;
+  }
+
+  if (parsed.username || parsed.password) return null;
+  if ((parsed.pathname && parsed.pathname !== '/') || parsed.search || parsed.hash) return null;
+  if (parsed.origin === requestUrl.origin) return null;
+
+  const host = parsed.hostname.toLowerCase();
+  if (
+    host === 'epocanvas.com' ||
+    host.endsWith('.epocanvas.com') ||
+    host === 'shijianus-blog.pages.dev' ||
+    host.endsWith('.shijianus-blog.pages.dev') ||
+    host === 'shijianus.github.io'
+  ) {
+    return null;
+  }
+
+  if (parsed.protocol === 'https:') {
+    return parsed.origin;
+  }
+
+  const isLoopback = host === 'localhost' || host === '127.0.0.1';
+  const reqLoopback =
+    requestUrl.protocol === 'http:' &&
+    (requestUrl.hostname === 'localhost' || requestUrl.hostname === '127.0.0.1');
+  if (parsed.protocol === 'http:' && isLoopback && reqLoopback) {
+    return parsed.origin;
+  }
+
+  return null;
+}
+
 export const onRequest: PagesFunction = async (context) => {
   const url = new URL(context.request.url);
 
@@ -24,6 +69,23 @@ export const onRequest: PagesFunction = async (context) => {
   headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
 
   // Defense-in-depth: Content-Security-Policy (ARCH-05)
+  const envRecord = (context.env ?? {}) as Record<string, unknown>;
+  const labSandboxOrigin = resolveValidatedLabSandboxOrigin(
+    envRecord.PUBLIC_LAB_SANDBOX_ORIGIN,
+    url
+  );
+  const frameSources = [
+    "'self'",
+    'https://js.stripe.com',
+    'https://hooks.stripe.com',
+    'https://challenges.cloudflare.com',
+    'https://player.bilibili.com',
+    'https://www.bilibili.com',
+    'https://www.youtube.com',
+    'https://www.youtube-nocookie.com',
+    ...(labSandboxOrigin ? [labSandboxOrigin] : []),
+  ].join(' ');
+
   const csp = [
     "default-src 'self'",
     "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://challenges.cloudflare.com https://static.cloudflareinsights.com",
@@ -32,8 +94,9 @@ export const onRequest: PagesFunction = async (context) => {
     "media-src 'self' blob: https:",
     "font-src 'self' data: https://fonts.gstatic.com",
     "connect-src 'self' https://api.stripe.com https://img.epocanvas.com https://mail.epocanvas.com https://music-api.gdstudio.xyz https://static.cloudflareinsights.com https:",
-    "frame-src 'self' https://js.stripe.com https://hooks.stripe.com https://challenges.cloudflare.com https://player.bilibili.com https://www.bilibili.com https://www.youtube.com https://www.youtube-nocookie.com",
+    `frame-src ${frameSources}`,
     "frame-ancestors 'self'",
+    "form-action 'self'",
     "object-src 'none'",
     "base-uri 'self'",
   ].join('; ');
