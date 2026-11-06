@@ -970,7 +970,7 @@ export function MusicPocket({ apiBase }: Props) {
     return () => window.removeEventListener('shijianus:localechange', handleLocaleChange);
   }, []);
 
-  const t = (text: string) => convertText(text, localeVariant);
+  const t = useCallback((text: string) => convertText(text, localeVariant), [localeVariant]);
 
   // 1. 显隐控制 (默认隐藏，仅受右侧边栏管理按键控制)
   const [visible, setVisible] = useState(false);
@@ -1154,7 +1154,7 @@ export function MusicPocket({ apiBase }: Props) {
     return `${apiBase}/music/stream?id=${encodeURIComponent(track.id)}&source=${encodeURIComponent(track.source || 'netease')}&quality=320`;
   }, [apiBase]);
 
-  const showToast = (message: string) => {
+  const showToast = useCallback((message: string) => {
     if (typeof window !== 'undefined') {
       const activeLocale = localeVariant || 'zh-CN';
       const translated = convertText(message, activeLocale);
@@ -1173,7 +1173,7 @@ export function MusicPocket({ apiBase }: Props) {
         (window as any).showToast(translated, 2400);
       }
     }
-  };
+  }, [localeVariant]);
 
   // Load screen lyric preferences on mount
   useEffect(() => {
@@ -1317,20 +1317,24 @@ export function MusicPocket({ apiBase }: Props) {
   const handleSonicSyncPayload = useCallback(
     (payload: any) => {
       if (!payload || typeof payload !== 'object') return;
+      // 严禁消费自己发出的指令，杜绝死循环导致面板无法关闭
+      if (payload.source === 'shijianus-music-pocket') return;
+
       const isSonic =
         payload.source === 'sonic-music-player' ||
         payload.source === 'sonic' ||
         payload.brand === 'Sonic' ||
         payload.type === 'SONIC_AUDIO_SYNC' ||
         payload.track?.source === 'sonic' ||
-        Boolean(payload.track && (payload.playback || payload.lyrics)) ||
-        Boolean(payload.action);
+        Boolean(payload.track && (payload.playback || payload.lyrics));
       if (!isSonic) return;
 
       setIsSonicConnected(true);
       sonicLinkRef.current = true;
       setVisible(true);
-      setOpen(true);
+      if (payload.open === true) {
+        setOpen(true);
+      }
 
       // 1. 音频链路：同步曲目元数据与流地址
       if (payload.track) {
@@ -1474,6 +1478,9 @@ export function MusicPocket({ apiBase }: Props) {
     [ensureAudioContext, showToast, t],
   );
 
+  const handleSonicSyncPayloadRef = useRef(handleSonicSyncPayload);
+  handleSonicSyncPayloadRef.current = handleSonicSyncPayload;
+
   // 跨应用链路监听生命周期管理
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -1484,7 +1491,11 @@ export function MusicPocket({ apiBase }: Props) {
       if (typeof BroadcastChannel !== 'undefined') {
         c1 = new BroadcastChannel('sonic_pocket_linkage');
         c2 = new BroadcastChannel('shijianus_sonic_bridge');
-        const onMsg = (e: MessageEvent) => handleSonicSyncPayload(e.data);
+        const onMsg = (e: MessageEvent) => {
+          if (e.data && typeof e.data === 'object' && e.data.source !== 'shijianus-music-pocket') {
+            handleSonicSyncPayloadRef.current(e.data);
+          }
+        };
         c1.onmessage = onMsg;
         c2.onmessage = onMsg;
       }
@@ -1494,9 +1505,10 @@ export function MusicPocket({ apiBase }: Props) {
       if (
         e.data &&
         typeof e.data === 'object' &&
+        e.data.source !== 'shijianus-music-pocket' &&
         (e.data.source === 'sonic-music-player' || e.data.type === 'SONIC_AUDIO_SYNC')
       ) {
-        handleSonicSyncPayload(e.data);
+        handleSonicSyncPayloadRef.current(e.data);
       }
     };
 
@@ -1504,14 +1516,18 @@ export function MusicPocket({ apiBase }: Props) {
       if (e.key === 'sonic_pocket_sync_event' && e.newValue) {
         try {
           const data = JSON.parse(e.newValue);
-          handleSonicSyncPayload(data);
+          if (data && typeof data === 'object' && data.source !== 'shijianus-music-pocket') {
+            handleSonicSyncPayloadRef.current(data);
+          }
         } catch {}
       }
     };
 
     const onCustomConnect = (e: Event) => {
       const detail = (e as CustomEvent).detail;
-      handleSonicSyncPayload(detail);
+      if (detail && typeof detail === 'object' && detail.source !== 'shijianus-music-pocket') {
+        handleSonicSyncPayloadRef.current(detail);
+      }
     };
 
     window.addEventListener('message', onWindowMessage);
@@ -1526,9 +1542,9 @@ export function MusicPocket({ apiBase }: Props) {
     }
 
     // 暴露 window 全局桥接方法，便于外部脚本或测试控制
-    (window as any).__connectSonicAudio = (payload: any) => handleSonicSyncPayload(payload);
+    (window as any).__connectSonicAudio = (payload: any) => handleSonicSyncPayloadRef.current(payload);
     (window as any).__sonicPocketBridge = {
-      handleSync: handleSonicSyncPayload,
+      handleSync: (payload: any) => handleSonicSyncPayloadRef.current(payload),
       sendCommand: sendPocketCommand,
     };
 
@@ -1546,7 +1562,7 @@ export function MusicPocket({ apiBase }: Props) {
         container.removeEventListener('sonic:connect', onCustomConnect);
       }
     };
-  }, [handleSonicSyncPayload, sendPocketCommand]);
+  }, [sendPocketCommand]);
 
   // 4. Web Audio API Canvas Visualizer 60FPS Render Loop (Dense 32-Bar Layout)
   useEffect(() => {
@@ -2655,9 +2671,25 @@ export function MusicPocket({ apiBase }: Props) {
   };
 
   // 关闭按钮仅收起展开面板，绝不抹除浮动图标，保持后台静默播放！
-  const handleHudClose = () => {
+  const handleHudClose = (e?: React.MouseEvent | React.PointerEvent) => {
+    if (e) {
+      e.stopPropagation();
+      e.preventDefault();
+    }
     setOpen(false);
   };
+
+  // 支持按 ESC 键优雅收起面板
+  useEffect(() => {
+    if (!open) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [open]);
 
   const getSourceLabel = (src: string) => {
     switch (src) {
@@ -2920,6 +2952,7 @@ export function MusicPocket({ apiBase }: Props) {
                 type="button"
                 className="shijianus-music-pocket__hud-btn shijianus-music-pocket__hud-btn--close"
                 onClick={handleHudClose}
+                onPointerDown={(e) => e.stopPropagation()}
                 title={t('收起面板 (保持后台播放)')}
                 aria-label={t('收起面板')}
               >
