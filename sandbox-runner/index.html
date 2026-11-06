@@ -40,13 +40,18 @@
 
       function isAllowedHostOrigin(origin) {
         if (typeof origin !== 'string' || !origin) return false;
+        if (origin === window.location.origin) return false;
         if (window.location.protocol === 'https:') {
-          return origin === 'https://blog.epocanvas.com';
+          return (
+            origin === 'https://blog.epocanvas.com' ||
+            origin === 'https://shijianus-blog.pages.dev' ||
+            /^https:\/\/[a-z0-9-]+\.shijianus-blog\.pages\.dev$/.test(origin)
+          );
         }
         // 仅当桥接器本身运行于本地 HTTP 回环地址时允许本地开发/多 Origin 验收端口
         var hostName = window.location.hostname;
         if (window.location.protocol === 'http:' && (hostName === 'localhost' || hostName === '127.0.0.1')) {
-          return /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin) && origin !== window.location.origin;
+          return /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin);
         }
         return false;
       }
