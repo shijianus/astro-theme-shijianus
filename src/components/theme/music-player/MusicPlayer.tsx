@@ -10,7 +10,7 @@ import {
 import { Music } from 'lucide-react';
 import { createMusicApi } from './api';
 import {
-  FALLBACK_LYRICS,
+  DISCOVER_SEEDS,
   FALLBACK_TRACKS,
   LOOP_MODES,
   PANEL_WIDTH,
@@ -19,10 +19,11 @@ import {
   TAB_ORDER,
 } from './config';
 import { useAudioController } from './hooks/useAudioController';
+import { useDiscover } from './hooks/useDiscover';
 import { useFloatingPosition } from './hooks/useFloatingPosition';
+import { useLyrics } from './hooks/useLyrics';
 import { usePlayerLocale } from './i18n';
 import { getProgressRatio } from './lib/audio';
-import { findActiveLyricIndex } from './lib/lyrics';
 import {
   readStoredBoolean,
   readStoredJson,
@@ -47,6 +48,7 @@ type MusicPlayerProps = {
   needle?: boolean;
   startOpen?: boolean;
   skipPlaylist?: boolean;
+  skipLyrics?: boolean;
 };
 
 type PlayerNotice = {
@@ -80,7 +82,7 @@ function readInitialExpanded(startOpen?: boolean): boolean {
   return typeof startOpen === 'boolean' ? startOpen : readStoredBoolean(PLAYER_STORAGE_KEYS.expanded, false);
 }
 
-export function MusicPlayer({ apiBase, needle = false, startOpen, skipPlaylist = false }: MusicPlayerProps) {
+export function MusicPlayer({ apiBase, needle = false, startOpen, skipPlaylist = false, skipLyrics = false }: MusicPlayerProps) {
   const { t } = usePlayerLocale();
   const api = useMemo(() => createMusicApi(apiBase), [apiBase]);
   const {
@@ -105,8 +107,6 @@ export function MusicPlayer({ apiBase, needle = false, startOpen, skipPlaylist =
   const [sleepTimer, setSleepTimer] = useState<SleepTimerOption>(null);
   const [sleepRemaining, setSleepRemaining] = useState<number | null>(null);
   const [showLyrics, setShowLyrics] = useState(true);
-  const [discoverQuery, setDiscoverQuery] = useState('');
-  const [discoverResults, setDiscoverResults] = useState<MusicTrack[]>(FALLBACK_TRACKS);
   const [notice, setNotice] = useState<PlayerNotice | null>(null);
   const [viewport, setViewport] = useState(() => ({
     width: typeof window === 'undefined' ? 1280 : window.innerWidth,
@@ -118,6 +118,7 @@ export function MusicPlayer({ apiBase, needle = false, startOpen, skipPlaylist =
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
   const focusPanelOnOpenRef = useRef(false);
   const noticeTimerRef = useRef<number | null>(null);
+  const restoredPlaybackRef = useRef(false);
   const tRef = useRef(t);
   tRef.current = t;
 
@@ -177,8 +178,18 @@ export function MusicPlayer({ apiBase, needle = false, startOpen, skipPlaylist =
     showNotice,
   });
 
+  const lyrics = useLyrics({
+    api,
+    track: currentTrack,
+    currentTime,
+    skip: skipLyrics,
+  });
+  const discover = useDiscover({
+    api,
+    enabled: expanded && activeTab === 'discover',
+  });
+
   const progressRatio = getProgressRatio(currentTime, duration);
-  const activeLyricIndex = findActiveLyricIndex(FALLBACK_LYRICS, currentTime);
   const favorite = Boolean(currentTrack && favorites.includes(currentTrack.id));
   const spectrumActive = expanded && isPlaying && !isMuted && volume > 0 && spectrumAvailable;
 
@@ -235,6 +246,56 @@ export function MusicPlayer({ apiBase, needle = false, startOpen, skipPlaylist =
     audio.playbackRate = speed;
     if ('preservesPitch' in audio) audio.preservesPitch = true;
   }, [audioRef, currentTrack?.id, speed]);
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    const writePlaybackPosition = () => {
+      const track = currentTrackRef.current;
+      if (!track) return;
+      writeStoredJson(PLAYER_STORAGE_KEYS.playback, {
+        trackId: track.id,
+        time: Number.isFinite(audio.currentTime) ? audio.currentTime : 0,
+      });
+    };
+
+    const interval = window.setInterval(writePlaybackPosition, 4000);
+    const handlePageHide = () => writePlaybackPosition();
+    audio.addEventListener('pause', writePlaybackPosition);
+    audio.addEventListener('seeked', writePlaybackPosition);
+    window.addEventListener('pagehide', handlePageHide);
+
+    return () => {
+      window.clearInterval(interval);
+      audio.removeEventListener('pause', writePlaybackPosition);
+      audio.removeEventListener('seeked', writePlaybackPosition);
+      window.removeEventListener('pagehide', handlePageHide);
+    };
+  }, [audioRef, currentTrack?.id]);
+
+  useEffect(() => {
+    if (restoredPlaybackRef.current) return;
+    const stored = readStoredJson<{ trackId?: string; time?: number } | null>(PLAYER_STORAGE_KEYS.playback, null);
+    if (!stored || !currentTrack || stored.trackId !== currentTrack.id || typeof stored.time !== 'number') return;
+
+    const audio = audioRef.current;
+    if (!audio) return;
+    restoredPlaybackRef.current = true;
+
+    const apply = () => seekTo(stored.time as number);
+    if (audio.readyState >= 1) {
+      apply();
+      return;
+    }
+
+    const onLoadedMetadata = () => {
+      apply();
+      audio.removeEventListener('loadedmetadata', onLoadedMetadata);
+    };
+    audio.addEventListener('loadedmetadata', onLoadedMetadata);
+    return () => audio.removeEventListener('loadedmetadata', onLoadedMetadata);
+  }, [audioRef, currentTrack?.id, seekTo]);
 
   useEffect(() => {
     if (skipPlaylist) return;
@@ -482,38 +543,6 @@ export function MusicPlayer({ apiBase, needle = false, startOpen, skipPlaylist =
     [armAutoplay, currentIndex, isPlaying, queue, stopAndClear],
   );
 
-  const handleDiscoverSearch = useCallback(
-    (keyword: string) => {
-      const normalized = keyword.trim().toLowerCase();
-      setDiscoverQuery(keyword);
-      if (!normalized) {
-        setDiscoverResults(FALLBACK_TRACKS);
-        return;
-      }
-
-      const seen = new Set<string>();
-      const pool = [...queue, ...FALLBACK_TRACKS].filter((track) => {
-        if (seen.has(track.id)) return false;
-        seen.add(track.id);
-        return true;
-      });
-
-      setDiscoverResults(
-        pool.filter((track) =>
-          [track.name, track.artist, track.album || '']
-            .join(' ')
-            .toLowerCase()
-            .includes(normalized),
-        ),
-      );
-    },
-    [queue],
-  );
-
-  const handleDiscoverLoadMore = useCallback(() => {
-    // Phase 3 replaces this static fallback with the paginated search API.
-  }, []);
-
   const handleSleepTimerChange = useCallback(
     (value: SleepTimerOption) => {
       setSleepTimer(value);
@@ -656,8 +685,9 @@ export function MusicPlayer({ apiBase, needle = false, startOpen, skipPlaylist =
               currentTime={currentTime}
               duration={duration}
               onSeek={seekTo}
-              lyrics={FALLBACK_LYRICS}
-              activeLyricIndex={activeLyricIndex}
+              lyrics={lyrics.lines}
+              lyricsStatus={lyrics.status}
+              activeLyricIndex={lyrics.activeIndex}
               showLyrics={showLyrics}
               onToggleLyrics={() => setShowLyrics((value) => !value)}
               loopMode={loopMode}
@@ -693,9 +723,11 @@ export function MusicPlayer({ apiBase, needle = false, startOpen, skipPlaylist =
           >
             <LyricsView
               track={currentTrack}
-              lines={FALLBACK_LYRICS}
-              activeIndex={activeLyricIndex}
+              lines={lyrics.lines}
+              activeIndex={lyrics.activeIndex}
+              status={lyrics.status}
               onSeek={seekTo}
+              onRetry={lyrics.retry}
             />
           </div>
 
@@ -724,14 +756,19 @@ export function MusicPlayer({ apiBase, needle = false, startOpen, skipPlaylist =
             hidden={activeTab !== 'discover'}
           >
             <DiscoverView
-              query={discoverQuery}
-              onQueryChange={setDiscoverQuery}
-              results={discoverResults}
-              loading={false}
-              error={null}
-              hasMore={false}
-              onSearch={handleDiscoverSearch}
-              onLoadMore={handleDiscoverLoadMore}
+              query={discover.query}
+              onQueryChange={discover.setQuery}
+              results={discover.results}
+              loading={discover.loading}
+              error={discover.error}
+              hasMore={discover.hasMore}
+              cooldownRemaining={discover.cooldownRemaining}
+              seeds={DISCOVER_SEEDS}
+              activeSeed={discover.seed}
+              onSearch={discover.search}
+              onSelectSeed={discover.selectSeed}
+              onRetry={discover.retry}
+              onLoadMore={discover.loadMore}
               onPlay={playFromDiscover}
               onAdd={addToQueue}
             />

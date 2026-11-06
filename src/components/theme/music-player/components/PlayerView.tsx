@@ -5,7 +5,7 @@ import { usePlayerLocale } from '../i18n';
 import { formatTime } from '../lib/audio';
 import { getLyricWindow } from '../lib/lyrics';
 import { getSourceLabel } from '../lib/source';
-import type { LyricLine, MusicTrack, PlayMode, SleepTimerOption } from '../types';
+import type { LyricLine, LyricsStatus, MusicTrack, PlayMode, SleepTimerOption } from '../types';
 import { Marquee } from './Marquee';
 import { Transport } from './Transport';
 import { WaveformProgress } from './WaveformProgress';
@@ -20,6 +20,7 @@ type PlayerViewProps = {
   duration: number;
   onSeek: (time: number) => void;
   lyrics: LyricLine[];
+  lyricsStatus: LyricsStatus;
   activeLyricIndex: number;
   showLyrics: boolean;
   onToggleLyrics: () => void;
@@ -53,6 +54,7 @@ export function PlayerView({
   duration,
   onSeek,
   lyrics,
+  lyricsStatus,
   activeLyricIndex,
   showLyrics,
   onToggleLyrics,
@@ -79,6 +81,17 @@ export function PlayerView({
   const [moreOpen, setMoreOpen] = useState(false);
   const moreRef = useRef<HTMLDivElement>(null);
   const lyricWindow = getLyricWindow(lyrics, activeLyricIndex);
+  const lyricRibbonText =
+    lyricsStatus === 'loading'
+      ? t('正在同步歌词...')
+      : lyricsStatus === 'error'
+        ? t('歌词加载失败')
+        : lyricsStatus === 'instrumental'
+          ? t('纯音乐，请欣赏')
+          : lyricsStatus === 'empty' || lyricsStatus === 'idle'
+            ? t('暂无歌词')
+            : lyricWindow.current?.text || t('暂无歌词');
+  const lyricReady = lyricsStatus === 'ready' && Boolean(lyricWindow.current);
   const sleepTimerLabel =
     sleepRemaining !== null ? `${t('定时关闭')} · ${formatTime(sleepRemaining)}` : t('定时关闭');
 
@@ -169,16 +182,24 @@ export function PlayerView({
       />
 
       {showLyrics && (
-        <div className="mp-ribbon" data-testid="mp-lyric-ribbon">
-          <span className="mp-ribbon__side" title={lyricWindow.previous?.text || ''}>
-            {lyricWindow.previous?.text || ''}
+        <div
+          className={`mp-ribbon ${lyricReady ? '' : 'is-status'}`}
+          data-testid="mp-lyric-ribbon"
+          data-lyrics-status={lyricsStatus}
+        >
+          {lyricReady && (
+            <span className="mp-ribbon__side" title={lyricWindow.previous?.text || ''}>
+              {lyricWindow.previous?.text || ''}
+            </span>
+          )}
+          <span className="mp-ribbon__current" key={`${lyricsStatus}-${activeLyricIndex}-${lyricRibbonText}`}>
+            <Marquee text={lyricRibbonText} />
           </span>
-          <span className="mp-ribbon__current" key={`${activeLyricIndex}-${lyricWindow.current?.text || ''}`}>
-            <Marquee text={lyricWindow.current?.text || t('暂无可用歌词')} />
-          </span>
-          <span className="mp-ribbon__side" title={lyricWindow.next?.text || ''}>
-            {lyricWindow.next?.text || ''}
-          </span>
+          {lyricReady && (
+            <span className="mp-ribbon__side" title={lyricWindow.next?.text || ''}>
+              {lyricWindow.next?.text || ''}
+            </span>
+          )}
         </div>
       )}
 

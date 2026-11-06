@@ -8,12 +8,15 @@ export const PLAYER_STORAGE_KEYS = {
   track: 'shijianus-mp-track-v1',
   favorites: 'shijianus-mp-favorites-v1',
   speed: 'shijianus-mp-speed-v1',
+  playback: 'shijianus-mp-playback-v1',
 } as const;
 
 export const BUBBLE_SIZE = 48;
 export const PANEL_WIDTH = 380;
 export const DOCK_SAFE_MARGIN = 12;
 export const DEFAULT_PROGRESS_RATIO = 0.32;
+export const DISCOVER_PAGE_SIZE = 12;
+export const DISCOVER_SEEDS = ['热歌', '流行'] as const;
 
 export const TAB_ORDER: PlayerTab[] = ['player', 'lyrics', 'queue', 'discover'];
 

@@ -272,7 +272,14 @@ export function useAudioController({
     }
 
     const src = absoluteUrl(api.streamUrl(currentTrack));
-    if (!src || loadedSrcRef.current === src) return;
+    if (!src) return;
+
+    if (loadedSrcRef.current === src) {
+      // Different queue entries can point at the same local audio file.
+      // Arm playback for the new track even when the media source is unchanged.
+      if (playIntentRef.current) void playAudio();
+      return;
+    }
 
     loadedSrcRef.current = src;
     audio.pause();

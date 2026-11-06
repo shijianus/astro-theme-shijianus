@@ -2745,6 +2745,13 @@ export const MULTILINGUAL_DICTIONARY: Record<string, TranslationDict> = {
   '浏览器阻止了自动播放，请点击播放': { en: 'Autoplay was blocked. Tap play to start.', fr: 'La lecture automatique a été bloquée. Touchez lecture pour démarrer.', es: 'La reproducción automática está bloqueada. Pulsa reproducir.', de: 'Autoplay wurde blockiert. Tippe auf Wiedergabe, um zu starten.' },
   '播放已结束': { en: 'Playback ended', fr: 'Lecture terminée', es: 'Reproducción finalizada', de: 'Wiedergabe beendet' },
   '正在加载音频...': { en: 'Loading audio...', fr: 'Chargement de l’audio...', es: 'Cargando audio...', de: 'Audio wird geladen...' },
+  '热歌': { en: 'Trending', fr: 'Tendances', es: 'Tendencias', de: 'Trends' },
+  '流行': { en: 'Pop', fr: 'Pop', es: 'Pop', de: 'Pop' },
+  '暂无歌词': { en: 'No lyrics', fr: 'Aucune parole', es: 'Sin letra', de: 'Keine Songtexte' },
+  '歌词加载失败': { en: 'Failed to load lyrics', fr: 'Échec du chargement des paroles', es: 'No se pudieron cargar las letras', de: 'Songtexte konnten nicht geladen werden' },
+  '请求过于频繁': { en: 'Too many requests', fr: 'Trop de requêtes', es: 'Demasiadas solicitudes', de: 'Zu viele Anfragen' },
+  '请稍后重试': { en: 'Please try again later', fr: 'Veuillez réessayer plus tard', es: 'Inténtalo de nuevo más tarde', de: 'Bitte später erneut versuchen' },
+  '冷却中': { en: 'Cooling down', fr: 'Refroidissement', es: 'Enfriando', de: 'Abkühlung' },
 
   // Music Pocket Extended & HUD
   '定时休眠已到达，播放已暂停': { en: 'Sleep timer reached, playback paused', fr: 'Minuteur écoulé, lecture suspendue', es: 'Temporizador alcanzado, reproducción pausada', de: 'Sleeptimer abgelaufen, Wiedergabe pausiert' },

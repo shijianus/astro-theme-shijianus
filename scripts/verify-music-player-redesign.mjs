@@ -605,6 +605,521 @@ async function testPlaylistFallback(browser, base) {
   }
 }
 
+function localTrack(id, name, audioPath = '/media/audio/WayBackHome.flac') {
+  return {
+    id,
+    name,
+    artist: 'Test Artist',
+    album: 'Test Album',
+    source: 'local',
+    urlId: audioPath,
+    coverUrl: '/media/audio/covers/way_back_home.jpg',
+  };
+}
+
+async function mockPlaylist(page, tracks) {
+  await page.route('**/api/music/playlist', (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ ok: true, tracks }),
+    }),
+  );
+}
+
+async function setAudioTime(page, time) {
+  await page.evaluate((nextTime) => {
+    const audio = document.querySelector('[data-testid="mp-audio"]');
+    if (!audio) return;
+    audio.currentTime = nextTime;
+    audio.dispatchEvent(new Event('timeupdate'));
+  }, time);
+  await page.waitForTimeout(350);
+}
+
+async function activeLyricText(page) {
+  return (await page.locator('.mp-lyric-line.is-active .mp-lyric-line__text').textContent())?.trim() || '';
+}
+
+async function lyricScrollMetrics(page) {
+  return page.evaluate(() => {
+    const container = document.querySelector('[data-testid="mp-lyrics-scroll"]');
+    const active = document.querySelector('.mp-lyric-line.is-active');
+    if (!container || !active) return null;
+    const containerRect = container.getBoundingClientRect();
+    const activeRect = active.getBoundingClientRect();
+    return {
+      top: container.scrollTop,
+      delta: activeRect.top + activeRect.height / 2 - (containerRect.top + containerRect.height / 2),
+      text: active.textContent || '',
+    };
+  });
+}
+
+async function testLyricsSyncAndScroll(browser, base) {
+  const lines = Array.from({ length: 30 }, (_, index) => ({
+    timeSec: index * 2,
+    text: `PARSED ${String(index + 1).padStart(2, '0')}`,
+  }));
+  let releaseLyric;
+  const lyricGate = new Promise((resolve) => {
+    releaseLyric = resolve;
+  });
+  const session = await withPage(browser, base, {
+    viewport: { width: 1440, height: 900 },
+    path: '/',
+    setup: async (page) => {
+      await mockPlaylist(page, [
+        localTrack('local-way-back-home', 'Lyric Track A'),
+        localTrack('local-kanojo', 'Lyric Track B', '/media/audio/彼女は旅に出る.mp3'),
+      ]);
+      await page.route('**/api/music/lyric?**', async (route) => {
+        await lyricGate;
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            ok: true,
+            parsed: lines,
+            rawLyric: 'RAW SHOULD NOT WIN',
+            isPureMusic: false,
+          }),
+        });
+      });
+    },
+  });
+  const { page } = session;
+  try {
+    await openPanel(page);
+    await page.getByTestId('mp-tab-lyrics').click();
+    const loadingText = await page.getByTestId('mp-lyrics-status').innerText();
+    assert(loadingText.includes('正在同步歌词'), `Expected loading lyric state, got: ${loadingText}`);
+    releaseLyric();
+
+    await page.waitForSelector('[data-testid="mp-lyrics-scroll"] .mp-lyric-line', { state: 'visible', timeout: 6000 });
+    assert((await page.getByTestId('mp-lyric-line').count()) === 30, 'Expected 30 parsed lyric lines');
+
+    await setAudioTime(page, 6);
+    assert((await activeLyricText(page)).includes('PARSED 04'), 'Active line should follow playback time');
+
+    await page.getByTestId('mp-tab-player').click();
+    await page.waitForTimeout(250);
+    const ribbonText = await page.locator('.mp-ribbon__current').innerText();
+    assert(ribbonText.includes('PARSED 04'), `Player ribbon should show active line, got: ${ribbonText}`);
+    await page.getByTestId('mp-tab-lyrics').click();
+    await page.waitForTimeout(250);
+
+    await page.getByTestId('mp-lyric-line').nth(5).click();
+    await page.waitForTimeout(700);
+    const clickedTime = await audioState(page);
+    assert(clickedTime.currentTime > 9 && clickedTime.currentTime < 12, 'Clicking a lyric line should seek audio');
+    assert((await activeLyricText(page)).includes('PARSED 06'), 'Clicked lyric should become active');
+
+    await page.waitForTimeout(700);
+    const centered = await lyricScrollMetrics(page);
+    assert(centered && Math.abs(centered.delta) < 80, 'Active lyric should be centered');
+
+    const scrollBox = await page.locator('[data-testid="mp-lyrics-scroll"]').boundingBox();
+    assert(scrollBox, 'Lyric scroll container must be visible');
+    await page.mouse.move(scrollBox.x + scrollBox.width / 2, scrollBox.y + scrollBox.height / 2);
+    await page.mouse.wheel(0, -3000);
+    await page.waitForTimeout(450);
+    const afterUserScroll = await lyricScrollMetrics(page);
+    assert(afterUserScroll, 'Lyric scroll metrics should exist');
+
+    await setAudioTime(page, 40);
+    const duringProtection = await lyricScrollMetrics(page);
+    assert(
+      duringProtection && Math.abs(duringProtection.top - afterUserScroll.top) < 40,
+      'User scroll should pause automatic lyric centering',
+    );
+
+    await page.waitForTimeout(4000);
+    await page.waitForTimeout(900);
+    const afterResume = await lyricScrollMetrics(page);
+    assert(
+      afterResume && afterResume.top > afterUserScroll.top + 50,
+      'Automatic centering should resume after the idle delay',
+    );
+    assert(afterResume && Math.abs(afterResume.delta) < 80, 'Resumed centering should land on the active line');
+    pass('lyrics parsed priority, sync, click seek, auto-center and scroll protection');
+  } finally {
+    await session.close();
+  }
+}
+
+async function runLyricCase(browser, base, name, body, httpStatus, expectation) {
+  const session = await withPage(browser, base, {
+    viewport: { width: 1440, height: 900 },
+    path: '/',
+    setup: async (page) => {
+      await mockPlaylist(page, [localTrack('local-way-back-home', 'Lyric State Track')]);
+      await page.route('**/api/music/lyric?**', (route) =>
+        route.fulfill({
+          status: httpStatus,
+          contentType: 'application/json',
+          body: JSON.stringify(body),
+        }),
+      );
+    },
+  });
+  const { page } = session;
+  try {
+    await openPanel(page);
+    await page.getByTestId('mp-tab-lyrics').click();
+    await page.waitForTimeout(900);
+
+    if (expectation.line) {
+      const texts = await page.locator('.mp-lyric-line__text').allTextContents();
+      assert(texts.some((text) => text.includes(expectation.line)), `${name}: missing lyric line ${expectation.line}`);
+    }
+    if (expectation.status) {
+      const statusText = await page.getByTestId('mp-lyrics-status').innerText();
+      assert(statusText.includes(expectation.status), `${name}: expected status ${expectation.status}, got ${statusText}`);
+    }
+    if (expectation.retry) {
+      assert((await page.locator('[data-testid="mp-lyrics-status"] .mp-text-btn').count()) === 1, `${name}: retry should be available`);
+    }
+    pass(`lyrics state: ${name}`);
+  } finally {
+    await session.close();
+  }
+}
+
+async function testLyricFallbackStates(browser, base) {
+  await runLyricCase(
+    browser,
+    base,
+    'elrc fallback',
+    { ok: true, parsed: [], elrc: '[00:00.00]ELRC ONE\n[00:02.00]ELRC TWO', rawLyric: 'RAW SHOULD NOT WIN' },
+    200,
+    { line: 'ELRC ONE' },
+  );
+  await runLyricCase(
+    browser,
+    base,
+    'raw fallback',
+    { ok: true, parsed: [], rawLyric: '[00:00.00]RAW ONE\n[00:02.00]RAW TWO' },
+    200,
+    { line: 'RAW ONE' },
+  );
+  await runLyricCase(
+    browser,
+    base,
+    'pure music',
+    { ok: true, parsed: [], isPureMusic: true },
+    200,
+    { status: '纯音乐，请欣赏' },
+  );
+  await runLyricCase(
+    browser,
+    base,
+    'no lyrics',
+    { ok: true, parsed: [], isPureMusic: false },
+    200,
+    { status: '暂无歌词' },
+  );
+  await runLyricCase(
+    browser,
+    base,
+    'request failure',
+    { ok: false, error: 'lyric failed' },
+    500,
+    { status: '歌词加载失败', retry: true },
+  );
+  await runLyricCase(
+    browser,
+    base,
+    'rate limited',
+    { ok: false, error: 'Too many lyric requests' },
+    429,
+    { status: '歌词加载失败', retry: true },
+  );
+}
+
+async function testLyricAbortOnTrackChange(browser, base) {
+  const first = localTrack('local-way-back-home', 'Lyric Track A');
+  const second = localTrack('local-kanojo', 'Lyric Track B', '/media/audio/彼女は旅に出る.mp3');
+  let resolveStarted;
+  const firstStarted = new Promise((resolve) => {
+    resolveStarted = resolve;
+  });
+  const failedRequests = [];
+
+  const session = await withPage(browser, base, {
+    viewport: { width: 1440, height: 900 },
+    path: '/',
+    setup: async (page) => {
+      await mockPlaylist(page, [first, second]);
+      page.on('requestfailed', (request) => {
+        if (request.url().includes('/api/music/lyric')) failedRequests.push(request.url());
+      });
+      await page.route('**/api/music/lyric?**', async (route) => {
+        const url = new URL(route.request().url());
+        if (url.searchParams.get('id') === first.id) {
+          resolveStarted?.();
+          await sleep(1100);
+          try {
+            await route.fulfill({
+              status: 200,
+              contentType: 'application/json',
+              body: JSON.stringify({ ok: true, parsed: [{ timeSec: 0, text: 'OLD LYRIC' }] }),
+            });
+          } catch {}
+        } else {
+          await route.fulfill({
+            status: 200,
+            contentType: 'application/json',
+            body: JSON.stringify({ ok: true, parsed: [{ timeSec: 0, text: 'NEW LYRIC' }] }),
+          });
+        }
+      });
+    },
+  });
+  const { page } = session;
+  try {
+    await openPanel(page);
+    await page.getByTestId('mp-tab-lyrics').click();
+    await firstStarted;
+    await page.getByTestId('mp-tab-player').click();
+    await page.waitForTimeout(100);
+    await page.getByTestId('mp-next').click();
+    await page.waitForTimeout(1400);
+    await page.getByTestId('mp-tab-lyrics').click();
+    await page.waitForTimeout(300);
+
+    const title = await currentTrackTitle(page);
+    const texts = await page.locator('.mp-lyric-line__text').allTextContents();
+    assert(title.includes('Lyric Track B'), `Expected second track, got ${title}`);
+    assert(texts.some((text) => text.includes('NEW LYRIC')), 'New track lyric should be displayed');
+    assert(!texts.some((text) => text.includes('OLD LYRIC')), 'Old aborted lyric must not overwrite the new track');
+    assert(failedRequests.length > 0, 'The previous lyric request should be aborted');
+    pass('track change aborts the previous lyric request');
+  } finally {
+    await session.close();
+  }
+}
+
+async function testDiscoverPaginationAndStates(browser, base) {
+  const calls = [];
+  let rateMode = false;
+  const track = (id) => localTrack(id, `Discover ${id}`);
+
+  const session = await withPage(browser, base, {
+    viewport: { width: 1440, height: 900 },
+    path: '/__music-demo',
+    setup: async (page) => {
+      await page.route('**/api/music/search?**', async (route) => {
+        const url = new URL(route.request().url());
+        const q = url.searchParams.get('q') || '';
+        const pageNumber = Number(url.searchParams.get('page') || '1');
+        calls.push({ q, page: pageNumber });
+
+        if (rateMode && pageNumber === 3) {
+          await route.fulfill({
+            status: 429,
+            contentType: 'application/json',
+            body: JSON.stringify({ ok: false, error: 'Too many', resetAt: Math.floor(Date.now() / 1000) + 2 }),
+          });
+          return;
+        }
+
+        if (q === 'custom') {
+          await route.fulfill({
+            status: 200,
+            contentType: 'application/json',
+            body: JSON.stringify({ ok: true, tracks: [track('custom-1'), track('custom-2')] }),
+          });
+          return;
+        }
+        if (q === 'empty') {
+          await route.fulfill({
+            status: 200,
+            contentType: 'application/json',
+            body: JSON.stringify({ ok: true, tracks: [] }),
+          });
+          return;
+        }
+        if (q === 'error') {
+          await route.fulfill({
+            status: 500,
+            contentType: 'application/json',
+            body: JSON.stringify({ ok: false, error: 'search failed' }),
+          });
+          return;
+        }
+        if (q === '流行') {
+          await route.fulfill({
+            status: 200,
+            contentType: 'application/json',
+            body: JSON.stringify({ ok: true, tracks: [track('pop-1')] }),
+          });
+          return;
+        }
+
+        if (pageNumber === 1) {
+          await route.fulfill({
+            status: 200,
+            contentType: 'application/json',
+            body: JSON.stringify({ ok: true, tracks: Array.from({ length: 12 }, (_, index) => track(`a${index}`)) }),
+          });
+          return;
+        }
+        if (pageNumber === 2) {
+          await route.fulfill({
+            status: 200,
+            contentType: 'application/json',
+            body: JSON.stringify({
+              ok: true,
+              tracks: [track('a0'), ...Array.from({ length: 11 }, (_, index) => track(`b${index}`))],
+            }),
+          });
+          return;
+        }
+        if (pageNumber === 3) {
+          await route.fulfill({
+            status: 200,
+            contentType: 'application/json',
+            body: JSON.stringify({ ok: true, tracks: [track('a1'), track('c3')] }),
+          });
+          return;
+        }
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({ ok: true, tracks: [] }),
+        });
+      });
+    },
+  });
+  const { page } = session;
+  try {
+    await page.getByTestId('mp-tab-discover').click();
+    await page.waitForFunction(
+      () => document.querySelectorAll('[data-testid="mp-discover-item"]').length === 12,
+      null,
+      { timeout: 5000 },
+    );
+    assert(calls[0]?.q === '热歌' && calls[0]?.page === 1, 'Initial discover should use hot songs page 1');
+    assert((await page.getByTestId('mp-load-more').innerText()).includes('加载更多'), 'Load more should be available');
+
+    await page.getByTestId('mp-load-more').click();
+    await page.waitForFunction(
+      () => document.querySelectorAll('[data-testid="mp-discover-item"]').length === 23,
+      null,
+      { timeout: 5000 },
+    );
+    const pageTwo = await page.evaluate(() => {
+      const ids = [...document.querySelectorAll('[data-testid="mp-discover-item"]')].map((item) => item.getAttribute('data-track-id'));
+      return { count: ids.length, unique: new Set(ids).size };
+    });
+    assert(pageTwo.count === pageTwo.unique, 'loadMore must dedupe by track id');
+
+    rateMode = true;
+    await page.getByTestId('mp-load-more').click();
+    await page.waitForFunction(
+      () => document.querySelector('[data-testid="mp-discover-error"]')?.textContent?.includes('请求过于频繁'),
+      null,
+      { timeout: 5000 },
+    );
+    assert((await page.getByTestId('mp-load-more').isDisabled()) === true, 'Load more must be disabled during cooldown');
+    assert((await page.getByTestId('mp-load-more').innerText()).includes('冷却中'), 'Cooldown label should be visible');
+    assert((await page.getByTestId('mp-search-submit').isDisabled()) === true, 'Search submit must be disabled during cooldown');
+    assert((await page.getByTestId('mp-discover-seed-热歌').isDisabled()) === true, 'Seed buttons must be disabled during cooldown');
+
+    rateMode = false;
+    await page.waitForTimeout(2600);
+    assert((await page.getByTestId('mp-load-more').isDisabled()) === false, 'Load more should re-enable after cooldown');
+
+    await page.getByTestId('mp-load-more').click();
+    await page.waitForFunction(
+      () => document.querySelectorAll('[data-testid="mp-discover-item"]').length === 24,
+      null,
+      { timeout: 5000 },
+    );
+    assert((await page.getByTestId('mp-load-more').isDisabled()) === true, 'No-more state should disable the button');
+    assert((await page.getByTestId('mp-load-more').innerText()).includes('没有更多了'), 'No-more label should be visible');
+
+    await page.getByTestId('mp-search-input').fill('custom');
+    await page.getByTestId('mp-search-submit').click();
+    await page.waitForFunction(
+      () => document.querySelectorAll('[data-testid="mp-discover-item"]').length === 2,
+      null,
+      { timeout: 5000 },
+    );
+    assert(calls.at(-1)?.q === 'custom' && calls.at(-1)?.page === 1, 'New keyword should reset pagination to page 1');
+
+    await page.getByTestId('mp-discover-seed-流行').click();
+    await page.waitForFunction(
+      () => document.querySelectorAll('[data-testid="mp-discover-item"]').length === 1,
+      null,
+      { timeout: 5000 },
+    );
+    assert(calls.at(-1)?.q === '流行' && calls.at(-1)?.page === 1, 'Seed switch should reset to page 1');
+
+    await page.getByTestId('mp-search-input').fill('empty');
+    await page.getByTestId('mp-search-submit').click();
+    await page.waitForTimeout(600);
+    assert((await page.getByTestId('mp-discover-item').count()) === 0, 'Empty search should clear results');
+    assert((await page.locator('.mp-discover-results .mp-empty').innerText()).includes('没有找到相关曲目'), 'Empty result state must be visible');
+
+    await page.getByTestId('mp-search-input').fill('error');
+    await page.getByTestId('mp-search-submit').click();
+    await page.waitForFunction(
+      () => document.querySelector('[data-testid="mp-discover-error"]')?.textContent?.includes('搜索请求失败'),
+      null,
+      { timeout: 5000 },
+    );
+    assert((await page.locator('[data-testid="mp-discover-error"] .mp-text-btn').count()) === 1, 'Search failure should offer retry');
+
+    await page.getByTestId('mp-search-input').fill('custom');
+    await page.getByTestId('mp-search-submit').click();
+    await page.waitForFunction(
+      () => document.querySelectorAll('[data-testid="mp-discover-item"]').length === 2,
+      null,
+      { timeout: 5000 },
+    );
+    const queueBefore = await page.getByTestId('mp-tab-queue').innerText();
+    await page.getByTestId('mp-discover-item').first().locator('.mp-track-row__main').click();
+    await waitForPlaying(page);
+    const queueAfter = await page.getByTestId('mp-tab-queue').innerText();
+    assert(queueBefore !== queueAfter, 'Playing a discover result should add it to the queue');
+    assert((await currentTrackTitle(page)).includes('Discover custom-1'), 'Playing a discover result should switch the current track');
+    await page.getByTestId('mp-discover-item').first().locator('.mp-track-row__main').click();
+    await page.waitForTimeout(400);
+    assert((await page.getByTestId('mp-tab-queue').innerText()) === queueAfter, 'Duplicate discover result must not enqueue twice');
+    pass('discover loadMore, dedupe, reset, 429 cooldown, empty/error and queue add');
+  } finally {
+    await session.close();
+  }
+}
+
+async function testPlaybackPositionRestore(browser, base) {
+  const session = await withPage(browser, base, {
+    viewport: { width: 1440, height: 900 },
+    path: '/__music-demo',
+  });
+  const { page } = session;
+  try {
+    await page.getByTestId('mp-play').click();
+    await waitForPlaying(page);
+    await page.waitForTimeout(4300);
+    const before = await audioState(page);
+    assert(before.currentTime > 2, 'Playback should advance before persistence');
+
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await page.waitForSelector('[data-testid="mp-panel"]', { state: 'visible' });
+    await page.waitForTimeout(1200);
+    const after = await audioState(page);
+    assert(after.paused === true, 'Restored playback must stay paused');
+    assert(after.currentTime > 2, 'Playback position should be restored');
+    assert(Math.abs(after.currentTime - before.currentTime) < 3, 'Restored position should be close to the persisted position');
+    pass('playback position persists across refresh and restores paused');
+  } finally {
+    await session.close();
+  }
+}
+
 async function testRealHome(browser, base) {
   const mockTracks = [
     {
@@ -762,6 +1277,11 @@ async function main() {
     await testAutoplayBlocked(browser, base);
     await testEmptyQueue(browser, base);
     await testPlaylistFallback(browser, base);
+    await testLyricsSyncAndScroll(browser, base);
+    await testLyricFallbackStates(browser, base);
+    await testLyricAbortOnTrackChange(browser, base);
+    await testDiscoverPaginationAndStates(browser, base);
+    await testPlaybackPositionRestore(browser, base);
     await testRealHome(browser, base);
     await testDockSafeAreaAndMobile(browser, base);
     console.log('ALL PASS');

@@ -17,9 +17,22 @@ export type LyricPayload = {
   rawLyric?: string;
   elrc?: string;
   parsed?: unknown;
+  isPureMusic?: boolean;
 };
 
 type JsonValue = Record<string, unknown>;
+
+export class MusicApiError extends Error {
+  status: number;
+  resetAt?: number;
+
+  constructor(message: string, status: number, resetAt?: number) {
+    super(message);
+    this.name = 'MusicApiError';
+    this.status = status;
+    this.resetAt = resetAt;
+  }
+}
 
 async function fetchJson<T>(url: string, init?: RequestInit): Promise<T> {
   const response = await fetch(url, {
@@ -32,7 +45,12 @@ async function fetchJson<T>(url: string, init?: RequestInit): Promise<T> {
 
   const payload = (await response.json()) as JsonValue;
   if (!response.ok) {
-    throw new Error(typeof payload.error === 'string' ? payload.error : `request failed: ${response.status}`);
+    const resetAt = typeof payload.resetAt === 'number' ? payload.resetAt : undefined;
+    throw new MusicApiError(
+      typeof payload.error === 'string' ? payload.error : `request failed: ${response.status}`,
+      response.status,
+      resetAt,
+    );
   }
   return payload as T;
 }
@@ -50,7 +68,7 @@ export function createMusicApi(apiBase: string) {
       return Array.isArray(payload.tracks) ? payload.tracks : [];
     },
 
-    async loadMore(query: string, page: number, count = 12): Promise<MusicTrack[]> {
+    async loadMore(query: string, page: number, count = 12, signal?: AbortSignal): Promise<MusicTrack[]> {
       const seed = query.trim() || '热歌';
       const params = new URLSearchParams({
         q: seed,
@@ -58,11 +76,11 @@ export function createMusicApi(apiBase: string) {
         count: String(count),
         page: String(Math.max(1, page)),
       });
-      const payload = await fetchJson<SearchPayload>(`${base}/music/search?${params.toString()}`);
+      const payload = await fetchJson<SearchPayload>(`${base}/music/search?${params.toString()}`, { signal });
       return Array.isArray(payload.tracks) ? payload.tracks : [];
     },
 
-    async lyric(track: MusicTrack, duration?: number): Promise<LyricPayload> {
+    async lyric(track: MusicTrack, duration?: number, signal?: AbortSignal): Promise<LyricPayload> {
       const params = new URLSearchParams({
         id: track.lyricId || track.id,
         source: track.source || 'netease',
@@ -71,7 +89,7 @@ export function createMusicApi(apiBase: string) {
         format: 'json',
       });
       if (duration && Number.isFinite(duration)) params.set('duration', String(duration));
-      return fetchJson<LyricPayload>(`${base}/music/lyric?${params.toString()}`);
+      return fetchJson<LyricPayload>(`${base}/music/lyric?${params.toString()}`, { signal });
     },
 
     streamUrl(track: MusicTrack): string {

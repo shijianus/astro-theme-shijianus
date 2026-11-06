@@ -10,7 +10,12 @@ type DiscoverViewProps = {
   loading: boolean;
   error: string | null;
   hasMore: boolean;
+  cooldownRemaining: number;
+  seeds: readonly string[];
+  activeSeed: string;
   onSearch: (query: string) => void;
+  onSelectSeed: (seed: string) => void;
+  onRetry: () => void;
   onLoadMore: () => void;
   onPlay: (track: MusicTrack) => void;
   onAdd: (track: MusicTrack) => void;
@@ -23,12 +28,23 @@ export function DiscoverView({
   loading,
   error,
   hasMore,
+  cooldownRemaining,
+  seeds,
+  activeSeed,
   onSearch,
+  onSelectSeed,
+  onRetry,
   onLoadMore,
   onPlay,
   onAdd,
 }: DiscoverViewProps) {
   const { t } = usePlayerLocale();
+  const coolingDown = cooldownRemaining > 0;
+  const loadMoreLabel = coolingDown
+    ? `${t('冷却中')} · ${cooldownRemaining}s`
+    : hasMore
+      ? t('加载更多')
+      : t('没有更多了');
 
   return (
     <div className="mp-discover-view" data-testid="mp-discover-view">
@@ -49,27 +65,54 @@ export function DiscoverView({
           aria-label={t('检索音乐、歌手...')}
           data-testid="mp-search-input"
         />
-        <button type="submit" disabled={loading} data-testid="mp-search-submit">
+        <button type="submit" disabled={loading || coolingDown} data-testid="mp-search-submit">
           {loading ? <span className="mp-spinner" aria-hidden="true" /> : t('检索')}
         </button>
       </form>
 
+      <div className="mp-discover-seeds" aria-label={t('发现与搜索音乐')}>
+        {seeds.map((seed) => (
+          <button
+            key={seed}
+            type="button"
+            className={`mp-seed ${seed === activeSeed && !query.trim() ? 'is-active' : ''}`}
+            onClick={() => onSelectSeed(seed)}
+            disabled={coolingDown}
+            data-testid={`mp-discover-seed-${seed}`}
+          >
+            {t(seed)}
+          </button>
+        ))}
+      </div>
+
+      {error && (
+        <div className="mp-discover-status" role="status" aria-live="polite" data-testid="mp-discover-error">
+          <span>{t(error)}</span>
+          {coolingDown && (
+            <span className="mp-discover-status__meta">
+              {t('请稍后重试')} · {cooldownRemaining}s
+            </span>
+          )}
+          <button type="button" className="mp-text-btn" onClick={onRetry} disabled={loading || coolingDown}>
+            {t('重试')}
+          </button>
+        </div>
+      )}
+
       <div className="mp-discover-results">
-        {error ? (
+        {loading && results.length === 0 ? (
           <div className="mp-empty">
-            <p>{error}</p>
-            <button type="button" className="mp-text-btn" onClick={() => onSearch(query)}>
-              {t('重试')}
-            </button>
+            <span className="mp-spinner" aria-hidden="true" />
+            <p>{t('正在检索...')}</p>
           </div>
-        ) : results.length === 0 ? (
+        ) : results.length === 0 && !error ? (
           <div className="mp-empty">
-            <p>{loading ? t('正在检索...') : t('没有找到相关曲目')}</p>
+            <p>{t('没有找到相关曲目')}</p>
           </div>
-        ) : (
+        ) : results.length > 0 ? (
           <div className="mp-track-list" data-testid="mp-discover-list">
             {results.map((track, index) => (
-              <div key={`${track.id}-${index}`} className="mp-track-row" data-testid="mp-discover-item">
+              <div key={`${track.id}-${index}`} className="mp-track-row" data-testid="mp-discover-item" data-track-id={track.id}>
                 <button type="button" className="mp-track-row__main" onClick={() => onPlay(track)}>
                   <span className="mp-track-row__index">{index + 1}</span>
                   <span className="mp-track-row__info">
@@ -104,19 +147,19 @@ export function DiscoverView({
               </div>
             ))}
           </div>
-        )}
+        ) : null}
       </div>
 
-      {!error && results.length > 0 && (
+      {(results.length > 0 || coolingDown) && (
         <div className="mp-discover-foot">
           <button
             type="button"
             className="mp-load-more"
             onClick={onLoadMore}
-            disabled={!hasMore || loading}
+            disabled={loading || coolingDown || !hasMore}
             data-testid="mp-load-more"
           >
-            {hasMore ? t('加载更多') : t('没有更多了')}
+            {loading ? t('正在检索...') : loadMoreLabel}
           </button>
         </div>
       )}
