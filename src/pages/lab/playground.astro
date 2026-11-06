@@ -1,0 +1,111 @@
+---
+import { getCollection } from 'astro:content';
+import BlogLayout from '../../layouts/BlogLayout.astro';
+import { LabPlayground } from '../../components/lab/LabPlayground';
+import { getPublicPosts } from '../../lib/content';
+import { createSidebarData } from '../../lib/theme';
+import '../../styles/lab-platform.css';
+
+const posts = getPublicPosts(await getCollection('posts'));
+const sidebarData = createSidebarData(posts);
+
+const livecodesAppUrl =
+  import.meta.env.PUBLIC_LAB_LIVECODES_APP_URL ||
+  process.env.PUBLIC_LAB_LIVECODES_APP_URL ||
+  '';
+const externalSandboxOrigin =
+  import.meta.env.PUBLIC_LAB_SANDBOX_ORIGIN ||
+  process.env.PUBLIC_LAB_SANDBOX_ORIGIN ||
+  '';
+---
+
+<BlogLayout
+  title="独立代码工坊 | 实验田 Lab"
+  description="在严格隔离的 Opaque-Origin 安全沙盒中在线查看、编辑和运行 HTML、CSS、JavaScript 与 TypeScript 实验代码。"
+  showAside={false}
+  pageType="page"
+  sidebarData={sidebarData}
+>
+  <section class="lab-subpage-shell">
+    <div class="lab-breadcrumb-bar theme-card">
+      <div class="breadcrumb-links">
+        <a href="/lab/" class="crumb-link">← 返回实验田广场 (/lab/)</a>
+        <span class="crumb-sep">/</span>
+        <strong class="crumb-current">独立代码工坊 (Playground)</strong>
+      </div>
+      <div class="breadcrumb-right">
+        <a href="/lab/algorithm-execution-tracer/" class="crumb-action">
+          🧭 算法逐步执行可视化
+        </a>
+      </div>
+    </div>
+
+    <LabPlayground
+      client:load
+      mode="full-workshop"
+      livecodesAppUrl={livecodesAppUrl}
+      externalSandboxOrigin={externalSandboxOrigin}
+    />
+  </section>
+</BlogLayout>
+
+<style>
+  .lab-subpage-shell {
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 24px 20px 80px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .lab-breadcrumb-bar {
+    padding: 12px 18px;
+    border-radius: 8px;
+    background: var(--card-bg, #ffffff);
+    border: 1px solid var(--style-border, #e2e8f0);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    font-size: 13px;
+  }
+
+  :root[data-theme='dark'] .lab-breadcrumb-bar {
+    background: #181c27;
+    border-color: rgba(255, 255, 255, 0.08);
+  }
+
+  .breadcrumb-links {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .crumb-link {
+    color: #425aef;
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .crumb-sep {
+    color: #94a3b8;
+  }
+
+  .crumb-current {
+    color: var(--font-color, #1e293b);
+  }
+
+  .crumb-action {
+    padding: 5px 12px;
+    border-radius: 6px;
+    border: 1px solid #425aef;
+    color: #425aef;
+    font-size: 12px;
+    font-weight: 600;
+    text-decoration: none;
+  }
+</style>

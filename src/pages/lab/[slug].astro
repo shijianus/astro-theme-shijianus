@@ -1,0 +1,387 @@
+---
+import { getCollection } from 'astro:content';
+import BlogLayout from '../../layouts/BlogLayout.astro';
+import { LabPlayground } from '../../components/lab/LabPlayground';
+import { ExecutionVisualizer } from '../../components/lab/ExecutionVisualizer';
+import {
+  OFFICIAL_LAB_EXPERIMENTS,
+  getExperimentBySlug,
+} from '../../data/lab-experiments';
+import { LAB_CATEGORY_META } from '../../lib/lab-schema';
+import { getPublicPosts } from '../../lib/content';
+import { createSidebarData } from '../../lib/theme';
+import '../../styles/lab-platform.css';
+
+export function getStaticPaths() {
+  return OFFICIAL_LAB_EXPERIMENTS.map((exp) => ({
+    params: { slug: exp.slug },
+    props: { experiment: exp },
+  }));
+}
+
+const { slug } = Astro.params;
+const experiment =
+  Astro.props.experiment ||
+  getExperimentBySlug(slug || '') ||
+  OFFICIAL_LAB_EXPERIMENTS[0];
+
+const categoryMeta = LAB_CATEGORY_META[experiment.category];
+const posts = getPublicPosts(await getCollection('posts'));
+const sidebarData = createSidebarData(posts);
+
+const livecodesAppUrl =
+  import.meta.env.PUBLIC_LAB_LIVECODES_APP_URL ||
+  process.env.PUBLIC_LAB_LIVECODES_APP_URL ||
+  '';
+const externalSandboxOrigin =
+  import.meta.env.PUBLIC_LAB_SANDBOX_ORIGIN ||
+  process.env.PUBLIC_LAB_SANDBOX_ORIGIN ||
+  '';
+---
+
+<BlogLayout
+  title={`${experiment.title} | 实验田 Lab`}
+  description={experiment.description}
+  showAside={false}
+  pageType="page"
+  sidebarData={sidebarData}
+>
+  <section class="lab-detail-shell" data-experiment-slug={experiment.slug}>
+    <!-- 1. 顶部面包屑导航 -->
+    <div class="lab-detail-crumb theme-card">
+      <div class="crumb-left">
+        <a href="/lab/" class="crumb-back">← 实验田广场 (/lab/)</a>
+        <span class="crumb-divider">/</span>
+        <span class="crumb-cat">{categoryMeta.shortLabel}</span>
+        <span class="crumb-divider">/</span>
+        <strong>{experiment.title}</strong>
+      </div>
+      <div class="crumb-right">
+        <a
+          href={`/lab/playground/?slug=${experiment.slug}`}
+          class="crumb-btn is-primary"
+          data-testid="detail-open-playground"
+        >
+          ⚡ 在独立代码工坊中打开
+        </a>
+        <a
+          href={`/lab/preview/${experiment.slug}/`}
+          class="crumb-btn"
+          data-testid="detail-open-preview"
+        >
+          ↗ 独立预览入口
+        </a>
+      </div>
+    </div>
+
+    <!-- 2. 实验元信息与技术原理卡片 -->
+    <div class="lab-detail-hero theme-card">
+      <div class="detail-hero__main">
+        <div class="detail-meta-pills">
+          <span class="meta-pill is-cat">{categoryMeta.label}</span>
+          <span class="meta-pill">版本 v{experiment.version}</span>
+          <span class="meta-pill">协议 {experiment.sourceLicense}</span>
+          <span class="meta-pill">作者 {experiment.author.name}</span>
+          <span class="meta-pill">更新于 {experiment.updatedAt}</span>
+        </div>
+
+        <h1 class="detail-title">
+          <span class="detail-icon">{experiment.icon}</span>
+          <span>{experiment.title}</span>
+        </h1>
+        <p class="detail-desc">{experiment.description}</p>
+
+        <div class="detail-tags">
+          {experiment.tags.map((tag) => (
+            <span class="detail-tag">#{tag}</span>
+          ))}
+        </div>
+      </div>
+
+      <div class="detail-principles-grid">
+        <div class="principle-box">
+          <h3>核心算法与工程原理</h3>
+          <p>{experiment.principles.summary}</p>
+          <ul>
+            {experiment.principles.keyPoints.map((pt) => (
+              <li>{pt}</li>
+            ))}
+          </ul>
+        </div>
+
+        {experiment.principles.complexity && (
+          <div class="complexity-box">
+            <h3>复杂度与运行边界</h3>
+            <div class="comp-item">
+              <span>时间复杂度</span>
+              <strong class="ignore-opencc" data-no-translate="true">
+                {experiment.principles.complexity.time}
+              </strong>
+            </div>
+            <div class="comp-item">
+              <span>空间复杂度</span>
+              <strong class="ignore-opencc" data-no-translate="true">
+                {experiment.principles.complexity.space}
+              </strong>
+            </div>
+            <div class="comp-item">
+              <span>运行沙盒策略</span>
+              <strong>Opaque Origin (allow-scripts) + CSP connect-src &apos;none&apos;</strong>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+
+    <!-- 3. 若该实验开启了程序执行追踪，则优先展示交互式逐步追踪面板 -->
+    {experiment.visualizationConfig?.enabled && (
+      <div class="lab-detail-section">
+        <ExecutionVisualizer
+          client:load
+          initialAlgorithmId={experiment.visualizationConfig.presetAlgorithmId}
+        />
+      </div>
+    )}
+
+    <!-- 4. 内嵌隔离代码编辑与实时沙盒运行工作台 -->
+    <div class="lab-detail-section">
+      <LabPlayground
+        client:load
+        initialSlug={experiment.slug}
+        mode="detail-embedded"
+        livecodesAppUrl={livecodesAppUrl}
+        externalSandboxOrigin={externalSandboxOrigin}
+      />
+    </div>
+  </section>
+</BlogLayout>
+
+<style>
+  .lab-detail-shell {
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 24px 20px 80px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .lab-detail-crumb {
+    padding: 12px 18px;
+    border-radius: 8px;
+    background: var(--card-bg, #ffffff);
+    border: 1px solid var(--style-border, #e2e8f0);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    font-size: 13px;
+  }
+
+  :root[data-theme='dark'] .lab-detail-crumb {
+    background: #181c27;
+    border-color: rgba(255, 255, 255, 0.08);
+  }
+
+  .crumb-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .crumb-back {
+    color: #425aef;
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .crumb-divider {
+    color: #94a3b8;
+  }
+
+  .crumb-cat {
+    color: #64748b;
+  }
+
+  .crumb-right {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .crumb-btn {
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: 1px solid var(--line-strong, #cbd5e1);
+    background: #ffffff;
+    color: var(--font-color, #1e293b);
+    font-size: 12px;
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .crumb-btn.is-primary {
+    background: #425aef;
+    border-color: #425aef;
+    color: #ffffff;
+  }
+
+  :root[data-theme='dark'] .crumb-btn {
+    background: #1e2433;
+    border-color: rgba(255, 255, 255, 0.14);
+    color: #f1f5f9;
+  }
+
+  :root[data-theme='dark'] .crumb-btn.is-primary {
+    background: #425aef;
+    color: #ffffff;
+  }
+
+  .lab-detail-hero {
+    padding: 28px;
+    border-radius: 8px;
+    background: var(--card-bg, #ffffff);
+    border: 1px solid var(--style-border, #e2e8f0);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  :root[data-theme='dark'] .lab-detail-hero {
+    background: #181c27;
+    border-color: rgba(255, 255, 255, 0.08);
+  }
+
+  .detail-meta-pills {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+  }
+
+  .meta-pill {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 4px;
+    background: rgba(148, 163, 184, 0.14);
+    color: #64748b;
+  }
+
+  .meta-pill.is-cat {
+    background: rgba(66, 90, 239, 0.12);
+    color: #425aef;
+    font-weight: 700;
+  }
+
+  :root[data-theme='dark'] .meta-pill.is-cat {
+    color: #a5b4fc;
+    background: rgba(99, 102, 241, 0.2);
+  }
+
+  .detail-title {
+    margin: 0 0 10px;
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--font-color, #1e293b);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .detail-desc {
+    margin: 0 0 14px;
+    font-size: 14px;
+    line-height: 1.65;
+    color: #64748b;
+    max-width: 960px;
+  }
+
+  .detail-tags {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .detail-tag {
+    font-size: 11.5px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: rgba(66, 90, 239, 0.06);
+    color: #425aef;
+  }
+
+  .detail-principles-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 16px;
+    padding-top: 18px;
+    border-top: 1px solid var(--style-border, #e2e8f0);
+  }
+
+  :root[data-theme='dark'] .detail-principles-grid {
+    border-top-color: rgba(255, 255, 255, 0.08);
+  }
+
+  .principle-box,
+  .complexity-box {
+    padding: 16px;
+    border-radius: 8px;
+    background: rgba(66, 90, 239, 0.04);
+    border: 1px solid rgba(66, 90, 239, 0.12);
+  }
+
+  .principle-box h3,
+  .complexity-box h3 {
+    margin: 0 0 8px;
+    font-size: 14px;
+    color: var(--font-color, #1e293b);
+  }
+
+  .principle-box p {
+    margin: 0 0 8px;
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--font-color, #334155);
+  }
+
+  .principle-box ul {
+    margin: 0;
+    padding-left: 18px;
+    font-size: 12.5px;
+    line-height: 1.6;
+    color: #64748b;
+  }
+
+  .complexity-box {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .comp-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-size: 12px;
+  }
+
+  .comp-item span {
+    color: #64748b;
+  }
+
+  .comp-item strong {
+    color: #425aef;
+    font-family: var(--font-mono, monospace);
+  }
+
+  @media (max-width: 900px) {
+    .detail-principles-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

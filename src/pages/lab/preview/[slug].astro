@@ -1,0 +1,370 @@
+---
+import { getCollection } from 'astro:content';
+import BlogLayout from '../../../layouts/BlogLayout.astro';
+import {
+  OFFICIAL_LAB_EXPERIMENTS,
+  getExperimentBySlug,
+} from '../../../data/lab-experiments';
+import {
+  buildIsolatedSandboxSrcDoc,
+  createSandboxSessionId,
+  resolveSafeExternalSandboxOrigin,
+} from '../../../lib/lab-sandbox-protocol';
+import { getPublicPosts } from '../../../lib/content';
+import { createSidebarData } from '../../../lib/theme';
+
+export function getStaticPaths() {
+  return OFFICIAL_LAB_EXPERIMENTS.map((exp) => ({
+    params: { slug: exp.slug },
+    props: { experiment: exp },
+  }));
+}
+
+const { slug } = Astro.params;
+const experiment =
+  Astro.props.experiment ||
+  getExperimentBySlug(slug || '') ||
+  OFFICIAL_LAB_EXPERIMENTS[0];
+
+const rawSandboxOrigin =
+  import.meta.env.PUBLIC_LAB_SANDBOX_ORIGIN ||
+  process.env.PUBLIC_LAB_SANDBOX_ORIGIN ||
+  '';
+const sandboxResolution = resolveSafeExternalSandboxOrigin(rawSandboxOrigin);
+const safeExternalOrigin = sandboxResolution.enabled ? sandboxResolution.origin || '' : '';
+
+const initialSessionId = createSandboxSessionId();
+const initialSrcDoc = buildIsolatedSandboxSrcDoc({
+  sessionId: initialSessionId,
+  files: experiment.files,
+  theme: 'dark',
+});
+
+const posts = getPublicPosts(await getCollection('posts'));
+const sidebarData = createSidebarData(posts);
+---
+
+<BlogLayout
+  title={`独立预览: ${experiment.title} | 实验田 Lab`}
+  description={`在独立沙盒视口中预览实验「${experiment.title}」的实时交互效果。`}
+  showAside={false}
+  pageType="page"
+  sidebarData={sidebarData}
+>
+  <section
+    class="lab-standalone-preview"
+    data-preview-slug={experiment.slug}
+    data-session-id={initialSessionId}
+    data-external-sandbox-origin={safeExternalOrigin}
+  >
+    <!-- 顶部导航壳层 (区分「用于导航的预览页面」与「真正执行代码的隔离沙盒 Iframe」) -->
+    <div class="preview-nav-shell theme-card">
+      <div class="preview-nav__left">
+        <a href="/lab/" class="preview-back-btn">← 实验广场</a>
+        <a href={`/lab/${experiment.slug}/`} class="preview-back-btn">📄 实验详情</a>
+        <div class="preview-title-wrap">
+          <span class="preview-icon">{experiment.icon}</span>
+          <strong>{experiment.title}</strong>
+          <span
+            id="preview-isolation-badge"
+            class="preview-sec-tag"
+            title="内部 iframe 采用无 allow-same-origin 的 Opaque Sandbox 隔离运行"
+          >
+            {safeExternalOrigin ? '🔒 Cross-Site + Opaque 双层隔离中' : '🔒 Opaque Sandbox 隔离运行中'}
+          </span>
+        </div>
+      </div>
+
+      <div class="preview-nav__right">
+        <button id="btn-preview-reload" type="button" class="preview-action-btn">
+          ↺ 重置并重新运行
+        </button>
+        <a
+          href={`/lab/playground/?slug=${experiment.slug}`}
+          class="preview-action-btn is-primary"
+        >
+          ⚡ 在代码工坊中编辑源码
+        </a>
+      </div>
+    </div>
+
+    <!-- 真正执行不可信代码的隔离沙盒容器 -->
+    <div id="preview-stage-mount" class="preview-stage-card theme-card">
+      <iframe
+        id="standalone-sandbox-iframe"
+        title={`Standalone Sandbox Preview - ${experiment.title}`}
+        sandbox="allow-scripts"
+        referrerpolicy="no-referrer"
+        srcdoc={initialSrcDoc}
+        class="standalone-sandbox-frame"
+        data-testid="standalone-preview-iframe"
+        data-isolation-mode="opaque-srcdoc"
+      ></iframe>
+    </div>
+  </section>
+</BlogLayout>
+
+<script is:inline>
+  (() => {
+    const PROTOCOL = 'LAB_SANDBOX_PROTOCOL_V1';
+    const rootEl = document.querySelector('.lab-standalone-preview');
+    const mountEl = document.getElementById('preview-stage-mount');
+    const reloadBtn = document.getElementById('btn-preview-reload');
+    const badgeEl = document.getElementById('preview-isolation-badge');
+    let iframe = document.getElementById('standalone-sandbox-iframe');
+    if (!rootEl || !mountEl || !iframe) return;
+
+    const baseSrcDoc = iframe.getAttribute('srcdoc') || '';
+    const sessionId = rootEl.getAttribute('data-session-id') || '';
+    const extOriginRaw = rootEl.getAttribute('data-external-sandbox-origin') || '';
+
+    const readTheme = () =>
+      document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+
+    const applyThemeToSrcDoc = (doc, theme) =>
+      doc.replace(/<html([^>]*)data-theme="(?:dark|light)"/, `<html$1data-theme="${theme}"`);
+
+    let useExternalBridge = false;
+    if (extOriginRaw) {
+      try {
+        const parsed = new URL(extOriginRaw);
+        if (
+          parsed.origin !== window.location.origin &&
+          (parsed.protocol === 'https:' ||
+            (parsed.protocol === 'http:' &&
+              window.location.protocol === 'http:' &&
+              (parsed.hostname === 'localhost' || parsed.hostname === '127.0.0.1')))
+        ) {
+          useExternalBridge = true;
+        }
+      } catch (_err) {
+        useExternalBridge = false;
+      }
+    }
+
+    let bridgeAck = false;
+    let bridgeSent = false;
+    let handshakeTimer = null;
+
+    const mountLocalSrcDoc = () => {
+      useExternalBridge = false;
+      if (badgeEl) badgeEl.textContent = '🔒 Opaque Sandbox 隔离运行中';
+      const nextDoc = applyThemeToSrcDoc(baseSrcDoc, readTheme());
+      const fresh = document.createElement('iframe');
+      fresh.id = 'standalone-sandbox-iframe';
+      fresh.title = iframe.title;
+      fresh.setAttribute('sandbox', 'allow-scripts');
+      fresh.setAttribute('referrerpolicy', 'no-referrer');
+      fresh.setAttribute('data-testid', 'standalone-preview-iframe');
+      fresh.setAttribute('data-isolation-mode', 'opaque-srcdoc');
+      fresh.className = 'standalone-sandbox-frame';
+      fresh.srcdoc = nextDoc;
+      mountEl.innerHTML = '';
+      mountEl.appendChild(fresh);
+      iframe = fresh;
+    };
+
+    const mountCrossOriginBridge = () => {
+      bridgeAck = false;
+      bridgeSent = false;
+      if (handshakeTimer) clearTimeout(handshakeTimer);
+
+      const fresh = document.createElement('iframe');
+      fresh.id = 'standalone-sandbox-iframe';
+      fresh.title = iframe.title;
+      fresh.setAttribute('sandbox', 'allow-scripts allow-same-origin');
+      fresh.setAttribute('referrerpolicy', 'no-referrer');
+      fresh.setAttribute('data-testid', 'standalone-preview-iframe');
+      fresh.setAttribute('data-isolation-mode', 'cross-origin');
+      fresh.className = 'standalone-sandbox-frame';
+      fresh.src = extOriginRaw + '/';
+      fresh.addEventListener('load', () => {
+        try {
+          fresh.contentWindow?.postMessage(
+            { protocol: PROTOCOL, sessionId, type: 'PING', payload: {} },
+            extOriginRaw
+          );
+        } catch (_e) {}
+      });
+      mountEl.innerHTML = '';
+      mountEl.appendChild(fresh);
+      iframe = fresh;
+
+      handshakeTimer = setTimeout(() => {
+        if (!bridgeAck) {
+          mountLocalSrcDoc();
+        }
+      }, 3000);
+    };
+
+    window.addEventListener('message', (evt) => {
+      if (!useExternalBridge || !iframe || evt.source !== iframe.contentWindow) return;
+      if (evt.origin !== extOriginRaw || !evt.data || evt.data.protocol !== PROTOCOL) return;
+
+      if (evt.data.type === 'SANDBOX_BRIDGE_READY' && !bridgeSent) {
+        bridgeSent = true;
+        const themedDoc = applyThemeToSrcDoc(baseSrcDoc, readTheme());
+        iframe.contentWindow?.postMessage(
+          {
+            protocol: PROTOCOL,
+            sessionId,
+            type: 'EXECUTE_CODE',
+            payload: { srcDoc: themedDoc },
+          },
+          extOriginRaw
+        );
+      } else if (evt.data.type === 'SANDBOX_READY' && evt.data.sessionId === sessionId) {
+        bridgeAck = true;
+        if (handshakeTimer) clearTimeout(handshakeTimer);
+      }
+    });
+
+    if (useExternalBridge) {
+      mountCrossOriginBridge();
+    } else {
+      const currentTheme = readTheme();
+      if (currentTheme !== 'dark') {
+        iframe.setAttribute('srcdoc', applyThemeToSrcDoc(baseSrcDoc, currentTheme));
+      }
+    }
+
+    const themeObs = new MutationObserver(() => {
+      const nextTheme = readTheme();
+      if (iframe && iframe.contentWindow) {
+        const target = useExternalBridge ? extOriginRaw : '*';
+        try {
+          iframe.contentWindow.postMessage(
+            {
+              protocol: PROTOCOL,
+              sessionId,
+              type: 'SET_THEME',
+              payload: { theme: nextTheme },
+            },
+            target
+          );
+        } catch (_e) {}
+      }
+    });
+    themeObs.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['data-theme'],
+    });
+
+    if (reloadBtn) {
+      reloadBtn.addEventListener('click', () => {
+        if (useExternalBridge) {
+          mountCrossOriginBridge();
+        } else {
+          mountLocalSrcDoc();
+        }
+      });
+    }
+  })();
+</script>
+
+<style>
+  .lab-standalone-preview {
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 20px 20px 60px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .preview-nav-shell {
+    padding: 12px 18px;
+    border-radius: 8px;
+    background: var(--card-bg, #ffffff);
+    border: 1px solid var(--style-border, #e2e8f0);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  :root[data-theme='dark'] .preview-nav-shell {
+    background: #181c27;
+    border-color: rgba(255, 255, 255, 0.08);
+  }
+
+  .preview-nav__left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .preview-back-btn,
+  .preview-action-btn {
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: 1px solid var(--line-strong, #cbd5e1);
+    background: #ffffff;
+    color: var(--font-color, #1e293b);
+    font-size: 12px;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+  }
+
+  .preview-action-btn.is-primary {
+    background: #425aef;
+    border-color: #425aef;
+    color: #ffffff;
+  }
+
+  :root[data-theme='dark'] .preview-back-btn,
+  :root[data-theme='dark'] .preview-action-btn {
+    background: #1e2433;
+    border-color: rgba(255, 255, 255, 0.14);
+    color: #f1f5f9;
+  }
+
+  :root[data-theme='dark'] .preview-action-btn.is-primary {
+    background: #425aef;
+    color: #ffffff;
+  }
+
+  .preview-title-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    flex-wrap: wrap;
+  }
+
+  .preview-sec-tag {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: rgba(16, 185, 129, 0.12);
+    color: #059669;
+  }
+
+  .preview-nav__right {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .preview-stage-card {
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid var(--style-border, #e2e8f0);
+    background: var(--card-bg, #0f1420);
+    height: calc(100vh - 210px);
+    min-height: 460px;
+  }
+
+  .standalone-sandbox-frame {
+    width: 100%;
+    height: 100%;
+    border: none;
+    display: block;
+  }
+</style>
