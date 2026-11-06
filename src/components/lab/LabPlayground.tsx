@@ -8,6 +8,7 @@ import {
   validateLabPortableBundle,
 } from '../../lib/lab-schema';
 import {
+  type LabCodeSourceKind,
   type SandboxConsoleEntry,
   type SandboxIsolationMode,
   type SandboxRuntimeError,
@@ -17,6 +18,8 @@ import {
   compileExperimentFiles,
   buildIsolatedSandboxSrcDoc,
   resolveSafeExternalSandboxOrigin,
+  resolveExperimentSourceKind,
+  evaluateSandboxDegradationPolicy,
 } from '../../lib/lab-sandbox-protocol';
 import { OFFICIAL_LAB_EXPERIMENTS, getExperimentBySlug } from '../../data/lab-experiments';
 import { ExecutionVisualizer } from './ExecutionVisualizer';
@@ -106,8 +109,14 @@ export function LabPlayground({
   );
   const [activeFileIdx, setActiveFileIdx] = useState<number>(0);
 
-  // 校验独立跨站沙盒 Origin，并支持不可达时自动降级回本地 Opaque srcdoc
+  // 校验独立跨站沙盒 Origin，并实施分级降级策略：
+  // - official 官方实验：允许在明确提示后回退至本地 opaque srcdoc
+  // - imported / community / bundle 代码：独立跨站沙盒不可用时必须失败关闭 (Fail-Closed)，严禁自动运行或回退至本地 srcdoc
+  const [codeSourceKind, setCodeSourceKind] = useState<LabCodeSourceKind>(() =>
+    resolveExperimentSourceKind(defaultExp.author)
+  );
   const [bridgeFallbackForced, setBridgeFallbackForced] = useState<boolean>(false);
+  const [failClosedReason, setFailClosedReason] = useState<string>('');
   const [hostOriginState, setHostOriginState] = useState<string | null>(null);
 
   useEffect(() => {
@@ -121,17 +130,25 @@ export function LabPlayground({
     [externalSandboxOrigin, hostOriginState]
   );
 
+  const isUntrustedCode = codeSourceKind !== 'official';
+
   const activeExternalOrigin =
-    externalResolution.enabled && externalResolution.origin && !bridgeFallbackForced
+    externalResolution.enabled &&
+    externalResolution.origin &&
+    (isUntrustedCode || !bridgeFallbackForced)
       ? externalResolution.origin
       : null;
+
+  const degradationPolicy = useMemo(
+    () => evaluateSandboxDegradationPolicy(codeSourceKind, Boolean(activeExternalOrigin)),
+    [codeSourceKind, activeExternalOrigin]
+  );
 
   const isolationMode: SandboxIsolationMode = activeExternalOrigin
     ? 'cross-origin'
     : 'opaque-srcdoc';
 
   // 安全状态与沙盒会话控制
-  const [isUntrustedCode, setIsUntrustedCode] = useState<boolean>(false);
   const [sessionId, setSessionId] = useState<string>(() => createSandboxSessionId());
   const [sandboxKey, setSandboxKey] = useState<number>(1);
   const [sandboxSrcDoc, setSandboxSrcDoc] = useState<string>('');
@@ -167,6 +184,12 @@ export function LabPlayground({
 
   const activeExternalOriginRef = useRef<string | null>(activeExternalOrigin);
   activeExternalOriginRef.current = activeExternalOrigin;
+
+  const codeSourceKindRef = useRef<LabCodeSourceKind>(codeSourceKind);
+  codeSourceKindRef.current = codeSourceKind;
+
+  const bridgeFallbackForcedRef = useRef<boolean>(bridgeFallbackForced);
+  bridgeFallbackForcedRef.current = bridgeFallbackForced;
 
   const pendingBridgeSrcDocRef = useRef<string>('');
   const bridgeCodeDispatchedRef = useRef<boolean>(false);
@@ -298,7 +321,19 @@ export function LabPlayground({
 
   // 执行代码：重建隔离沙盒上下文并生成新的 Session ID
   const executeInSandbox = useCallback(
-    (targetFiles: LabFile[], themeOverride?: 'light' | 'dark') => {
+    (
+      targetFiles: LabFile[],
+      themeOverride?: 'light' | 'dark',
+      sourceKindOverride?: LabCodeSourceKind
+    ) => {
+      const activeSourceKind = sourceKindOverride ?? codeSourceKindRef.current;
+      const runtimeHostOrigin =
+        typeof window !== 'undefined' ? window.location.origin : hostOriginState;
+      const liveResolution = resolveSafeExternalSandboxOrigin(
+        externalSandboxOrigin,
+        runtimeHostOrigin
+      );
+
       const validation = validateLabFiles(targetFiles);
       if (!validation.ok || !validation.data) {
         setExecStatus('error');
@@ -325,6 +360,28 @@ export function LabPlayground({
       setConsoleEntries([]);
       setLastDurationMs(null);
 
+      // 非官方代码 (imported / community / bundle)：独立跨站沙盒不可用时必须失败关闭 (Fail-Closed)
+      if (activeSourceKind !== 'official') {
+        if (!liveResolution.enabled || !liveResolution.origin) {
+          const reason = liveResolution.rejectedReason
+            ? `独立跨站沙盒配置被拒绝 (${liveResolution.rejectedReason})`
+            : '当前环境未配置独立跨站沙盒域名 (PUBLIC_LAB_SANDBOX_ORIGIN)';
+          const failMsg = `[Sandbox Fail-Closed] 安全阻断：当前代码来源为 "${activeSourceKind}"（外部导入 / 社区 / 分享链接），${reason}。系统严禁非官方代码回退至本地 opaque srcdoc 沙盒，已强制失败关闭。`;
+          pendingBridgeSrcDocRef.current = '';
+          setSandboxSrcDoc('');
+          setSandboxKey((k) => k + 1);
+          setFailClosedReason(failMsg);
+          setRuntimeErrors([{ message: failMsg, timestamp: Date.now() }]);
+          setExecStatus('error');
+          setActiveBottomTab('errors');
+          showToast('安全阻断：独立跨站沙盒未就绪，外部代码已失败关闭');
+          return;
+        }
+        setFailClosedReason('');
+      } else {
+        setFailClosedReason('');
+      }
+
       const resolvedTheme = themeOverride ?? readCurrentThemeMode();
       const doc = buildIsolatedSandboxSrcDoc({
         sessionId: nextSessionId,
@@ -333,11 +390,10 @@ export function LabPlayground({
         maxConsoleEntries: LAB_SECURITY_LIMITS.MAX_CONSOLE_ENTRIES,
       });
 
-      pendingBridgeSrcDocRef.current = doc;
-      setSandboxSrcDoc(doc);
-      setSandboxKey((k) => k + 1);
-
       if (!precheck.ok) {
+        pendingBridgeSrcDocRef.current = '';
+        setSandboxSrcDoc('');
+        setSandboxKey((k) => k + 1);
         setRuntimeErrors(
           precheck.errors.slice(0, LAB_SECURITY_LIMITS.MAX_RUNTIME_ERRORS).map((msg) => ({
             message: msg,
@@ -349,18 +405,69 @@ export function LabPlayground({
         return;
       }
 
+      pendingBridgeSrcDocRef.current = doc;
+      setSandboxSrcDoc(doc);
+      setSandboxKey((k) => k + 1);
       setRuntimeErrors([]);
       setExecStatus('running');
 
-      // 若启用了独立跨站沙盒桥接模式，设置握手超时自动降级保护
+      const startExecutionWatchdog = (expectedSession: string) => {
+        if (watchdogTimerRef.current) {
+          window.clearTimeout(watchdogTimerRef.current);
+        }
+        watchdogTimerRef.current = window.setTimeout(() => {
+          if (sessionIdRef.current !== expectedSession) return;
+          setExecStatus((curr) => {
+            if (curr !== 'running') return curr;
+            const rotatedId = createSandboxSessionId();
+            sessionIdRef.current = rotatedId;
+            pendingBridgeSrcDocRef.current = '';
+            setSessionId(rotatedId);
+            setSandboxSrcDoc('');
+            setSandboxKey((k) => k + 1);
+            setRuntimeErrors((errs) => [
+              ...errs.slice(0, LAB_SECURITY_LIMITS.MAX_RUNTIME_ERRORS - 1),
+              {
+                message: `[Watchdog Timeout] 沙盒初始化同步执行超过 ${LAB_SECURITY_LIMITS.DEFAULT_EXECUTION_TIMEOUT_MS}ms 未完成，已自动销毁并回收隔离沙盒实例。`,
+                timestamp: Date.now(),
+              },
+            ]);
+            setActiveBottomTab('errors');
+            return 'error';
+          });
+        }, LAB_SECURITY_LIMITS.DEFAULT_EXECUTION_TIMEOUT_MS);
+      };
+
       const extOrigin =
-        externalResolution.enabled && externalResolution.origin && !bridgeFallbackForced
-          ? externalResolution.origin
+        liveResolution.enabled &&
+        liveResolution.origin &&
+        (activeSourceKind !== 'official' || !bridgeFallbackForcedRef.current)
+          ? liveResolution.origin
           : null;
 
       if (extOrigin) {
         bridgeHandshakeTimerRef.current = window.setTimeout(() => {
           if (!bridgeReadyAckRef.current && sessionIdRef.current === nextSessionId) {
+            if (activeSourceKind !== 'official') {
+              // 外部 / 社区 / #bundle= 代码在跨站沙盒不可达或握手超时时必须立即失败关闭
+              clearTimers();
+              const rotatedId = createSandboxSessionId();
+              sessionIdRef.current = rotatedId;
+              pendingBridgeSrcDocRef.current = '';
+              setSessionId(rotatedId);
+              setSandboxSrcDoc('');
+              setSandboxKey((k) => k + 1);
+              const failMsg = `[Sandbox Fail-Closed] 独立跨站沙盒 (${extOrigin}) 不可达或握手超时 (${BRIDGE_HANDSHAKE_TIMEOUT_MS}ms)。由于当前代码来源为 "${activeSourceKind}"，安全策略禁止降级至本地 opaque srcdoc，已立即销毁沙盒并失败关闭。`;
+              setFailClosedReason(failMsg);
+              setRuntimeErrors([{ message: failMsg, timestamp: Date.now() }]);
+              setExecStatus('error');
+              setActiveBottomTab('errors');
+              showToast('独立跨站沙盒连接失败，外部代码已按安全策略失败关闭');
+              return;
+            }
+
+            // 官方实验：明确提示用户后回退至本地 opaque srcdoc 强隔离沙盒
+            bridgeFallbackForcedRef.current = true;
             setBridgeFallbackForced(true);
             setConsoleEntries((prev) => [
               ...prev,
@@ -368,40 +475,21 @@ export function LabPlayground({
                 id: `fallback-${Date.now()}`,
                 level: 'warn',
                 args: [
-                  `[Sandbox Fallback] 独立沙盒站点 (${extOrigin}) 握手超时，已自动降级为本地 Opaque Origin 强隔离沙盒执行。`,
+                  `[Sandbox Fallback] 独立跨站沙盒 (${extOrigin}) 握手超时，官方实验已在明确提示后回退至本地 Opaque Origin (srcdoc) 强隔离沙盒执行。`,
                 ],
                 timestamp: Date.now(),
               },
             ]);
+            showToast('提示：跨站沙盒暂不可达，官方实验已回退至本地 Opaque srcdoc 隔离模式');
             setSandboxKey((k) => k + 1);
+            startExecutionWatchdog(nextSessionId);
           }
         }, BRIDGE_HANDSHAKE_TIMEOUT_MS);
       }
 
-      // 启动同步启动超时看门狗：若超时仍未收到 EXECUTION_COMPLETE，立即销毁卡死的沙盒并报告超时
-      watchdogTimerRef.current = window.setTimeout(() => {
-        if (sessionIdRef.current !== nextSessionId) return;
-        setExecStatus((curr) => {
-          if (curr !== 'running') return curr;
-          const rotatedId = createSandboxSessionId();
-          sessionIdRef.current = rotatedId;
-          pendingBridgeSrcDocRef.current = '';
-          setSessionId(rotatedId);
-          setSandboxSrcDoc('');
-          setSandboxKey((k) => k + 1);
-          setRuntimeErrors((errs) => [
-            ...errs.slice(0, LAB_SECURITY_LIMITS.MAX_RUNTIME_ERRORS - 1),
-            {
-              message: `[Watchdog Timeout] 沙盒初始化同步执行超过 ${LAB_SECURITY_LIMITS.DEFAULT_EXECUTION_TIMEOUT_MS}ms 未完成，已自动销毁并回收隔离沙盒实例。`,
-              timestamp: Date.now(),
-            },
-          ]);
-          setActiveBottomTab('errors');
-          return 'error';
-        });
-      }, LAB_SECURITY_LIMITS.DEFAULT_EXECUTION_TIMEOUT_MS);
+      startExecutionWatchdog(nextSessionId);
     },
-    [bridgeFallbackForced, clearTimers, externalResolution.enabled, externalResolution.origin]
+    [clearTimers, externalSandboxOrigin, hostOriginState, showToast]
   );
 
   // 终止并销毁当前沙盒上下文
@@ -460,14 +548,19 @@ export function LabPlayground({
         if (validated.ok && validated.data) {
           const bundle = validated.data;
           clearTimers();
+          const rotatedId = createSandboxSessionId();
+          sessionIdRef.current = rotatedId;
+          pendingBridgeSrcDocRef.current = '';
+          codeSourceKindRef.current = 'bundle';
+          setSessionId(rotatedId);
           setFiles(bundle.files);
           setActiveFileIdx(0);
-          setIsUntrustedCode(true);
-          pendingBridgeSrcDocRef.current = '';
+          setCodeSourceKind('bundle');
+          setFailClosedReason('');
           setSandboxSrcDoc('');
           setExecStatus('idle');
           showToast(
-            '已加载外部分享代码（处于安全手动运行模式，请审阅后点击运行）'
+            '已加载外部分享代码（禁止自动运行，仅允许在独立跨站沙盒就绪时手动运行）'
           );
           return true;
         }
@@ -480,18 +573,25 @@ export function LabPlayground({
       const params = new URLSearchParams(window.location.search);
       const querySlug = params.get('slug');
       const targetExp = (querySlug && getExperimentBySlug(querySlug)) || defaultExp;
+      const expSourceKind = resolveExperimentSourceKind(targetExp.author);
 
       setSelectedSlug(targetExp.slug);
       setCurrentExp(targetExp);
       const cloned = targetExp.files.map((f) => ({ ...f }));
       setFiles(cloned);
       setActiveFileIdx(0);
-      setIsUntrustedCode(false);
+      codeSourceKindRef.current = expSourceKind;
+      setCodeSourceKind(expSourceKind);
+      setFailClosedReason('');
       setShowTracePanel(
         mode === 'full-workshop' ? Boolean(targetExp.visualizationConfig?.enabled) : false
       );
-      if (targetExp.previewConfig.autoRun) {
-        executeInSandbox(cloned);
+      if (expSourceKind === 'official' && targetExp.previewConfig.autoRun) {
+        executeInSandbox(cloned, undefined, 'official');
+      } else {
+        pendingBridgeSrcDocRef.current = '';
+        setSandboxSrcDoc('');
+        setExecStatus('idle');
       }
     };
 
@@ -624,12 +724,15 @@ export function LabPlayground({
   const handleSelectExperiment = (slug: string) => {
     const found = getExperimentBySlug(slug);
     if (!found) return;
+    const expSourceKind = resolveExperimentSourceKind(found.author);
     setSelectedSlug(found.slug);
     setCurrentExp(found);
     const cloned = found.files.map((f) => ({ ...f }));
     setFiles(cloned);
     setActiveFileIdx(0);
-    setIsUntrustedCode(false);
+    codeSourceKindRef.current = expSourceKind;
+    setCodeSourceKind(expSourceKind);
+    setFailClosedReason('');
     setShowTracePanel(Boolean(found.visualizationConfig?.enabled));
 
     if (mode === 'full-workshop' && typeof window !== 'undefined') {
@@ -637,7 +740,14 @@ export function LabPlayground({
       window.history.pushState({ slug: found.slug }, '', nextUrl);
     }
 
-    executeInSandbox(cloned);
+    if (expSourceKind === 'official' && found.previewConfig.autoRun) {
+      executeInSandbox(cloned, undefined, 'official');
+    } else {
+      clearTimers();
+      pendingBridgeSrcDocRef.current = '';
+      setSandboxSrcDoc('');
+      setExecStatus('idle');
+    }
   };
 
   // 修改当前文件内容
@@ -651,12 +761,37 @@ export function LabPlayground({
 
   // 重置为当前实验初始代码
   const handleResetCode = () => {
+    const expSourceKind = resolveExperimentSourceKind(currentExp.author);
     const fresh = currentExp.files.map((f) => ({ ...f }));
     setFiles(fresh);
     setActiveFileIdx(0);
-    setIsUntrustedCode(false);
-    executeInSandbox(fresh);
+    codeSourceKindRef.current = expSourceKind;
+    setCodeSourceKind(expSourceKind);
+    setFailClosedReason('');
+    if (typeof window !== 'undefined' && window.location.hash.startsWith('#bundle=')) {
+      window.history.replaceState(
+        null,
+        '',
+        `${window.location.pathname}${window.location.search}`
+      );
+    }
+    if (expSourceKind === 'official') {
+      executeInSandbox(fresh, undefined, 'official');
+    } else {
+      clearTimers();
+      pendingBridgeSrcDocRef.current = '';
+      setSandboxSrcDoc('');
+      setExecStatus('idle');
+    }
     showToast(tr('已恢复初始实验源码并重新构建沙盒', '已恢復初始實驗原始碼並重新建構沙盒'));
+  };
+
+  // 重试独立跨站沙盒连接
+  const handleRetryCrossOriginSandbox = () => {
+    bridgeFallbackForcedRef.current = false;
+    setBridgeFallbackForced(false);
+    setFailClosedReason('');
+    executeInSandbox(files, undefined, codeSourceKindRef.current);
   };
 
   // 复制当前文件源码
@@ -676,7 +811,7 @@ export function LabPlayground({
     }
   };
 
-  // 保存本地草稿
+  // 保存本地草稿（保留来源等级，防止外部代码通过存取草稿洗白为 official）
   const handleSaveDraft = () => {
     try {
       const bundle = {
@@ -688,6 +823,8 @@ export function LabPlayground({
         language: currentExp.language,
         files,
         exportedAt: new Date().toISOString(),
+        draftOriginKind: codeSourceKind,
+        ...(codeSourceKind !== 'official' ? { sourceKind: codeSourceKind } : {}),
       };
       window.localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(bundle));
       showToast(tr('草稿已安全保存至浏览器本地存储', '草稿已安全儲存至瀏覽器本機儲存'));
@@ -696,7 +833,7 @@ export function LabPlayground({
     }
   };
 
-  // 加载本地草稿
+  // 加载本地草稿（恢复原来源等级且绝不自动执行）
   const handleLoadDraft = () => {
     try {
       const raw = window.localStorage.getItem(DRAFT_STORAGE_KEY);
@@ -704,12 +841,23 @@ export function LabPlayground({
         showToast(tr('当前尚无保存的本地草稿', '目前尚無儲存的本機草稿'));
         return;
       }
-      const parsed = JSON.parse(raw);
+      const parsed = JSON.parse(raw) as Record<string, unknown>;
       const validated = validateLabPortableBundle(parsed);
       if (!validated.ok || !validated.data) {
         showToast(`草稿校验失败: ${validated.errors[0] || '格式错误'}`);
         return;
       }
+      const restoredKind: LabCodeSourceKind =
+        parsed.draftOriginKind === 'official'
+          ? 'official'
+          : (validated.data.sourceKind ?? 'imported');
+      clearTimers();
+      pendingBridgeSrcDocRef.current = '';
+      codeSourceKindRef.current = restoredKind;
+      setCodeSourceKind(restoredKind);
+      setFailClosedReason('');
+      setSandboxSrcDoc('');
+      setExecStatus('idle');
       setFiles(validated.data.files);
       setActiveFileIdx(0);
       showToast(
@@ -734,6 +882,7 @@ export function LabPlayground({
       language: currentExp.language,
       files,
       exportedAt: new Date().toISOString(),
+      ...(codeSourceKind === 'community' ? { sourceKind: 'community' } : {}),
     };
     const blob = new Blob([JSON.stringify(bundle, null, 2)], {
       type: 'application/json;charset=utf-8',
@@ -749,7 +898,7 @@ export function LabPlayground({
     showToast(`已导出实验包 ${currentExp.slug}-lab.json`);
   };
 
-  // 导入实验 JSON（强制标记为不可信代码，禁用自动执行）
+  // 导入实验 JSON（强制标记为 imported / community，禁用自动执行，跨站不可用时失败关闭）
   const handleImportJsonFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -767,14 +916,17 @@ export function LabPlayground({
           showToast(`导入校验拒绝: ${validated.errors.join('；')}`);
           return;
         }
+        const importedKind: LabCodeSourceKind = validated.data.sourceKind || 'imported';
         clearTimers();
         const rotatedId = createSandboxSessionId();
         sessionIdRef.current = rotatedId;
         pendingBridgeSrcDocRef.current = '';
+        codeSourceKindRef.current = importedKind;
         setSessionId(rotatedId);
         setFiles(validated.data.files);
         setActiveFileIdx(0);
-        setIsUntrustedCode(true);
+        setCodeSourceKind(importedKind);
+        setFailClosedReason('');
         setSandboxSrcDoc('');
         setExecStatus('idle');
         showToast('实验导入成功！出于安全隔离策略，请审阅代码后手动点击「运行代码」');
@@ -802,6 +954,7 @@ export function LabPlayground({
       language: currentExp.language,
       files,
       exportedAt: new Date().toISOString(),
+      sourceKind: 'bundle',
     };
     const encoded = encodeSharePayload(bundle);
     const shareUrl = `${window.location.origin}/lab/playground/?slug=${encodeURIComponent(
@@ -828,7 +981,13 @@ export function LabPlayground({
       className="lab-playground-root"
       data-mode={mode}
       data-exec-status={execStatus}
-      data-isolation-mode={isolationMode}
+      data-isolation-mode={
+        degradationPolicy.effectiveMode === 'blocked-fail-closed'
+          ? 'fail-closed'
+          : isolationMode
+      }
+      data-source-kind={codeSourceKind}
+      data-fail-closed={failClosedReason ? 'true' : 'false'}
     >
       {/* 顶部反馈 Toast */}
       {toastMessage && (
@@ -880,14 +1039,18 @@ export function LabPlayground({
             title={
               isolationMode === 'cross-origin'
                 ? `已连接独立跨站沙盒桥接器 (${activeExternalOrigin})，内层执行帧仍保持无 allow-same-origin 的 Opaque Origin 双重隔离`
-                : "当前预览运行在无 allow-same-origin 的 Opaque Origin (null) 沙盒中，且 CSP connect-src 'none' 阻断外发网络"
+                : degradationPolicy.effectiveMode === 'blocked-fail-closed'
+                  ? '独立跨站沙盒当前不可用，外部导入/社区/分享代码已按安全门禁强制失败关闭 (Fail-Closed)'
+                  : "当前官方预设运行在无 allow-same-origin 的 Opaque Origin (null) 回退沙盒中，且 CSP connect-src 'none' 阻断外发网络"
             }
           >
             <span className="sec-dot" />
             <span>
               {isolationMode === 'cross-origin'
                 ? tr('Cross-Site + Opaque 双层沙盒', 'Cross-Site + Opaque 雙層沙盒')
-                : tr('Opaque Sandbox · 零 Cookie/DOM 权限', 'Opaque Sandbox · 零 Cookie/DOM 權限')}
+                : degradationPolicy.effectiveMode === 'blocked-fail-closed'
+                  ? tr('Fail-Closed · 跨站沙盒未就绪', 'Fail-Closed · 跨站沙盒未就緒')
+                  : tr('Opaque Fallback · 官方本地隔离', 'Opaque Fallback · 官方本機隔離')}
             </span>
           </div>
         </div>
@@ -985,18 +1148,87 @@ export function LabPlayground({
         </div>
       </div>
 
-      {/* 外部导入/分享代码的零信任安全提醒横幅 */}
+      {/* 失败关闭 (Fail-Closed) 强阻断安全横幅 */}
+      {failClosedReason && (
+        <div
+          className="lab-fail-closed-banner"
+          role="alert"
+          data-testid="sandbox-fail-closed-banner"
+        >
+          <div className="lab-banner-content">
+            <span>
+              🛑 <strong>{tr('独立跨站沙盒不可用 · 已强制失败关闭 (Fail-Closed)', '獨立跨站沙盒不可用 · 已強制失敗關閉 (Fail-Closed)')}</strong>：
+              {failClosedReason}
+            </span>
+            {externalResolution.enabled && (
+              <button
+                type="button"
+                onClick={handleRetryCrossOriginSandbox}
+                className="lab-pg-btn"
+                data-testid="btn-retry-cross-origin"
+              >
+                🔄 {tr('重试跨站沙盒', '重試跨站沙盒')}
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* 官方实验本地 Opaque srcdoc 降级明确提示横幅 */}
+      {codeSourceKind === 'official' && isolationMode === 'opaque-srcdoc' && (
+        <div
+          className="lab-fallback-banner"
+          role="status"
+          aria-live="polite"
+          data-testid="official-fallback-banner"
+        >
+          <div className="lab-banner-content">
+            <span>
+              ℹ️{' '}
+              <strong>
+                {tr(
+                  '官方实验已回退至本地 Opaque srcdoc 隔离模式',
+                  '官方實驗已回退至本機 Opaque srcdoc 隔離模式'
+                )}
+              </strong>
+              ：
+              {bridgeFallbackForced
+                ? tr(
+                    '独立跨站沙盒当前握手超时或不可达。因当前运行的是受审阅的官方预设实验，系统已在明确提示后安全回退至本地无 allow-same-origin 的 Opaque srcdoc 强隔离沙盒（外部/社区/分享代码在此状态下将被严格拦截）。',
+                    '獨立跨站沙盒目前握手逾時或不可達。因目前執行的是受審閱的官方預設實驗，系統已在明確提示後安全回退至本機無 allow-same-origin 的 Opaque srcdoc 強隔離沙盒（外部/社群/分享程式碼在此狀態下將被嚴格攔截）。'
+                  )
+                : tr(
+                    '当前环境未启用外部独立跨站沙盒域名，受审阅的官方预设实验运行于本地无 allow-same-origin 的 Opaque srcdoc 强隔离回退模式（外部/社区/分享代码在此环境下禁止运行并失败关闭）。',
+                    '目前環境未啟用外部獨立跨站沙盒網域，受審閱的官方預設實驗執行於本機無 allow-same-origin 的 Opaque srcdoc 強隔離回退模式（外部/社群/分享程式碼在此環境下禁止執行並失敗關閉）。'
+                  )}
+            </span>
+            {externalResolution.enabled && bridgeFallbackForced && (
+              <button
+                type="button"
+                onClick={handleRetryCrossOriginSandbox}
+                className="lab-pg-btn"
+                data-testid="btn-retry-cross-origin"
+              >
+                🔄 {tr('重新连接跨站沙盒', '重新連線跨站沙盒')}
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* 外部导入/社区/分享代码的零信任安全提醒横幅 */}
       {isUntrustedCode && (
         <div
           className="lab-untrusted-banner"
           role="alert"
           data-testid="untrusted-code-banner"
+          data-source-kind={codeSourceKind}
         >
           <span>
-            ⚠️ <strong>{tr('外部代码手动运行保护已激活', '外部程式碼手動執行保護已啟用')}</strong>：
+            ⚠️ <strong>{tr('外部代码手动运行与跨站强隔离门禁已激活', '外部程式碼手動執行與跨站強隔離門禁已啟用')}</strong>：
             {tr(
-              '当前源码来自外部导入或分享链接，系统已默认禁止自动执行。请先在下方编辑器审阅代码，确认无误后再手动点击「▶ 运行代码」。即便运行，代码也将被严格限制在 Opaque Origin 沙盒内，无法读取主站 Cookie 或发起网络请求。',
-              '目前原始碼來自外部匯入或分享連結，系統已預設禁止自動執行。請先在下方編輯器審閱程式碼，確認無誤後再手動點擊「▶ 執行程式碼」。即便執行，程式碼也將被嚴格限制在 Opaque Origin 沙盒內，無法讀取主站 Cookie 或發起網路請求。'
+              `当前源码来源为 "${codeSourceKind}"（外部导入 / 社区 / 分享链接），系统已严禁自动执行，且仅允许在独立跨站沙盒可用时手动运行；若独立跨站沙盒不可达，系统将立即失败关闭 (Fail-Closed)，绝不回退至本地 srcdoc。`,
+              `目前原始碼來源為 "${codeSourceKind}"（外部匯入 / 社群 / 分享連結），系統已嚴禁自動執行，且僅允許在獨立跨站沙盒可用時手動執行；若獨立跨站沙盒不可達，系統將立即失敗關閉 (Fail-Closed)，絕不回退至本機 srcdoc。`
             )}
           </span>
         </div>
@@ -1159,7 +1391,7 @@ export function LabPlayground({
                   data-isolation-mode="cross-origin"
                   data-session-id={sessionId}
                 />
-              ) : (
+              ) : codeSourceKind === 'official' ? (
                 <iframe
                   key={sandboxKey}
                   ref={iframeRef}
@@ -1172,22 +1404,39 @@ export function LabPlayground({
                   data-isolation-mode="opaque-srcdoc"
                   data-session-id={sessionId}
                 />
+              ) : (
+                <div
+                  className="sandbox-empty-placeholder is-fail-closed"
+                  data-testid="sandbox-stopped-placeholder"
+                >
+                  <p>
+                    {tr(
+                      '🛑 独立跨站沙盒未就绪，安全策略已阻止非官方代码在本地 srcdoc 中运行。',
+                      '🛑 獨立跨站沙盒未就緒，安全策略已阻止非官方程式碼在本機 srcdoc 中執行。'
+                    )}
+                  </p>
+                </div>
               )
             ) : (
               <div
-                className="sandbox-empty-placeholder"
+                className={`sandbox-empty-placeholder ${failClosedReason ? 'is-fail-closed' : ''}`}
                 data-testid="sandbox-stopped-placeholder"
               >
                 <p>
-                  {execStatus === 'terminated'
+                  {failClosedReason
                     ? tr(
-                        '⏹ 沙盒执行上下文已终止并销毁。',
-                        '⏹ 沙盒執行環境已終止並銷毀。'
+                        '🛑 已触发安全失败关闭 (Fail-Closed)：外部导入、社区或分享链接代码仅允许在独立跨站沙盒可用时运行。',
+                        '🛑 已觸發安全失敗關閉 (Fail-Closed)：外部匯入、社群或分享連結程式碼僅允許在獨立跨站沙盒可用時執行。'
                       )
-                    : tr(
-                        '🔒 沙盒尚未启动，请点击上方「▶ 运行代码」在隔离环境中执行。',
-                        '🔒 沙盒尚未啟動，請點擊上方「▶ 執行程式碼」在隔離環境中執行。'
-                      )}
+                    : execStatus === 'terminated'
+                      ? tr(
+                          '⏹ 沙盒执行上下文已终止并销毁。',
+                          '⏹ 沙盒執行環境已終止並銷毀。'
+                        )
+                      : tr(
+                          '🔒 沙盒尚未启动，请点击上方「▶ 运行代码」在隔离环境中执行。',
+                          '🔒 沙盒尚未啟動，請點擊上方「▶ 執行程式碼」在隔離環境中執行。'
+                        )}
                 </p>
                 <button
                   type="button"

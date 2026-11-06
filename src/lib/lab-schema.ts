@@ -322,6 +322,7 @@ export interface LabPortableBundle {
   files: LabFile[];
   exportedAt: string;
   forkedFrom?: string | null;
+  sourceKind?: 'imported' | 'community' | 'bundle';
 }
 
 export function validateLabPortableBundle(input: unknown): LabValidationResult<LabPortableBundle> {
@@ -341,6 +342,13 @@ export function validateLabPortableBundle(input: unknown): LabValidationResult<L
   const language = VALID_LANGUAGES.has(obj.language as LabLanguage)
     ? (obj.language as LabLanguage)
     : 'html-css-js';
+
+  const rawAuthor =
+    obj.author && typeof obj.author === 'object' ? (obj.author as Record<string, unknown>) : null;
+  const isCommunityPayload =
+    obj.sourceKind === 'community' ||
+    obj.source === 'community' ||
+    rawAuthor?.role === 'community';
 
   if (!title) {
     errors.push('实验标题不能为空。');
@@ -373,6 +381,11 @@ export function validateLabPortableBundle(input: unknown): LabValidationResult<L
       files: filesValidation.data,
       exportedAt: typeof obj.exportedAt === 'string' ? obj.exportedAt : new Date().toISOString(),
       forkedFrom: typeof obj.forkedFrom === 'string' ? obj.forkedFrom : null,
+      sourceKind: isCommunityPayload
+        ? 'community'
+        : obj.sourceKind === 'bundle'
+          ? 'bundle'
+          : 'imported',
     },
     errors: [],
   };

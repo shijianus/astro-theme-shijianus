@@ -8,6 +8,7 @@ import {
 import {
   buildIsolatedSandboxSrcDoc,
   createSandboxSessionId,
+  resolveExperimentSourceKind,
   resolveSafeExternalSandboxOrigin,
 } from '../../../lib/lab-sandbox-protocol';
 import { getPublicPosts } from '../../../lib/content';
@@ -25,6 +26,8 @@ const experiment =
   Astro.props.experiment ||
   getExperimentBySlug(slug || '') ||
   OFFICIAL_LAB_EXPERIMENTS[0];
+
+const sourceKind = resolveExperimentSourceKind(experiment.author);
 
 const rawSandboxOrigin =
   import.meta.env.PUBLIC_LAB_SANDBOX_ORIGIN ||
@@ -55,8 +58,12 @@ const sidebarData = createSidebarData(posts);
     class="lab-standalone-preview"
     data-preview-slug={experiment.slug}
     data-session-id={initialSessionId}
+    data-source-kind={sourceKind}
+    data-frame-title={`Standalone Sandbox Preview - ${experiment.title}`}
     data-external-sandbox-origin={safeExternalOrigin}
   >
+    <template id="standalone-srcdoc-payload" data-srcdoc={initialSrcDoc}></template>
+
     <!-- 顶部导航壳层 (区分「用于导航的预览页面」与「真正执行代码的隔离沙盒 Iframe」) -->
     <div class="preview-nav-shell theme-card">
       <div class="preview-nav__left">
@@ -70,7 +77,7 @@ const sidebarData = createSidebarData(posts);
             class="preview-sec-tag"
             title="内部 iframe 采用无 allow-same-origin 的 Opaque Sandbox 隔离运行"
           >
-            {safeExternalOrigin ? '🔒 Cross-Site + Opaque 双层隔离中' : '🔒 Opaque Sandbox 隔离运行中'}
+            {safeExternalOrigin ? '🔒 Cross-Site + Opaque 双层隔离中' : '🔒 Opaque Fallback 隔离运行中'}
           </span>
         </div>
       </div>
@@ -88,19 +95,18 @@ const sidebarData = createSidebarData(posts);
       </div>
     </div>
 
-    <!-- 真正执行不可信代码的隔离沙盒容器 -->
-    <div id="preview-stage-mount" class="preview-stage-card theme-card">
-      <iframe
-        id="standalone-sandbox-iframe"
-        title={`Standalone Sandbox Preview - ${experiment.title}`}
-        sandbox="allow-scripts"
-        referrerpolicy="no-referrer"
-        srcdoc={initialSrcDoc}
-        class="standalone-sandbox-frame"
-        data-testid="standalone-preview-iframe"
-        data-isolation-mode="opaque-srcdoc"
-      ></iframe>
-    </div>
+    <!-- 降级或失败关闭提示横幅 -->
+    <div
+      id="preview-fallback-banner"
+      class="preview-fallback-notice"
+      role="status"
+      aria-live="polite"
+      data-testid="preview-fallback-banner"
+      hidden
+    ></div>
+
+    <!-- 真正执行代码的隔离沙盒容器（SSR 阶段不直接注入 srcdoc，由客户端安全门禁校验后挂载） -->
+    <div id="preview-stage-mount" class="preview-stage-card theme-card"></div>
   </section>
 </BlogLayout>
 
@@ -109,14 +115,18 @@ const sidebarData = createSidebarData(posts);
     const PROTOCOL = 'LAB_SANDBOX_PROTOCOL_V1';
     const rootEl = document.querySelector('.lab-standalone-preview');
     const mountEl = document.getElementById('preview-stage-mount');
+    const payloadTpl = document.getElementById('standalone-srcdoc-payload');
     const reloadBtn = document.getElementById('btn-preview-reload');
     const badgeEl = document.getElementById('preview-isolation-badge');
-    let iframe = document.getElementById('standalone-sandbox-iframe');
-    if (!rootEl || !mountEl || !iframe) return;
+    const noticeEl = document.getElementById('preview-fallback-banner');
+    if (!rootEl || !mountEl || !payloadTpl) return;
 
-    const baseSrcDoc = iframe.getAttribute('srcdoc') || '';
+    const baseSrcDoc = payloadTpl.getAttribute('data-srcdoc') || '';
     const sessionId = rootEl.getAttribute('data-session-id') || '';
+    const sourceKind = rootEl.getAttribute('data-source-kind') || 'official';
+    const frameTitle = rootEl.getAttribute('data-frame-title') || 'Standalone Sandbox Preview';
     const extOriginRaw = rootEl.getAttribute('data-external-sandbox-origin') || '';
+    let iframe = null;
 
     const readTheme = () =>
       document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
@@ -124,7 +134,7 @@ const sidebarData = createSidebarData(posts);
     const applyThemeToSrcDoc = (doc, theme) =>
       doc.replace(/<html([^>]*)data-theme="(?:dark|light)"/, `<html$1data-theme="${theme}"`);
 
-    let useExternalBridge = false;
+    let hasValidExternalOrigin = false;
     if (extOriginRaw) {
       try {
         const parsed = new URL(extOriginRaw);
@@ -135,24 +145,63 @@ const sidebarData = createSidebarData(posts);
               window.location.protocol === 'http:' &&
               (parsed.hostname === 'localhost' || parsed.hostname === '127.0.0.1')))
         ) {
-          useExternalBridge = true;
+          hasValidExternalOrigin = true;
         }
       } catch (_err) {
-        useExternalBridge = false;
+        hasValidExternalOrigin = false;
       }
     }
 
+    let useExternalBridge = hasValidExternalOrigin;
     let bridgeAck = false;
     let bridgeSent = false;
     let handshakeTimer = null;
 
-    const mountLocalSrcDoc = () => {
+    const showNotice = (text, isFailClosed) => {
+      if (!noticeEl) return;
+      noticeEl.textContent = text;
+      noticeEl.className = isFailClosed
+        ? 'preview-fallback-notice is-fail-closed'
+        : 'preview-fallback-notice';
+      noticeEl.hidden = false;
+    };
+
+    const hideNotice = () => {
+      if (noticeEl) noticeEl.hidden = true;
+    };
+
+    const mountFailClosed = (reason) => {
       useExternalBridge = false;
-      if (badgeEl) badgeEl.textContent = '🔒 Opaque Sandbox 隔离运行中';
+      if (handshakeTimer) clearTimeout(handshakeTimer);
+      if (badgeEl) badgeEl.textContent = '🛑 Fail-Closed 已阻断';
+      showNotice(reason, true);
+      mountEl.innerHTML = '';
+      const empty = document.createElement('div');
+      empty.className = 'preview-fail-closed-box';
+      empty.setAttribute('data-testid', 'preview-fail-closed-box');
+      empty.textContent = reason;
+      mountEl.appendChild(empty);
+      iframe = null;
+    };
+
+    const mountLocalSrcDoc = (fallbackReason) => {
+      if (sourceKind !== 'official') {
+        mountFailClosed(
+          '[Sandbox Fail-Closed] 非官方代码禁止回退至本地 opaque srcdoc，独立跨站沙盒未就绪，已强制失败关闭。'
+        );
+        return;
+      }
+      useExternalBridge = false;
+      if (badgeEl) badgeEl.textContent = '🔒 Opaque Fallback 隔离运行中';
+      showNotice(
+        fallbackReason ||
+          'ℹ️ 官方实验提示：当前未配置外部独立跨站沙盒，该受审阅官方实验已回退至本地无 allow-same-origin 的 Opaque srcdoc 强隔离模式运行。',
+        false
+      );
       const nextDoc = applyThemeToSrcDoc(baseSrcDoc, readTheme());
       const fresh = document.createElement('iframe');
       fresh.id = 'standalone-sandbox-iframe';
-      fresh.title = iframe.title;
+      fresh.title = frameTitle;
       fresh.setAttribute('sandbox', 'allow-scripts');
       fresh.setAttribute('referrerpolicy', 'no-referrer');
       fresh.setAttribute('data-testid', 'standalone-preview-iframe');
@@ -165,13 +214,16 @@ const sidebarData = createSidebarData(posts);
     };
 
     const mountCrossOriginBridge = () => {
+      useExternalBridge = true;
       bridgeAck = false;
       bridgeSent = false;
       if (handshakeTimer) clearTimeout(handshakeTimer);
+      hideNotice();
+      if (badgeEl) badgeEl.textContent = '🔒 Cross-Site + Opaque 双层隔离中';
 
       const fresh = document.createElement('iframe');
       fresh.id = 'standalone-sandbox-iframe';
-      fresh.title = iframe.title;
+      fresh.title = frameTitle;
       fresh.setAttribute('sandbox', 'allow-scripts allow-same-origin');
       fresh.setAttribute('referrerpolicy', 'no-referrer');
       fresh.setAttribute('data-testid', 'standalone-preview-iframe');
@@ -192,7 +244,15 @@ const sidebarData = createSidebarData(posts);
 
       handshakeTimer = setTimeout(() => {
         if (!bridgeAck) {
-          mountLocalSrcDoc();
+          if (sourceKind === 'official') {
+            mountLocalSrcDoc(
+              `ℹ️ 官方实验回退提示：独立跨站沙盒 (${extOriginRaw}) 握手超时，官方预设实验已在明确提示后回退至本地 Opaque srcdoc 强隔离模式。`
+            );
+          } else {
+            mountFailClosed(
+              `🛑 [Sandbox Fail-Closed] 独立跨站沙盒 (${extOriginRaw}) 不可达，非官方实验禁止降级执行，已强制失败关闭。`
+            );
+          }
         }
       }, 3000);
     };
@@ -219,13 +279,15 @@ const sidebarData = createSidebarData(posts);
       }
     });
 
-    if (useExternalBridge) {
+    if (sourceKind !== 'official') {
+      // 非官方代码严禁自动执行
+      mountFailClosed(
+        '⚠️ 非官方代码已禁止在独立预览页自动运行，请前往代码工坊审阅并在独立跨站沙盒可用时手动运行。'
+      );
+    } else if (hasValidExternalOrigin) {
       mountCrossOriginBridge();
     } else {
-      const currentTheme = readTheme();
-      if (currentTheme !== 'dark') {
-        iframe.setAttribute('srcdoc', applyThemeToSrcDoc(baseSrcDoc, currentTheme));
-      }
+      mountLocalSrcDoc();
     }
 
     const themeObs = new MutationObserver(() => {
@@ -252,7 +314,17 @@ const sidebarData = createSidebarData(posts);
 
     if (reloadBtn) {
       reloadBtn.addEventListener('click', () => {
-        if (useExternalBridge) {
+        if (sourceKind !== 'official') {
+          if (hasValidExternalOrigin) {
+            mountCrossOriginBridge();
+          } else {
+            mountFailClosed(
+              '🛑 [Sandbox Fail-Closed] 独立跨站沙盒未配置或不可用，非官方实验禁止运行。'
+            );
+          }
+          return;
+        }
+        if (hasValidExternalOrigin) {
           mountCrossOriginBridge();
         } else {
           mountLocalSrcDoc();
@@ -359,6 +431,44 @@ const sidebarData = createSidebarData(posts);
     background: var(--card-bg, #0f1420);
     height: calc(100vh - 210px);
     min-height: 460px;
+  }
+
+  .preview-fallback-notice {
+    padding: 10px 14px;
+    border-radius: 8px;
+    background: rgba(66, 90, 239, 0.08);
+    border: 1px solid rgba(66, 90, 239, 0.32);
+    color: #1e40af;
+    font-size: 12px;
+    line-height: 1.5;
+  }
+
+  :root[data-theme='dark'] .preview-fallback-notice {
+    color: #bfdbfe;
+    background: rgba(66, 90, 239, 0.16);
+  }
+
+  .preview-fallback-notice.is-fail-closed {
+    background: rgba(239, 68, 68, 0.12);
+    border-color: rgba(239, 68, 68, 0.45);
+    color: #b91c1c;
+  }
+
+  :root[data-theme='dark'] .preview-fallback-notice.is-fail-closed {
+    color: #fca5a5;
+    background: rgba(239, 68, 68, 0.18);
+  }
+
+  .preview-fail-closed-box {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    text-align: center;
+    color: #fca5a5;
+    font-size: 13px;
   }
 
   .standalone-sandbox-frame {

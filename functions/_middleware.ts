@@ -1,3 +1,28 @@
+import { BUILD_TIME_LAB_SANDBOX_ORIGIN } from './generated/lab-env';
+
+const MAIN_SITE_BLOCKED_EXACT_HOSTS = new Set([
+  'epocanvas.com',
+  'epocanvas.tech',
+  'pvzos.com',
+  'shijianus.com',
+  'shijianus-blog.pages.dev',
+  'shijianus-github-io.pages.dev',
+  'shijianus.github.io',
+  'shijian.qzz.io',
+  '831511.xyz',
+]);
+
+const MAIN_SITE_BLOCKED_SUFFIXES = [
+  '.epocanvas.com',
+  '.epocanvas.tech',
+  '.pvzos.com',
+  '.shijianus.com',
+  '.shijianus-blog.pages.dev',
+  '.shijianus-github-io.pages.dev',
+  '.shijian.qzz.io',
+  '.831511.xyz',
+];
+
 function resolveValidatedLabSandboxOrigin(
   rawOrigin: unknown,
   requestUrl: URL
@@ -19,11 +44,8 @@ function resolveValidatedLabSandboxOrigin(
 
   const host = parsed.hostname.toLowerCase();
   if (
-    host === 'epocanvas.com' ||
-    host.endsWith('.epocanvas.com') ||
-    host === 'shijianus-blog.pages.dev' ||
-    host.endsWith('.shijianus-blog.pages.dev') ||
-    host === 'shijianus.github.io'
+    MAIN_SITE_BLOCKED_EXACT_HOSTS.has(host) ||
+    MAIN_SITE_BLOCKED_SUFFIXES.some((suffix) => host.endsWith(suffix))
   ) {
     return null;
   }
@@ -70,8 +92,13 @@ export const onRequest: PagesFunction = async (context) => {
 
   // Defense-in-depth: Content-Security-Policy (ARCH-05)
   const envRecord = (context.env ?? {}) as Record<string, unknown>;
+  const configuredLabOrigin =
+    (typeof envRecord.PUBLIC_LAB_SANDBOX_ORIGIN === 'string' &&
+    envRecord.PUBLIC_LAB_SANDBOX_ORIGIN.trim()
+      ? envRecord.PUBLIC_LAB_SANDBOX_ORIGIN
+      : BUILD_TIME_LAB_SANDBOX_ORIGIN) || '';
   const labSandboxOrigin = resolveValidatedLabSandboxOrigin(
-    envRecord.PUBLIC_LAB_SANDBOX_ORIGIN,
+    configuredLabOrigin,
     url
   );
   const frameSources = [

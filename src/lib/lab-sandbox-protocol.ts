@@ -24,6 +24,7 @@
  */
 
 import {
+  type LabAuthor,
   type LabFile,
   LAB_SECURITY_LIMITS,
   getUtf8ByteLength,
@@ -36,6 +37,57 @@ export const LAB_SANDBOX_PROTOCOL_VERSION = 'LAB_SANDBOX_PROTOCOL_V1' as const;
 export type SandboxConsoleLevel = 'log' | 'info' | 'warn' | 'error';
 
 export type SandboxIsolationMode = 'cross-origin' | 'opaque-srcdoc';
+
+/**
+ * 代码信任来源分类：
+ * - `official`: 站长官方精选预设实验（允许在明确提示后回退至本地 opaque srcdoc）
+ * - `imported`: 外部导入的 JSON 实验包（独立跨站沙盒不可用时必须失败关闭，严禁自动执行）
+ * - `community`: 社区投稿/非官方作者代码（独立跨站沙盒不可用时必须失败关闭，严禁自动执行）
+ * - `bundle`: URL `#bundle=` 分享链接载入的代码（独立跨站沙盒不可用时必须失败关闭，严禁自动执行）
+ */
+export type LabCodeSourceKind = 'official' | 'imported' | 'community' | 'bundle';
+
+export interface SandboxDegradationDecision {
+  sourceKind: LabCodeSourceKind;
+  isUntrusted: boolean;
+  allowAutoRun: boolean;
+  allowOpaqueSrcdocFallback: boolean;
+  failClosedWhenCrossSiteUnavailable: boolean;
+  effectiveMode: SandboxIsolationMode | 'blocked-fail-closed';
+}
+
+export function resolveExperimentSourceKind(author?: Pick<LabAuthor, 'role'> | null): LabCodeSourceKind {
+  if (author?.role === 'owner') {
+    return 'official';
+  }
+  return 'community';
+}
+
+export function evaluateSandboxDegradationPolicy(
+  sourceKind: LabCodeSourceKind,
+  crossSiteSandboxAvailable: boolean
+): SandboxDegradationDecision {
+  const isOfficial = sourceKind === 'official';
+  if (isOfficial) {
+    return {
+      sourceKind,
+      isUntrusted: false,
+      allowAutoRun: true,
+      allowOpaqueSrcdocFallback: true,
+      failClosedWhenCrossSiteUnavailable: false,
+      effectiveMode: crossSiteSandboxAvailable ? 'cross-origin' : 'opaque-srcdoc',
+    };
+  }
+
+  return {
+    sourceKind,
+    isUntrusted: true,
+    allowAutoRun: false,
+    allowOpaqueSrcdocFallback: false,
+    failClosedWhenCrossSiteUnavailable: true,
+    effectiveMode: crossSiteSandboxAvailable ? 'cross-origin' : 'blocked-fail-closed',
+  };
+}
 
 export interface SandboxConsoleEntry {
   id: string;
@@ -191,9 +243,21 @@ export function resolveSafeExternalSandboxOrigin(
   if (
     hostname === 'epocanvas.com' ||
     hostname.endsWith('.epocanvas.com') ||
+    hostname === 'epocanvas.tech' ||
+    hostname.endsWith('.epocanvas.tech') ||
+    hostname === 'pvzos.com' ||
+    hostname.endsWith('.pvzos.com') ||
+    hostname === 'shijianus.com' ||
+    hostname.endsWith('.shijianus.com') ||
     hostname === 'shijianus-blog.pages.dev' ||
     hostname.endsWith('.shijianus-blog.pages.dev') ||
-    hostname === 'shijianus.github.io'
+    hostname === 'shijianus-github-io.pages.dev' ||
+    hostname.endsWith('.shijianus-github-io.pages.dev') ||
+    hostname === 'shijianus.github.io' ||
+    hostname === 'shijian.qzz.io' ||
+    hostname.endsWith('.shijian.qzz.io') ||
+    hostname === '831511.xyz' ||
+    hostname.endsWith('.831511.xyz')
   ) {
     return {
       enabled: false,
@@ -405,10 +469,10 @@ function sanitizeAndExtractHtmlScripts(rawHtml: string): {
   const inlineScripts: string[] = [];
   const errors: string[] = [];
 
-  // 移除可能干扰沙盒策略的 <meta> 与 <base> 标签
+  // 移除可能干扰沙盒策略的 <meta http-equiv> 与 <base> 标签
   let cleanHtml = rawHtml
     .replace(/<base\b[^>]*>/gi, '')
-    .replace(/<meta\b[^>]*http-equiv\s*=\s*['"]?(?:refresh|content-security-policy|set-cookie)['"]?[^>]*>/gi, '');
+    .replace(/<meta\b[^>]*http-equiv\b[^>]*>/gi, '');
 
   cleanHtml = cleanHtml.replace(
     /<script\b([^>]*)>([\s\S]*?)<\/script\s*>/gi,
@@ -601,6 +665,10 @@ export function buildIsolatedSandboxSrcDoc(options: {
   var origClearTimeout = window.clearTimeout.bind(window);
   var origSetInterval = window.setInterval.bind(window);
   var origClearInterval = window.clearInterval.bind(window);
+  var origPerfNow = (typeof performance !== 'undefined' && performance && typeof performance.now === 'function')
+    ? performance.now.bind(performance)
+    : Date.now.bind(Date);
+  var OrigError = Error;
 
   var logCount = 0;
   var errorCount = 0;
@@ -823,10 +891,10 @@ export function buildIsolatedSandboxSrcDoc(options: {
 
   function __labLoopGuard() {
     if (turnAborted) {
-      throw new Error('[Sandbox Timeout] 检测到同步死循环超时 (>' + LOOP_BUDGET_MS + 'ms)，已强制终止当前执行栈。');
+      throw new OrigError('[Sandbox Timeout] 检测到同步死循环超时 (>' + LOOP_BUDGET_MS + 'ms)，已强制终止当前执行栈。');
     }
     if ((++loopTicks & 4095) !== 0) return;
-    var now = performance.now();
+    var now = origPerfNow();
     if (turnDeadline === 0) {
       turnDeadline = now + LOOP_BUDGET_MS;
       if (!resetScheduled) {
@@ -837,7 +905,7 @@ export function buildIsolatedSandboxSrcDoc(options: {
     }
     if (now > turnDeadline) {
       turnAborted = true;
-      throw new Error('[Sandbox Timeout] 检测到同步死循环或单帧阻塞超时 (>' + LOOP_BUDGET_MS + 'ms)，已自动熔断保护页面响应。');
+      throw new OrigError('[Sandbox Timeout] 检测到同步死循环或单帧阻塞超时 (>' + LOOP_BUDGET_MS + 'ms)，已自动熔断保护页面响应。');
     }
   }
 
