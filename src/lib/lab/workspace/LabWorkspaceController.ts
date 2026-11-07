@@ -180,6 +180,42 @@ export class LabWorkspaceController {
     }
   }
 
+  addFile(name: string, language: string, content = ''): void {
+    const exists = this.project.files.some((f) => f.name.toLowerCase() === name.toLowerCase());
+    if (exists) return;
+    this.project.files.push({ name, language: language as any, content });
+    this.activeFileIndex = this.project.files.length - 1;
+    this.dirty = true;
+    WorkspacePersistence.saveDraft(this.project.slug, this.project);
+    this.notifySnapshot();
+  }
+
+  deleteFile(index: number): void {
+    if (this.project.files.length <= 1) return;
+    if (index >= 0 && index < this.project.files.length) {
+      this.project.files.splice(index, 1);
+      if (this.activeFileIndex >= this.project.files.length) {
+        this.activeFileIndex = this.project.files.length - 1;
+      }
+      this.dirty = true;
+      WorkspacePersistence.saveDraft(this.project.slug, this.project);
+      this.notifySnapshot();
+    }
+  }
+
+  renameFile(index: number, newName: string): void {
+    if (index >= 0 && index < this.project.files.length && newName.trim()) {
+      const exists = this.project.files.some(
+        (f, i) => i !== index && f.name.toLowerCase() === newName.trim().toLowerCase()
+      );
+      if (exists) return;
+      this.project.files[index].name = newName.trim();
+      this.dirty = true;
+      WorkspacePersistence.saveDraft(this.project.slug, this.project);
+      this.notifySnapshot();
+    }
+  }
+
   setTheme(theme: 'light' | 'dark'): void {
     this.theme = theme;
   }

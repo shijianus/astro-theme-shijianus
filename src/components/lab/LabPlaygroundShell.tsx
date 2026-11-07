@@ -14,7 +14,7 @@ import { ExecutionVisualizer } from './ExecutionVisualizer';
 
 export interface LabPlaygroundShellProps {
   mode: 'full-workshop' | 'detail-embedded';
-  execStatus: 'idle' | 'running' | 'completed' | 'error' | 'terminated';
+  execStatus: 'idle' | 'running' | 'completed' | 'error' | 'terminated' | 'connecting' | 'ready' | 'aborted';
   effectiveIsolationMode: string;
   codeSourceKind: string;
   failClosedReason: string;
@@ -25,6 +25,8 @@ export interface LabPlaygroundShellProps {
   externalResolutionEnabled: boolean;
   showTracePanel: boolean;
   isHant: boolean;
+  mobileActiveTab?: 'editor' | 'preview' | 'console';
+  onSelectMobileTab?: (tab: 'editor' | 'preview' | 'console') => void;
   toolbarProps: LabToolbarProps;
   editorProps: LabEditorPanelProps;
   previewProps: LabPreviewPanelProps;
@@ -44,6 +46,8 @@ export const LabPlaygroundShell: React.FC<LabPlaygroundShellProps> = ({
   externalResolutionEnabled,
   showTracePanel,
   isHant,
+  mobileActiveTab = 'editor',
+  onSelectMobileTab,
   toolbarProps,
   editorProps,
   previewProps,
@@ -60,6 +64,7 @@ export const LabPlaygroundShell: React.FC<LabPlaygroundShellProps> = ({
       data-isolation-mode={effectiveIsolationMode}
       data-source-kind={codeSourceKind}
       data-fail-closed={failClosedReason ? 'true' : 'false'}
+      data-mobile-active-tab={mobileActiveTab}
     >
       {/* 顶部反馈 Toast */}
       {toastMessage && (
@@ -72,6 +77,40 @@ export const LabPlaygroundShell: React.FC<LabPlaygroundShellProps> = ({
           <span>🛡️ {toastMessage}</span>
         </div>
       )}
+
+      {/* 移动端 390x844 核心标签切换 */}
+      <div className="lab-mobile-tabs" role="tablist" aria-label={tr('移动端工作区面板', '行動端工作區面板')}>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={mobileActiveTab === 'editor'}
+          onClick={() => onSelectMobileTab?.('editor')}
+          className={`lab-mobile-tab-btn ${mobileActiveTab === 'editor' ? 'is-active' : ''}`}
+          data-testid="mobile-tab-editor"
+        >
+          📝 {tr('代码编辑', '程式碼編輯')}
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={mobileActiveTab === 'preview'}
+          onClick={() => onSelectMobileTab?.('preview')}
+          className={`lab-mobile-tab-btn ${mobileActiveTab === 'preview' ? 'is-active' : ''}`}
+          data-testid="mobile-tab-preview"
+        >
+          👁️ {tr('沙盒预览', '沙盒預覽')}
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={mobileActiveTab === 'console'}
+          onClick={() => onSelectMobileTab?.('console')}
+          className={`lab-mobile-tab-btn ${mobileActiveTab === 'console' ? 'is-active' : ''}`}
+          data-testid="mobile-tab-console"
+        >
+          💻 {tr('控制台', '控制台')}
+        </button>
+      </div>
 
       {/* 1. 顶部工具栏 */}
       <LabToolbar {...toolbarProps} />
@@ -190,6 +229,34 @@ export const LabPlaygroundShell: React.FC<LabPlaygroundShellProps> = ({
           />
         </div>
       )}
+
+      {/* 4. 移动端底部常驻操作坞 */}
+      <div className="lab-mobile-action-dock" role="toolbar" aria-label={tr('移动端快速操作', '行動端快速操作')}>
+        <button
+          type="button"
+          onClick={toolbarProps.onRun}
+          className="lab-mobile-dock-btn is-run"
+          data-testid="mobile-dock-run"
+        >
+          ▶ {tr('运行代码', '執行程式碼')}
+        </button>
+        <button
+          type="button"
+          onClick={toolbarProps.onStop}
+          className="lab-mobile-dock-btn is-stop"
+          data-testid="mobile-dock-stop"
+        >
+          ⏹ {tr('停止', '停止')}
+        </button>
+        <button
+          type="button"
+          onClick={toolbarProps.onReset}
+          className="lab-mobile-dock-btn is-reset"
+          data-testid="mobile-dock-reset"
+        >
+          ↺ {tr('恢复', '恢復')}
+        </button>
+      </div>
     </div>
   );
 };

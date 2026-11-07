@@ -19,6 +19,7 @@ import {
 import { OFFICIAL_LAB_EXPERIMENTS, getExperimentBySlug } from '../../data/lab-experiments';
 import { ExecutionPolicy } from '../../lib/lab/ExecutionPolicy';
 import { LabPlaygroundShell } from './LabPlaygroundShell';
+import { LabImportModal, type PendingImportBundle } from './LabImportModal';
 import {
   LabWorkspaceController,
   type WorkspaceSnapshot,
@@ -143,6 +144,8 @@ export const LabPlayground: React.FC<LabPlaygroundProps> = ({
   const [showTracePanel, setShowTracePanel] = useState<boolean>(
     mode === 'full-workshop' ? Boolean(defaultExp.visualizationConfig?.enabled) : false
   );
+  const [mobileActiveTab, setMobileActiveTab] = useState<'editor' | 'preview' | 'console'>('editor');
+  const [pendingImportBundle, setPendingImportBundle] = useState<PendingImportBundle | null>(null);
 
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -359,7 +362,7 @@ export const LabPlayground: React.FC<LabPlaygroundProps> = ({
     showToast(tr(`已导出实验包 ${currentExp.slug}-lab.json`, `已匯出實驗包 ${currentExp.slug}-lab.json`));
   }, [currentExp.slug, showToast, tr]);
 
-  // 导入 JSON 文件
+  // 导入 JSON 文件：先解析并展示安全审阅对话框，绝不自动运行
   const handleImportJsonFile = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const inputEl = e.currentTarget;
@@ -369,21 +372,26 @@ export const LabPlayground: React.FC<LabPlaygroundProps> = ({
       const reader = new FileReader();
       reader.onload = () => {
         const rawText = String(reader.result || '');
-        const res = controllerRef.current?.importJson(rawText);
-        if (!res?.ok) {
-          showToast(
-            tr(
-              `导入校验拒绝: ${(res?.errors || []).join('；')}`,
-              `匯入校驗拒絕: ${(res?.errors || []).join('；')}`
-            )
-          );
-        } else {
-          showToast(
-            tr(
-              '实验导入成功！出于安全隔离策略，请审阅代码后手动点击「运行代码」',
-              '實驗匯入成功！出於安全隔離策略，請審閱程式碼後手動點擊「執行程式碼」'
-            )
-          );
+        try {
+          const parsed = JSON.parse(rawText);
+          const totalB = Array.isArray(parsed.files)
+            ? parsed.files.reduce((acc: number, f: any) => acc + (f.content?.length || 0), 0)
+            : rawText.length;
+          setPendingImportBundle({
+            manifest: {
+              title: parsed.title,
+              slug: parsed.slug,
+              description: parsed.description,
+              category: parsed.category,
+              language: parsed.language,
+              version: parsed.version,
+            },
+            files: Array.isArray(parsed.files) ? parsed.files : [],
+            totalBytes: totalB,
+            rawJson: rawText,
+          });
+        } catch {
+          showToast(tr('导入失败：不是有效的 JSON 文件', '匯入失敗：不是有效的 JSON 檔案'));
         }
         inputEl.value = '';
       };
@@ -395,6 +403,28 @@ export const LabPlayground: React.FC<LabPlaygroundProps> = ({
     },
     [showToast, tr]
   );
+
+  const handleConfirmImport = useCallback(() => {
+    if (!pendingImportBundle) return;
+    const res = controllerRef.current?.importJson(pendingImportBundle.rawJson);
+    if (!res?.ok) {
+      showToast(
+        tr(
+          `导入校验拒绝: ${(res?.errors || []).join('；')}`,
+          `匯入校驗拒絕: ${(res?.errors || []).join('；')}`
+        )
+      );
+    } else {
+      setCodeSourceKind('imported');
+      showToast(
+        tr(
+          '外部实验代码已安全载入！出于隔离策略，沙盒处于空闲状态，请审阅后手动点击「运行代码」。',
+          '外部實驗程式碼已安全載入！出於隔離策略，沙盒處於空閒狀態，請審閱後手動點擊「執行程式碼」。'
+        )
+      );
+    }
+    setPendingImportBundle(null);
+  }, [pendingImportBundle, showToast, tr]);
 
   // 分享链接
   const handleShareLink = useCallback(async () => {
@@ -504,80 +534,106 @@ export const LabPlayground: React.FC<LabPlaygroundProps> = ({
       : (snapshot.sessionLifecycle as any);
 
   return (
-    <LabPlaygroundShell
-      mode={mode}
-      execStatus={execStatus}
-      effectiveIsolationMode={effectiveIsolationMode}
-      codeSourceKind={codeSourceKind}
-      failClosedReason={snapshot.failClosedReason}
-      toastMessage={toastMessage}
-      hasMounted={hasMounted}
-      isolationMode={isolationMode}
-      bridgeFallbackForced={false}
-      externalResolutionEnabled={Boolean(externalResolution.enabled)}
-      showTracePanel={showTracePanel}
-      isHant={isHant}
-      onRetryCrossOriginSandbox={() => executeInSandbox()}
-      toolbarProps={{
-        mode,
-        currentExp,
-        selectedSlug,
-        codeSourceKind,
-        isolationMode,
-        degradationPolicy,
-        activeExternalOrigin,
-        execStatus,
-        isHant,
-        fileInputRef,
-        onSelectExperiment: handleSelectExperiment,
-        onRun: () => executeInSandbox(),
-        onStop: terminateSandbox,
-        onReset: handleResetCode,
-        onCopyCode: handleCopyCode,
-        onSaveDraft: handleSaveDraft,
-        onLoadDraft: handleLoadDraft,
-        onExportJson: handleExportJson,
-        onImportJsonFile: handleImportJsonFile,
-        onShareLink: handleShareLink,
-      }}
-      editorProps={{
-        files: snapshot.project.files,
-        activeFileIdx: snapshot.activeFileIndex,
-        livecodesAppUrl,
-        isHant,
-        onSelectFile: (idx) => controllerRef.current?.setActiveFileIndex(idx),
-        onCodeChange: handleCodeChange,
-        onRunCode: () => executeInSandbox(),
-      }}
-      previewProps={{
-        currentExp,
-        files: snapshot.project.files,
-        sessionId: snapshot.sessionId,
-        sandboxSrcDoc: '',
-        sandboxKey: 1,
-        isolationMode,
-        activeExternalOrigin,
-        codeSourceKind,
-        execStatus,
-        lastDurationMs: snapshot.lastDurationMs,
-        failClosedReason: snapshot.failClosedReason,
-        isFullscreenPreview,
-        showTracePanel,
-        activeBottomTab,
-        consoleEntries: snapshot.consoleEntries,
-        runtimeErrors: snapshot.runtimeErrors,
-        iframeRef,
-        isHant,
-        onToggleFullscreen: () => setIsFullscreenPreview((v) => !v),
-        onToggleTracePanel: () => setShowTracePanel((v) => !v),
-        onBridgeIframeLoad: () => {},
-        onRunCode: () => executeInSandbox(),
-        onSetActiveBottomTab: setActiveBottomTab,
-        onClearConsole: () => {
-          controllerRef.current?.clearConsole();
-          controllerRef.current?.clearErrors();
-        },
-      }}
-    />
+    <>
+      <LabPlaygroundShell
+        mode={mode}
+        execStatus={execStatus}
+        effectiveIsolationMode={effectiveIsolationMode}
+        codeSourceKind={codeSourceKind}
+        failClosedReason={snapshot.failClosedReason}
+        toastMessage={toastMessage}
+        hasMounted={hasMounted}
+        isolationMode={isolationMode}
+        bridgeFallbackForced={false}
+        externalResolutionEnabled={Boolean(externalResolution.enabled)}
+        showTracePanel={showTracePanel}
+        isHant={isHant}
+        mobileActiveTab={mobileActiveTab}
+        onSelectMobileTab={setMobileActiveTab}
+        onRetryCrossOriginSandbox={() => executeInSandbox()}
+        toolbarProps={{
+          mode,
+          currentExp,
+          selectedSlug,
+          codeSourceKind,
+          isolationMode,
+          degradationPolicy,
+          activeExternalOrigin,
+          execStatus,
+          isHant,
+          dirty: snapshot.dirty,
+          runtimeKind: snapshot.runtimeKind,
+          supportedRuntimes: snapshot.supportedRuntimes,
+          editorKind: snapshot.editorKind,
+          supportedEditors: snapshot.supportedEditors,
+          totalBytes: snapshot.project.files.reduce((a, f) => a + (f.content?.length || 0), 0),
+          fileInputRef,
+          onSelectExperiment: handleSelectExperiment,
+          onSelectRuntime: (rk) => controllerRef.current?.setRuntimeKind(rk as any),
+          onSelectEditor: (ek) => controllerRef.current?.setEditorKind(ek as any),
+          onRun: () => executeInSandbox(),
+          onStop: terminateSandbox,
+          onReset: handleResetCode,
+          onCopyCode: handleCopyCode,
+          onSaveDraft: handleSaveDraft,
+          onLoadDraft: handleLoadDraft,
+          onExportJson: handleExportJson,
+          onImportJsonFile: handleImportJsonFile,
+          onShareLink: handleShareLink,
+        }}
+        editorProps={{
+          files: snapshot.project.files,
+          activeFileIdx: snapshot.activeFileIndex,
+          livecodesAppUrl,
+          isHant,
+          dirty: snapshot.dirty,
+          onSelectFile: (idx) => controllerRef.current?.setActiveFileIndex(idx),
+          onCodeChange: handleCodeChange,
+          onRunCode: () => executeInSandbox(),
+          onAddFile: (name, lang) => controllerRef.current?.addFile(name, lang),
+          onDeleteFile: (idx) => controllerRef.current?.deleteFile(idx),
+          onRenameFile: (idx, newName) => controllerRef.current?.renameFile(idx, newName),
+        }}
+        previewProps={{
+          currentExp,
+          files: snapshot.project.files,
+          sessionId: snapshot.sessionId,
+          sandboxSrcDoc: '',
+          sandboxKey: 1,
+          isolationMode,
+          activeExternalOrigin,
+          codeSourceKind,
+          execStatus,
+          lastDurationMs: snapshot.lastDurationMs,
+          failClosedReason: snapshot.failClosedReason,
+          isFullscreenPreview,
+          showTracePanel,
+          activeBottomTab,
+          consoleEntries: snapshot.consoleEntries,
+          runtimeErrors: snapshot.runtimeErrors,
+          iframeRef,
+          isHant,
+          onToggleFullscreen: () => setIsFullscreenPreview((v) => !v),
+          onToggleTracePanel: () => setShowTracePanel((v) => !v),
+          onBridgeIframeLoad: () => {},
+          onRunCode: () => executeInSandbox(),
+          onReload: () => executeInSandbox(),
+          onReconnect: () => executeInSandbox(),
+          onSetActiveBottomTab: setActiveBottomTab,
+          onClearConsole: () => {
+            controllerRef.current?.clearConsole();
+            controllerRef.current?.clearErrors();
+          },
+        }}
+      />
+      {pendingImportBundle && (
+        <LabImportModal
+          bundle={pendingImportBundle}
+          isHant={isHant}
+          onConfirm={handleConfirmImport}
+          onCancel={() => setPendingImportBundle(null)}
+        />
+      )}
+    </>
   );
 };

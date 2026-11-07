@@ -5,6 +5,7 @@ import React from 'react';
 import type { LabExperiment } from '../../lib/lab-schema';
 import type { LabCodeSourceKind, SandboxIsolationMode, SandboxDegradationDecision } from '../../lib/lab-sandbox-protocol';
 import { OFFICIAL_LAB_EXPERIMENTS } from '../../data/lab-experiments';
+import { LAB_SECURITY_LIMITS } from '../../lib/lab-schema';
 
 export interface LabToolbarProps {
   mode: 'full-workshop' | 'detail-embedded';
@@ -14,10 +15,18 @@ export interface LabToolbarProps {
   isolationMode: SandboxIsolationMode;
   degradationPolicy: SandboxDegradationDecision;
   activeExternalOrigin: string | null;
-  execStatus: 'idle' | 'running' | 'completed' | 'error' | 'terminated';
+  execStatus: 'idle' | 'running' | 'completed' | 'error' | 'terminated' | 'connecting' | 'ready' | 'aborted';
   isHant: boolean;
+  dirty?: boolean;
+  runtimeKind?: string;
+  supportedRuntimes?: string[];
+  editorKind?: string;
+  supportedEditors?: string[];
+  totalBytes?: number;
   fileInputRef: React.RefObject<HTMLInputElement | null>;
   onSelectExperiment: (slug: string) => void;
+  onSelectRuntime?: (kind: string) => void;
+  onSelectEditor?: (kind: string) => void;
   onRun: () => void;
   onStop: () => void;
   onReset: () => void;
@@ -39,8 +48,16 @@ export const LabToolbar: React.FC<LabToolbarProps> = ({
   activeExternalOrigin,
   execStatus,
   isHant,
+  dirty = false,
+  runtimeKind = 'browser-dom',
+  supportedRuntimes = ['browser-dom', 'quickjs'],
+  editorKind = 'lite',
+  supportedEditors = ['lite'],
+  totalBytes = 0,
   fileInputRef,
   onSelectExperiment,
+  onSelectRuntime,
+  onSelectEditor,
   onRun,
   onStop,
   onReset,
@@ -53,8 +70,16 @@ export const LabToolbar: React.FC<LabToolbarProps> = ({
 }) => {
   const tr = (zhCn: string, zhHant: string) => (isHant ? zhHant : zhCn);
 
+  // 来源信任徽章文案与样式映射
+  const trustBadgeConfig = {
+    official: { label: tr('官方受信任', '官方受信任'), cls: 'is-official', icon: '🛡️' },
+    imported: { label: tr('外部导入', '外部匯入'), cls: 'is-untrusted', icon: '⚠️' },
+    community: { label: tr('社区代码', '社群程式碼'), cls: 'is-community', icon: '👥' },
+    bundle: { label: tr('分享代码', '分享程式碼'), cls: 'is-untrusted', icon: '🔗' },
+  }[codeSourceKind] || { label: codeSourceKind, cls: '', icon: '❓' };
+
   return (
-    <div className="lab-pg-toolbar theme-card">
+    <div className="lab-pg-toolbar theme-card" role="toolbar" aria-label={tr('试验田工作台工具栏', '實驗田工作台工具列')}>
       <div className="lab-pg-toolbar__left">
         {mode === 'full-workshop' ? (
           <label className="lab-pg-selector-label">
@@ -85,6 +110,59 @@ export const LabToolbar: React.FC<LabToolbarProps> = ({
           </div>
         )}
 
+        {/* 来源信任徽章 */}
+        <span
+          className={`lab-trust-badge ${trustBadgeConfig.cls}`}
+          data-testid="source-trust-badge"
+          title={tr(`代码来源：${codeSourceKind}`, `程式碼來源：${codeSourceKind}`)}
+        >
+          {trustBadgeConfig.icon} {trustBadgeConfig.label}
+        </span>
+
+        {/* 运行时选择器 */}
+        {onSelectRuntime && supportedRuntimes.length > 1 && (
+          <label className="lab-pg-selector-label" style={{ margin: 0 }}>
+            <span className="selector-tag" style={{ fontSize: '11px' }}>Runtime</span>
+            <select
+              value={runtimeKind}
+              onChange={(e) => onSelectRuntime(e.target.value)}
+              className="lab-pg-select"
+              style={{ fontSize: '11px', padding: '3px 8px' }}
+              aria-label={tr('选择执行运行时', '選擇執行執行階段')}
+              data-testid="runtime-selector"
+            >
+              {supportedRuntimes.map((rk) => (
+                <option key={rk} value={rk}>
+                  {rk === 'browser-dom'
+                    ? '🌐 Browser DOM'
+                    : rk === 'quickjs'
+                      ? '⚡ QuickJS WASM'
+                      : '🧭 Curated Trace'}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
+
+        {/* 编辑器选择器 (若启用了 LiveCodes) */}
+        {onSelectEditor && supportedEditors.length > 1 && (
+          <label className="lab-pg-selector-label" style={{ margin: 0 }}>
+            <span className="selector-tag" style={{ fontSize: '11px' }}>Editor</span>
+            <select
+              value={editorKind}
+              onChange={(e) => onSelectEditor(e.target.value)}
+              className="lab-pg-select"
+              style={{ fontSize: '11px', padding: '3px 8px' }}
+              aria-label={tr('选择代码编辑器', '選擇程式碼編輯器')}
+              data-testid="editor-selector"
+            >
+              <option value="lite">Lite Editor</option>
+              <option value="livecodes">LiveCodes (PoC)</option>
+            </select>
+          </label>
+        )}
+
+        {/* 沙盒隔离模式徽章 */}
         <div
           className="lab-security-pill"
           data-testid="lab-security-pill"
@@ -105,9 +183,48 @@ export const LabToolbar: React.FC<LabToolbarProps> = ({
                 : tr('Opaque Fallback · 官方本地隔离', 'Opaque Fallback · 官方本機隔離')}
           </span>
         </div>
+
+        {/* 状态与配额概况 */}
+        <span
+          className={`lab-status-badge is-${execStatus}`}
+          data-testid="execution-status-badge"
+          style={{
+            fontSize: '11px',
+            padding: '2px 8px',
+            borderRadius: '4px',
+            background: 'rgba(255,255,255,0.06)',
+            color: '#94a3b8',
+          }}
+        >
+          {dirty ? '✏️ *' : '✓'}{' '}
+          {execStatus === 'running'
+            ? tr('运行中', '執行中')
+            : execStatus === 'connecting'
+              ? tr('连接中', '連線中')
+              : execStatus === 'ready'
+                ? tr('就绪', '就緒')
+                : execStatus === 'completed'
+                  ? tr('完成', '完成')
+                  : execStatus === 'aborted'
+                    ? tr('已中止', '已中止')
+                    : execStatus === 'error'
+                      ? tr('出错', '出錯')
+                      : tr('空闲', '空閒')}
+        </span>
+
+        {/* 体积配额 */}
+        <span
+          className="ignore-opencc"
+          data-no-translate="true"
+          style={{ fontSize: '11px', color: '#64748b', fontFamily: 'monospace' }}
+          title={tr('源码与总配额', '原始碼與總配額')}
+        >
+          {(totalBytes / 1024).toFixed(1)}KB / {LAB_SECURITY_LIMITS.MAX_TOTAL_SOURCE_BYTES / 1024}KB
+        </span>
       </div>
 
       <div className="lab-pg-toolbar__actions">
+        {/* 一级主要动作 */}
         <button
           type="button"
           onClick={onRun}
@@ -134,6 +251,8 @@ export const LabToolbar: React.FC<LabToolbarProps> = ({
         >
           ↺ {tr('恢复初始', '恢復初始')}
         </button>
+
+        {/* 二级动作组 */}
         <button
           type="button"
           onClick={onCopyCode}
