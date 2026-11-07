@@ -63,7 +63,7 @@
 | **起始审计基线** | `review/lab-phase-2.7-audit` | `79bfafe` (`79bfafe5a9d787d6d592ee5a3631f043b23b257f`) | 公开审计起点，NO-GO 状态已保留 |
 | **主分支当前** | `main` | `2e92967` (`2e92967072febadd70e03d13bfd1cc6e2207bc55`) | 生产对齐基准，无未授权合流 |
 | **治理移植分支** | `chore/governance-bootstrap` | `892bef0` (`892bef07f529c0069a61207d1e3a983711ac4234`) | 四级权限架构已固化，任务记录已归档 |
-| **Phase 2.8 审查分支** | `review/lab-phase-2.8-readiness` | `0f2e166` (`0f2e166cafc6258cc611f8bb831cf44bd9d10f1d`) | 最新就绪 HEAD，包含类型检查修复与 CI 跨浏览器同步加固 |
+| **Phase 2.8 审查分支** | `review/lab-phase-2.8-readiness` | `35145a4` (`35145a4512b4553f2141a506b837b8011753371d`) | 最终就绪 HEAD，包含类型检查修复、严重漏洞门禁与 WebKit 跨浏览器测试全绿 |
 
 ### 2.2 权限边界与历史授权审计
 
@@ -420,6 +420,20 @@ export type SandboxToHostMessage =
 | **8. 供应链与依赖规范 (supplyChainAndLockfile)** | **PASS** | Astro 7.3.8 锁定，唯一 lockfile，类型门禁就绪 |
 | **9. Git 差异与主分支保护 (gitDiffAndMainProtection)** | **PASS** | 对齐 main SHA `2e92967`，保护分支零污染 |
 | **10. 回滚就绪性 (rollbackReadiness)** | **PASS** | 验证目标 SHA `2e92967` 与生产部署 ID `15603502` |
+
+### 12.1 GitHub Actions 远端真实 CI 门禁验证 (Remote CI Verification)
+
+- **工作流名称**: `Lab Release & Security Gate` (`.github/workflows/lab-ci-gate.yml`)
+- **远端运行标识**: [Run #42379520406](https://github.com/shijianus/astro-theme-shijianus/actions/runs/42379520406)
+- **触发分支与提交**: `review/lab-phase-2.8-readiness` @ `35145a4`
+- **运行结论**: **✓ SUCCESS** (全量 4 个并行矩阵 Job 全部绿灯)
+
+| 矩阵任务 (Matrix Job) | Job ID | 执行耗时 | 最终结论 | 验证范围 |
+| :--- | :--- | :---: | :---: | :--- |
+| **Static Build, Security Headers, Secrets & Supply-Chain Gate** | `128423994461` | 1m 28s | **✓ PASS** | Astro 类型门禁 (`astro check` 0 错误)、Critical 漏洞审计、品牌检查、静态构建与 10 项发布门禁 |
+| **Playwright Lab E2E (chromium)** | `128423994711` | 2m 39s | **✓ PASS** | Chromium 内核真实跨站/隔离/熔断/Fail-Closed 全矩阵模拟 |
+| **Playwright Lab E2E (firefox)** | `128423994684` | 2m 46s | **✓ PASS** | Firefox 内核真实跨站/隔离/熔断/Fail-Closed 全矩阵模拟 |
+| **Playwright Lab E2E (webkit)** | `128423994658` | 3m 28s | **✓ PASS** | WebKit 内核真实跨站/隔离/熔断/Fail-Closed 全矩阵模拟 |
 
 ---
 
