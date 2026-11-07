@@ -34,6 +34,11 @@
     "brand": "node scripts/brand-banner.mjs",
     "test:brand": "node scripts/brand-banner.mjs",
     "test:i18n": "node scripts/audit-article-translation-variants.mjs",
+    "test:lab:gate": "node scripts/verify-lab-release-gate.mjs",
+    "test:lab:browsers": "node scripts/verify-lab-platform.mjs",
+    "test:lab:preview": "node scripts/verify-lab-cloudflare-preview.mjs",
+    "sandbox:dry-run:prod": "node scripts/deploy-lab-sandbox.mjs --project-name epocanvas-lab-sandbox --env production --dry-run",
+    "sandbox:dry-run:staging": "node scripts/deploy-lab-sandbox.mjs --project-name epocanvas-lab-sandbox-staging --env staging --dry-run",
     "test": "node scripts/brand-banner.mjs",
     "preview": "astro preview",
     "astro": "astro"

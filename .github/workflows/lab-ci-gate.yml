@@ -1,0 +1,85 @@
+name: Lab Release & Security Gate
+
+on:
+  pull_request:
+    branches:
+      - main
+      - "review/lab-**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: lab-ci-gate-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  security-and-static-gate:
+    name: Static Build, Security Headers, Secrets & Supply-Chain Gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a # v4.2.0
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Install dependencies (deterministic lockfile)
+        run: npm ci
+
+      - name: Audit high/critical npm advisories
+        run: npm audit --registry=https://registry.npmjs.org --audit-level=high
+
+      - name: Brand compliance check
+        run: npm run test:brand
+
+      - name: Build static site (Fail-Closed unconfigured sandbox baseline)
+        env:
+          PUBLIC_LAB_SANDBOX_ORIGIN: ""
+        run: npm run build
+
+      - name: Run 10-point Lab release & zero-function sandbox dry-run gate
+        run: npm run test:lab:gate
+
+  cross-browser-matrix:
+    name: Playwright Lab E2E (${{ matrix.browser }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox, webkit]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a # v4.2.0
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright ${{ matrix.browser }} browser
+        run: npx playwright install --with-deps ${{ matrix.browser }}
+
+      - name: Build static site
+        env:
+          PUBLIC_LAB_SANDBOX_ORIGIN: ""
+        run: npm run build
+
+      - name: Run Lab security & cross-origin simulation suite (${{ matrix.browser }})
+        env:
+          TARGET_BROWSER: ${{ matrix.browser }}
+        run: npm run test:lab:browsers

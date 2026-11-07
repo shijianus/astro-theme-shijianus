@@ -650,7 +650,7 @@ async function runBrowserSuite(browserName, browserType) {
     assert.equal(await page.evaluate(() => Boolean(window.__host_xss_pwned)), false);
     engineReport.security.opaqueAndCspIsolation = 'PASS';
 
-    // 3.3 防篡改死循环保护 (`performance.now = () => 0` + `try/catch` 绕过尝试)
+    // 3.3 防篡改死循环保护 (`performance.now = () => 0` + `try/catch` + 无花括号 `for..of` 无限迭代器 + `for` 头部 IIFE)
     await clickTarget(page.getByTestId('btn-reset-code'));
     await clickTarget(page.locator('[data-file-tab="script.js"]'));
     await page.waitForSelector('[data-file-tab="script.js"][aria-selected="true"]', { timeout: 5000 });
@@ -666,15 +666,41 @@ async function runBrowserSuite(browserName, browserType) {
       loopErr.includes('[Sandbox Timeout]'),
       `[${browserName}] 篡改 performance.now 的死循环仍须触发 [Sandbox Timeout]，实际: ${loopErr}`
     );
-    engineReport.security.tamperProofLoopGuard = `PASS (${loopElapsed}ms)`;
 
-    // 3.4 定时器配额与 Console 洪泛及伪造消息防护
+    // Phase 2.7 回归：无花括号单语句 `for (const x of infIter) count++;` 死循环插桩拦截
+    await page
+      .getByTestId('lab-code-textarea')
+      .fill('const inf = { [Symbol.iterator]() { return { next() { return { value: 1, done: false }; } }; } };\nlet c = 0;\nfor (const x of inf) c += x;');
+    await clickTarget(page.getByTestId('btn-run-code'));
+    await page.waitForSelector('[data-testid="runtime-error-item"]', { timeout: 6000 });
+    assert.ok(
+      (await page.getByTestId('runtime-error-list').innerText()).includes('[Sandbox Timeout]'),
+      `[${browserName}] 无花括号 for..of 无限迭代器必须触发 [Sandbox Timeout]`
+    );
+    engineReport.security.tamperProofLoopGuard = `PASS (${loopElapsed}ms + braceless for..of)`;
+
+    // 3.4 定时器配额、requestAnimationFrame 洪泛配额、超大 TypedArray 有界序列化与伪造消息防护
     await page
       .getByTestId('lab-code-textarea')
       .fill('for (let i = 0; i < 400; i++) { setInterval(() => {}, 50); }');
     await clickTarget(page.getByTestId('btn-run-code'));
     await page.waitForTimeout(500);
     assert.ok((await page.getByTestId('runtime-error-list').innerText()).includes('并发计时器数量超过安全上限'));
+
+    await page
+      .getByTestId('lab-code-textarea')
+      .fill('console.log(new Uint8Array(4 * 1024 * 1024));\nfor (let i = 0; i < 400; i++) { requestAnimationFrame(() => {}); }');
+    await clickTarget(page.getByTestId('btn-run-code'));
+    await page.waitForTimeout(500);
+    assert.ok(
+      (await page.getByTestId('runtime-error-list').innerText()).includes('并发 requestAnimationFrame 回调超过安全上限'),
+      `[${browserName}] requestAnimationFrame 洪泛必须触发 256 上限拦截`
+    );
+    await clickTarget(page.getByTestId('tab-console'));
+    assert.ok(
+      (await page.getByTestId('console-log-list').innerText()).includes('[Uint8Array 4194304 bytes]'),
+      `[${browserName}] 超大 TypedArray 必须走有界摘要序列化而非全量 JSON.stringify`
+    );
 
     await page
       .getByTestId('lab-code-textarea')
@@ -801,7 +827,54 @@ async function runBrowserSuite(browserName, browserType) {
     assert.equal(await page.locator('#lab-playground-workspace').getAttribute('data-fail-closed'), 'true');
     assert.equal(await page.getByTestId('sandbox-fail-closed-banner').isVisible(), true);
     assert.equal(await page.getByTestId('lab-sandbox-iframe').count(), 0);
-    engineReport.degradationPolicy.unconfiguredSandboxFailClosed = 'PASS (imported / community / #bundle= all fail-closed)';
+
+    // (d) Phase 2.7 回归：损坏/非法的 #bundle= 载荷必须直接 Fail-Closed，严禁静默回退自动运行默认官方实验
+    await page.goto(
+      `${BASE_URL}/lab/playground/?slug=star-trails-simulator#bundle=!!!malformed_corrupted_payload`,
+      { waitUntil: 'domcontentloaded' }
+    );
+    await page.waitForTimeout(250);
+    assert.equal(await page.locator('#lab-playground-workspace').getAttribute('data-source-kind'), 'bundle');
+    assert.equal(await page.locator('#lab-playground-workspace').getAttribute('data-fail-closed'), 'true');
+    assert.equal(await page.locator('#lab-playground-workspace').getAttribute('data-exec-status'), 'error');
+    assert.equal(await page.getByTestId('sandbox-fail-closed-banner').isVisible(), true);
+    assert.equal(
+      await page.getByTestId('lab-sandbox-iframe').count(),
+      0,
+      '损坏的 #bundle= 严禁回退自动运行官方预设实验'
+    );
+
+    // (e) Phase 2.7 回归：防止 localStorage 草稿伪造 draftOriginKind="official" 洗白非官方代码
+    await page.goto(`${BASE_URL}/lab/playground/?slug=star-trails-simulator`, {
+      waitUntil: 'domcontentloaded',
+    });
+    await page.waitForSelector('#lab-playground-workspace', { timeout: 8000 });
+    await page.evaluate((tamperedBase) => {
+      const forgedDraft = {
+        ...tamperedBase,
+        slug: 'star-trails-simulator',
+        draftOriginKind: 'official',
+        files: [
+          { name: 'index.html', language: 'html', content: '<div>Tampered Draft</div>' },
+          { name: 'script.js', language: 'javascript', content: 'console.log("LAUNDERED_DRAFT");' },
+        ],
+      };
+      window.localStorage.setItem('shijianus-lab-draft-v1', JSON.stringify(forgedDraft));
+    }, exportedJson);
+    await clickTarget(page.getByTestId('btn-load-draft'));
+    await page.waitForTimeout(200);
+    assert.equal(
+      await page.locator('#lab-playground-workspace').getAttribute('data-source-kind'),
+      'imported',
+      '被篡改的草稿即使声称 draftOriginKind="official" 也必须降级为 imported'
+    );
+    assert.equal(await page.getByTestId('lab-sandbox-iframe').count(), 0);
+    await clickTarget(page.getByTestId('btn-run-code'));
+    await page.waitForTimeout(200);
+    assert.equal(await page.locator('#lab-playground-workspace').getAttribute('data-fail-closed'), 'true');
+    assert.equal(await page.getByTestId('lab-sandbox-iframe').count(), 0);
+    engineReport.degradationPolicy.unconfiguredSandboxFailClosed =
+      'PASS (imported / community / #bundle= / malformed-#bundle= / tampered-draft all fail-closed)';
 
     // =========================================================================
     // Part 4: 多 Origin 跨站沙盒联调 (`127.0.0.1:4357` <-> `localhost:4356`) 与故障分级演练
@@ -870,6 +943,22 @@ async function runBrowserSuite(browserName, browserType) {
     );
     await clickTarget(page.getByTestId('tab-console'));
     assert.ok((await page.getByTestId('console-log-list').innerText()).includes('BUNDLE_CROSS_SITE_OK'));
+
+    // 4.1b 页面跳转与资源清理核验：点击停止按钮销毁 iframe，再跨页跳转至 /lab/ 验证零残留与零异常
+    if ((await page.locator('[data-testid="btn-stop-sandbox"]').count()) > 0) {
+      await clickTarget(page.getByTestId('btn-stop-sandbox'));
+      await page.waitForTimeout(150);
+      assert.equal(await page.getByTestId('lab-sandbox-iframe').count(), 0, '点击停止后必须立即卸载沙盒 iframe');
+    }
+    await page.goto(`${CROSS_MAIN_URL}/lab/`, { waitUntil: 'domcontentloaded' });
+    await page.waitForSelector('#lab-dashboard', { timeout: 8000 });
+    assert.equal(await page.getByTestId('lab-sandbox-iframe').count(), 0, '跨页跳转后不得残留沙盒 iframe');
+
+    await page.goto(
+      `${CROSS_MAIN_URL}/lab/playground/?slug=star-trails-simulator#bundle=${encodedHash}`,
+      { waitUntil: 'domcontentloaded' }
+    );
+    await page.waitForTimeout(200);
 
     // 4.2 关闭跨站沙盒服务器模拟远端不可达：
     //     - #bundle= / community / imported 代码必须 3s 超时后立即失败关闭 (Fail-Closed)，严禁回退 srcdoc！
@@ -975,13 +1064,67 @@ async function runBrowserSuite(browserName, browserType) {
       }
     });
 
+    // 无障碍基础核验 (Accessibility Baseline: html[lang], landmarks, ARIA roles, accessible names)
+    const a11yAudit = await page.evaluate(() => {
+      const ws = document.querySelector('#lab-playground-workspace');
+      const unnamedButtons = ws
+        ? Array.from(ws.querySelectorAll('button')).filter((btn) => {
+            const name =
+              (btn.textContent || '').trim() ||
+              (btn.getAttribute('aria-label') || '').trim() ||
+              (btn.getAttribute('title') || '').trim();
+            return !name;
+          }).length
+        : -1;
+      const textarea = document.querySelector('[data-testid="lab-code-textarea"]');
+      const iframe = document.querySelector('[data-testid="lab-sandbox-iframe"]');
+      const tablists = ws ? ws.querySelectorAll('[role="tablist"]').length : 0;
+      const selectedTabs = ws ? ws.querySelectorAll('[role="tab"][aria-selected="true"]').length : 0;
+      return {
+        htmlLang: document.documentElement.getAttribute('lang') || '',
+        hasMainLandmark: Boolean(document.querySelector('main')),
+        hasHeading1: Boolean(document.querySelector('h1')),
+        textareaAriaLabel: textarea?.getAttribute('aria-label') || '',
+        iframeTitle: iframe?.getAttribute('title') || '',
+        tablists,
+        selectedTabs,
+        unnamedButtons,
+      };
+    });
+    assert.ok(a11yAudit.htmlLang.startsWith('zh'), 'html[lang] 必须声明中文语言属性');
+    assert.equal(a11yAudit.hasMainLandmark, true, '页面必须包含 <main> 语义地标');
+    assert.equal(a11yAudit.hasHeading1, true, '页面必须包含一级标题 <h1>');
+    assert.ok(a11yAudit.textareaAriaLabel.length > 0, '代码编辑器 textarea 必须提供 aria-label');
+    assert.ok(a11yAudit.iframeTitle.length > 0, '隔离沙盒 iframe 必须提供可访问性 title');
+    assert.ok(a11yAudit.tablists >= 2 && a11yAudit.selectedTabs >= 2, 'Tab 切换栏必须具备标准 ARIA tablist/tab 属性');
+    assert.equal(a11yAudit.unnamedButtons, 0, '工作台内所有交互按钮必须具备可访问名称');
+    engineReport.functional.accessibilityBaseline = 'PASS';
+
     await page.goto(`${BASE_URL}/lab/preview/star-trails-simulator/`, { waitUntil: 'domcontentloaded' });
     await page.waitForSelector('[data-testid="standalone-preview-iframe"]', { timeout: 10000 });
+    assert.equal((await page.locator('h1').count()) >= 1, true, '独立预览页必须包含语义化一级标题 <h1>');
     assert.equal(
       await page.getByTestId('standalone-preview-iframe').getAttribute('sandbox'),
       'allow-scripts'
     );
     assert.equal(await page.getByTestId('preview-fallback-banner').isVisible(), true);
+
+    // Phase 2.7 回归：独立预览页每次加载与重置必须动态轮换 CSPRNG sessionId 与一次性 CSP Nonce
+    const previewSession1 = await page.getByTestId('standalone-preview-iframe').getAttribute('data-session-id');
+    const previewSrcDoc1 = await page.getByTestId('standalone-preview-iframe').getAttribute('srcdoc');
+    assert.match(previewSession1 || '', /^lab-sess-[0-9a-f]{32}$/);
+    const nonceMatch1 = (previewSrcDoc1 || '').match(/nonce-(labnonce[0-9a-f]{32})/);
+    assert.ok(nonceMatch1, `[${browserName}] 独立预览页运行时必须签发随机 CSP Nonce`);
+
+    await clickTarget(page.locator('#btn-preview-reload'));
+    await page.waitForTimeout(150);
+    const previewSession2 = await page.getByTestId('standalone-preview-iframe').getAttribute('data-session-id');
+    const previewSrcDoc2 = await page.getByTestId('standalone-preview-iframe').getAttribute('srcdoc');
+    const nonceMatch2 = (previewSrcDoc2 || '').match(/nonce-(labnonce[0-9a-f]{32})/);
+    assert.match(previewSession2 || '', /^lab-sess-[0-9a-f]{32}$/);
+    assert.ok(nonceMatch2);
+    assert.notEqual(previewSession2, previewSession1, '重置独立预览页必须轮换全新 sessionId');
+    assert.notEqual(nonceMatch2[1], nonceMatch1[1], '重置独立预览页必须轮换全新一次性 CSP Nonce');
 
     await resetPage();
     await page.setViewportSize({ width: 390, height: 844 });

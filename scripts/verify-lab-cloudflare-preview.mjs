@@ -13,8 +13,22 @@
 import { chromium, firefox, webkit } from 'playwright';
 import http from 'node:http';
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import assert from 'node:assert/strict';
+
+function hasExternalIpv6Interface() {
+  const nets = os.networkInterfaces();
+  for (const entries of Object.values(nets)) {
+    if (!entries) continue;
+    for (const info of entries) {
+      if (!info.internal && info.family === 'IPv6' && !info.address.toLowerCase().startsWith('fe80:')) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
 
 const PREVIEW_BASE_URL = (process.env.PREVIEW_BASE_URL || '').trim().replace(/\/+$/, '');
 const SANDBOX_ORIGIN_URL = (process.env.SANDBOX_ORIGIN_URL || '').trim().replace(/\/+$/, '');
@@ -183,7 +197,12 @@ async function runLiveBrowserSuite(browserName, browserType, unauthorizedPort) {
     uncaughtPageErrors: 0,
   };
 
-  const browser = await browserType.launch({ headless: true });
+  const launchOpts = { headless: true };
+  if (browserName === 'firefox' && !hasExternalIpv6Interface()) {
+    // 在纯 IPv4 Linux 容器/CI 环境中对齐 Chromium/WebKit 的 AI_ADDRCONFIG 行为，避免无 IPv6 路由时死等 5s AAAA DNS 超时
+    launchOpts.firefoxUserPrefs = { 'network.dns.disableIPv6': true };
+  }
+  const browser = await browserType.launch(launchOpts);
   result.version = browser.version();
 
   try {
