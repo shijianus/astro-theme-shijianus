@@ -5,6 +5,9 @@ on:
     branches:
       - main
       - "review/lab-**"
+  push:
+    branches:
+      - "review/lab-**"
   workflow_dispatch:
 
 permissions:
@@ -33,6 +36,9 @@ jobs:
 
       - name: Install dependencies (deterministic lockfile)
         run: npm ci
+
+      - name: Type check (astro check)
+        run: npm run check
 
       - name: Audit high/critical npm advisories
         run: npm audit --registry=https://registry.npmjs.org --audit-level=high
