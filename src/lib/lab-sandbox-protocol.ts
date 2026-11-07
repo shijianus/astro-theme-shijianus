@@ -665,6 +665,12 @@ export function buildIsolatedSandboxSrcDoc(options: {
   var origClearTimeout = window.clearTimeout.bind(window);
   var origSetInterval = window.setInterval.bind(window);
   var origClearInterval = window.clearInterval.bind(window);
+  var origRequestAnimationFrame = typeof window.requestAnimationFrame === 'function'
+    ? window.requestAnimationFrame.bind(window)
+    : null;
+  var origCancelAnimationFrame = typeof window.cancelAnimationFrame === 'function'
+    ? window.cancelAnimationFrame.bind(window)
+    : null;
   var origPerfNow = (typeof performance !== 'undefined' && performance && typeof performance.now === 'function')
     ? performance.now.bind(performance)
     : Date.now.bind(Date);
@@ -674,17 +680,78 @@ export function buildIsolatedSandboxSrcDoc(options: {
   var errorCount = 0;
   var truncatedNotified = false;
   var timerLimitWarned = false;
+  var rafLimitWarned = false;
   var activeTimers = new Set();
+  var activeRafs = new Set();
 
-  function formatValue(val, depth) {
-    if (depth > 2) return '[Object]';
+  function formatValue(val, depth, seen) {
     if (val === undefined) return 'undefined';
     if (val === null) return 'null';
-    if (typeof val === 'function') return '[Function: ' + (val.name || 'anonymous') + ']';
+    var t = typeof val;
+    if (t === 'string') {
+      if (depth > 0) {
+        var sliced = val.length > 256 ? val.slice(0, 256) + '...[+' + (val.length - 256) + ' chars]' : val;
+        return JSON.stringify(sliced);
+      }
+      return val;
+    }
+    if (t === 'number' || t === 'boolean' || t === 'bigint' || t === 'symbol') {
+      return String(val);
+    }
+    if (t === 'function') return '[Function: ' + (val.name || 'anonymous') + ']';
     if (val instanceof Error) return val.name + ': ' + val.message;
-    if (typeof val === 'object') {
+    if (typeof ArrayBuffer !== 'undefined') {
+      if (val instanceof ArrayBuffer) return '[ArrayBuffer ' + val.byteLength + ' bytes]';
+      if (typeof ArrayBuffer.isView === 'function' && ArrayBuffer.isView(val)) {
+        var ctorName = (val.constructor && val.constructor.name) || 'TypedArray';
+        return '[' + ctorName + ' ' + val.byteLength + ' bytes]';
+      }
+    }
+    if (t === 'object') {
+      if (depth > 2) return Array.isArray(val) ? '[Array(' + val.length + ')]' : '[Object]';
+      var stack = seen || [];
+      if (stack.indexOf(val) !== -1) return '[Circular]';
+      var nextSeen = stack.concat([val]);
       try {
-        return JSON.stringify(val);
+        if (Array.isArray(val)) {
+          var maxItems = 24;
+          var parts = [];
+          var lim = Math.min(val.length, maxItems);
+          var accLen = 2;
+          for (var idx = 0; idx < lim; idx++) {
+            var itemStr = formatValue(val[idx], depth + 1, nextSeen);
+            accLen += itemStr.length + 2;
+            if (accLen > MAX_MSG_LEN) {
+              parts.push('...[truncated]');
+              break;
+            }
+            parts.push(itemStr);
+          }
+          if (val.length > maxItems && parts[parts.length - 1] !== '...[truncated]') {
+            parts.push('...+' + (val.length - maxItems) + ' more');
+          }
+          return '[' + parts.join(',') + ']';
+        }
+        var keys = Object.keys(val);
+        var maxKeys = 24;
+        var kvParts = [];
+        var kLim = Math.min(keys.length, maxKeys);
+        var objAccLen = 2;
+        for (var kIdx = 0; kIdx < kLim; kIdx++) {
+          var k = keys[kIdx];
+          var vStr = formatValue(val[k], depth + 1, nextSeen);
+          var entryStr = JSON.stringify(k) + ':' + vStr;
+          objAccLen += entryStr.length + 2;
+          if (objAccLen > MAX_MSG_LEN) {
+            kvParts.push('"...":"[truncated]"');
+            break;
+          }
+          kvParts.push(entryStr);
+        }
+        if (keys.length > maxKeys && kvParts[kvParts.length - 1] !== '"...":"[truncated]"') {
+          kvParts.push('"...":"+' + (keys.length - maxKeys) + ' keys"');
+        }
+        return '{' + kvParts.join(',') + '}';
       } catch (_e) {
         return Object.prototype.toString.call(val);
       }
@@ -743,14 +810,15 @@ export function buildIsolatedSandboxSrcDoc(options: {
       level: level,
       args: formatted
     });
+    return formatted;
   }
 
   var origConsole = window.console || {};
   window.console = {
-    log: function() { pushConsole('log', arguments); if (origConsole.log) origConsole.log.apply(origConsole, arguments); },
-    info: function() { pushConsole('info', arguments); if (origConsole.info) origConsole.info.apply(origConsole, arguments); },
-    warn: function() { pushConsole('warn', arguments); if (origConsole.warn) origConsole.warn.apply(origConsole, arguments); },
-    error: function() { pushConsole('error', arguments); if (origConsole.error) origConsole.error.apply(origConsole, arguments); },
+    log: function() { var f = pushConsole('log', arguments); if (f && origConsole.log) origConsole.log.apply(origConsole, f); },
+    info: function() { var f = pushConsole('info', arguments); if (f && origConsole.info) origConsole.info.apply(origConsole, f); },
+    warn: function() { var f = pushConsole('warn', arguments); if (f && origConsole.warn) origConsole.warn.apply(origConsole, f); },
+    error: function() { var f = pushConsole('error', arguments); if (f && origConsole.error) origConsole.error.apply(origConsole, f); },
     clear: function() { pushConsole('info', ['[console.clear]']); }
   };
 
@@ -862,10 +930,46 @@ export function buildIsolatedSandboxSrcDoc(options: {
     return origClearInterval(id);
   };
 
-  // 支持宿主动态同步深浅色主题，无需销毁重置运行中的画布状态
+  if (origRequestAnimationFrame && origCancelAnimationFrame) {
+    window.requestAnimationFrame = function(callback) {
+      if (typeof callback !== 'function') {
+        pushConsole('warn', ['[Sandbox Policy] 已拦截非函数形式的 requestAnimationFrame 调用']);
+        return 0;
+      }
+      if (activeRafs.size >= MAX_TIMERS) {
+        if (!rafLimitWarned) {
+          rafLimitWarned = true;
+          reportError('[Sandbox Protection] 并发 requestAnimationFrame 回调超过安全上限 (' + MAX_TIMERS + ')，已阻断后续帧回调排队。', null, null);
+        }
+        return 0;
+      }
+      var id = origRequestAnimationFrame(function(ts) {
+        activeRafs.delete(id);
+        try {
+          callback(ts);
+        } catch (err) {
+          reportError(err && err.message ? err.message : err, null, null, err && err.stack);
+        }
+      });
+      activeRafs.add(id);
+      return id;
+    };
+
+    window.cancelAnimationFrame = function(id) {
+      activeRafs.delete(id);
+      return origCancelAnimationFrame(id);
+    };
+  }
+
+  // 支持宿主动态同步深浅色主题，无需销毁重置运行中的画布状态（严格核验当前会话 ID）
   window.addEventListener('message', function(evt) {
     if (!evt || evt.source !== window.parent || !evt.data || typeof evt.data !== 'object') return;
-    if (evt.data.protocol === PROTOCOL && evt.data.type === 'SET_THEME' && evt.data.payload) {
+    if (
+      evt.data.protocol === PROTOCOL &&
+      evt.data.sessionId === SESSION_ID &&
+      evt.data.type === 'SET_THEME' &&
+      evt.data.payload
+    ) {
       var nextTheme = evt.data.payload.theme === 'dark' ? 'dark' : 'light';
       document.documentElement.setAttribute('data-theme', nextTheme);
     }

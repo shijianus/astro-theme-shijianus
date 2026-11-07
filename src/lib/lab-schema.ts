@@ -2726,7 +2726,14 @@ export function instrumentJavaScriptLoops(
 
           if (topSemis.length === 2) {
             const [semi1, semi2] = topSemis;
-            for (let x = i; x <= semi1; x++) out.push(tokens[x].value);
+            for (let x = i; x <= openParen; x++) out.push(tokens[x].value);
+            const initRaw = tokens
+              .slice(openParen + 1, semi1)
+              .map((t) => t.value)
+              .join('');
+            out.push(instrumentJavaScriptLoops(initRaw, guardIdent));
+            out.push(';');
+
             const condRaw = tokens
               .slice(semi1 + 1, semi2)
               .map((t) => t.value)
@@ -2738,16 +2745,26 @@ export function instrumentJavaScriptLoops(
             } else {
               out.push(` ${guardIdent}(), true${condRaw}`);
             }
-            const updateRaw = tokens
-              .slice(semi2, closeParen + 1)
+
+            out.push(';');
+            const updateBodyRaw = tokens
+              .slice(semi2 + 1, closeParen)
               .map((t) => t.value)
               .join('');
-            out.push(updateRaw);
+            out.push(instrumentJavaScriptLoops(updateBodyRaw, guardIdent));
+            out.push(')');
             i = closeParen + 1;
             continue;
           } else {
-            // `for (const x of arr)` / `for (const k in obj)`：在循环体入口插桩
-            for (let x = i; x <= closeParen; x++) out.push(tokens[x].value);
+            // `for (const x of arr)` / `for (const k in obj)`：同时对括号内表达式与循环体（含无花括号单语句体）插桩
+            for (let x = i; x <= openParen; x++) out.push(tokens[x].value);
+            const headerInnerRaw = tokens
+              .slice(openParen + 1, closeParen)
+              .map((t) => t.value)
+              .join('');
+            out.push(instrumentJavaScriptLoops(headerInnerRaw, guardIdent));
+            out.push(')');
+
             const afterFor = nextSigIndex(tokens, closeParen + 1);
             if (afterFor !== -1 && tokens[afterFor].kind === 'punct') {
               if (tokens[afterFor].value === '{') {
@@ -2762,6 +2779,11 @@ export function instrumentJavaScriptLoops(
                 i = afterFor + 1;
                 continue;
               }
+            }
+            if (afterFor !== -1) {
+              // 无花括号单语句循环体（如 `for (const x of infIter) count++;`）：
+              // 使用完备闭合的 `if (guard(), false) {} else ` 前缀，既保持原始行号与 break/continue 语义，又杜绝悬挂 else 歧义
+              out.push(` if (${guardIdent}(), false) {} else `);
             }
             i = closeParen + 1;
             continue;
