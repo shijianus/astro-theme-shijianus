@@ -19,6 +19,9 @@ import PromoWidgetCard from './PromoWidgetCard.astro';
 interface Props extends SidebarData {
   pageType?: string;
   asideId?: string;
+  lang?: string;
+  previousPost?: any;
+  nextPost?: any;
 }
 
 type TocHeading = Props['headings'][number];
@@ -247,7 +250,7 @@ const resolvedWebinfoItems = configuredWebinfoItems.map((item: any) => {
     label: item.label || def.label,
     value: item.value || def.value,
     href: item.href === 'auto' ? def.href : (item.href ?? def.href),
-    tooltip: item.tooltip ?? def.tooltip,
+    tooltip: (item as any).tooltip ?? (def as any).tooltip,
   };
 });
 
@@ -306,7 +309,7 @@ const renderTocNodes = (nodes: TocNode[]) =>
         categories: totalCategories,
         tags: totalTags,
       }}
-      stack={siteConfig.aside.stack}
+      stack={[...siteConfig.aside.stack]}
     />
   )}
 

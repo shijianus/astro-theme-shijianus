@@ -1,6 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { parseLrcLike, parseYrc } from '@applemusic-like-lyrics/lyric';
 import { convertText, type LocaleVariant } from '../../lib/client-locale';
+
+export type LyricSyncType = 'none' | 'line' | 'word';
 import {
   Clock,
   Compass,

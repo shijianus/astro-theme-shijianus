@@ -34,8 +34,8 @@ const pubDateFormatted = formatDisplayDate(entry.data.pubDate);
 
 <div
   class="group recent-post-item relative rounded-xl overflow-hidden bg-[var(--card-bg)] flex flex-col border border-[var(--card-border)] shadow-xs hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 cursor-pointer"
-  data-card-id={entry.slug || link || `post-${index}`}
-  data-card-slug={entry.slug || ''}
+  data-card-id={entry.id || link || `post-${index}`}
+  data-card-slug={entry.id || ''}
   data-card-index={index}
   onclick={`location.href='${link}'`}
 >

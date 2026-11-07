@@ -520,7 +520,7 @@
         e.preventDefault();
         dismissHint();
         unfoldAllNodes(root);
-        mm.renderData(root);
+        mm.renderData(root as any);
         setTimeout(() => {
           safeFit();
         }, 380);
@@ -537,7 +537,7 @@
         e.preventDefault();
         dismissHint();
         setFoldLevel(root, 0, 1);
-        mm.renderData(root);
+        mm.renderData(root as any);
         setTimeout(() => {
           safeFit();
         }, 380);

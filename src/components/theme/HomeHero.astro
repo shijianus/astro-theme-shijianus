@@ -16,7 +16,7 @@ const visibleLatestPosts = latestPosts.filter((entry) => !hasPostAccess(entry));
 // Guarantee full, balanced 6-card deck (2 rows of 3 cards)
 const candidatePosts = [
   ...visibleFeaturedPosts,
-  ...visibleLatestPosts.filter((p) => !visibleFeaturedPosts.some((f) => f.slug === p.slug)),
+  ...visibleLatestPosts.filter((p) => !visibleFeaturedPosts.some((f) => f.id === p.id)),
 ];
 const stackPosts = candidatePosts.slice(0, 6);
 const todayPost = stackPosts[0] ?? visibleLatestPosts[0];
@@ -160,7 +160,7 @@ const categoryIconMap: Record<(typeof categoryItems)[number]['icon'], LucideIcon
         <div
           class="recent-post-item"
           data-card-link={getPostPath(entry)}
-          data-card-id={entry.slug || getPostPath(entry)}
+          data-card-id={entry.id || getPostPath(entry)}
           data-card-index={index}
         >
           <div class="post_cover left_radius">

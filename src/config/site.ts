@@ -14,7 +14,14 @@ export type SiteNavIcon =
   | 'rss'
   | 'link'
   | 'book'
-  | 'message';
+  | 'message'
+  | 'flask'
+  | 'music'
+  | 'video'
+  | 'circle-info'
+  | 'user'
+  | 'compass'
+  | 'mug-hot';
 
 export type SiteNavItem = {
   label: string;

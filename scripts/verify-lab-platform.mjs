@@ -941,6 +941,12 @@ async function runBrowserSuite(browserName, browserType) {
       { timeout: 15000, polling: 100 }
     );
     await clickTarget(page.getByTestId('tab-console'));
+    await page.waitForFunction(
+      () =>
+        document.querySelector('[data-testid="console-log-list"]')?.textContent?.includes('IMPORTED_CROSS_SITE_OK'),
+      null,
+      { timeout: 15000, polling: 100 }
+    );
     assert.ok((await page.getByTestId('console-log-list').innerText()).includes('IMPORTED_CROSS_SITE_OK'));
 
     await page.goto(
@@ -956,6 +962,12 @@ async function runBrowserSuite(browserName, browserType) {
       { timeout: 15000, polling: 100 }
     );
     await clickTarget(page.getByTestId('tab-console'));
+    await page.waitForFunction(
+      () =>
+        document.querySelector('[data-testid="console-log-list"]')?.textContent?.includes('BUNDLE_CROSS_SITE_OK'),
+      null,
+      { timeout: 15000, polling: 100 }
+    );
     assert.ok((await page.getByTestId('console-log-list').innerText()).includes('BUNDLE_CROSS_SITE_OK'));
 
     // 4.1b 页面跳转与资源清理核验：点击停止按钮销毁 iframe，再跨页跳转至 /lab/ 验证零残留与零异常

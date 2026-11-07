@@ -806,8 +806,8 @@ export class SnowMantleEngine {
       return false;
     }
 
-    let enableMantle = siteConfig.theme.background.snow?.enableMantle ?? false;
-    let homeOnly = siteConfig.theme.background.snow?.homeOnly ?? false;
+    let enableMantle: boolean = siteConfig.theme.background.snow?.enableMantle ?? false;
+    let homeOnly: boolean = siteConfig.theme.background.snow?.homeOnly ?? false;
 
     // 1. SSR HTML attributes
     if (root?.dataset?.snowMantleEnabled !== undefined) {

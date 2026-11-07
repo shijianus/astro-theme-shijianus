@@ -36,7 +36,7 @@ export interface TranslateArticleOptions {
 
 export interface TranslateArticleResult {
   ok: boolean;
-  translatedMarkdown: string;
+  translatedMarkdown?: string;
   targetLocale: string;
   i18nKey: string;
   provider: string;

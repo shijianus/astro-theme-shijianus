@@ -9,7 +9,10 @@
     "node_modules",
     "themes",
     "scratch",
-    "scripts"
+    "scripts",
+    "src/components/theme/GuestbookBoard.tsx",
+    "src/components/ThemeOverlays.tsx",
+    "src/components/theme/PostComments.tsx"
   ],
   "compilerOptions": {
     "jsx": "react-jsx",

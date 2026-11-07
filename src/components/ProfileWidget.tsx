@@ -32,6 +32,9 @@ type ProfileWidgetProps = {
   };
   stack: string[];
   variant?: 'glass' | 'solid';
+  postCount?: number;
+  wordCount?: number;
+  readingTimeMinutes?: number;
 };
 
 export function ProfileWidget({

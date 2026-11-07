@@ -502,7 +502,7 @@ export function SiteHeader({
       },
     );
     const savedBackground = resolveInitialBackground(
-      savedTheme,
+      savedTheme as any,
       storedBackground,
       {
         defaultBackground: siteConfig.theme.background.defaultMode,
@@ -655,7 +655,7 @@ export function SiteHeader({
     setOpenSubmenuHref(href);
   };
 
-  const queueSubmenuClose = (href?: string) => {
+  const queueSubmenuClose = (href?: string, _delay?: number) => {
     clearSubmenuCloseTimer();
     setOpenSubmenuHref((current) => {
       if (!href || current === href) return null;

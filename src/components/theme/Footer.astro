@@ -40,8 +40,8 @@ const iconMap: Record<string, LucideIcon> = {
                 class="deal_link"
                 href={item.href}
                 title={item.label}
-                target={item.external ? '_blank' : undefined}
-                rel={item.external ? 'noreferrer' : undefined}
+                target={'external' in item && item.external ? '_blank' : undefined}
+                rel={'external' in item && item.external ? 'noreferrer' : undefined}
               >
                 <Icon className="footer-deal-icon" aria-hidden="true" />
               </a>
@@ -72,8 +72,8 @@ const iconMap: Record<string, LucideIcon> = {
                 class="deal_link"
                 href={item.href}
                 title={item.label}
-                target={item.external ? '_blank' : undefined}
-                rel={item.external ? 'noreferrer' : undefined}
+                target={'external' in item && item.external ? '_blank' : undefined}
+                rel={'external' in item && item.external ? 'noreferrer' : undefined}
               >
                 <Icon className="footer-deal-icon" aria-hidden="true" />
               </a>

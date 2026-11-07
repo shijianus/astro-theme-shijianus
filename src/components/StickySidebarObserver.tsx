@@ -85,7 +85,7 @@ export function StickySidebarObserver({ pageType = 'page' }: StickySidebarObserv
 
       card.style.transform = 'none';
       card.dataset.stickyState = stickyState;
-      card.classList.toggle('is-static-layout', stickyState === 'static');
+      card.classList.toggle('is-static-layout', (stickyState as string) === 'static');
       card.classList.add('is-sticky-active');
       syncScrollableOverflow(card);
     };
@@ -180,7 +180,7 @@ export function StickySidebarObserver({ pageType = 'page' }: StickySidebarObserv
         if (track1) {
           const track1Height = track1.offsetHeight;
 
-          if (isCompact) {
+          if (aside.dataset.tocCompact === 'true') {
             // Short TOC Mode: Track 2 is attracted directly beneath Track 1 during article reading!
             if (copyrightTop > topOffset + track1Height + 16) {
               // Reading article: Track 2 sits directly below Track 1

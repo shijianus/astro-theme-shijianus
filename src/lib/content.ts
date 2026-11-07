@@ -5,6 +5,7 @@ type PostEntry = CollectionEntry<'posts'>;
 export const PROTECTED_POST_TITLE = '受限文章';
 export const PROTECTED_POST_SUMMARY = '这篇文章设置了访问条件，需完成验证后才会展示正文。';
 export const PROTECTED_POST_CATEGORY = '受限内容';
+export const PROTECTED_POST_GROUP = 'protected';
 export const DEFAULT_POST_COVER = '/media/shijianus/default.png';
 export const REMOTE_FALLBACK_COVER =
   'https://drawing.shijian.qzz.io/file/AgACAgEAAyEGAAS6jkJbAAMUapQaP6X-fJmi1j0qYD5NgooECLwAAlEMaxuQM6BEoSo1dHbP8ioBAAMCAAN3AAM9BA.png';

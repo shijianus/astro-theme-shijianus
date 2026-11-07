@@ -172,7 +172,7 @@ const paypalUkMeUrl =
   'https://www.paypal.com/paypalme/shijianus';
 
 const isHomePage = pageType === 'home' || Astro.url.pathname === '/' || /^\/(?:page\/\d+)$/.test(Astro.url.pathname);
-const snowConfig = siteConfig.theme.background.snow || { enableMantle: false, homeOnly: false };
+const snowConfig = (siteConfig.theme.background.snow || { enableMantle: false, homeOnly: false }) as any;
 const isMantleActiveOnThisPage = Boolean(
   (snowConfig.enableMantle ?? snowConfig.enableAccumulation ?? false) &&
   (!(snowConfig.homeOnly ?? snowConfig.onlyHome ?? false) || isHomePage)
@@ -471,7 +471,7 @@ const isMantleActiveOnThisPage = Boolean(
         quickActions={siteConfig.navigation.quickActions}
         stats={overlayStats}
         features={overlayFeatures}
-        particleCount={siteConfig.post.hero.motionParticles}
+        particleCount={(siteConfig.post.hero as any).motionParticles ?? 0}
         defaultBackground={siteConfig.theme.background.defaultMode}
         darkBackground={siteConfig.theme.background.darkMode}
         backgroundModes={siteConfig.theme.background.modes}
