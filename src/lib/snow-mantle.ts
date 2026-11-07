@@ -151,7 +151,7 @@ export type SnowArchetype =
   | 'quad-hill'
   | 'thick-plateau'
   | 'icicle-curtain'
-  | 'corner-caps'
+  | 'central-cushion'
   | 'scalloped-crest'
   | 'alpine-ridge-left'
   | 'alpine-ridge-right'

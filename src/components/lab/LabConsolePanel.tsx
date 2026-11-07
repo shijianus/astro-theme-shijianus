@@ -1,16 +1,19 @@
 /**
- * Astro Blog「试验田 Lab」控制台与错误日志面板组件
+ * Astro Blog「试验田 Lab」控制台、错误列表与安全契约抽屉组件
  */
 import React from 'react';
-import type { SandboxConsoleEntry, SandboxRuntimeError } from '../../lib/lab-sandbox-protocol';
+import type { SandboxConsoleEntry, SandboxRuntimeError, SandboxIsolationMode } from '../../lib/lab-sandbox-protocol';
+import { LAB_SECURITY_LIMITS } from '../../lib/lab-schema';
 
 export interface LabConsolePanelProps {
-  activeBottomTab: 'console' | 'errors' | 'security' | 'trace';
-  setActiveBottomTab: (tab: 'console' | 'errors' | 'security' | 'trace') => void;
+  activeBottomTab: 'console' | 'errors' | 'security';
+  setActiveBottomTab: (tab: 'console' | 'errors' | 'security') => void;
   consoleEntries: SandboxConsoleEntry[];
   runtimeErrors: SandboxRuntimeError[];
   onClearConsole: () => void;
-  showTraceTab?: boolean;
+  isolationMode: SandboxIsolationMode;
+  activeExternalOrigin: string | null;
+  sessionId: string;
   isHant: boolean;
 }
 
@@ -20,139 +23,164 @@ export const LabConsolePanel: React.FC<LabConsolePanelProps> = ({
   consoleEntries,
   runtimeErrors,
   onClearConsole,
-  showTraceTab,
+  isolationMode,
+  activeExternalOrigin,
+  sessionId,
   isHant,
 }) => {
   const tr = (zhCn: string, zhHant: string) => (isHant ? zhHant : zhCn);
 
   return (
-    <div className="lab-console-panel flex flex-col h-full bg-slate-950 text-slate-200 font-mono text-xs overflow-hidden">
-      {/* 选项卡栏 */}
-      <div className="flex items-center justify-between px-3 bg-slate-900 border-b border-slate-800">
-        <div className="flex items-center gap-2">
+    <div className="lab-console-drawer">
+      <div className="console-tabs-bar">
+        <div className="console-tabs" role="tablist">
           <button
             type="button"
+            role="tab"
+            aria-selected={activeBottomTab === 'console'}
             onClick={() => setActiveBottomTab('console')}
-            className={`px-3 py-1.5 text-xs font-medium border-b-2 transition ${
-              activeBottomTab === 'console'
-                ? 'border-blue-500 text-blue-400 font-semibold'
-                : 'border-transparent text-slate-400 hover:text-slate-200'
-            }`}
+            className={`console-tab ${activeBottomTab === 'console' ? 'is-active' : ''}`}
+            data-testid="tab-console"
           >
-            {tr('控制台', '主控台')} ({consoleEntries.length})
+            {tr('Console 输出', 'Console 輸出')} ({consoleEntries.length})
           </button>
-
           <button
             type="button"
+            role="tab"
+            aria-selected={activeBottomTab === 'errors'}
             onClick={() => setActiveBottomTab('errors')}
-            className={`px-3 py-1.5 text-xs font-medium border-b-2 transition ${
-              activeBottomTab === 'errors'
-                ? 'border-rose-500 text-rose-400 font-semibold'
-                : 'border-transparent text-slate-400 hover:text-slate-200'
-            }`}
+            className={`console-tab ${
+              activeBottomTab === 'errors' ? 'is-active' : ''
+            } ${runtimeErrors.length > 0 ? 'has-error' : ''}`}
+            data-testid="tab-errors"
           >
-            {tr('运行时错误', '執行時錯誤')} ({runtimeErrors.length})
+            {tr('错误提示', '錯誤提示')} ({runtimeErrors.length})
           </button>
-
           <button
             type="button"
+            role="tab"
+            aria-selected={activeBottomTab === 'security'}
             onClick={() => setActiveBottomTab('security')}
-            className={`px-3 py-1.5 text-xs font-medium border-b-2 transition ${
-              activeBottomTab === 'security'
-                ? 'border-emerald-500 text-emerald-400 font-semibold'
-                : 'border-transparent text-slate-400 hover:text-slate-200'
-            }`}
+            className={`console-tab ${activeBottomTab === 'security' ? 'is-active' : ''}`}
+            data-testid="tab-security"
           >
-            {tr('安全审计', '安全稽核')}
+            🛡️ {tr('隔离契约', '隔離契約')}
           </button>
-
-          {showTraceTab && (
-            <button
-              type="button"
-              onClick={() => setActiveBottomTab('trace')}
-              className={`px-3 py-1.5 text-xs font-medium border-b-2 transition ${
-                activeBottomTab === 'trace'
-                  ? 'border-purple-500 text-purple-400 font-semibold'
-                  : 'border-transparent text-slate-400 hover:text-slate-200'
-              }`}
-            >
-              {tr('执行追踪', '執行追蹤')}
-            </button>
-          )}
         </div>
 
-        {activeBottomTab === 'console' && (
-          <button
-            type="button"
-            onClick={onClearConsole}
-            className="text-2xs text-slate-400 hover:text-slate-200 px-2 py-0.5 rounded hover:bg-slate-800 transition"
-          >
-            {tr('清空', '清空')}
-          </button>
-        )}
+        <button
+          type="button"
+          onClick={onClearConsole}
+          className="console-clear-btn"
+          data-testid="btn-clear-console"
+        >
+          {tr('清空输出', '清空輸出')}
+        </button>
       </div>
 
-      {/* 内容区域 */}
-      <div className="flex-1 min-h-0 p-3 overflow-y-auto space-y-1.5">
+      <div className="console-output-body" data-testid="console-output-body">
         {activeBottomTab === 'console' && (
-          <>
+          <div
+            className="console-list ignore-opencc"
+            data-no-translate="true"
+            data-testid="console-log-list"
+          >
             {consoleEntries.length === 0 ? (
-              <div className="text-slate-500 italic py-4 text-center">
-                {tr('控制台暂无输出', '主控台暫無輸出')}
+              <div className="console-empty">
+                {tr(
+                  '暂无 Console 输出（支持 console.log / info / warn / error）',
+                  '暫無 Console 輸出（支援 console.log / info / warn / error）'
+                )}
               </div>
             ) : (
-              consoleEntries.map((entry) => (
+              consoleEntries.map((item) => (
                 <div
-                  key={entry.id}
-                  className={`flex items-start gap-2 py-0.5 leading-relaxed ${
-                    entry.level === 'error'
-                      ? 'text-rose-400'
-                      : entry.level === 'warn'
-                      ? 'text-amber-400'
-                      : entry.level === 'info'
-                      ? 'text-cyan-400'
-                      : 'text-slate-300'
-                  }`}
+                  key={item.id}
+                  className={`console-row is-${item.level}`}
+                  data-console-level={item.level}
                 >
-                  <span className="text-2xs text-slate-500 select-none">
-                    [{entry.level.toUpperCase()}]
-                  </span>
-                  <div className="flex-1 whitespace-pre-wrap break-all">
-                    {entry.args.join(' ')}
-                  </div>
+                  <span className="console-badge">{item.level.toUpperCase()}</span>
+                  <span className="console-text">{item.args.join(' ')}</span>
                 </div>
               ))
             )}
-          </>
+          </div>
         )}
 
         {activeBottomTab === 'errors' && (
-          <>
+          <div
+            className="console-list ignore-opencc"
+            data-no-translate="true"
+            data-testid="runtime-error-list"
+          >
             {runtimeErrors.length === 0 ? (
-              <div className="text-emerald-500 italic py-4 text-center">
-                {tr('运行正常，未检测到错误', '執行正常，未偵測到錯誤')}
+              <div className="console-empty is-ok">
+                ✓ {tr('当前运行无未捕获语法或运行时异常', '目前執行無未捕獲語法或執行期異常')}
               </div>
             ) : (
               runtimeErrors.map((err, idx) => (
                 <div
                   key={idx}
-                  className="p-2.5 rounded bg-rose-950/40 border border-rose-900/60 text-rose-300 space-y-1"
+                  className="console-row is-error"
+                  data-testid="runtime-error-item"
                 >
-                  <div className="font-semibold">{err.message}</div>
-                  {(err.line !== null || err.column !== null) && (
-                    <div className="text-2xs text-rose-400">
-                      位置: Line {err.line ?? '?'}, Column {err.column ?? '?'}
-                    </div>
-                  )}
-                  {err.stack && (
-                    <pre className="text-2xs text-rose-400/80 whitespace-pre-wrap break-all mt-1">
-                      {err.stack}
-                    </pre>
-                  )}
+                  <span className="console-badge">ERROR</span>
+                  <div className="error-detail">
+                    <strong>
+                      {err.message}
+                      {err.line ? ` (Line ${err.line})` : ''}
+                    </strong>
+                    {err.stack && <pre className="error-stack">{err.stack}</pre>}
+                  </div>
                 </div>
               ))
             )}
-          </>
+          </div>
+        )}
+
+        {activeBottomTab === 'security' && (
+          <div className="security-audit-summary" data-testid="security-contract-panel">
+            <ul>
+              <li>
+                <strong>隔离模式</strong>:{' '}
+                {isolationMode === 'cross-origin' ? (
+                  <>
+                    已启用独立跨站桥接 (<code>{activeExternalOrigin}</code>) + 内层{' '}
+                    <code>sandbox=&quot;allow-scripts&quot;</code> 双层隔离。
+                  </>
+                ) : (
+                  <>
+                    本地零配置 <code>sandbox=&quot;allow-scripts&quot;</code>（严格禁用{' '}
+                    <code>allow-same-origin</code>、<code>allow-top-navigation</code>、
+                    <code>allow-popups</code>、<code>allow-forms</code>）。
+                  </>
+                )}
+              </li>
+              <li>
+                <strong>Origin 边界</strong>: 执行帧固定为 Opaque Origin (
+                <code>window.origin === &quot;null&quot;</code>)，读取主站{' '}
+                <code>document.cookie</code>、<code>localStorage</code> 或{' '}
+                <code>window.parent.document</code> 由浏览器内核直接拦截并抛出{' '}
+                <code>SecurityError</code>。
+              </li>
+              <li>
+                <strong>Nonce CSP 与网络封锁</strong>:{' '}
+                <code>
+                  default-src &apos;none&apos;; script-src &apos;nonce-...&apos;
+                  &apos;unsafe-eval&apos;; connect-src &apos;none&apos;; worker-src
+                  &apos;none&apos;
+                </code>
+                ，阻断外发请求、内联事件注入与 Worker 线程滥用。
+              </li>
+              <li>
+                <strong>资源与消息防洪</strong>: 绑定{' '}
+                <code>event.source === iframe.contentWindow</code> + 会话标识{' '}
+                <code>{sessionId.slice(0, 15)}...</code> + 同步循环超时熔断 (
+                {LAB_SECURITY_LIMITS.SYNC_LOOP_BUDGET_MS}ms) + 最多{' '}
+                {LAB_SECURITY_LIMITS.MAX_CONSOLE_ENTRIES} 条日志。
+              </li>
+            </ul>
+          </div>
         )}
       </div>
     </div>

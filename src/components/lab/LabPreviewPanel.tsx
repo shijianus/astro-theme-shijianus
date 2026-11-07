@@ -2,123 +2,201 @@
  * Astro Blog「试验田 Lab」沙盒实时运行预览面板组件
  */
 import React from 'react';
-import type { SandboxIsolationMode } from '../../lib/lab-sandbox-protocol';
+import type { LabExperiment, LabFile } from '../../lib/lab-schema';
+import type {
+  SandboxIsolationMode,
+  SandboxConsoleEntry,
+  SandboxRuntimeError,
+  LabCodeSourceKind,
+} from '../../lib/lab-sandbox-protocol';
+import { LabConsolePanel } from './LabConsolePanel';
 
 export interface LabPreviewPanelProps {
-  iframeRef: React.RefObject<HTMLIFrameElement | null>;
+  currentExp: LabExperiment;
+  files: LabFile[];
+  sessionId: string;
   sandboxSrcDoc: string;
   sandboxKey: number;
   isolationMode: SandboxIsolationMode;
-  isCrossOriginMode: boolean;
   activeExternalOrigin: string | null;
-  bridgeReadyAck: boolean;
-  failClosedReason: string;
+  codeSourceKind: LabCodeSourceKind;
   execStatus: 'idle' | 'running' | 'completed' | 'error' | 'terminated';
-  onRetryCrossOrigin: () => void;
-  onRestart: () => void;
+  lastDurationMs: number | null;
+  failClosedReason: string;
+  isFullscreenPreview: boolean;
+  showTracePanel: boolean;
+  activeBottomTab: 'console' | 'errors' | 'security';
+  consoleEntries: SandboxConsoleEntry[];
+  runtimeErrors: SandboxRuntimeError[];
+  iframeRef: React.RefObject<HTMLIFrameElement | null>;
   isHant: boolean;
+  onToggleFullscreen: () => void;
+  onToggleTracePanel: () => void;
+  onBridgeIframeLoad: () => void;
+  onRunCode: () => void;
+  onSetActiveBottomTab: (tab: 'console' | 'errors' | 'security') => void;
+  onClearConsole: () => void;
 }
 
 export const LabPreviewPanel: React.FC<LabPreviewPanelProps> = ({
-  iframeRef,
+  currentExp,
+  files,
+  sessionId,
   sandboxSrcDoc,
   sandboxKey,
   isolationMode,
-  isCrossOriginMode,
   activeExternalOrigin,
-  bridgeReadyAck,
-  failClosedReason,
+  codeSourceKind,
   execStatus,
-  onRetryCrossOrigin,
-  onRestart,
+  lastDurationMs,
+  failClosedReason,
+  isFullscreenPreview,
+  showTracePanel,
+  activeBottomTab,
+  consoleEntries,
+  runtimeErrors,
+  iframeRef,
   isHant,
+  onToggleFullscreen,
+  onToggleTracePanel,
+  onBridgeIframeLoad,
+  onRunCode,
+  onSetActiveBottomTab,
+  onClearConsole,
 }) => {
   const tr = (zhCn: string, zhHant: string) => (isHant ? zhHant : zhCn);
 
   return (
-    <div className="lab-preview-panel relative flex flex-col h-full bg-slate-100 dark:bg-slate-900 overflow-hidden">
-      {/* 顶部状态条 */}
-      <div className="flex items-center justify-between px-3 py-1.5 bg-slate-200/80 dark:bg-slate-800/80 text-2xs font-mono border-b border-slate-300 dark:border-slate-700">
-        <div className="flex items-center gap-2">
-          <span className="font-semibold text-slate-700 dark:text-slate-300">
-            {tr('沙盒运行环境', '沙盒執行環境')}:
-          </span>
-          <span
-            className={`px-1.5 py-0.5 rounded ${
-              isCrossOriginMode
-                ? 'bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300 border border-purple-300 dark:border-purple-800'
-                : 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300 border border-blue-300 dark:border-blue-800'
-            }`}
-          >
-            {isCrossOriginMode ? 'Cross-Origin Sandbox (Pages)' : 'Local Opaque Srcdoc (Opaque "null")'}
-          </span>
+    <div
+      className={`lab-pg-preview-card theme-card ${
+        isFullscreenPreview ? 'is-fullscreen' : ''
+      }`}
+    >
+      <div className="preview-header-bar">
+        <div className="preview-status-group">
+          <span className={`status-indicator is-${execStatus}`} />
+          <strong className="preview-title">
+            {tr(
+              '沙盒隔离预览 (Isolated Sandbox Viewport)',
+              '沙盒隔離預覽 (Isolated Sandbox Viewport)'
+            )}
+          </strong>
+          {lastDurationMs !== null && (
+            <small className="exec-time ignore-opencc" data-no-translate="true">
+              {lastDurationMs}ms
+            </small>
+          )}
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="preview-header-actions">
           <button
             type="button"
-            onClick={onRestart}
-            title={tr('重新启动当前沙盒实例', '重新啟動目前沙盒實例')}
-            className="p-1 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 transition rounded"
+            onClick={onToggleTracePanel}
+            className={`preview-mini-btn ${showTracePanel ? 'is-active' : ''}`}
+            data-testid="btn-toggle-visualizer"
           >
-            <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15" />
-            </svg>
+            🧭{' '}
+            {showTracePanel
+              ? tr('收起过程追踪', '收起過程追蹤')
+              : tr('开启执行追踪', '開啟執行追蹤')}
+          </button>
+          <button
+            type="button"
+            onClick={onToggleFullscreen}
+            className="preview-mini-btn"
+            data-testid="btn-toggle-fullscreen"
+          >
+            {isFullscreenPreview
+              ? tr('🗗 退出全屏 (Esc)', '🗗 退出全螢幕 (Esc)')
+              : tr('⛶ 全屏预览', '⛶ 全螢幕預覽')}
           </button>
         </div>
       </div>
 
-      {/* 失败关闭 (Fail-Closed) 阻断提示横幅 */}
-      {failClosedReason && (
-        <div className="fail-closed-banner p-3 bg-rose-50 dark:bg-rose-950/60 border-b border-rose-200 dark:border-rose-900 text-xs text-rose-800 dark:text-rose-200 flex items-start justify-between gap-3">
-          <div>
-            <p className="font-semibold">
-              {tr('安全阻断：未授权代码失败关闭 (Fail-Closed)', '安全阻斷：未授權程式碼失敗關閉 (Fail-Closed)')}
-            </p>
-            <p className="mt-1 text-2xs text-rose-700 dark:text-rose-300">{failClosedReason}</p>
-          </div>
-          <button
-            type="button"
-            onClick={onRetryCrossOrigin}
-            className="px-2.5 py-1 text-2xs font-semibold bg-rose-600 hover:bg-rose-700 text-white rounded transition shrink-0"
-          >
-            {tr('重试跨站连接', '重試跨站連線')}
-          </button>
-        </div>
-      )}
-
-      {/* Iframe 挂载区 */}
-      <div className="relative flex-1 w-full h-full min-h-0 bg-transparent overflow-hidden">
-        {isCrossOriginMode && activeExternalOrigin ? (
-          <iframe
-            key={`cross-${sandboxKey}`}
-            ref={iframeRef}
-            src={activeExternalOrigin}
-            sandbox="allow-scripts"
-            referrerPolicy="no-referrer"
-            title="Lab Cross-Origin Isolated Sandbox"
-            className="w-full h-full border-0 bg-transparent"
-          />
+      {/* 真正执行不可信代码的隔离沙盒 iframe */}
+      <div className="sandbox-viewport-container">
+        {sandboxSrcDoc ? (
+          isolationMode === 'cross-origin' && activeExternalOrigin ? (
+            <iframe
+              key={sandboxKey}
+              ref={iframeRef}
+              title={`Lab Cross-Site Isolated Sandbox - ${currentExp.title}`}
+              sandbox="allow-scripts allow-same-origin"
+              referrerPolicy="no-referrer"
+              src={`${activeExternalOrigin}/`}
+              onLoad={onBridgeIframeLoad}
+              className="sandbox-iframe"
+              data-testid="lab-sandbox-iframe"
+              data-isolation-mode="cross-origin"
+              data-session-id={sessionId}
+            />
+          ) : codeSourceKind === 'official' ? (
+            <iframe
+              key={sandboxKey}
+              ref={iframeRef}
+              title={`Lab Isolated Sandbox - ${currentExp.title}`}
+              sandbox="allow-scripts"
+              referrerPolicy="no-referrer"
+              srcDoc={sandboxSrcDoc}
+              className="sandbox-iframe"
+              data-testid="lab-sandbox-iframe"
+              data-isolation-mode="opaque-srcdoc"
+              data-session-id={sessionId}
+            />
+          ) : (
+            <div
+              className="sandbox-empty-placeholder is-fail-closed"
+              data-testid="sandbox-stopped-placeholder"
+            >
+              <p>
+                {tr(
+                  '🛑 独立跨站沙盒未就绪，安全策略已阻止非官方代码在本地 srcdoc 中运行。',
+                  '🛑 獨立跨站沙盒未就緒，安全策略已阻止非官方程式碼在本機 srcdoc 中執行。'
+                )}
+              </p>
+            </div>
+          )
         ) : (
-          <iframe
-            key={`opaque-${sandboxKey}`}
-            ref={iframeRef}
-            srcDoc={sandboxSrcDoc}
-            sandbox="allow-scripts"
-            referrerPolicy="no-referrer"
-            title="Lab Local Opaque Srcdoc Sandbox"
-            className="w-full h-full border-0 bg-transparent"
-          />
-        )}
-
-        {/* 运行中微型加载态指示 */}
-        {execStatus === 'running' && !bridgeReadyAck && isCrossOriginMode && (
-          <div className="absolute inset-0 bg-slate-900/30 backdrop-blur-xs flex items-center justify-center text-xs font-mono text-white">
-            <span className="inline-block w-4 h-4 mr-2 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-            {tr('正在与独立跨站沙盒建立安全信道...', '正在與獨立跨站沙盒建立安全通道...')}
+          <div
+            className={`sandbox-empty-placeholder ${failClosedReason ? 'is-fail-closed' : ''}`}
+            data-testid="sandbox-stopped-placeholder"
+          >
+            <p>
+              {failClosedReason
+                ? tr(
+                    '🛑 已触发安全失败关闭 (Fail-Closed)：外部导入、社区或分享链接代码仅允许在独立跨站沙盒可用时运行。',
+                    '🛑 已觸發安全失敗關閉 (Fail-Closed)：外部匯入、社群或分享連結程式碼僅允許在獨立跨站沙盒可用時執行。'
+                  )
+                : execStatus === 'terminated'
+                  ? tr('⏹ 沙盒执行上下文已终止并销毁。', '⏹ 沙盒執行環境已終止並銷毀。')
+                  : tr(
+                      '🔒 沙盒尚未启动，请点击上方「▶ 运行代码」在隔离环境中执行。',
+                      '🔒 沙盒尚未啟動，請點擊上方「▶ 執行程式碼」在隔離環境中執行。'
+                    )}
+            </p>
+            <button
+              type="button"
+              onClick={onRunCode}
+              className="lab-pg-btn is-run"
+            >
+              ▶ {tr('立即在隔离沙盒中运行', '立即在隔離沙盒中執行')}
+            </button>
           </div>
         )}
       </div>
+
+      {/* 下方 Console / 运行错误 / 安全边界审计抽屉 */}
+      <LabConsolePanel
+        activeBottomTab={activeBottomTab}
+        setActiveBottomTab={onSetActiveBottomTab}
+        consoleEntries={consoleEntries}
+        runtimeErrors={runtimeErrors}
+        onClearConsole={onClearConsole}
+        isolationMode={isolationMode}
+        activeExternalOrigin={activeExternalOrigin}
+        sessionId={sessionId}
+        isHant={isHant}
+      />
     </div>
   );
 };

@@ -56,6 +56,10 @@ export class SessionManager {
     };
   }
 
+  rotateSessionId(): string {
+    return this.rotate().sessionId;
+  }
+
   reset(): void {
     this.state = 'idle';
     this.sequence = 0;

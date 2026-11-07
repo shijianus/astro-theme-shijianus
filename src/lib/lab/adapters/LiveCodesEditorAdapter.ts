@@ -43,6 +43,10 @@ export class LiveCodesEditorAdapter implements LabEditorAdapter {
     return this.isLoaded;
   }
 
+  get iframe(): HTMLIFrameElement | null {
+    return this.iframeEl;
+  }
+
   async mount(container: HTMLElement, project: LabProject): Promise<void> {
     this.container = container;
     this.currentProject = {

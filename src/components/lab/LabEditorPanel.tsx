@@ -3,80 +3,119 @@
  */
 import React from 'react';
 import type { LabFile } from '../../lib/lab-schema';
+import { LAB_SECURITY_LIMITS } from '../../lib/lab-schema';
 
 export interface LabEditorPanelProps {
   files: LabFile[];
   activeFileIdx: number;
+  livecodesAppUrl?: string;
+  isHant: boolean;
   onSelectFile: (index: number) => void;
   onCodeChange: (content: string) => void;
-  onCopyCode: () => void;
-  isHant: boolean;
+  onRunCode: () => void;
 }
 
 export const LabEditorPanel: React.FC<LabEditorPanelProps> = ({
   files,
   activeFileIdx,
+  livecodesAppUrl,
+  isHant,
   onSelectFile,
   onCodeChange,
-  onCopyCode,
-  isHant,
+  onRunCode,
 }) => {
   const tr = (zhCn: string, zhHant: string) => (isHant ? zhHant : zhCn);
   const activeFile = files[activeFileIdx] || files[0];
-  const lineCount = activeFile?.content ? activeFile.content.split('\n').length : 0;
-  const charCount = activeFile?.content ? activeFile.content.length : 0;
+  const totalBytes = files.reduce((acc, f) => acc + (f.content ? f.content.length : 0), 0);
 
   return (
-    <div className="lab-editor-panel flex flex-col h-full bg-slate-900 text-slate-100 overflow-hidden">
-      {/* 选项卡栏 */}
-      <div className="flex items-center justify-between px-2 pt-2 bg-slate-950 border-b border-slate-800">
-        <div className="flex items-center gap-1 overflow-x-auto no-scrollbar">
-          {files.map((file, idx) => (
-            <button
-              key={file.name}
-              type="button"
-              onClick={() => onSelectFile(idx)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-mono rounded-t-lg transition border-t border-x ${
-                idx === activeFileIdx
-                  ? 'bg-slate-900 text-blue-400 border-slate-700 font-semibold'
-                  : 'bg-transparent text-slate-400 border-transparent hover:text-slate-200 hover:bg-slate-900/50'
-              }`}
-            >
-              <span>{file.name}</span>
-            </button>
-          ))}
+    <div className="lab-pg-editor-card theme-card">
+      <div className="editor-tabs-bar">
+        <div className="file-tabs" role="tablist" aria-label={tr('源码文件列表', '原始碼檔案列表')}>
+          {files.map((file, idx) => {
+            const isActive = idx === activeFileIdx;
+            return (
+              <button
+                key={file.name}
+                type="button"
+                role="tab"
+                aria-selected={isActive}
+                data-file-tab={file.name}
+                onClick={() => onSelectFile(idx)}
+                className={`file-tab-btn ${isActive ? 'is-active' : ''}`}
+              >
+                <span className="file-lang-dot" data-lang={file.language} />
+                <span className="ignore-opencc" data-no-translate="true">
+                  {file.name}
+                </span>
+              </button>
+            );
+          })}
         </div>
 
-        <button
-          type="button"
-          onClick={onCopyCode}
-          className="text-2xs text-slate-400 hover:text-slate-200 px-2 py-1 rounded hover:bg-slate-800 transition"
-        >
-          {tr('复制代码', '複製程式碼')}
-        </button>
+        <div className="editor-meta-right ignore-opencc" data-no-translate="true">
+          <span>
+            {(totalBytes / 1024).toFixed(1)} KB /{' '}
+            {LAB_SECURITY_LIMITS.MAX_TOTAL_SOURCE_BYTES / 1024} KB
+          </span>
+        </div>
       </div>
 
-      {/* 编辑区 */}
-      <div className="relative flex-1 min-h-0 flex overflow-hidden">
+      <div className="editor-body-wrap">
+        <div
+          className="editor-line-numbers ignore-opencc"
+          data-no-translate="true"
+          aria-hidden="true"
+        >
+          {(activeFile?.content || '')
+            .split('\n')
+            .map((_, i) => (
+              <div key={i}>{i + 1}</div>
+            ))}
+        </div>
         <textarea
           value={activeFile?.content || ''}
           onChange={(e) => onCodeChange(e.target.value)}
+          onKeyDown={(e) => {
+            if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+              e.preventDefault();
+              onRunCode();
+            } else if (e.key === 'Tab') {
+              e.preventDefault();
+              const target = e.currentTarget;
+              const start = target.selectionStart;
+              const end = target.selectionEnd;
+              const val = target.value;
+              const nextVal = val.substring(0, start) + '  ' + val.substring(end);
+              onCodeChange(nextVal);
+              window.requestAnimationFrame(() => {
+                target.selectionStart = target.selectionEnd = start + 2;
+              });
+            }
+          }}
           spellCheck={false}
-          className="flex-1 w-full h-full p-4 font-mono text-xs leading-relaxed bg-transparent text-slate-100 resize-none outline-none border-0 overflow-auto selection:bg-blue-600/40"
-          placeholder={tr('在此编写实验源码...', '在此編寫實驗原始碼...')}
+          autoCapitalize="off"
+          autoComplete="off"
+          autoCorrect="off"
+          aria-label={`编辑文件 ${activeFile?.name || 'code'}`}
+          data-testid="lab-code-textarea"
+          data-no-translate="true"
+          className="editor-textarea ignore-opencc"
         />
       </div>
 
-      {/* 底部信息栏 */}
-      <div className="flex items-center justify-between px-3 py-1.5 bg-slate-950 text-2xs text-slate-400 font-mono border-t border-slate-800">
-        <div className="flex items-center gap-3">
-          <span>{activeFile?.language?.toUpperCase()}</span>
-          <span>{lineCount} {tr('行', '行')}</span>
-          <span>{charCount} {tr('字符', '字元')}</span>
-        </div>
-        <div className="text-slate-500">
-          {tr('纯客户端隔离编译', '純前端隔離編譯')}
-        </div>
+      <div className="editor-footer-bar">
+        <span>
+          {tr(
+            '快捷键：Ctrl/Cmd + Enter 立即在沙盒中运行 · Tab 缩进 2 空格 · TypeScript 支持纯类型擦除子集',
+            '快速鍵：Ctrl/Cmd + Enter 立即在沙盒中執行 · Tab 縮排 2 空格 · TypeScript 支援純型別擦除子集'
+          )}
+        </span>
+        {livecodesAppUrl && (
+          <span className="ignore-opencc" data-no-translate="true">
+            Self-Hosted Engine: {livecodesAppUrl}
+          </span>
+        )}
       </div>
     </div>
   );

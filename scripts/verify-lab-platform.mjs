@@ -240,6 +240,20 @@ function startSandboxRunnerServer(port, host) {
 
   const server = http.createServer((req, res) => {
     const parsed = new URL(req.url || '/', `http://${host}:${port}`);
+    if (parsed.pathname === '/bridge.js') {
+      const bridgeJsPath = path.join(SANDBOX_DIR, 'bridge.js');
+      if (fs.existsSync(bridgeJsPath)) {
+        for (const [k, v] of Object.entries(securityHeaders)) {
+          res.setHeader(k, k === 'Content-Security-Policy' ? localCsp : v);
+        }
+        const buf = fs.readFileSync(bridgeJsPath);
+        res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
+        res.setHeader('Content-Length', buf.length);
+        res.writeHead(200);
+        res.end(buf);
+        return;
+      }
+    }
     if (parsed.pathname !== '/' && parsed.pathname !== '/index.html') {
       res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8', 'Content-Length': 9 });
       res.end('Not Found');

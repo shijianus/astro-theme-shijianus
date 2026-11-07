@@ -18,6 +18,7 @@ import {
   buildIsolatedSandboxSrcDoc,
   compileExperimentFiles,
   resolveSafeExternalSandboxOrigin,
+  evaluateSandboxDegradationPolicy,
 } from '../../lib/lab-sandbox-protocol';
 import { OFFICIAL_LAB_EXPERIMENTS, getExperimentBySlug } from '../../data/lab-experiments';
 import { SessionManager } from '../../lib/lab/SessionManager';
@@ -73,6 +74,8 @@ export function LabPlayground({
   const [uiLocale, setUiLocale] = useState<'zh-CN' | 'zh-Hant'>('zh-CN');
   const isHant = uiLocale === 'zh-Hant';
   const tr = useCallback((zhCn: string, zhHant: string) => (isHant ? zhHant : zhCn), [isHant]);
+  const trRef = useRef(tr);
+  trRef.current = tr;
 
   const [selectedSlug, setSelectedSlug] = useState<string>(defaultExp.slug);
   const [currentExp, setCurrentExp] = useState<LabExperiment>(defaultExp);
@@ -87,8 +90,10 @@ export function LabPlayground({
   const [bridgeFallbackForced, setBridgeFallbackForced] = useState<boolean>(false);
   const [failClosedReason, setFailClosedReason] = useState<string>('');
   const [hostOriginState, setHostOriginState] = useState<string | null>(null);
+  const [hasMounted, setHasMounted] = useState<boolean>(false);
 
   useEffect(() => {
+    setHasMounted(true);
     if (typeof window !== 'undefined') {
       setHostOriginState(window.location.origin);
     }
@@ -107,6 +112,11 @@ export function LabPlayground({
       ? externalResolution.origin
       : null;
 
+  const degradationPolicy = useMemo(
+    () => evaluateSandboxDegradationPolicy(codeSourceKind, Boolean(activeExternalOrigin)),
+    [codeSourceKind, activeExternalOrigin]
+  );
+
   const isolationMode: SandboxIsolationMode = activeExternalOrigin
     ? 'cross-origin'
     : 'opaque-srcdoc';
@@ -122,16 +132,17 @@ export function LabPlayground({
 
   const [consoleEntries, setConsoleEntries] = useState<SandboxConsoleEntry[]>([]);
   const [runtimeErrors, setRuntimeErrors] = useState<SandboxRuntimeError[]>([]);
-  const [activeBottomTab, setActiveBottomTab] = useState<'console' | 'errors' | 'security' | 'trace'>(
+  const [activeBottomTab, setActiveBottomTab] = useState<'console' | 'errors' | 'security'>(
     'console'
   );
   const [toastMessage, setToastMessage] = useState<string>('');
-  const [dialogState, setDialogState] = useState<{ isOpen: boolean; mode: 'share' | 'import-export' }>({
-    isOpen: false,
-    mode: 'share',
-  });
+  const [isFullscreenPreview, setIsFullscreenPreview] = useState<boolean>(false);
+  const [showTracePanel, setShowTracePanel] = useState<boolean>(
+    mode === 'full-workshop' ? Boolean(defaultExp.visualizationConfig?.enabled) : false
+  );
 
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
   const watchdogTimerRef = useRef<number | null>(null);
   const bridgeHandshakeTimerRef = useRef<number | null>(null);
   const bridgePingIntervalRef = useRef<number | null>(null);
@@ -193,6 +204,19 @@ export function LabPlayground({
     };
   }, []);
 
+  // 全屏预览支持 Escape 键退出
+  useEffect(() => {
+    if (!isFullscreenPreview || typeof window === 'undefined') return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        setIsFullscreenPreview(false);
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [isFullscreenPreview]);
+
   // 跨站桥接指令分发
   const dispatchBridgeExecute = useCallback(() => {
     const extOrigin = activeExternalOriginRef.current;
@@ -214,6 +238,40 @@ export function LabPlayground({
     } catch {
       bridgeCodeDispatchedWinRef.current = null;
     }
+  }, []);
+
+  const handleBridgeIframeLoad = useCallback(() => {
+    if (isolationModeRef.current !== 'cross-origin') return;
+    const sendPing = () => {
+      if (bridgeReadyAckRef.current || isolationModeRef.current !== 'cross-origin') {
+        if (bridgePingIntervalRef.current) {
+          window.clearInterval(bridgePingIntervalRef.current);
+          bridgePingIntervalRef.current = null;
+        }
+        return;
+      }
+      const extOrigin = activeExternalOriginRef.current;
+      const win = iframeRef.current?.contentWindow;
+      if (!extOrigin || !win) return;
+      try {
+        win.postMessage(
+          {
+            protocol: LAB_SANDBOX_PROTOCOL_VERSION,
+            sessionId: sessionIdRef.current,
+            type: 'PING',
+            payload: {},
+          },
+          extOrigin
+        );
+      } catch {
+        // Handshake timeout will handle fallback
+      }
+    };
+    sendPing();
+    if (bridgePingIntervalRef.current) {
+      window.clearInterval(bridgePingIntervalRef.current);
+    }
+    bridgePingIntervalRef.current = window.setInterval(sendPing, 300);
   }, []);
 
   // 执行代码
@@ -626,113 +684,286 @@ export function LabPlayground({
     }
   };
 
-  // URL Hash (#bundle=) 与 initialSlug 初始化检测
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const hash = window.location.hash;
-    if (hash.startsWith('#bundle=')) {
-      const payloadStr = hash.slice('#bundle='.length);
-      const decoded = PortableBundleCodec.decode<Record<string, unknown>>(payloadStr);
-      if (decoded) {
-        const validated = validateLabPortableBundle(decoded);
-        if (validated.ok && validated.data) {
+  const handleExportJson = () => {
+    const jsonStr = PortableBundleCodec.exportToJson({
+      slug: currentExp.slug,
+      title: currentExp.title,
+      description: currentExp.description,
+      category: currentExp.category,
+      language: currentExp.language,
+      files,
+      sourceKind: codeSourceKind,
+    });
+    const blob = new Blob([jsonStr], { type: 'application/json;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${currentExp.slug}-lab.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    showToast(tr(`已导出实验包 ${currentExp.slug}-lab.json`, `已匯出實驗包 ${currentExp.slug}-lab.json`));
+  };
+
+  const handleImportJsonFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const inputEl = e.currentTarget;
+    const file = inputEl.files?.[0];
+    if (!file) return;
+    if (file.size > LAB_SECURITY_LIMITS.MAX_TOTAL_SOURCE_BYTES * 2) {
+      showToast(tr('导入失败：JSON 文件体积超过安全限制 (256KB)', '匯入失敗：JSON 檔案大小超過安全限制 (256KB)'));
+      inputEl.value = '';
+      return;
+    }
+
+    const readPromise =
+      typeof file.text === 'function'
+        ? file.text()
+        : new Promise<string>((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(String(reader.result || ''));
+            reader.onerror = () => reject(reader.error || new Error('Read failed'));
+            reader.readAsText(file);
+          });
+
+    void readPromise
+      .then((rawText) => {
+        try {
+          const validated = PortableBundleCodec.importFromJson(rawText);
+          if (!validated.ok || !validated.data) {
+            showToast(tr(`导入校验拒绝: ${validated.errors.join('；')}`, `匯入校驗拒絕: ${validated.errors.join('；')}`));
+            return;
+          }
+          const importedKind: LabCodeSourceKind = validated.data.sourceKind || 'imported';
           clearTimers();
+          const rotatedId = sessionManagerRef.current.rotateSessionId();
+          sessionIdRef.current = rotatedId;
           pendingBridgeSrcDocRef.current = '';
-          codeSourceKindRef.current = 'bundle';
-          setCodeSourceKind('bundle');
+          codeSourceKindRef.current = importedKind;
+          setSessionId(rotatedId);
+          setFiles(validated.data.files);
+          setActiveFileIdx(0);
+          setCodeSourceKind(importedKind);
           setFailClosedReason('');
           setSandboxSrcDoc('');
           setExecStatus('idle');
-          setFiles(validated.data.files);
-          setActiveFileIdx(0);
-          showToast(tr('已加载 URL 分享实验包（受 Fail-Closed 保护）', '已載入 URL 分享實驗包（受 Fail-Closed 保護）'));
-          return;
+          showToast(tr('实验导入成功！出于安全隔离策略，请审阅代码后手动点击「运行代码」', '實驗匯入成功！出於安全隔離策略，請審閱程式碼後手動點擊「執行程式碼」'));
+        } catch {
+          showToast(tr('导入失败：无效的 JSON 文件格式', '匯入失敗：無效的 JSON 檔案格式'));
         }
-      }
-    }
+      })
+      .catch(() => {
+        showToast(tr('导入失败：读取文件异常', '匯入失敗：讀取檔案異常'));
+      })
+      .finally(() => {
+        inputEl.value = '';
+      });
+  };
 
-    if (codeSourceKind === 'official' && defaultExp.previewConfig.autoRun) {
-      executeInSandbox(files, undefined, 'official');
+  const handleShareLink = async () => {
+    const validation = validateLabFiles(files);
+    if (!validation.ok) {
+      showToast(`无法分享：${validation.errors[0]}`);
+      return;
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    const bundle = {
+      version: 'lab-bundle-v1',
+      slug: currentExp.slug,
+      title: currentExp.title,
+      description: currentExp.description,
+      category: currentExp.category,
+      language: currentExp.language,
+      files,
+      exportedAt: new Date().toISOString(),
+      sourceKind: 'bundle',
+    };
+    const sharePayload = PortableBundleCodec.encode(bundle);
+    const shareUrl = typeof window !== 'undefined'
+      ? `${window.location.origin}${window.location.pathname}#bundle=${sharePayload}`
+      : '';
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      showToast(tr('已复制安全分享链接到剪贴板', '已複製安全分享連結到剪貼簿'));
+    } catch {
+      if (typeof window !== 'undefined') {
+        window.location.hash = `bundle=${sharePayload}`;
+      }
+      showToast(tr('已在地址栏更新安全分享链接', '已在網址列更新安全分享連結'));
+    }
+  };
+
+  // 初次挂载、hashchange 与浏览器前进/后退 (popstate) 监听
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const applyHashBundle = (): boolean => {
+      const hash = window.location.hash;
+      if (hash.startsWith('#bundle=')) {
+        const rawEncoded = hash.slice('#bundle='.length);
+        const decoded = PortableBundleCodec.decode<Record<string, unknown>>(rawEncoded);
+        const validated = validateLabPortableBundle(decoded);
+        clearTimers();
+        const rotatedId = sessionManagerRef.current.rotateSessionId();
+        sessionIdRef.current = rotatedId;
+        pendingBridgeSrcDocRef.current = '';
+        codeSourceKindRef.current = 'bundle';
+        setSessionId(rotatedId);
+        setCodeSourceKind('bundle');
+        setSandboxSrcDoc('');
+        setSandboxKey((k) => k + 1);
+
+        if (validated.ok && validated.data) {
+          const bundle = validated.data;
+          setFiles(bundle.files);
+          setActiveFileIdx(0);
+          setFailClosedReason('');
+          setRuntimeErrors([]);
+          setExecStatus('idle');
+          showToast(
+            trRef.current(
+              '已加载外部分享代码（禁止自动运行，仅允许在独立跨站沙盒就绪时手动运行）',
+              '已載入外部分享程式碼（禁止自動執行，僅允許在獨立跨站沙盒就緒時手動執行）'
+            )
+          );
+          return true;
+        }
+
+        // 损坏、超限或非法的 #bundle= 载荷必须强制失败关闭 (Fail-Closed)，严禁回退自动运行默认官方实验
+        const reasonDetail =
+          decoded === null
+            ? 'Base64URL 解码失败或载荷体积超过安全上限'
+            : validated.errors.join(' ') || 'Schema 校验未通过';
+        const failMsg = `[Bundle Fail-Closed] 外部分享链接 (#bundle=) 校验未通过（${reasonDetail}）。安全策略已阻断加载并禁止回退自动运行其他实验。`;
+        setFailClosedReason(failMsg);
+        setRuntimeErrors([{ message: failMsg, timestamp: Date.now() }]);
+        setExecStatus('error');
+        setActiveBottomTab('errors');
+        showToast(
+          trRef.current(
+            '安全阻断：外部分享链接载荷无效或超限，已强制失败关闭',
+            '安全阻斷：外部分享連結酬載無效或超限，已強制失敗關閉'
+          )
+        );
+        return true;
+      }
+      return false;
+    };
+
+    const syncFromUrlQuery = () => {
+      if (applyHashBundle()) return;
+      const params = new URLSearchParams(window.location.search);
+      const querySlug = params.get('slug');
+      const targetExp = (querySlug && getExperimentBySlug(querySlug)) || defaultExp;
+      const expSourceKind = ExecutionPolicy.resolveSourceKind(targetExp.author);
+
+      setSelectedSlug(targetExp.slug);
+      setCurrentExp(targetExp);
+      const cloned = targetExp.files.map((f) => ({ ...f }));
+      setFiles(cloned);
+      setActiveFileIdx(0);
+      codeSourceKindRef.current = expSourceKind;
+      setCodeSourceKind(expSourceKind);
+      setFailClosedReason('');
+      setShowTracePanel(
+        mode === 'full-workshop' ? Boolean(targetExp.visualizationConfig?.enabled) : false
+      );
+      if (expSourceKind === 'official' && targetExp.previewConfig.autoRun) {
+        executeInSandbox(cloned, undefined, 'official');
+      } else {
+        pendingBridgeSrcDocRef.current = '';
+        setSandboxSrcDoc('');
+        setExecStatus('idle');
+      }
+    };
+
+    syncFromUrlQuery();
+    window.addEventListener('hashchange', applyHashBundle);
+    window.addEventListener('popstate', syncFromUrlQuery);
+    return () => {
+      window.removeEventListener('hashchange', applyHashBundle);
+      window.removeEventListener('popstate', syncFromUrlQuery);
+    };
+  }, [clearTimers, defaultExp, executeInSandbox, mode]);
+
+  const effectiveIsolationMode =
+    degradationPolicy.effectiveMode === 'blocked-fail-closed'
+      ? 'fail-closed'
+      : isolationMode;
 
   return (
     <LabPlaygroundShell
       mode={mode}
+      execStatus={execStatus}
+      effectiveIsolationMode={effectiveIsolationMode}
+      codeSourceKind={codeSourceKind}
+      failClosedReason={failClosedReason}
       toastMessage={toastMessage}
-      showTracePanel={Boolean(currentExp.visualizationConfig?.enabled)}
+      hasMounted={hasMounted}
+      isolationMode={isolationMode}
+      bridgeFallbackForced={bridgeFallbackForced}
+      externalResolutionEnabled={Boolean(externalResolution.enabled)}
+      showTracePanel={showTracePanel}
+      isHant={isHant}
+      onRetryCrossOriginSandbox={() => executeInSandbox(files)}
       toolbarProps={{
+        mode,
         currentExp,
         selectedSlug,
         codeSourceKind,
+        isolationMode,
+        degradationPolicy,
+        activeExternalOrigin,
         execStatus,
         isHant,
+        fileInputRef,
         onSelectExperiment: handleSelectExperiment,
         onRun: () => executeInSandbox(files),
         onStop: terminateSandbox,
         onReset: handleResetCode,
-        onOpenShareModal: () => setDialogState({ isOpen: true, mode: 'share' }),
-        onOpenImportExportModal: () => setDialogState({ isOpen: true, mode: 'import-export' }),
+        onCopyCode: handleCopyCode,
         onSaveDraft: handleSaveDraft,
         onLoadDraft: handleLoadDraft,
+        onExportJson: handleExportJson,
+        onImportJsonFile: handleImportJsonFile,
+        onShareLink: handleShareLink,
       }}
       editorProps={{
         files,
         activeFileIdx,
+        livecodesAppUrl,
+        isHant,
         onSelectFile: setActiveFileIdx,
         onCodeChange: handleCodeChange,
-        onCopyCode: handleCopyCode,
-        isHant,
+        onRunCode: () => executeInSandbox(files),
       }}
       previewProps={{
-        iframeRef,
+        currentExp,
+        files,
+        sessionId,
         sandboxSrcDoc,
         sandboxKey,
         isolationMode,
-        isCrossOriginMode: Boolean(activeExternalOrigin),
         activeExternalOrigin,
-        bridgeReadyAck: bridgeReadyAckRef.current,
-        failClosedReason,
+        codeSourceKind,
         execStatus,
-        onRetryCrossOrigin: () => executeInSandbox(files),
-        onRestart: () => executeInSandbox(files),
-        isHant,
-      }}
-      consoleProps={{
+        lastDurationMs,
+        failClosedReason,
+        isFullscreenPreview,
+        showTracePanel,
         activeBottomTab,
-        setActiveBottomTab,
         consoleEntries,
         runtimeErrors,
-        onClearConsole: () => setConsoleEntries([]),
-        showTraceTab: Boolean(currentExp.visualizationConfig?.enabled),
+        iframeRef,
         isHant,
-      }}
-      securityProps={{
-        isolationMode,
-        codeSourceKind,
-        activeExternalOrigin,
-        sessionId,
-        isHant,
-      }}
-      dialogProps={{
-        isOpen: dialogState.isOpen,
-        onClose: () => setDialogState({ isOpen: false, mode: 'share' }),
-        mode: dialogState.mode,
-        currentExp,
-        files,
-        onImportFiles: (newFiles) => {
-          setFiles(newFiles);
-          setActiveFileIdx(0);
-          codeSourceKindRef.current = 'imported';
-          setCodeSourceKind('imported');
-          setFailClosedReason('');
-          clearTimers();
-          setSandboxSrcDoc('');
-          setExecStatus('idle');
+        onToggleFullscreen: () => setIsFullscreenPreview((v) => !v),
+        onToggleTracePanel: () => setShowTracePanel((v) => !v),
+        onBridgeIframeLoad: handleBridgeIframeLoad,
+        onRunCode: () => executeInSandbox(files),
+        onSetActiveBottomTab: setActiveBottomTab,
+        onClearConsole: () => {
+          setConsoleEntries([]);
+          setRuntimeErrors([]);
         },
-        showToast,
-        isHant,
       }}
     />
   );

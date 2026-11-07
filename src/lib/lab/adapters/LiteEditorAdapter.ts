@@ -41,6 +41,10 @@ export class LiteEditorAdapter implements LabEditorAdapter {
     }
   }
 
+  get tabsContainer(): HTMLElement | null {
+    return this.tabsContainerEl;
+  }
+
   async dispose(): Promise<void> {
     if (this.container) {
       this.container.innerHTML = '';

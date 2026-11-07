@@ -1,78 +1,193 @@
 /**
  * Astro Blog「试验田 Lab」主工作区外壳组件 (LabPlaygroundShell)
  *
- * 组织工具栏、可调整分栏编辑器、沙盒运行预览、控制台与弹窗。
+ * 承载 #lab-playground-workspace 根容器、安全状态属性绑定、横幅与双栏布局。
  */
 import React from 'react';
-import { LabToolbar, type LabToolbarProps } from './LabToolbar';
-import { LabEditorPanel, type LabEditorPanelProps } from './LabEditorPanel';
-import { LabPreviewPanel, type LabPreviewPanelProps } from './LabPreviewPanel';
-import { LabConsolePanel, type LabConsolePanelProps } from './LabConsolePanel';
-import { LabSecurityPanel, type LabSecurityPanelProps } from './LabSecurityPanel';
-import { LabImportExportDialog, type LabImportExportDialogProps } from './LabImportExportDialog';
+import type { LabToolbarProps } from './LabToolbar';
+import type { LabEditorPanelProps } from './LabEditorPanel';
+import type { LabPreviewPanelProps } from './LabPreviewPanel';
+import { LabToolbar } from './LabToolbar';
+import { LabEditorPanel } from './LabEditorPanel';
+import { LabPreviewPanel } from './LabPreviewPanel';
 import { ExecutionVisualizer } from './ExecutionVisualizer';
 
 export interface LabPlaygroundShellProps {
+  mode: 'full-workshop' | 'detail-embedded';
+  execStatus: 'idle' | 'running' | 'completed' | 'error' | 'terminated';
+  effectiveIsolationMode: string;
+  codeSourceKind: string;
+  failClosedReason: string;
+  toastMessage?: string;
+  hasMounted: boolean;
+  isolationMode: string;
+  bridgeFallbackForced: boolean;
+  externalResolutionEnabled: boolean;
+  showTracePanel: boolean;
+  isHant: boolean;
   toolbarProps: LabToolbarProps;
   editorProps: LabEditorPanelProps;
   previewProps: LabPreviewPanelProps;
-  consoleProps: LabConsolePanelProps;
-  securityProps: LabSecurityPanelProps;
-  dialogProps: LabImportExportDialogProps;
-  toastMessage?: string;
-  mode?: 'full-workshop' | 'detail-embedded';
-  showTracePanel?: boolean;
+  onRetryCrossOriginSandbox: () => void;
 }
 
 export const LabPlaygroundShell: React.FC<LabPlaygroundShellProps> = ({
+  mode,
+  execStatus,
+  effectiveIsolationMode,
+  codeSourceKind,
+  failClosedReason,
+  toastMessage,
+  hasMounted,
+  isolationMode,
+  bridgeFallbackForced,
+  externalResolutionEnabled,
+  showTracePanel,
+  isHant,
   toolbarProps,
   editorProps,
   previewProps,
-  consoleProps,
-  securityProps,
-  dialogProps,
-  toastMessage,
-  mode = 'full-workshop',
-  showTracePanel = false,
+  onRetryCrossOriginSandbox,
 }) => {
+  const tr = (zhCn: string, zhHant: string) => (isHant ? zhHant : zhCn);
+
   return (
-    <div className="lab-playground-shell flex flex-col h-full w-full min-h-[640px] bg-slate-50 dark:bg-slate-950 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-xl">
-      {/* 顶部工具栏 */}
+    <div
+      id="lab-playground-workspace"
+      className="lab-playground-root"
+      data-mode={mode}
+      data-exec-status={execStatus}
+      data-isolation-mode={effectiveIsolationMode}
+      data-source-kind={codeSourceKind}
+      data-fail-closed={failClosedReason ? 'true' : 'false'}
+    >
+      {/* 顶部反馈 Toast */}
+      {toastMessage && (
+        <div
+          className="lab-toast"
+          role="status"
+          aria-live="polite"
+          data-testid="lab-toast"
+        >
+          <span>🛡️ {toastMessage}</span>
+        </div>
+      )}
+
+      {/* 1. 顶部工具栏 */}
       <LabToolbar {...toolbarProps} />
 
-      {/* 中部核心工作区：编辑器与预览面板双栏 */}
-      <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-2 divide-y lg:divide-y-0 lg:divide-x divide-slate-200 dark:divide-slate-800 overflow-hidden">
-        {/* 左栏：代码编辑器 */}
-        <div className="h-full min-h-[300px] overflow-hidden flex flex-col">
-          <LabEditorPanel {...editorProps} />
-        </div>
-
-        {/* 右栏：沙盒实时预览 */}
-        <div className="h-full min-h-[300px] overflow-hidden flex flex-col">
-          <LabPreviewPanel {...previewProps} />
-        </div>
-      </div>
-
-      {/* 底部折叠面板：控制台 / 运行时错误 / 安全审计 / 可视化追踪 */}
-      <div className="h-48 border-t border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col">
-        {consoleProps.activeBottomTab === 'security' ? (
-          <LabSecurityPanel {...securityProps} />
-        ) : consoleProps.activeBottomTab === 'trace' && showTracePanel ? (
-          <div className="h-full p-2 bg-slate-950 overflow-auto">
-            <ExecutionVisualizer config={toolbarProps.currentExp.visualizationConfig} />
+      {/* 失败关闭 (Fail-Closed) 强阻断安全横幅 */}
+      {failClosedReason && (
+        <div
+          className="lab-fail-closed-banner"
+          role="alert"
+          data-testid="sandbox-fail-closed-banner"
+        >
+          <div className="lab-banner-content">
+            <span>
+              🛑{' '}
+              <strong>
+                {tr(
+                  '独立跨站沙盒不可用 · 已强制失败关闭 (Fail-Closed)',
+                  '獨立跨站沙盒不可用 · 已強制失敗關閉 (Fail-Closed)'
+                )}
+              </strong>
+              ：{failClosedReason}
+            </span>
+            {externalResolutionEnabled && (
+              <button
+                type="button"
+                onClick={onRetryCrossOriginSandbox}
+                className="lab-pg-btn"
+                data-testid="btn-retry-cross-origin"
+              >
+                🔄 {tr('重试跨站沙盒', '重試跨站沙盒')}
+              </button>
+            )}
           </div>
-        ) : (
-          <LabConsolePanel {...consoleProps} />
-        )}
+        </div>
+      )}
+
+      {/* 官方实验本地 Opaque srcdoc 降级明确提示横幅 */}
+      {hasMounted && codeSourceKind === 'official' && isolationMode === 'opaque-srcdoc' && (
+        <div
+          className="lab-fallback-banner"
+          role="status"
+          aria-live="polite"
+          data-testid="official-fallback-banner"
+        >
+          <div className="lab-banner-content">
+            <span>
+              ℹ️{' '}
+              <strong>
+                {tr(
+                  '官方实验已回退至本地 Opaque srcdoc 隔离模式',
+                  '官方實驗已回退至本機 Opaque srcdoc 隔離模式'
+                )}
+              </strong>
+              ：
+              {bridgeFallbackForced
+                ? tr(
+                    '独立跨站沙盒当前握手超时或不可达。因当前运行的是受审阅的官方预设实验，系统已在明确提示后安全回退至本地无 allow-same-origin 的 Opaque srcdoc 强隔离沙盒（外部/社区/分享代码在此状态下将被严格拦截）。',
+                    '獨立跨站沙盒目前握手逾時或不可達。因目前執行的是受審閱的官方預設實驗，系統已在明確提示後安全回退至本機無 allow-same-origin 的 Opaque srcdoc 強隔離沙盒（外部/社群/分享程式碼在此狀態下將被嚴格攔截）。'
+                  )
+                : tr(
+                    '当前环境未启用外部独立跨站沙盒域名，受审阅的官方预设实验运行于本地无 allow-same-origin 的 Opaque srcdoc 强隔离回退模式（外部/社区/分享代码在此环境下禁止运行并失败关闭）。',
+                    '目前環境未啟用外部獨立跨站沙盒網域，受審閱的官方預設實驗執行於本機無 allow-same-origin 的 Opaque srcdoc 強隔離回退模式（外部/社群/分享程式碼在此環境下禁止執行並失敗關閉）。'
+                  )}
+            </span>
+            {externalResolutionEnabled && (
+              <button
+                type="button"
+                onClick={onRetryCrossOriginSandbox}
+                className="lab-pg-btn"
+                data-testid="btn-retry-cross-origin"
+              >
+                🔄 {tr('重试连接跨站沙盒', '重試連線跨站沙盒')}
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* 非官方（外部导入 / 社区投稿 / #bundle= 分享）代码警告横幅 */}
+      {codeSourceKind !== 'official' && !failClosedReason && (
+        <div
+          className="lab-untrusted-banner"
+          role="status"
+          aria-live="polite"
+          data-testid="untrusted-code-banner"
+        >
+          <div className="lab-banner-content">
+            <span>
+              ⚠️{' '}
+              <strong>
+                {tr('当前载入的是外部非可信代码', '目前載入的是外部非可信程式碼')}
+              </strong>
+              （{codeSourceKind}）：
+              {tr(
+                '已关闭自动运行；代码仅在具备独立跨站沙盒域名时方可点击执行；禁止直接将未审阅代码用于生产。',
+                '已關閉自動執行；程式碼僅在具備獨立跨站沙盒網域時方可點擊執行；禁止直接將未審閱程式碼用於生產。'
+              )}
+            </span>
+          </div>
+        </div>
+      )}
+
+      {/* 2. 双栏核心工作区：左侧代码编辑器 + 右侧沙盒预览 */}
+      <div className="lab-pg-workspace">
+        <LabEditorPanel {...editorProps} />
+        <LabPreviewPanel {...previewProps} />
       </div>
 
-      {/* 模态对话框 */}
-      <LabImportExportDialog {...dialogProps} />
-
-      {/* 全局浮动气泡通知 (Toast) */}
-      {toastMessage && (
-        <div className="fixed bottom-6 right-6 z-50 px-4 py-2 text-xs font-medium text-white bg-slate-900/90 dark:bg-slate-100/90 dark:text-slate-900 rounded-lg shadow-xl backdrop-blur-xs animate-fade-in pointer-events-none">
-          {toastMessage}
+      {/* 3. 可选展开的程序运行逻辑逐步追踪可视化面板 */}
+      {showTracePanel && (
+        <div className="lab-pg-trace-section">
+          <ExecutionVisualizer
+            initialAlgorithmId={
+              toolbarProps.currentExp.visualizationConfig?.presetAlgorithmId || 'bubble-sort'
+            }
+          />
         </div>
       )}
     </div>

@@ -3,141 +3,213 @@
  */
 import React from 'react';
 import type { LabExperiment } from '../../lib/lab-schema';
-import type { LabCodeSourceKind } from '../../lib/lab-sandbox-protocol';
+import type { LabCodeSourceKind, SandboxIsolationMode, SandboxDegradationDecision } from '../../lib/lab-sandbox-protocol';
 import { OFFICIAL_LAB_EXPERIMENTS } from '../../data/lab-experiments';
 
 export interface LabToolbarProps {
+  mode: 'full-workshop' | 'detail-embedded';
   currentExp: LabExperiment;
   selectedSlug: string;
   codeSourceKind: LabCodeSourceKind;
+  isolationMode: SandboxIsolationMode;
+  degradationPolicy: SandboxDegradationDecision;
+  activeExternalOrigin: string | null;
   execStatus: 'idle' | 'running' | 'completed' | 'error' | 'terminated';
   isHant: boolean;
+  fileInputRef: React.RefObject<HTMLInputElement | null>;
   onSelectExperiment: (slug: string) => void;
   onRun: () => void;
   onStop: () => void;
   onReset: () => void;
-  onOpenShareModal: () => void;
-  onOpenImportExportModal: () => void;
+  onCopyCode: () => void;
   onSaveDraft: () => void;
   onLoadDraft: () => void;
+  onExportJson: () => void;
+  onImportJsonFile: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onShareLink: () => void;
 }
 
 export const LabToolbar: React.FC<LabToolbarProps> = ({
+  mode,
   currentExp,
   selectedSlug,
   codeSourceKind,
+  isolationMode,
+  degradationPolicy,
+  activeExternalOrigin,
   execStatus,
   isHant,
+  fileInputRef,
   onSelectExperiment,
   onRun,
   onStop,
   onReset,
-  onOpenShareModal,
-  onOpenImportExportModal,
+  onCopyCode,
   onSaveDraft,
   onLoadDraft,
+  onExportJson,
+  onImportJsonFile,
+  onShareLink,
 }) => {
   const tr = (zhCn: string, zhHant: string) => (isHant ? zhHant : zhCn);
 
   return (
-    <div className="lab-toolbar flex flex-wrap items-center justify-between gap-3 px-4 py-2.5 bg-slate-100/80 dark:bg-slate-800/80 backdrop-blur border-b border-slate-200 dark:border-slate-700">
-      {/* 左侧：实验选择器与基本信息 */}
-      <div className="flex items-center gap-3">
-        <select
-          value={selectedSlug}
-          onChange={(e) => onSelectExperiment(e.target.value)}
-          className="px-2.5 py-1.5 text-xs font-medium rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-        >
-          {OFFICIAL_LAB_EXPERIMENTS.map((exp) => (
-            <option key={exp.slug} value={exp.slug}>
-              {exp.icon} {exp.title} ({exp.category})
-            </option>
-          ))}
-        </select>
+    <div className="lab-pg-toolbar theme-card">
+      <div className="lab-pg-toolbar__left">
+        {mode === 'full-workshop' ? (
+          <label className="lab-pg-selector-label">
+            <span className="selector-tag">{tr('预设实验', '預設實驗')}</span>
+            <select
+              value={selectedSlug}
+              onChange={(e) => onSelectExperiment(e.target.value)}
+              className="lab-pg-select"
+              aria-label={tr('选择预设实验', '選擇預設實驗')}
+              data-testid="playground-preset-select"
+            >
+              {OFFICIAL_LAB_EXPERIMENTS.map((exp) => (
+                <option key={exp.slug} value={exp.slug}>
+                  {exp.icon} {exp.title}
+                </option>
+              ))}
+            </select>
+          </label>
+        ) : (
+          <div className="lab-pg-exp-badge">
+            <span className="exp-icon">{currentExp.icon}</span>
+            <div>
+              <strong>{currentExp.title}</strong>
+              <small>
+                v{currentExp.version} · {tr('独立沙盒实时工坊', '獨立沙盒即時工坊')}
+              </small>
+            </div>
+          </div>
+        )}
 
-        <span
-          className={`inline-flex items-center px-2 py-0.5 text-2xs font-semibold rounded ${
-            codeSourceKind === 'official'
-              ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800'
-              : 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 border border-amber-300 dark:border-amber-800'
-          }`}
+        <div
+          className="lab-security-pill"
+          data-testid="lab-security-pill"
+          title={
+            isolationMode === 'cross-origin'
+              ? `已连接独立跨站沙盒桥接器 (${activeExternalOrigin})，内层执行帧仍保持无 allow-same-origin 的 Opaque Origin 双重隔离`
+              : degradationPolicy.effectiveMode === 'blocked-fail-closed'
+                ? '独立跨站沙盒当前不可用，外部导入/社区/分享代码已按安全门禁强制失败关闭 (Fail-Closed)'
+                : "当前官方预设运行在无 allow-same-origin 的 Opaque Origin (null) 回退沙盒中，且 CSP connect-src 'none' 阻断外发网络"
+          }
         >
-          {codeSourceKind === 'official'
-            ? tr('官方精选预设', '官方精選預設')
-            : tr('外部导入/修改', '外部匯入/修改')}
-        </span>
+          <span className="sec-dot" />
+          <span>
+            {isolationMode === 'cross-origin'
+              ? tr('Cross-Site + Opaque 双层沙盒', 'Cross-Site + Opaque 雙層沙盒')
+              : degradationPolicy.effectiveMode === 'blocked-fail-closed'
+                ? tr('Fail-Closed · 跨站沙盒未就绪', 'Fail-Closed · 跨站沙盒未就緒')
+                : tr('Opaque Fallback · 官方本地隔离', 'Opaque Fallback · 官方本機隔離')}
+          </span>
+        </div>
       </div>
 
-      {/* 右侧：动作控制区 */}
-      <div className="flex items-center gap-2">
+      <div className="lab-pg-toolbar__actions">
         <button
           type="button"
-          onClick={execStatus === 'running' ? onStop : onRun}
-          className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg shadow-sm transition ${
-            execStatus === 'running'
-              ? 'bg-rose-600 hover:bg-rose-700 text-white'
-              : 'bg-blue-600 hover:bg-blue-700 text-white'
-          }`}
+          onClick={onRun}
+          className="lab-pg-btn is-run"
+          data-testid="btn-run-code"
+          title={tr('在隔离沙盒中运行代码 (Ctrl/Cmd + Enter)', '在隔離沙盒中執行程式碼 (Ctrl/Cmd + Enter)')}
         >
-          {execStatus === 'running' ? (
-            <>
-              <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
-              {tr('停止运行', '停止執行')}
-            </>
-          ) : (
-            <>
-              <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M8 5v14l11-7z" />
-              </svg>
-              {tr('运行代码', '執行程式碼')}
-            </>
-          )}
+          ▶ {tr('运行代码', '執行程式碼')}
         </button>
-
+        <button
+          type="button"
+          onClick={onStop}
+          className="lab-pg-btn is-danger"
+          data-testid="btn-terminate-sandbox"
+          title={tr('立即销毁沙盒 iframe 并释放执行上下文', '立即銷毀沙盒 iframe 並釋放執行環境')}
+        >
+          ⏹ {tr('停止', '停止')}
+        </button>
         <button
           type="button"
           onClick={onReset}
-          title={tr('重置为初始预设', '重置為初始預設')}
-          className="px-2.5 py-1.5 text-xs text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg border border-slate-300 dark:border-slate-600 transition"
+          className="lab-pg-btn"
+          data-testid="btn-reset-code"
         >
-          {tr('重置', '重置')}
+          ↺ {tr('恢复初始', '恢復初始')}
         </button>
-
-        <div className="h-4 w-px bg-slate-300 dark:bg-slate-600 mx-0.5" />
-
         <button
           type="button"
-          onClick={onOpenShareModal}
-          className="px-2.5 py-1.5 text-xs text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg border border-slate-300 dark:border-slate-600 transition"
+          onClick={onCopyCode}
+          className="lab-pg-btn"
+          data-testid="btn-copy-code"
         >
-          {tr('分享', '分享')}
+          📋 {tr('复制源码', '複製原始碼')}
         </button>
-
-        <button
-          type="button"
-          onClick={onOpenImportExportModal}
-          className="px-2.5 py-1.5 text-xs text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg border border-slate-300 dark:border-slate-600 transition"
-        >
-          {tr('导入/导出', '匯入/匯出')}
-        </button>
-
         <button
           type="button"
           onClick={onSaveDraft}
-          title={tr('保存到本地草稿箱', '儲存至本機草稿箱')}
-          className="px-2.5 py-1.5 text-xs text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg border border-slate-300 dark:border-slate-600 transition"
+          className="lab-pg-btn"
+          data-testid="btn-save-draft"
         >
-          {tr('存草稿', '存草稿')}
+          💾 {tr('存草稿', '存草稿')}
         </button>
-
         <button
           type="button"
           onClick={onLoadDraft}
-          title={tr('从本地草稿箱恢复', '從本機草稿箱恢復')}
-          className="px-2.5 py-1.5 text-xs text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg border border-slate-300 dark:border-slate-600 transition"
+          className="lab-pg-btn"
+          data-testid="btn-load-draft"
         >
-          {tr('读草稿', '讀草稿')}
+          📂 {tr('读草稿', '讀草稿')}
         </button>
+        <button
+          type="button"
+          onClick={onExportJson}
+          className="lab-pg-btn"
+          data-testid="btn-export-json"
+        >
+          📤 {tr('导出', '匯出')}
+        </button>
+        <button
+          type="button"
+          onClick={() => fileInputRef.current?.click()}
+          className="lab-pg-btn"
+          data-testid="btn-import-json"
+        >
+          📥 {tr('导入', '匯入')}
+        </button>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".json,application/json"
+          onChange={onImportJsonFile}
+          tabIndex={-1}
+          aria-hidden="true"
+          style={{
+            position: 'absolute',
+            width: '1px',
+            height: '1px',
+            padding: 0,
+            margin: '-1px',
+            overflow: 'hidden',
+            clip: 'rect(0, 0, 0, 0)',
+            border: 0,
+            opacity: 0,
+            pointerEvents: 'none',
+          }}
+          data-testid="input-import-file"
+        />
+        <button
+          type="button"
+          onClick={onShareLink}
+          className="lab-pg-btn"
+          data-testid="btn-share-link"
+        >
+          🔗 {tr('分享', '分享')}
+        </button>
+        <a
+          href={`/lab/preview/${currentExp.slug}/`}
+          className="lab-pg-btn"
+          data-testid="link-standalone-preview"
+        >
+          ↗ {tr('独立预览页', '獨立預覽頁')}
+        </a>
       </div>
     </div>
   );

@@ -3,8 +3,7 @@
  *
  * 负责在 URL Hash (#bundle=) 与 JSON 文件之间进行安全、防篡改、无损的 UTF-8 Base64 编解码。
  */
-import { LAB_SECURITY_LIMITS } from '../lab-schema';
-import type { LabProject } from './types';
+import { LAB_SECURITY_LIMITS, validateLabPortableBundle } from '../lab-schema';
 
 export class PortableBundleCodec {
   /**
@@ -51,37 +50,45 @@ export class PortableBundleCodec {
   }
 
   /**
-   * 导出为带时间戳与版本签名的标准 JSON 下载内容
+   * 导出为带时间戳与版本签名的标准 JSON 下载内容 (符合 lab-bundle-v1 规范)
    */
-  static exportToJson(project: LabProject): string {
-    const payload = {
+  static exportToJson(payload: {
+    id?: string;
+    slug?: string;
+    title?: string;
+    description?: string;
+    category?: string;
+    language?: string;
+    files: Array<{ name: string; language: string; content: string }>;
+    sourceKind?: string;
+  }): string {
+    const bundle = {
+      version: 'lab-bundle-v1',
       manifestVersion: '1.0.0',
+      slug: payload.slug || 'custom-experiment',
+      title: payload.title || 'Custom Lab Experiment',
+      description: payload.description || '',
+      category: payload.category || 'utility',
+      language: payload.language || 'html-css-js',
+      files: payload.files,
       exportedAt: new Date().toISOString(),
-      project,
+      ...(payload.sourceKind === 'community' ? { sourceKind: 'community' } : {}),
     };
-    return JSON.stringify(payload, null, 2);
+    return JSON.stringify(bundle, null, 2);
   }
 
   /**
-   * 解析导入的 JSON 字符串并验证基础结构
+   * 解析导入的 JSON 字符串并进行全面安全与 Schema 校验
    */
-  static importFromJson(jsonStr: string): LabProject | null {
+  static importFromJson(jsonStr: string) {
     if (!jsonStr || jsonStr.length > LAB_SECURITY_LIMITS.MAX_TOTAL_SOURCE_BYTES * 2) {
-      return null;
+      return { ok: false, errors: ['JSON 文件体积超过安全限制 (256KB)'] };
     }
     try {
       const parsed = JSON.parse(jsonStr);
-      if (parsed && typeof parsed === 'object') {
-        if (parsed.project && Array.isArray(parsed.project.files)) {
-          return parsed.project as LabProject;
-        }
-        if (Array.isArray(parsed.files)) {
-          return parsed as LabProject;
-        }
-      }
-      return null;
+      return validateLabPortableBundle(parsed);
     } catch {
-      return null;
+      return { ok: false, errors: ['无效的 JSON 文件格式'] };
     }
   }
 }

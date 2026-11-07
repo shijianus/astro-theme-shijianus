@@ -71,12 +71,12 @@ export const LabImportExportDialog: React.FC<LabImportExportDialogProps> = ({
   };
 
   const handleApplyImport = () => {
-    const imported = PortableBundleCodec.importFromJson(importJsonText);
-    if (!imported || !imported.files || imported.files.length === 0) {
+    const validated = PortableBundleCodec.importFromJson(importJsonText);
+    if (!validated.ok || !validated.data || !validated.data.files || validated.data.files.length === 0) {
       showToast(tr('JSON 格式非法或未找到有效 files 数组', 'JSON 格式非法或未找到有效 files 陣列'));
       return;
     }
-    onImportFiles(imported.files);
+    onImportFiles(validated.data.files);
     showToast(tr('已成功导入外部代码，已设为非可信等级受保护运行', '已成功匯入外部程式碼，已設為非可信等級受保護執行'));
     onClose();
   };

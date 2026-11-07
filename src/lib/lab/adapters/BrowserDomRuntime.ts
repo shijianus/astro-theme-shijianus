@@ -7,7 +7,7 @@
 import type { LabRuntimeAdapter, LabProject, RunOptions, RunSession } from '../types';
 import {
   compileExperimentFiles,
-  generateSandboxDocument,
+  buildIsolatedSandboxSrcDoc,
   verifySandboxMessage,
 } from '../../lab-sandbox-protocol';
 import { LAB_SECURITY_LIMITS } from '../../lab-schema';
@@ -40,15 +40,12 @@ export class BrowserDomRuntime implements LabRuntimeAdapter {
       };
     }
 
-    // 2. 生成带 Nonce 锁死 CSP 的沙盒 HTML
-    const srcDoc = generateSandboxDocument({
+    // 2. 生成沙盒 HTML
+    const _srcDoc = buildIsolatedSandboxSrcDoc({
       sessionId: options.sessionId,
-      nonce: options.cspNonce,
-      html: compilation.html,
-      css: compilation.css,
-      js: compilation.js,
-      params: project.defaultParams,
+      files: project.files,
       theme: options.theme || 'light',
+      maxConsoleEntries: LAB_SECURITY_LIMITS.MAX_CONSOLE_ENTRIES,
     });
 
     // 3. 设置看门狗定时器 (Watchdog Timer)

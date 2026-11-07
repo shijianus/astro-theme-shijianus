@@ -114,10 +114,12 @@ type PostCommentsProps = {
   title: string;
   heading?: string;
   policyLabel?: string;
+  notice?: string;
   submitLabel?: string;
   previewLabel?: string;
   emptyTitle?: string;
   emptySummary?: string;
+  tips?: readonly string[] | string[];
   integration: CommentsIntegrationConfig;
 };
 
