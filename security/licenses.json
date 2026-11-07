@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-11-07T15:40:19.297Z",
-  "totalPackages": 888,
+  "generatedAt": "2026-11-07T15:58:12.249Z",
+  "totalPackages": 895,
   "copyleftRiskCount": 29,
   "copyleftPackages": [
     {
@@ -1437,6 +1437,41 @@
       "name": "@img/sharp-win32-x64",
       "version": "0.35.5",
       "license": "Apache-2.0 AND LGPL-3.0-or-later",
+      "scope": "production",
+      "isDirect": false
+    },
+    {
+      "name": "@jitl/quickjs-ffi-types",
+      "version": "0.32.0",
+      "license": "MIT",
+      "scope": "production",
+      "isDirect": false
+    },
+    {
+      "name": "@jitl/quickjs-wasmfile-debug-asyncify",
+      "version": "0.32.0",
+      "license": "MIT",
+      "scope": "production",
+      "isDirect": false
+    },
+    {
+      "name": "@jitl/quickjs-wasmfile-debug-sync",
+      "version": "0.32.0",
+      "license": "MIT",
+      "scope": "production",
+      "isDirect": false
+    },
+    {
+      "name": "@jitl/quickjs-wasmfile-release-asyncify",
+      "version": "0.32.0",
+      "license": "MIT",
+      "scope": "production",
+      "isDirect": false
+    },
+    {
+      "name": "@jitl/quickjs-wasmfile-release-sync",
+      "version": "0.32.0",
+      "license": "MIT",
       "scope": "production",
       "isDirect": false
     },
@@ -5254,6 +5289,20 @@
       "license": "MIT",
       "scope": "production",
       "isDirect": true
+    },
+    {
+      "name": "quickjs-emscripten",
+      "version": "0.32.0",
+      "license": "MIT",
+      "scope": "production",
+      "isDirect": true
+    },
+    {
+      "name": "quickjs-emscripten-core",
+      "version": "0.32.0",
+      "license": "MIT",
+      "scope": "production",
+      "isDirect": false
     },
     {
       "name": "radix3",

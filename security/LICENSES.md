@@ -1,7 +1,7 @@
 # 开源依赖许可证合规报告 (Open Source License Inventory)
 
-> **生成时间**: 2026-11-07T15:40:19.297Z  
-> **包总数**: 888  
+> **生成时间**: 2026-11-07T15:58:12.249Z  
+> **包总数**: 895  
 > **强互惠 / 限制型许可证包数**: 29  
 
 ---
@@ -225,6 +225,11 @@
 | `@img/sharp-win32-ia32` | `0.35.5` | `Apache-2.0 AND LGPL-3.0-or-later` | `production` | - |
 | `@img/sharp-win32-x64` | `0.34.5` | `Apache-2.0 AND LGPL-3.0-or-later` | `dev` | - |
 | `@img/sharp-win32-x64` | `0.35.5` | `Apache-2.0 AND LGPL-3.0-or-later` | `production` | - |
+| `@jitl/quickjs-ffi-types` | `0.32.0` | `MIT` | `production` | - |
+| `@jitl/quickjs-wasmfile-debug-asyncify` | `0.32.0` | `MIT` | `production` | - |
+| `@jitl/quickjs-wasmfile-debug-sync` | `0.32.0` | `MIT` | `production` | - |
+| `@jitl/quickjs-wasmfile-release-asyncify` | `0.32.0` | `MIT` | `production` | - |
+| `@jitl/quickjs-wasmfile-release-sync` | `0.32.0` | `MIT` | `production` | - |
 | `@jridgewell/gen-mapping` | `0.3.13` | `MIT` | `production` | - |
 | `@jridgewell/remapping` | `2.3.5` | `MIT` | `production` | - |
 | `@jridgewell/resolve-uri` | `3.1.2` | `MIT` | `production` | - |
@@ -770,6 +775,8 @@
 | `puppeteer` | `25.8.0` | `Apache-2.0` | `dev` | ✓ |
 | `puppeteer-core` | `25.8.0` | `Apache-2.0` | `dev` | - |
 | `qrcode` | `1.5.4` | `MIT` | `production` | ✓ |
+| `quickjs-emscripten` | `0.32.0` | `MIT` | `production` | ✓ |
+| `quickjs-emscripten-core` | `0.32.0` | `MIT` | `production` | - |
 | `radix3` | `1.1.2` | `MIT` | `production` | - |
 | `range-parser` | `1.2.1` | `MIT` | `production` | - |
 | `react` | `19.2.4` | `MIT` | `production` | ✓ |
