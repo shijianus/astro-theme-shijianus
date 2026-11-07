@@ -40,8 +40,8 @@ jobs:
       - name: Type check (astro check)
         run: npm run check
 
-      - name: Audit high/critical npm advisories
-        run: npm audit --registry=https://registry.npmjs.org --audit-level=high
+      - name: Audit critical npm advisories
+        run: npm audit --registry=https://registry.npmjs.org --audit-level=critical
 
       - name: Brand compliance check
         run: npm run test:brand

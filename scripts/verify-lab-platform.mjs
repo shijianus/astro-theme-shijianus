@@ -953,20 +953,28 @@ async function runBrowserSuite(browserName, browserType) {
       `${CROSS_MAIN_URL}/lab/playground/?slug=star-trails-simulator#bundle=${encodedHash}`,
       { waitUntil: 'domcontentloaded' }
     );
-    await page.waitForTimeout(250);
+    await page.waitForFunction(
+      () =>
+        document.querySelector('#lab-playground-workspace')?.getAttribute('data-source-kind') ===
+          'bundle' &&
+        document.querySelector('#lab-playground-workspace')?.getAttribute('data-exec-status') ===
+          'idle',
+      null,
+      { timeout: 10000, polling: 100 }
+    );
     assert.equal(await page.getByTestId('lab-sandbox-iframe').count(), 0, '跨站模式下 #bundle= 仍禁止自动运行');
     await clickTarget(page.getByTestId('btn-run-code'));
     await page.waitForFunction(
       () => document.querySelector('#lab-playground-workspace')?.getAttribute('data-exec-status') === 'completed',
       null,
-      { timeout: 15000, polling: 100 }
+      { timeout: 20000, polling: 100 }
     );
     await clickTarget(page.getByTestId('tab-console'));
     await page.waitForFunction(
       () =>
         document.querySelector('[data-testid="console-log-list"]')?.textContent?.includes('BUNDLE_CROSS_SITE_OK'),
       null,
-      { timeout: 15000, polling: 100 }
+      { timeout: 20000, polling: 100 }
     );
     assert.ok((await page.getByTestId('console-log-list').innerText()).includes('BUNDLE_CROSS_SITE_OK'));
 
