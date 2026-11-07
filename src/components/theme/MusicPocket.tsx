@@ -1,8 +1,26 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { parseLrcLike, parseYrc } from '@applemusic-like-lyrics/lyric';
 import { convertText, type LocaleVariant } from '../../lib/client-locale';
+import {
+  parseHighPrecisionLrc,
+  parseLrc,
+  cleanLyricText,
+  isLyricMetadataLine,
+  estimateVocalDuration,
+  normalizeLyricLines,
+  type LyricWord,
+  type LyricLine,
+  type LyricSyncType,
+} from '../../lib/lyrics-parser';
 
-export type LyricSyncType = 'none' | 'line' | 'word';
+export type { LyricWord, LyricLine, LyricSyncType };
+export {
+  parseHighPrecisionLrc,
+  parseLrc,
+  cleanLyricText,
+  isLyricMetadataLine,
+  estimateVocalDuration,
+  normalizeLyricLines,
+};
 import {
   Clock,
   Compass,
@@ -51,25 +69,6 @@ export type MusicTrack = {
   lyricId?: string;
   urlId?: string;
   lrc?: string;
-};
-
-export type LyricWord = {
-  text: string;
-  start: number;
-  end: number;
-  duration?: number;
-  startSec?: number;
-  endSec?: number;
-  durationSec?: number;
-};
-
-export type LyricLine = {
-  time: number;
-  text: string;
-  words?: LyricWord[];
-  duration?: number;
-  timeSec?: number;
-  durationSec?: number;
 };
 
 type Props = {
@@ -331,113 +330,6 @@ function formatTime(seconds: number): string {
   return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
 }
 
-function cleanLyricText(str: string): string {
-  if (!str) return '';
-  return str
-    .replace(/\[\d{2}:\d{2}(?:\.\d{2,3})?\]/g, '')
-    .replace(/<[\d.,\s]+>/g, '')
-    .replace(/\([\d.,\s]+\)/g, '')
-    .trim();
-}
-
-function isLyricMetadataLine(text: string): boolean {
-  if (!text) return true;
-  const trimmed = text.trim();
-  if (/^(作词|作曲|编曲|词|曲|制作|制作人|监制|录音|混音|母带|吉他|贝斯|鼓|和声|弦乐|企划|统筹|OP|SP|演唱|原唱|歌手|专辑|发行|出品|Written|Composed|Arranged|Produced|Lyrics|Music|Vocal|Singer)\s*[:：]/i.test(trimmed)) {
-    return true;
-  }
-  // 过滤歌曲名/歌手名标题行（如 "青花瓷 - 周杰伦" 或 "Song - Artist"）
-  if (/^[^-–—]+[-–—][^-–—]+$/.test(trimmed) && trimmed.length < 50) {
-    return true;
-  }
-  return false;
-}
-
-export function normalizeLyricLines(rawLines: any[]): LyricLine[] {
-  if (!Array.isArray(rawLines)) return [];
-  const valid = rawLines.filter((line) => line && typeof line.text === 'string' && line.text.trim());
-  if (valid.length === 0) return [];
-
-  return valid
-    .map((line) => {
-      // 统一度量衡：优先使用明确的 timeSec（秒）与 durationSec（秒）
-      let timeSec: number;
-      if (typeof line.timeSec === 'number' && !isNaN(line.timeSec)) {
-        timeSec = line.timeSec > 1000 ? line.timeSec / 1000 : line.timeSec;
-      } else if (typeof line.time === 'number' && !isNaN(line.time)) {
-        timeSec = line.time > 1000 ? line.time / 1000 : line.time;
-      } else {
-        timeSec = 0;
-      }
-      timeSec = Math.max(0, parseFloat(timeSec.toFixed(3)));
-
-      let durSec: number | undefined = undefined;
-      if (typeof line.durationSec === 'number' && !isNaN(line.durationSec)) {
-        durSec = line.durationSec > 60 ? line.durationSec / 1000 : line.durationSec;
-      } else if (typeof line.duration === 'number' && !isNaN(line.duration)) {
-        durSec = line.duration > 45 ? line.duration / 1000 : line.duration;
-      }
-      if (typeof durSec === 'number') {
-        durSec = Math.max(0.1, parseFloat(durSec.toFixed(3)));
-      }
-
-      let words: LyricWord[] | undefined = undefined;
-      if (Array.isArray(line.words) && line.words.length > 0) {
-        words = line.words.map((w: any) => {
-          let wStartSec: number;
-          if (typeof w.startSec === 'number' && !isNaN(w.startSec)) {
-            wStartSec = w.startSec > 1000 ? w.startSec / 1000 : w.startSec;
-          } else if (typeof w.start === 'number' && !isNaN(w.start)) {
-            const isMs = w.start > 600 || (typeof w.duration === 'number' && w.duration > 20);
-            wStartSec = isMs ? w.start / 1000 : w.start;
-          } else {
-            wStartSec = timeSec;
-          }
-          wStartSec = Math.max(0, parseFloat(wStartSec.toFixed(3)));
-
-          let wEndSec: number;
-          if (typeof w.endSec === 'number' && !isNaN(w.endSec)) {
-            wEndSec = w.endSec > 1000 ? w.endSec / 1000 : w.endSec;
-          } else if (typeof w.end === 'number' && !isNaN(w.end)) {
-            const isMs = w.end > 600 || (typeof w.duration === 'number' && w.duration > 20);
-            wEndSec = isMs ? w.end / 1000 : w.end;
-          } else if (typeof w.durationSec === 'number' && !isNaN(w.durationSec)) {
-            const d = w.durationSec > 20 ? w.durationSec / 1000 : w.durationSec;
-            wEndSec = wStartSec + d;
-          } else if (typeof w.duration === 'number' && !isNaN(w.duration)) {
-            const d = w.duration > 20 ? w.duration / 1000 : w.duration;
-            wEndSec = wStartSec + d;
-          } else {
-            wEndSec = wStartSec + 0.3;
-          }
-          wEndSec = Math.max(wStartSec + 0.01, parseFloat(wEndSec.toFixed(3)));
-
-          const wDurSec = Math.max(0.01, parseFloat((wEndSec - wStartSec).toFixed(3)));
-
-          return {
-            text: String(w.text || ''),
-            start: wStartSec,
-            end: wEndSec,
-            duration: wDurSec,
-            startSec: wStartSec,
-            endSec: wEndSec,
-            durationSec: wDurSec,
-          };
-        });
-      }
-
-      return {
-        time: timeSec,
-        timeSec,
-        text: String(line.text || '').trim(),
-        duration: durSec,
-        durationSec: durSec,
-        words,
-      };
-    })
-    .sort((a, b) => a.timeSec - b.timeSec);
-}
-
 export function findActiveLyricIndex(time: number, lyrics: LyricLine[]): number {
   if (!lyrics || lyrics.length === 0) return -1;
   let found = -1;
@@ -453,19 +345,6 @@ export function findActiveLyricIndex(time: number, lyrics: LyricLine[]): number 
     }
   }
   return found;
-}
-
-export function estimateVocalDuration(text: string, gapSec: number): number {
-  const clean = text.replace(/\[[^\]]+\]/g, '').replace(/<[^>]+>/g, '').replace(/\([^)]+\)/g, '').trim();
-  if (!clean) return Math.min(gapSec > 0 ? gapSec : 2.5, 2.0);
-  const vocalChars = clean.replace(/[\s\p{P}\p{S}]/gu, '').length;
-  const count = Math.max(1, vocalChars);
-  const naturalDuration = Math.max(1.2, count * 0.24 + 0.35);
-  if (gapSec <= 0) return naturalDuration;
-  if (naturalDuration >= gapSec - 0.2) {
-    return Math.max(0.4, Math.min(gapSec, gapSec - 0.15));
-  }
-  return Math.min(gapSec - 0.25, naturalDuration);
 }
 
 function computeActiveLineProgress(
@@ -561,327 +440,6 @@ function computeActiveLineProgress(
   // 在物理人声持续时间内，真实平滑流光推进
   const pct = Math.min(100, Math.max(0, ((time - lineStart) / Math.max(0.1, lineVocalDur)) * 100));
   return { progress: pct };
-}
-
-export function parseHighPrecisionLrc(raw: string): {
-  syncType: LyricSyncType;
-  offset: number;
-  lines: LyricLine[];
-} {
-  if (!raw || !raw.trim()) {
-    return { syncType: 'line', offset: 0, lines: [] };
-  }
-
-  let offsetSec = 0;
-  const offsetMatch = raw.match(/\[offset:\s*([+-]?\d+)\]/i);
-  if (offsetMatch) {
-    offsetSec = (parseInt(offsetMatch[1], 10) || 0) / 1000;
-  }
-
-  let cleanInput = raw;
-  const qrcXmlMatch = raw.match(/<Lyric_1[^>]*LyricContent="([^"]+)"/i);
-  if (qrcXmlMatch) {
-    cleanInput = qrcXmlMatch[1];
-  }
-
-  // 1. 采用 AMLL (@applemusic-like-lyrics/lyric) 原生引擎优先解析 Enhanced LRC / TTML / YRC
-  try {
-    let amllLines: any[] = [];
-    if (/^\[\d+,\d+\]/m.test(cleanInput)) {
-      amllLines = parseYrc(cleanInput);
-    } else {
-      const parsed = parseLrcLike(cleanInput);
-      if (parsed && Array.isArray(parsed.lines)) {
-        amllLines = parsed.lines;
-      }
-    }
-
-    if (Array.isArray(amllLines) && amllLines.length > 0) {
-      const hasWordTimestamps = amllLines.some((l) => Array.isArray(l.words) && l.words.length > 1);
-      const converted: LyricLine[] = amllLines.map((line) => {
-        const timeSec = Math.max(0, parseFloat((line.startTime / 1000 + offsetSec).toFixed(3)));
-        const durSec = line.endTime > line.startTime && line.endTime < 59000000
-          ? Math.max(0.1, parseFloat(((line.endTime - line.startTime) / 1000).toFixed(3)))
-          : undefined;
-
-        const words: LyricWord[] | undefined = Array.isArray(line.words) && line.words.length > 0
-          ? line.words.map((w: any) => {
-              const wStartSec = Math.max(0, parseFloat((w.startTime / 1000 + offsetSec).toFixed(3)));
-              const wEndSec = Math.max(wStartSec + 0.01, parseFloat((w.endTime / 1000 + offsetSec).toFixed(3)));
-              const wDurSec = Math.max(0.01, parseFloat((wEndSec - wStartSec).toFixed(3)));
-              return {
-                text: String(w.word || ''),
-                start: wStartSec,
-                end: wEndSec,
-                duration: wDurSec,
-                startSec: wStartSec,
-                endSec: wEndSec,
-                durationSec: wDurSec,
-              };
-            })
-          : undefined;
-
-        const fullText = words && words.length > 0
-          ? words.map((w) => w.text).join('')
-          : (line.text || '');
-
-        return {
-          time: timeSec,
-          timeSec,
-          duration: durSec,
-          durationSec: durSec,
-          text: fullText.trim(),
-          words: words && words.length > 1 ? words : undefined,
-        };
-      });
-
-      const filtered = converted.filter((l) => l.text && !isLyricMetadataLine(l.text));
-      if (filtered.length > 0) {
-        for (let i = 0; i < filtered.length; i++) {
-          const cur = filtered[i];
-          if (!cur.duration) {
-            const next = filtered[i + 1];
-            const gap = next ? next.time - cur.time : 4.5;
-            cur.duration = estimateVocalDuration(cur.text, gap);
-            cur.durationSec = cur.duration;
-          }
-        }
-        return {
-          syncType: hasWordTimestamps ? 'word' : 'line',
-          offset: Math.round(offsetSec * 1000),
-          lines: normalizeLyricLines(filtered),
-        };
-      }
-    }
-  } catch {}
-
-  const rawLines = cleanInput.split('\n');
-  const result: LyricLine[] = [];
-  let hasWordTimestamps = false;
-
-  for (const rawLine of rawLines) {
-    const line = rawLine.trim();
-    if (!line) continue;
-    if (/^\[(ti|ar|al|by|offset|kana|re|ve|hash|sign|qq|total):/i.test(line)) continue;
-
-    // 0. JSON 行格式 (NetEase / smart-lyric)
-    if (line.startsWith('{') && line.endsWith('}')) {
-      try {
-        const json = JSON.parse(line);
-        if (Array.isArray(json.c)) {
-          let lineText = '';
-          const words: LyricWord[] = [];
-          let hasWordInfo = false;
-          const lineBaseSec = (typeof json.t === 'number' ? json.t : 0) / 1000;
-
-          for (const item of json.c) {
-            const tx = item.tx || '';
-            lineText += tx;
-            if (typeof item.t === 'number' && typeof item.d === 'number') {
-              hasWordInfo = true;
-              const wStartSec = Math.max(0, item.t / 1000 + offsetSec);
-              const wDurSec = Math.max(0, item.d / 1000);
-              words.push({
-                text: tx,
-                start: wStartSec,
-                end: wStartSec + wDurSec,
-                duration: wDurSec,
-                startSec: wStartSec,
-                endSec: wStartSec + wDurSec,
-                durationSec: wDurSec,
-              });
-            }
-          }
-
-          const cleanText = lineText.trim();
-          if (!cleanText) continue;
-          if (isLyricMetadataLine(cleanText)) continue;
-
-          if (hasWordInfo && words.length > 0) hasWordTimestamps = true;
-          const lineTimeSec = words.length > 0 ? words[0].start : Math.max(0, lineBaseSec + offsetSec);
-          const lineDurSec = words.length > 0 ? words[words.length - 1].end - lineTimeSec : undefined;
-
-          result.push({
-            time: lineTimeSec,
-            timeSec: lineTimeSec,
-            duration: lineDurSec,
-            durationSec: lineDurSec,
-            text: cleanText,
-            words: words.length > 0 ? words : undefined,
-          });
-          continue;
-        }
-      } catch {}
-    }
-
-    // 1. 匹配 YRC 格式：[lineStartMs,lineDurMs](wordStart,wordDur)word...
-    const yrcMatch = line.match(/^\[(\d+),(\d+)\](.*)$/);
-
-    if (yrcMatch) {
-      const lineStartSec = Math.max(0, parseInt(yrcMatch[1], 10) / 1000 + offsetSec);
-      const lineDurSec = parseInt(yrcMatch[2], 10) / 1000;
-      const content = yrcMatch[3];
-
-      const words: LyricWord[] = [];
-      const wordRegex = /\((\d+),(\d+)(?:,\d+)?\)([^(]+)/g;
-      let wMatch;
-      let lineText = '';
-
-      while ((wMatch = wordRegex.exec(content)) !== null) {
-        let wStartMs = parseInt(wMatch[1], 10);
-        const wDurMs = parseInt(wMatch[2], 10);
-        const wText = wMatch[3];
-
-        if (wStartMs < parseInt(yrcMatch[1], 10) && wStartMs < 60000) {
-          wStartMs = parseInt(yrcMatch[1], 10) + wStartMs;
-        }
-
-        const wStartSec = Math.max(0, wStartMs / 1000 + offsetSec);
-        const wDurSec = Math.max(0, wDurMs / 1000);
-        words.push({
-          text: wText,
-          start: wStartSec,
-          end: wStartSec + wDurSec,
-          duration: wDurSec,
-          startSec: wStartSec,
-          endSec: wStartSec + wDurSec,
-          durationSec: wDurSec,
-        });
-        lineText += wText;
-      }
-
-      if (words.length > 0) {
-        hasWordTimestamps = true;
-        result.push({
-          time: lineStartSec,
-          timeSec: lineStartSec,
-          duration: lineDurSec,
-          durationSec: lineDurSec,
-          text: lineText.trim() || content.replace(/\([^)]+\)/g, '').trim(),
-          words,
-        });
-        continue;
-      }
-    }
-
-    // 2. 匹配标准时间戳 [mm:ss.xx] 或 [mm:ss.xxx]
-    const standardTimeRegex = /\[(\d{1,2}):(\d{2})(?:[.:](\d{1,3}))?\]/g;
-    const timeMatches: number[] = [];
-    let match;
-
-    while ((match = standardTimeRegex.exec(line)) !== null) {
-      const minutes = parseInt(match[1], 10);
-      const seconds = parseInt(match[2], 10);
-      const ms = match[3] ? parseInt(match[3].padEnd(3, '0').slice(0, 3), 10) : 0;
-      timeMatches.push(Math.max(0, minutes * 60 + seconds + ms / 1000 + offsetSec));
-    }
-
-    const cleanLineBody = line.replace(standardTimeRegex, '').trim();
-    if (!cleanLineBody && timeMatches.length > 0) continue;
-
-    // 检查是否有逐字标签：
-    // <start, dur>word 或 (startMs, durMs)word
-    const angleWordRegex = /<([\d.]+)(?:,\s*([\d.]+))?>([^<]+)/g;
-    const parenWordRegex = /\((\d+),(\d+)(?:,\d+)?\)([^(]+)/g;
-
-    let lineWords: LyricWord[] = [];
-    let angleMatch;
-    while ((angleMatch = angleWordRegex.exec(cleanLineBody)) !== null) {
-      const rawStart = parseFloat(angleMatch[1]);
-      const rawDur = angleMatch[2] ? parseFloat(angleMatch[2]) : 0.3;
-      const wText = angleMatch[3];
-
-      const isMs = rawStart > 600;
-      const startSec = Math.max(0, (isMs ? rawStart / 1000 : rawStart) + offsetSec);
-      const durSec = isMs ? rawDur / 1000 : rawDur;
-
-      lineWords.push({
-        text: wText,
-        start: startSec,
-        end: startSec + durSec,
-        duration: durSec,
-        startSec,
-        endSec: startSec + durSec,
-        durationSec: durSec,
-      });
-    }
-
-    if (lineWords.length === 0) {
-      let pMatch;
-      while ((pMatch = parenWordRegex.exec(cleanLineBody)) !== null) {
-        const wStartMs = parseInt(pMatch[1], 10);
-        const wDurMs = parseInt(pMatch[2], 10);
-        const wText = pMatch[3];
-        const startSec = Math.max(0, wStartMs / 1000 + offsetSec);
-        const durSec = Math.max(0, wDurMs / 1000);
-        lineWords.push({
-          text: wText,
-          start: startSec,
-          end: startSec + durSec,
-          duration: durSec,
-          startSec,
-          endSec: startSec + durSec,
-          durationSec: durSec,
-        });
-      }
-    }
-
-    const plainText = cleanLineBody
-      .replace(/<[^>]+>/g, '')
-      .replace(/\([^)]+\)/g, '')
-      .trim();
-
-    if (!plainText) continue;
-    if (isLyricMetadataLine(plainText)) continue;
-
-    if (lineWords.length > 0) {
-      hasWordTimestamps = true;
-    }
-
-    if (timeMatches.length > 0) {
-      for (const t of timeMatches) {
-        result.push({
-          time: t,
-          timeSec: t,
-          text: plainText,
-          words: lineWords.length > 0 ? lineWords : undefined,
-        });
-      }
-    } else if (lineWords.length > 0) {
-      const lineStart = lineWords[0].start;
-      result.push({
-        time: lineStart,
-        timeSec: lineStart,
-        duration: lineWords[lineWords.length - 1].end - lineStart,
-        durationSec: lineWords[lineWords.length - 1].end - lineStart,
-        text: plainText,
-        words: lineWords,
-      });
-    }
-  }
-
-  result.sort((a, b) => a.time - b.time);
-
-  // 为普通行级歌词基于人声自然语速声学模型计算发音时长，保留间奏与伴奏呼吸空间
-  for (let i = 0; i < result.length; i++) {
-    const cur = result[i];
-    if (!cur.duration) {
-      const next = result[i + 1];
-      const gap = next ? next.time - cur.time : 4.5;
-      cur.duration = estimateVocalDuration(cur.text, gap);
-    }
-    cur.durationSec = cur.duration;
-  }
-
-  return {
-    syncType: hasWordTimestamps ? 'word' : 'line',
-    offset: Math.round(offsetSec * 1000),
-    lines: normalizeLyricLines(result),
-  };
-}
-
-export function parseLrc(raw: string): LyricLine[] {
-  return parseHighPrecisionLrc(raw).lines;
 }
 
 async function fetchJson<T>(url: string): Promise<T> {

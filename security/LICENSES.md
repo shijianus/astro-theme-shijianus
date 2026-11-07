@@ -1,8 +1,8 @@
 # 开源依赖许可证合规报告 (Open Source License Inventory)
 
-> **生成时间**: 2026-11-07T15:31:19.676Z  
-> **包总数**: 891  
-> **强互惠 / 限制型许可证包数**: 31  
+> **生成时间**: 2026-11-07T15:40:19.297Z  
+> **包总数**: 888  
+> **强互惠 / 限制型许可证包数**: 29  
 
 ---
 
@@ -13,8 +13,6 @@
 
 | 包名 | 版本 | 许可证 | 作用域 | 是否直属依赖 |
 | :--- | :--- | :--- | :--- | :--- |
-| `@applemusic-like-lyrics/lyric` | `1.1.0` | **AGPL-3.0-only** | `production` | ✓ 直属 |
-| `@applemusic-like-lyrics/ttml` | `1.0.1` | **AGPL-3.0-only** | `production` | 传递 |
 | `@img/sharp-libvips-darwin-arm64` | `1.2.4` | **LGPL-3.0-or-later** | `dev` | 传递 |
 | `@img/sharp-libvips-darwin-arm64` | `1.3.4` | **LGPL-3.0-or-later** | `production` | 传递 |
 | `@img/sharp-libvips-darwin-x64` | `1.2.4` | **LGPL-3.0-or-later** | `dev` | 传递 |
@@ -53,8 +51,6 @@
 | :--- | :--- | :--- | :--- | :---: |
 | `@alloc/quick-lru` | `5.2.0` | `MIT` | `dev` | - |
 | `@antfu/install-pkg` | `2.1.0` | `MIT` | `production` | - |
-| `@applemusic-like-lyrics/lyric` | `1.1.0` | `AGPL-3.0-only` | `production` | ✓ |
-| `@applemusic-like-lyrics/ttml` | `1.0.1` | `AGPL-3.0-only` | `production` | - |
 | `@astrojs/astro2tsx` | `0.1.3` | `MIT` | `dev` | - |
 | `@astrojs/check` | `0.9.12` | `MIT` | `dev` | ✓ |
 | `@astrojs/compiler-binding` | `0.5.2` | `MIT` | `production` | - |
@@ -745,7 +741,6 @@
 | `p-queue` | `10.0.0` | `MIT` | `production` | - |
 | `p-try` | `2.2.0` | `MIT` | `production` | - |
 | `package-manager-detector` | `1.9.0` | `MIT` | `production` | - |
-| `pako` | `3.0.2` | `(MIT AND Zlib)` | `production` | - |
 | `parse-entities` | `4.0.2` | `MIT` | `production` | - |
 | `parse-latin` | `7.0.0` | `MIT` | `production` | - |
 | `parse5` | `7.3.0` | `MIT` | `production` | - |

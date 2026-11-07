@@ -1,22 +1,8 @@
 {
-  "generatedAt": "2026-11-07T15:31:19.676Z",
-  "totalPackages": 891,
-  "copyleftRiskCount": 31,
+  "generatedAt": "2026-11-07T15:40:19.297Z",
+  "totalPackages": 888,
+  "copyleftRiskCount": 29,
   "copyleftPackages": [
-    {
-      "name": "@applemusic-like-lyrics/lyric",
-      "version": "1.1.0",
-      "license": "AGPL-3.0-only",
-      "scope": "production",
-      "isDirect": true
-    },
-    {
-      "name": "@applemusic-like-lyrics/ttml",
-      "version": "1.0.1",
-      "license": "AGPL-3.0-only",
-      "scope": "production",
-      "isDirect": false
-    },
     {
       "name": "@img/sharp-libvips-darwin-arm64",
       "version": "1.2.4",
@@ -233,20 +219,6 @@
       "name": "@antfu/install-pkg",
       "version": "2.1.0",
       "license": "MIT",
-      "scope": "production",
-      "isDirect": false
-    },
-    {
-      "name": "@applemusic-like-lyrics/lyric",
-      "version": "1.1.0",
-      "license": "AGPL-3.0-only",
-      "scope": "production",
-      "isDirect": true
-    },
-    {
-      "name": "@applemusic-like-lyrics/ttml",
-      "version": "1.0.1",
-      "license": "AGPL-3.0-only",
       "scope": "production",
       "isDirect": false
     },
@@ -5077,13 +5049,6 @@
       "name": "package-manager-detector",
       "version": "1.9.0",
       "license": "MIT",
-      "scope": "production",
-      "isDirect": false
-    },
-    {
-      "name": "pako",
-      "version": "3.0.2",
-      "license": "(MIT AND Zlib)",
       "scope": "production",
       "isDirect": false
     },
