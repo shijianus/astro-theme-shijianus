@@ -11,10 +11,11 @@
 - **远端当前状态**：
   - `origin/main` & `cf/main`：`2e92967072febadd70e03d13bfd1cc6e2207bc55`（严格同步，零修改）
   - `origin/review/lab-phase-2.7-audit` & `cf/review/lab-phase-2.7-audit`：`bd7216252657102ccee208ebc983551c63c4a9d5`
-- **本轮本地治理提交**（零远端推送）：
+- **本轮本地治理与交接提交**：
   1. `37a2fa0` `chore(governance): establish tiered authorization matrix, remove default push-all and prod deploy`
   2. `2d622ca` `docs(lab-audit): correct post-audit remote push status and re-affirm Phase 2.7 NO-GO decision`
-  3. `[当前提交]` `docs(lab-handoff): add Phase 2.8 architecture, risk matrix, and release readiness handoff specifications`
+  3. `4b8c78e` `docs(lab-handoff): add Phase 2.8 architecture, risk matrix, and release readiness handoff specifications`
+  4. `[当前提交]` `docs(agents): log Task 124 authorized full push to origin and cf`
 - **工作区状态**：干净（`nothing to commit, working tree clean`）。
 
 ---
