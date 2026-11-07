@@ -73,7 +73,7 @@ const sidebarData = createSidebarData(posts);
         <a href={`/lab/${experiment.slug}/`} class="preview-back-btn">📄 实验详情</a>
         <div class="preview-title-wrap">
           <span class="preview-icon">{experiment.icon}</span>
-          <strong>{experiment.title}</strong>
+          <h1 class="preview-heading">{experiment.title}</h1>
           <span
             id="preview-isolation-badge"
             class="preview-sec-tag"
@@ -533,6 +533,13 @@ const sidebarData = createSidebarData(posts);
     gap: 8px;
     font-size: 14px;
     flex-wrap: wrap;
+  }
+
+  .preview-heading {
+    margin: 0;
+    font-size: inherit;
+    font-weight: 700;
+    line-height: inherit;
   }
 
   .preview-sec-tag {
