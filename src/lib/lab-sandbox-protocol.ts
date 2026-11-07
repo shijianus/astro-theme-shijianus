@@ -30,7 +30,7 @@ import {
   getUtf8ByteLength,
   instrumentJavaScriptLoops,
   transpileTypeScriptDetailed,
-} from './lab-schema';
+} from './lab-schema.ts';
 
 export const LAB_SANDBOX_PROTOCOL_VERSION = 'LAB_SANDBOX_PROTOCOL_V1' as const;
 
@@ -110,32 +110,110 @@ export type SandboxToHostMessageType =
   | 'CONSOLE_EVENT'
   | 'RUNTIME_ERROR'
   | 'EXECUTION_COMPLETE'
+  | 'EXECUTION_ABORTED'
   | 'HEARTBEAT';
 
-export interface SandboxToHostMessage {
+export interface SandboxBridgeReadyMessage {
   protocol: typeof LAB_SANDBOX_PROTOCOL_VERSION;
   sessionId: string;
-  type: SandboxToHostMessageType;
-  payload?: {
-    level?: SandboxConsoleLevel;
-    args?: string[];
-    error?: {
-      message: string;
-      line?: number | null;
-      column?: number | null;
-      stack?: string;
-    };
-    durationMs?: number;
-    truncated?: boolean;
+  seq?: number;
+  type: 'SANDBOX_BRIDGE_READY';
+  payload: Record<string, never>;
+}
+
+export interface SandboxReadyMessage {
+  protocol: typeof LAB_SANDBOX_PROTOCOL_VERSION;
+  sessionId: string;
+  seq?: number;
+  type: 'SANDBOX_READY';
+  payload: Record<string, never>;
+}
+
+export interface SandboxConsoleMessage {
+  protocol: typeof LAB_SANDBOX_PROTOCOL_VERSION;
+  sessionId: string;
+  seq?: number;
+  type: 'CONSOLE_EVENT';
+  payload: {
+    level: SandboxConsoleLevel;
+    args: string[];
   };
 }
 
-export interface HostToSandboxMessage {
+export interface SandboxRuntimeErrorMessage {
   protocol: typeof LAB_SANDBOX_PROTOCOL_VERSION;
   sessionId: string;
-  type: 'PING' | 'EXECUTE_CODE' | 'TERMINATE_SESSION' | 'SET_THEME';
-  payload?: {
-    srcDoc?: string;
+  seq?: number;
+  type: 'RUNTIME_ERROR';
+  payload: {
+    error: {
+      message: string;
+      line: number | null;
+      column: number | null;
+      stack?: string;
+    };
+  };
+}
+
+export interface SandboxExecutionCompleteMessage {
+  protocol: typeof LAB_SANDBOX_PROTOCOL_VERSION;
+  sessionId: string;
+  seq?: number;
+  type: 'EXECUTION_COMPLETE';
+  payload: {
+    durationMs: number;
+    truncated: boolean;
+  };
+}
+
+export interface SandboxExecutionAbortedMessage {
+  protocol: typeof LAB_SANDBOX_PROTOCOL_VERSION;
+  sessionId: string;
+  seq?: number;
+  type: 'EXECUTION_ABORTED';
+  payload: {
+    reason: string;
+  };
+}
+
+export interface SandboxHeartbeatMessage {
+  protocol: typeof LAB_SANDBOX_PROTOCOL_VERSION;
+  sessionId: string;
+  seq?: number;
+  type: 'HEARTBEAT';
+  payload?: Record<string, unknown>;
+}
+
+export type SandboxToHostMessage =
+  | SandboxBridgeReadyMessage
+  | SandboxReadyMessage
+  | SandboxConsoleMessage
+  | SandboxRuntimeErrorMessage
+  | SandboxExecutionCompleteMessage
+  | SandboxExecutionAbortedMessage
+  | SandboxHeartbeatMessage;
+
+export type HostToSandboxMessageType =
+  | 'PING'
+  | 'EXECUTE_CODE'
+  | 'TERMINATE_SESSION'
+  | 'SET_THEME';
+
+export interface HostPingMessage {
+  protocol: typeof LAB_SANDBOX_PROTOCOL_VERSION;
+  sessionId: string;
+  seq?: number;
+  type: 'PING';
+  payload?: Record<string, never>;
+}
+
+export interface HostExecuteCodeMessage {
+  protocol: typeof LAB_SANDBOX_PROTOCOL_VERSION;
+  sessionId: string;
+  seq?: number;
+  type: 'EXECUTE_CODE';
+  payload: {
+    srcDoc: string;
     theme?: 'light' | 'dark';
     html?: string;
     css?: string;
@@ -143,6 +221,80 @@ export interface HostToSandboxMessage {
     maxConsoleEntries?: number;
     maxMessageLength?: number;
   };
+}
+
+export interface HostTerminateSessionMessage {
+  protocol: typeof LAB_SANDBOX_PROTOCOL_VERSION;
+  sessionId: string;
+  seq?: number;
+  type: 'TERMINATE_SESSION';
+  payload?: Record<string, never>;
+}
+
+export interface HostSetThemeMessage {
+  protocol: typeof LAB_SANDBOX_PROTOCOL_VERSION;
+  sessionId: string;
+  seq?: number;
+  type: 'SET_THEME';
+  payload: {
+    theme: 'light' | 'dark';
+  };
+}
+
+export type HostToSandboxMessage =
+  | HostPingMessage
+  | HostExecuteCodeMessage
+  | HostTerminateSessionMessage
+  | HostSetThemeMessage;
+
+export type SessionState =
+  | 'idle'
+  | 'connecting'
+  | 'ready'
+  | 'running'
+  | 'completed'
+  | 'aborted'
+  | 'terminated'
+  | 'error';
+
+export interface SessionTransitionEvent {
+  type:
+    | 'START_CONNECT'
+    | 'BRIDGE_READY'
+    | 'INNER_READY'
+    | 'EXECUTE'
+    | 'EXECUTION_COMPLETE'
+    | 'EXECUTION_ABORT'
+    | 'TERMINATE'
+    | 'ERROR'
+    | 'RESET';
+}
+
+export function transitionSessionState(
+  currentState: SessionState,
+  event: SessionTransitionEvent
+): SessionState {
+  switch (event.type) {
+    case 'START_CONNECT':
+      return 'connecting';
+    case 'BRIDGE_READY':
+    case 'INNER_READY':
+      return currentState === 'connecting' ? 'ready' : currentState;
+    case 'EXECUTE':
+      return 'running';
+    case 'EXECUTION_COMPLETE':
+      return currentState === 'running' ? 'completed' : currentState;
+    case 'EXECUTION_ABORT':
+      return 'aborted';
+    case 'TERMINATE':
+      return 'terminated';
+    case 'ERROR':
+      return 'error';
+    case 'RESET':
+      return 'idle';
+    default:
+      return currentState;
+  }
 }
 
 export interface ExternalSandboxOriginResolution {
@@ -157,6 +309,7 @@ const VALID_MESSAGE_TYPES = new Set<SandboxToHostMessageType>([
   'CONSOLE_EVENT',
   'RUNTIME_ERROR',
   'EXECUTION_COMPLETE',
+  'EXECUTION_ABORTED',
   'HEARTBEAT',
 ]);
 
@@ -269,7 +422,16 @@ export function resolveSafeExternalSandboxOrigin(
   return { enabled: true, origin: parsed.origin };
 }
 
-function createRandomToken(prefix: string): string {
+export class SecureRandomUnavailableError extends Error {
+  constructor(
+    message = 'SECURE_RANDOM_UNAVAILABLE: Web Crypto API (crypto.randomUUID or crypto.getRandomValues) is required'
+  ) {
+    super(message);
+    this.name = 'SecureRandomUnavailableError';
+  }
+}
+
+export function createRandomToken(prefix: string): string {
   if (typeof crypto !== 'undefined') {
     if (typeof crypto.randomUUID === 'function') {
       return `${prefix}${crypto.randomUUID().replace(/-/g, '')}`;
@@ -281,9 +443,7 @@ function createRandomToken(prefix: string): string {
       return `${prefix}${hex}`;
     }
   }
-  const rand = Math.random().toString(36).slice(2, 12);
-  const ts = Date.now().toString(36);
-  return `${prefix}${ts}${rand}`;
+  throw new SecureRandomUnavailableError();
 }
 
 /**
@@ -376,12 +536,126 @@ export function verifySandboxMessage(
     return { valid: false, reason: 'SESSION_ID_MISMATCH' };
   }
 
-  // 4. 有界字段提取与净化（绝不遍历未知深层属性）
+  // 4. 有界字段提取与净化（严格按消息类型区分 Schema，绝不遍历未知深层属性，主站入站最大 64 KB）
+  const MAX_INBOUND_BYTES = 64 * 1024;
   const rawPayload =
     candidate.payload && typeof candidate.payload === 'object' && !Array.isArray(candidate.payload)
       ? (candidate.payload as Record<string, unknown>)
       : {};
 
+  const seq =
+    typeof candidate.seq === 'number' && Number.isFinite(candidate.seq) && candidate.seq >= 0
+      ? Math.floor(candidate.seq)
+      : undefined;
+
+  let totalBytesEstimate = rawSessionId.length + msgType.length + 64;
+
+  if (msgType === 'SANDBOX_BRIDGE_READY') {
+    return {
+      valid: true,
+      message: {
+        protocol: LAB_SANDBOX_PROTOCOL_VERSION,
+        sessionId: rawSessionId,
+        seq,
+        type: 'SANDBOX_BRIDGE_READY',
+        payload: {},
+      },
+    };
+  }
+
+  if (msgType === 'SANDBOX_READY') {
+    return {
+      valid: true,
+      message: {
+        protocol: LAB_SANDBOX_PROTOCOL_VERSION,
+        sessionId: rawSessionId,
+        seq,
+        type: 'SANDBOX_READY',
+        payload: {},
+      },
+    };
+  }
+
+  if (msgType === 'EXECUTION_ABORTED') {
+    const rawReason = typeof rawPayload.reason === 'string' ? rawPayload.reason : 'Execution aborted';
+    const reason = rawReason.slice(0, LAB_SECURITY_LIMITS.MAX_CONSOLE_MESSAGE_LENGTH);
+    return {
+      valid: true,
+      message: {
+        protocol: LAB_SANDBOX_PROTOCOL_VERSION,
+        sessionId: rawSessionId,
+        seq,
+        type: 'EXECUTION_ABORTED',
+        payload: { reason },
+      },
+    };
+  }
+
+  if (msgType === 'HEARTBEAT') {
+    return {
+      valid: true,
+      message: {
+        protocol: LAB_SANDBOX_PROTOCOL_VERSION,
+        sessionId: rawSessionId,
+        seq,
+        type: 'HEARTBEAT',
+        payload: {},
+      },
+    };
+  }
+
+  if (msgType === 'EXECUTION_COMPLETE') {
+    const durationMs =
+      typeof rawPayload.durationMs === 'number' && Number.isFinite(rawPayload.durationMs)
+        ? Math.max(0, Math.round(rawPayload.durationMs))
+        : 0;
+    const truncated = Boolean(rawPayload.truncated);
+    return {
+      valid: true,
+      message: {
+        protocol: LAB_SANDBOX_PROTOCOL_VERSION,
+        sessionId: rawSessionId,
+        seq,
+        type: 'EXECUTION_COMPLETE',
+        payload: {
+          durationMs,
+          truncated,
+        },
+      },
+    };
+  }
+
+  if (msgType === 'RUNTIME_ERROR') {
+    if (!rawPayload.error || typeof rawPayload.error !== 'object' || Array.isArray(rawPayload.error)) {
+      return { valid: false, reason: 'MALFORMED_ERROR_PAYLOAD' };
+    }
+    const errRec = rawPayload.error as Record<string, unknown>;
+    const rawErrMsg =
+      typeof errRec.message === 'string' ? errRec.message : String(errRec.message ?? 'Unknown runtime error');
+    const rawStack = typeof errRec.stack === 'string' ? errRec.stack : undefined;
+    if (getUtf8ByteLength(rawErrMsg) + (rawStack ? getUtf8ByteLength(rawStack) : 0) > MAX_INBOUND_BYTES) {
+      return { valid: false, reason: 'PAYLOAD_TOO_LARGE' };
+    }
+    return {
+      valid: true,
+      message: {
+        protocol: LAB_SANDBOX_PROTOCOL_VERSION,
+        sessionId: rawSessionId,
+        seq,
+        type: 'RUNTIME_ERROR',
+        payload: {
+          error: {
+            message: rawErrMsg.slice(0, LAB_SECURITY_LIMITS.MAX_CONSOLE_MESSAGE_LENGTH),
+            line: typeof errRec.line === 'number' && Number.isFinite(errRec.line) ? errRec.line : null,
+            column: typeof errRec.column === 'number' && Number.isFinite(errRec.column) ? errRec.column : null,
+            stack: rawStack ? rawStack.slice(0, LAB_SECURITY_LIMITS.MAX_CONSOLE_MESSAGE_LENGTH) : undefined,
+          },
+        },
+      },
+    };
+  }
+
+  // msgType === 'CONSOLE_EVENT'
   if (Array.isArray(rawPayload.args) && rawPayload.args.length > 64) {
     return { valid: false, reason: 'PAYLOAD_TOO_LARGE' };
   }
@@ -392,7 +666,6 @@ export function verifySandboxMessage(
     ? (rawPayload.level as SandboxConsoleLevel)
     : 'log';
 
-  let totalBytesEstimate = rawSessionId.length + msgType.length + 64;
   const args: string[] = [];
   if (Array.isArray(rawPayload.args)) {
     const limit = Math.min(rawPayload.args.length, 12);
@@ -400,7 +673,7 @@ export function verifySandboxMessage(
       const item = rawPayload.args[i];
       let str: string;
       if (typeof item === 'string') {
-        if (getUtf8ByteLength(item) > LAB_SECURITY_LIMITS.MAX_POSTMESSAGE_BYTES) {
+        if (getUtf8ByteLength(item) > MAX_INBOUND_BYTES) {
           return { valid: false, reason: 'PAYLOAD_TOO_LARGE' };
         }
         str = item.slice(0, LAB_SECURITY_LIMITS.MAX_CONSOLE_MESSAGE_LENGTH);
@@ -412,30 +685,11 @@ export function verifySandboxMessage(
         }
       }
       totalBytesEstimate += getUtf8ByteLength(str);
-      if (totalBytesEstimate > LAB_SECURITY_LIMITS.MAX_POSTMESSAGE_BYTES) {
+      if (totalBytesEstimate > MAX_INBOUND_BYTES) {
         return { valid: false, reason: 'PAYLOAD_TOO_LARGE' };
       }
       args.push(str);
     }
-  }
-
-  let errorObj: SandboxToHostMessage['payload'] extends { error?: infer E } ? E : undefined;
-  if (rawPayload.error && typeof rawPayload.error === 'object' && !Array.isArray(rawPayload.error)) {
-    const errRec = rawPayload.error as Record<string, unknown>;
-    const rawErrMsg = typeof errRec.message === 'string' ? errRec.message : String(errRec.message ?? 'Unknown runtime error');
-    const rawStack = typeof errRec.stack === 'string' ? errRec.stack : undefined;
-    if (
-      getUtf8ByteLength(rawErrMsg) + (rawStack ? getUtf8ByteLength(rawStack) : 0) >
-      LAB_SECURITY_LIMITS.MAX_POSTMESSAGE_BYTES
-    ) {
-      return { valid: false, reason: 'PAYLOAD_TOO_LARGE' };
-    }
-    errorObj = {
-      message: rawErrMsg.slice(0, LAB_SECURITY_LIMITS.MAX_CONSOLE_MESSAGE_LENGTH),
-      line: typeof errRec.line === 'number' && Number.isFinite(errRec.line) ? errRec.line : null,
-      column: typeof errRec.column === 'number' && Number.isFinite(errRec.column) ? errRec.column : null,
-      stack: rawStack ? rawStack.slice(0, LAB_SECURITY_LIMITS.MAX_CONSOLE_MESSAGE_LENGTH) : undefined,
-    };
   }
 
   return {
@@ -443,16 +697,11 @@ export function verifySandboxMessage(
     message: {
       protocol: LAB_SANDBOX_PROTOCOL_VERSION,
       sessionId: rawSessionId,
-      type: msgType as SandboxToHostMessageType,
+      seq,
+      type: 'CONSOLE_EVENT',
       payload: {
         level,
         args,
-        error: errorObj,
-        durationMs:
-          typeof rawPayload.durationMs === 'number' && Number.isFinite(rawPayload.durationMs)
-            ? Math.max(0, Math.round(rawPayload.durationMs))
-            : 0,
-        truncated: Boolean(rawPayload.truncated),
       },
     },
   };

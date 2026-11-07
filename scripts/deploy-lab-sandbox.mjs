@@ -90,7 +90,7 @@ if (envMode === 'production' && projectName.endsWith('-staging')) {
   process.exit(1);
 }
 
-const ALLOWED_FILES = new Set(['index.html', '404.html', '_headers']);
+const ALLOWED_FILES = new Set(['index.html', '404.html', '_headers', 'bridge.js']);
 const entries = fs.readdirSync(sandboxDir);
 for (const entry of entries) {
   if (!ALLOWED_FILES.has(entry)) {
@@ -118,6 +118,7 @@ fs.mkdirSync(assetsDir, { recursive: true });
 
 try {
   fs.copyFileSync(path.join(sandboxDir, '404.html'), path.join(assetsDir, '404.html'));
+  fs.copyFileSync(path.join(sandboxDir, 'bridge.js'), path.join(assetsDir, 'bridge.js'));
 
   let rawHeaders = fs.readFileSync(path.join(sandboxDir, '_headers'), 'utf8');
   assert.ok(
@@ -148,9 +149,9 @@ try {
   }
   fs.writeFileSync(path.join(assetsDir, 'index.html'), rawIndexHtml, 'utf8');
 
-  // 复核输出隔离目录：仅含 3 个纯静态文件，零 Functions / Worker
+  // 复核输出隔离目录：仅含 4 个纯静态文件，零 Functions / Worker
   const builtFiles = fs.readdirSync(assetsDir).sort();
-  assert.deepEqual(builtFiles, ['404.html', '_headers', 'index.html']);
+  assert.deepEqual(builtFiles, ['404.html', '_headers', 'bridge.js', 'index.html']);
 
   const finalHeaders = fs.readFileSync(path.join(assetsDir, '_headers'), 'utf8');
   if (envMode === 'production') {
