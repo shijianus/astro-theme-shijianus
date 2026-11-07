@@ -268,11 +268,12 @@ export class LabWorkspaceController {
 
     // 3. 轮换 Session Id 并重置状态
     const { sessionId, cspNonce } = this.sessionManager.rotate();
+    this.sessionManager.transition({ type: 'START_CONNECT' });
     this.consoleEntries = [];
     this.runtimeErrors = [];
     this.lastDurationMs = null;
     this.failClosedReason = '';
-    this.sessionLifecycle = 'connecting';
+    this.sessionLifecycle = this.sessionManager.getState();
     this.notifySnapshot();
 
     // 4. 获取活跃 Runtime Adapter
@@ -295,17 +296,20 @@ export class LabWorkspaceController {
       },
       onError: (err) => {
         this.runtimeErrors.push(err);
-        this.sessionLifecycle = 'error';
+        this.sessionManager.transition({ type: 'ERROR' });
+        this.sessionLifecycle = this.sessionManager.getState();
         this.eventBus.emit('error', err);
         this.notifySnapshot();
       },
       onComplete: (durationMs) => {
         this.lastDurationMs = durationMs;
-        this.sessionLifecycle = 'completed';
+        this.sessionManager.transition({ type: 'EXECUTION_COMPLETE' });
+        this.sessionLifecycle = this.sessionManager.getState();
         this.notifySnapshot();
       },
       onAbort: (reason) => {
-        this.sessionLifecycle = 'aborted';
+        this.sessionManager.transition({ type: 'EXECUTION_ABORT' }, { reason });
+        this.sessionLifecycle = this.sessionManager.getState();
         this.runtimeErrors.push({
           message: reason,
           line: null,
@@ -315,8 +319,13 @@ export class LabWorkspaceController {
         this.notifySnapshot();
       },
       onStatusChange: (status) => {
-        this.sessionLifecycle = status;
-        this.eventBus.emit('status', status);
+        if (status === 'running') this.sessionManager.transition({ type: 'EXECUTE' });
+        else if (status === 'ready') this.sessionManager.transition({ type: 'BRIDGE_READY' });
+        else if (status === 'completed') this.sessionManager.transition({ type: 'EXECUTION_COMPLETE' });
+        else if (status === 'aborted') this.sessionManager.transition({ type: 'EXECUTION_ABORT' });
+        else if (status === 'error') this.sessionManager.transition({ type: 'ERROR' });
+        this.sessionLifecycle = this.sessionManager.getState();
+        this.eventBus.emit('status', this.sessionLifecycle);
         this.notifySnapshot();
       },
       ...options,
@@ -327,14 +336,18 @@ export class LabWorkspaceController {
   }
 
   async stop(): Promise<void> {
+    const activeSessionId = this.sessionManager.getSessionId();
+    this.sessionManager.transition({ type: 'EXECUTION_ABORT' }, { reason: 'User requested execution stop' });
+    this.sessionLifecycle = this.sessionManager.getState();
     const runtime = this.runtimeRegistry.get(this.runtimeKind);
-    await runtime.stop(this.sessionManager.getSessionId());
-    this.sessionLifecycle = 'terminated';
+    await runtime.stop(activeSessionId);
     this.notifySnapshot();
   }
 
   async reset(): Promise<void> {
     await this.stop();
+    this.sessionManager.reset();
+    this.sessionLifecycle = this.sessionManager.getState();
     this.consoleEntries = [];
     this.runtimeErrors = [];
     this.lastDurationMs = null;

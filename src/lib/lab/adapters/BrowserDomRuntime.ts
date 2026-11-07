@@ -42,6 +42,7 @@ export class BrowserDomRuntime implements LabRuntimeAdapter {
   private watchdogTimer: ReturnType<typeof setTimeout> | null = null;
   private handshakeTimer: ReturnType<typeof setTimeout> | null = null;
   private pingInterval: ReturnType<typeof setInterval> | null = null;
+  private heartbeatWatchdogTimer: ReturnType<typeof setTimeout> | null = null;
   private activeSessionId: string | null = null;
   private hostSeq = 0;
   private lastInboundSeq = -1;
@@ -207,6 +208,7 @@ export class BrowserDomRuntime implements LabRuntimeAdapter {
           break;
         }
         case 'HEARTBEAT': {
+          this.resetHeartbeatWatchdog(options);
           options.onHeartbeat?.();
           break;
         }
@@ -355,6 +357,29 @@ export class BrowserDomRuntime implements LabRuntimeAdapter {
     }
   }
 
+  private resetHeartbeatWatchdog(options: RunOptions): void {
+    if (this.heartbeatWatchdogTimer) {
+      clearTimeout(this.heartbeatWatchdogTimer);
+    }
+    // 心跳看门狗：如果 12 秒内未收到任何有效心跳，判定沙盒无响应并强行销毁
+    this.heartbeatWatchdogTimer = setTimeout(() => {
+      this.handleAbort(options, 'Heartbeat timeout: sandbox became unresponsive');
+      if (this.activeIframe && this.activeIframe.parentNode) {
+        try {
+          this.activeIframe.parentNode.removeChild(this.activeIframe);
+        } catch {}
+        this.activeIframe = null;
+      }
+    }, 12000);
+  }
+
+  private clearHeartbeatWatchdog(): void {
+    if (this.heartbeatWatchdogTimer) {
+      clearTimeout(this.heartbeatWatchdogTimer);
+      this.heartbeatWatchdogTimer = null;
+    }
+  }
+
   private clearPingAndHandshakeTimers(): void {
     if (this.handshakeTimer) {
       clearTimeout(this.handshakeTimer);
@@ -368,6 +393,7 @@ export class BrowserDomRuntime implements LabRuntimeAdapter {
 
   private async cleanupActiveExecution(): Promise<void> {
     this.clearWatchdog();
+    this.clearHeartbeatWatchdog();
     this.clearPingAndHandshakeTimers();
 
     if (this.messageListener && typeof window !== 'undefined') {
