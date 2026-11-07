@@ -156,6 +156,9 @@
   display: flex;
   flex-direction: column;
   width: min(var(--mp-panel-width), calc(100vw - 48px));
+  /* 固定高度:四个标签共享同一面板高度,切换标签时顶边不跳动 */
+  height: min(520px, calc(100vh - 120px));
+  height: min(520px, calc(100dvh - 120px));
   max-height: min(560px, calc(100vh - 120px));
   max-height: min(560px, calc(100dvh - 120px));
   overflow: hidden;
@@ -833,6 +836,19 @@
   opacity: 1;
 }
 
+/* 触屏设备没有 hover:音量滑块常显,保证移动端可以调音量。 */
+@media (hover: none) {
+  .mp-volume {
+    width: 108px;
+  }
+
+  .mp-volume__slider {
+    width: 66px;
+    margin-left: 6px;
+    opacity: 1;
+  }
+}
+
 .mp-volume__slider::-webkit-slider-runnable-track {
   height: 4px;
   border-radius: var(--mp-radius-pill);
@@ -991,6 +1007,9 @@
   overflow-y: auto;
   padding: 8px 16px 24px;
   scroll-behavior: smooth;
+  /* 上下渐隐遮罩:滚动内容在面板边缘淡出,避免歌词行被硬切 */
+  -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 28px, #000 calc(100% - 28px), transparent 100%);
+  mask-image: linear-gradient(180deg, transparent 0, #000 28px, #000 calc(100% - 28px), transparent 100%);
 }
 
 .mp-lyric-line {
@@ -1424,6 +1443,7 @@
     left: 0 !important;
     width: 100%;
     max-width: none;
+    height: min(72dvh, 560px);
     max-height: min(88dvh, 680px);
     border-radius: var(--mp-radius) var(--mp-radius) 0 0;
     padding-bottom: env(safe-area-inset-bottom, 0px);

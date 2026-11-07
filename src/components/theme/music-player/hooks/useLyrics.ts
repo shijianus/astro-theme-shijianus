@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { parseLrcLike, parseYrc } from '@applemusic-like-lyrics/lyric';
 import type { MusicApi, LyricPayload } from '../api';
 import { FALLBACK_LYRICS } from '../config';
+import { FALLBACK_TRACK_LYRICS } from '../lib/fallback-lyrics';
 import { findActiveLyricIndex } from '../lib/lyrics';
 import type { LyricLine, LyricsStatus, MusicTrack } from '../types';
 
@@ -32,10 +33,18 @@ function secondsFromServerLine(line: ServerLine): number {
   return 0;
 }
 
+// 增强型 LRC / YRC 的词级时间标记(如 <12.34,1.25>)。AMLL parseLrcLike 不解析该标记,
+// 会原样保留在词文本里,这里统一剥离,只保留行级文本与时间。
+const WORD_TAG_PATTERN = /<\s*\d+(?:\.\d+)?\s*,\s*\d+(?:\.\d+)?\s*>/g;
+
+function stripWordTags(text: string): string {
+  return text.replace(WORD_TAG_PATTERN, '').replace(/\s{2,}/g, ' ').trim();
+}
+
 function serverLineText(line: ServerLine): string {
-  if (typeof line.text === 'string' && line.text.trim()) return line.text.trim();
+  if (typeof line.text === 'string' && line.text.trim()) return stripWordTags(line.text);
   if (Array.isArray(line.words)) {
-    return line.words.map((word) => word.word || '').join('').trim();
+    return stripWordTags(line.words.map((word) => word.word || '').join(''));
   }
   return '';
 }
@@ -55,8 +64,8 @@ function normalizeAmllLines(lines: AmllLine[]): LyricLine[] {
     .map((line) => {
       const text =
         typeof line.text === 'string' && line.text.trim()
-          ? line.text.trim()
-          : (line.words || []).map((word) => word.word || '').join('').trim();
+          ? stripWordTags(line.text)
+          : stripWordTags((line.words || []).map((word) => word.word || '').join(''));
       const time = typeof line.startTime === 'number' ? line.startTime / 1000 : 0;
       return { time, text };
     })
@@ -126,6 +135,19 @@ export function useLyrics({ api, track, currentTime, skip = false }: UseLyricsOp
       setActiveIndex(-1);
       activeIndexRef.current = -1;
       return;
+    }
+
+    // 精选本地曲目自带内嵌歌词:直接本地解析,不发外部请求(dev/离线环境同样可用)。
+    const embeddedLrc = FALLBACK_TRACK_LYRICS[track.id];
+    if (embeddedLrc) {
+      const embeddedLines = parseRawLyrics(embeddedLrc);
+      if (embeddedLines.length > 0) {
+        setLines(embeddedLines);
+        setStatus('ready');
+        setActiveIndex(-1);
+        activeIndexRef.current = -1;
+        return;
+      }
     }
 
     const controller = new AbortController();

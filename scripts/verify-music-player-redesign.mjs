@@ -145,6 +145,17 @@ async function openPanel(page) {
   }
 }
 
+// 精选本地曲目(fallback 队列首曲)内嵌歌词且被播放列表"保持当前曲目"逻辑保留;
+// 需要验证 lyric API 路径的用例必须先在待播列表里选中非内嵌的 mock 曲目。
+async function selectQueueTrack(page, index = 0) {
+  await page.getByTestId('mp-tab-queue').click();
+  await page.waitForTimeout(250);
+  await page.locator('[data-testid="mp-queue-item"]').nth(index).locator('button').first().click();
+  await page.waitForTimeout(350);
+  await page.getByTestId('mp-tab-player').click();
+  await page.waitForTimeout(250);
+}
+
 async function audioState(page) {
   return page.evaluate(() => {
     const audio = document.querySelector('[data-testid="mp-audio"]');
@@ -670,8 +681,10 @@ async function testLyricsSyncAndScroll(browser, base) {
     path: '/',
     setup: async (page) => {
       await mockPlaylist(page, [
-        localTrack('local-way-back-home', 'Lyric Track A'),
-        localTrack('local-kanojo', 'Lyric Track B', '/media/audio/彼女は旅に出る.mp3'),
+        // 精选本地曲目(local-way-back-home/local-kanojo)现内嵌歌词、不再请求 lyric API;
+        // API 路径用例改用非内嵌 id,保持"loading → parsed 优先"的原有测试意图。
+        localTrack('local-lyric-api-a', 'Lyric Track A'),
+        localTrack('local-lyric-api-b', 'Lyric Track B', '/media/audio/彼女は旅に出る.mp3'),
       ]);
       await page.route('**/api/music/lyric?**', async (route) => {
         await lyricGate;
@@ -691,6 +704,7 @@ async function testLyricsSyncAndScroll(browser, base) {
   const { page } = session;
   try {
     await openPanel(page);
+    await selectQueueTrack(page, 0);
     await page.getByTestId('mp-tab-lyrics').click();
     const loadingText = await page.getByTestId('mp-lyrics-status').innerText();
     assert(loadingText.includes('正在同步歌词'), `Expected loading lyric state, got: ${loadingText}`);
@@ -721,8 +735,10 @@ async function testLyricsSyncAndScroll(browser, base) {
 
     const scrollBox = await page.locator('[data-testid="mp-lyrics-scroll"]').boundingBox();
     assert(scrollBox, 'Lyric scroll container must be visible');
-    await page.mouse.move(scrollBox.x + scrollBox.width / 2, scrollBox.y + scrollBox.height / 2);
-    await page.mouse.wheel(0, -3000);
+    // 播放中的自动居中 smooth 动画会与合成 wheel 事件竞态(事件被取消),改用键盘滚动:
+    // LyricsView 支持 Home/ArrowUp 等按键且 handleKeyDown 会标记用户滚动,行为等价且稳定。
+    await page.locator('[data-testid="mp-lyrics-scroll"]').focus();
+    await page.keyboard.press('Home');
     await page.waitForTimeout(450);
     const afterUserScroll = await lyricScrollMetrics(page);
     assert(afterUserScroll, 'Lyric scroll metrics should exist');
@@ -753,7 +769,7 @@ async function runLyricCase(browser, base, name, body, httpStatus, expectation) 
     viewport: { width: 1440, height: 900 },
     path: '/',
     setup: async (page) => {
-      await mockPlaylist(page, [localTrack('local-way-back-home', 'Lyric State Track')]);
+      await mockPlaylist(page, [localTrack('local-lyric-state', 'Lyric State Track')]);
       await page.route('**/api/music/lyric?**', (route) =>
         route.fulfill({
           status: httpStatus,
@@ -766,6 +782,7 @@ async function runLyricCase(browser, base, name, body, httpStatus, expectation) 
   const { page } = session;
   try {
     await openPanel(page);
+    await selectQueueTrack(page, 0);
     await page.getByTestId('mp-tab-lyrics').click();
     await page.waitForTimeout(900);
 
@@ -838,8 +855,8 @@ async function testLyricFallbackStates(browser, base) {
 }
 
 async function testLyricAbortOnTrackChange(browser, base) {
-  const first = localTrack('local-way-back-home', 'Lyric Track A');
-  const second = localTrack('local-kanojo', 'Lyric Track B', '/media/audio/彼女は旅に出る.mp3');
+  const first = localTrack('local-lyric-abort-a', 'Lyric Track A');
+  const second = localTrack('local-lyric-abort-b', 'Lyric Track B', '/media/audio/彼女は旅に出る.mp3');
   let resolveStarted;
   const firstStarted = new Promise((resolve) => {
     resolveStarted = resolve;
@@ -858,7 +875,9 @@ async function testLyricAbortOnTrackChange(browser, base) {
         const url = new URL(route.request().url());
         if (url.searchParams.get('id') === first.id) {
           resolveStarted?.();
-          await sleep(1100);
+          // 延迟需大于"选曲→切歌"整段流程耗时(selectQueueTrack 辅助步骤较多),
+          // 确保轨道切换的 abort 先于 fulfill,否则竞态下请求会正常完成。
+          await sleep(6000);
           try {
             await route.fulfill({
               status: 200,
@@ -879,6 +898,7 @@ async function testLyricAbortOnTrackChange(browser, base) {
   const { page } = session;
   try {
     await openPanel(page);
+    await selectQueueTrack(page, 0);
     await page.getByTestId('mp-tab-lyrics').click();
     await firstStarted;
     await page.getByTestId('mp-tab-player').click();
