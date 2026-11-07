@@ -6,7 +6,14 @@
  * 2. 资源配额：内存预算 (默认 16MB)、调用栈深度限制 (512KB)、指令中断计数器 (Interrupt Handler)；
  * 3. 性能度量：提供毫秒级高精度运行耗时与内存估算指标输出。
  */
-import type { LabRuntimeAdapter, LabProject, RunOptions, RunSession } from '../types.ts';
+import type {
+  LabRuntimeAdapter,
+  LabProject,
+  RunOptions,
+  RunSession,
+  LabRuntimeKind,
+  LabAdapterCapabilities,
+} from '../types.ts';
 import { compileExperimentFiles } from '../../lab-sandbox-protocol.ts';
 import { LAB_SECURITY_LIMITS } from '../../lab-schema.ts';
 
@@ -25,6 +32,18 @@ export interface QuickJsPerformanceMetrics {
 }
 
 export class QuickJsRuntime implements LabRuntimeAdapter {
+  readonly kind: LabRuntimeKind = 'quickjs';
+  readonly capabilities: LabAdapterCapabilities = {
+    dom: false,
+    network: false,
+    worker: true,
+    typescript: true,
+    html: false,
+    css: false,
+    trace: false,
+    interruptible: true,
+  };
+
   private config: Required<QuickJsRuntimeConfig>;
   private activeSessionId: string | null = null;
   private isTerminated = false;

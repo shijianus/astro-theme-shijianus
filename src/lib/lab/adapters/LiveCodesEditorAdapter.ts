@@ -6,7 +6,7 @@
  * 2. 即使开启也必须通过「点击后按需载入」(Click-to-Load) 模式加载，绝不自启动；
  * 3. 运行于独立隔离 iframe，绝不影响默认 LiteEditorAdapter。
  */
-import type { LabEditorAdapter, LabProject } from '../types';
+import type { LabEditorAdapter, LabProject, LabEditorKind } from '../types.ts';
 
 export interface LiveCodesOptions {
   appUrl?: string;
@@ -14,6 +14,7 @@ export interface LiveCodesOptions {
 }
 
 export class LiveCodesEditorAdapter implements LabEditorAdapter {
+  readonly kind: LabEditorKind = 'livecodes';
   private container: HTMLElement | null = null;
   private currentProject: LabProject | null = null;
   private isLoaded = false;
@@ -60,6 +61,25 @@ export class LiveCodesEditorAdapter implements LabEditorAdapter {
     }
 
     this.renderClickToLoadState();
+  }
+
+  async setProject(project: LabProject): Promise<void> {
+    this.currentProject = {
+      ...project,
+      files: project.files.map((f) => ({ ...f })),
+    };
+    if (this.isLoaded && this.iframeEl?.contentWindow) {
+      // Sync files to LiveCodes iframe if loaded
+      try {
+        this.iframeEl.contentWindow.postMessage(
+          {
+            type: 'set-project',
+            project: this.currentProject,
+          },
+          '*'
+        );
+      } catch {}
+    }
   }
 
   async loadEditor(): Promise<void> {

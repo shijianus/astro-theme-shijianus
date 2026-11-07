@@ -11,3 +11,4 @@ export * from './SessionManager';
 export * from './SandboxMessageParser';
 export * from './PortableBundleCodec';
 export * from './ExecutionPolicy';
+export * from './workspace';

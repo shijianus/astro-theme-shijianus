@@ -3,7 +3,7 @@
  *
  * 负责在 URL Hash (#bundle=) 与 JSON 文件之间进行安全、防篡改、无损的 UTF-8 Base64 编解码。
  */
-import { LAB_SECURITY_LIMITS, validateLabPortableBundle } from '../lab-schema';
+import { LAB_SECURITY_LIMITS, validateLabPortableBundle } from '../lab-schema.ts';
 
 export class PortableBundleCodec {
   /**

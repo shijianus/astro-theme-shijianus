@@ -9,7 +9,7 @@ import {
   createSandboxSessionId,
   createSandboxCspNonce,
   transitionSessionState,
-} from '../lab-sandbox-protocol';
+} from '../lab-sandbox-protocol.ts';
 
 export class SessionManager {
   private sessionId: string;

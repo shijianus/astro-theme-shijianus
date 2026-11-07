@@ -3,7 +3,14 @@
  *
  * 适用于物理模拟、音频流、算法步骤与状态机轨迹的可视化受控回放。
  */
-import type { LabRuntimeAdapter, LabProject, RunOptions, RunSession } from '../types';
+import type {
+  LabRuntimeAdapter,
+  LabProject,
+  RunOptions,
+  RunSession,
+  LabRuntimeKind,
+  LabAdapterCapabilities,
+} from '../types.ts';
 
 export interface TraceStep {
   step: number;
@@ -13,6 +20,18 @@ export interface TraceStep {
 }
 
 export class CuratedTraceRuntime implements LabRuntimeAdapter {
+  readonly kind: LabRuntimeKind = 'curated-trace';
+  readonly capabilities: LabAdapterCapabilities = {
+    dom: false,
+    network: false,
+    worker: false,
+    typescript: false,
+    html: false,
+    css: false,
+    trace: true,
+    interruptible: true,
+  };
+
   private activeSessionId: string | null = null;
   private traceTimer: ReturnType<typeof setInterval> | null = null;
   private currentStep = 0;

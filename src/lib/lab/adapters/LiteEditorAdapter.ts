@@ -3,10 +3,11 @@
  *
  * 适用于受控环境下的快速源码预览与编辑，零第三方重量级依赖。
  */
-import type { LabEditorAdapter, LabProject } from '../types';
-import type { LabFile } from '../../lab-schema';
+import type { LabEditorAdapter, LabProject, LabEditorKind } from '../types.ts';
+import type { LabFile } from '../../lab-schema.ts';
 
 export class LiteEditorAdapter implements LabEditorAdapter {
+  readonly kind: LabEditorKind = 'lite';
   private container: HTMLElement | null = null;
   private currentProject: LabProject | null = null;
   private activeFileIndex = 0;
@@ -15,6 +16,15 @@ export class LiteEditorAdapter implements LabEditorAdapter {
 
   async mount(container: HTMLElement, project: LabProject): Promise<void> {
     this.container = container;
+    this.currentProject = {
+      ...project,
+      files: project.files.map((f) => ({ ...f })),
+    };
+    this.activeFileIndex = 0;
+    this.render();
+  }
+
+  async setProject(project: LabProject): Promise<void> {
     this.currentProject = {
       ...project,
       files: project.files.map((f) => ({ ...f })),

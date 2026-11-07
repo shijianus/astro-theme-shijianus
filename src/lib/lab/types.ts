@@ -6,12 +6,36 @@ import type {
   LabLanguage,
   LabRuntimeType,
   LabExperiment,
-} from '../lab-schema';
+} from '../lab-schema.ts';
 import type {
   SandboxConsoleEntry,
   SandboxRuntimeError,
   SandboxIsolationMode,
-} from '../lab-sandbox-protocol';
+  LabCodeSourceKind,
+} from '../lab-sandbox-protocol.ts';
+
+export type LabEditorKind = 'lite' | 'livecodes';
+export type LabRuntimeKind = 'browser-dom' | 'quickjs' | 'curated-trace';
+export type LabSessionLifecycle =
+  | 'idle'
+  | 'connecting'
+  | 'ready'
+  | 'running'
+  | 'completed'
+  | 'aborted'
+  | 'error'
+  | 'terminated';
+
+export interface LabAdapterCapabilities {
+  dom: boolean;
+  network: boolean;
+  worker: boolean;
+  typescript: boolean;
+  html: boolean;
+  css: boolean;
+  trace: boolean;
+  interruptible: boolean;
+}
 
 export interface LabProject {
   id: string;
@@ -27,15 +51,20 @@ export interface LabProject {
 
 export interface RunOptions {
   sessionId: string;
-  cspNonce: string;
+  cspNonce?: string;
   isolationMode?: SandboxIsolationMode;
   externalOrigin?: string | null;
   timeoutMs?: number;
   theme?: 'light' | 'dark';
+  sourceKind?: LabCodeSourceKind;
+  container?: HTMLElement | null;
+  iframe?: HTMLIFrameElement | null;
   onConsole?: (entry: SandboxConsoleEntry) => void;
   onError?: (error: SandboxRuntimeError) => void;
   onComplete?: (durationMs: number) => void;
   onAbort?: (reason: string) => void;
+  onStatusChange?: (status: LabSessionLifecycle) => void;
+  onHeartbeat?: () => void;
 }
 
 export interface RunSession {
@@ -47,13 +76,17 @@ export interface RunSession {
 }
 
 export interface LabEditorAdapter {
+  readonly kind: LabEditorKind;
   mount(container: HTMLElement, project: LabProject): Promise<void>;
+  setProject(project: LabProject): Promise<void>;
   getProject(): Promise<LabProject>;
   reset(): Promise<void>;
   dispose(): Promise<void>;
 }
 
 export interface LabRuntimeAdapter {
+  readonly kind: LabRuntimeKind;
+  readonly capabilities: LabAdapterCapabilities;
   run(project: LabProject, options: RunOptions): Promise<RunSession>;
   stop(sessionId: string): Promise<void>;
   dispose(): Promise<void>;
