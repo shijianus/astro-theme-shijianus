@@ -12,15 +12,16 @@ import type {
   RunOptions,
   RunSession,
 } from '../types.ts';
-import type {
-  SandboxConsoleEntry,
-  SandboxRuntimeError,
-  SandboxIsolationMode,
-  LabCodeSourceKind,
+import {
+  type SandboxConsoleEntry,
+  type SandboxRuntimeError,
+  type SandboxIsolationMode,
+  type LabCodeSourceKind,
+  buildIsolatedSandboxSrcDoc,
 } from '../../lab-sandbox-protocol.ts';
-import type { LabFile } from '../../lab-schema.ts';
+import { type LabFile, LAB_SECURITY_LIMITS } from '../../lab-schema.ts';
 import type { WorkspaceSnapshot } from './WorkspaceSnapshot.ts';
-import { WorkspaceEventBus } from './WorkspaceEvents.ts';
+import { WorkspaceEventBus, type WorkspaceEventMap, type WorkspaceEventListener } from './WorkspaceEvents.ts';
 import { EditorRegistry } from './EditorRegistry.ts';
 import { RuntimeRegistry } from './RuntimeRegistry.ts';
 import { WorkspacePersistence } from './WorkspacePersistence.ts';
@@ -50,6 +51,8 @@ export class LabWorkspaceController {
   private runtimeErrors: SandboxRuntimeError[] = [];
   private lastDurationMs: number | null = null;
   private failClosedReason = '';
+  private sandboxSrcDoc = '';
+  private bridgeFallbackForced = false;
   private isolationMode: SandboxIsolationMode;
   private externalOrigin: string | null;
   private theme: 'light' | 'dark' = 'light';
@@ -93,12 +96,32 @@ export class LabWorkspaceController {
     });
     this.runtimeRegistry = new RuntimeRegistry();
     this.sessionManager = new SessionManager();
+
+    if (this.sourceKind === 'official' && this.runtimeKind === 'browser-dom') {
+      try {
+        this.sandboxSrcDoc = buildIsolatedSandboxSrcDoc({
+          sessionId: this.sessionManager.getSessionId(),
+          files: this.project.files,
+          theme: this.theme,
+          maxConsoleEntries: LAB_SECURITY_LIMITS.MAX_CONSOLE_ENTRIES,
+        });
+      } catch {
+        this.sandboxSrcDoc = '';
+      }
+    }
   }
 
   // ===== 快照订阅与获取 =====
 
   subscribe(listener: (snapshot: WorkspaceSnapshot) => void): () => void {
     return this.eventBus.on('snapshot', listener);
+  }
+
+  on<K extends keyof WorkspaceEventMap>(
+    event: K,
+    listener: WorkspaceEventListener<K>
+  ): () => void {
+    return this.eventBus.on(event, listener);
   }
 
   getSnapshot(): WorkspaceSnapshot {
@@ -121,6 +144,8 @@ export class LabWorkspaceController {
       supportedEditors: this.editorRegistry.listKinds(),
       supportedRuntimes: this.runtimeRegistry.listKindsForProject(this.project),
       liveCodesEnabled: this.editorRegistry.has('livecodes'),
+      sandboxSrcDoc: this.sandboxSrcDoc,
+      bridgeFallbackForced: this.bridgeFallbackForced,
     };
   }
 
@@ -143,6 +168,24 @@ export class LabWorkspaceController {
     this.dirty = false;
     this.clearConsole();
     this.clearErrors();
+    this.failClosedReason = '';
+    this.bridgeFallbackForced = false;
+    if (this.sourceKind === 'official' && this.runtimeKind === 'browser-dom') {
+      try {
+        this.sandboxSrcDoc = buildIsolatedSandboxSrcDoc({
+          sessionId: this.sessionManager.getSessionId(),
+          files: this.project.files,
+          theme: this.theme,
+          maxConsoleEntries: LAB_SECURITY_LIMITS.MAX_CONSOLE_ENTRIES,
+        });
+      } catch {
+        this.sandboxSrcDoc = '';
+      }
+    } else {
+      this.sandboxSrcDoc = '';
+    }
+    this.sessionManager.reset();
+    this.sessionLifecycle = 'idle';
 
     // 检查当前运行时是否与新工程兼容
     const allowedKinds = this.runtimeRegistry.listKindsForProject(this.project);
@@ -275,12 +318,14 @@ export class LabWorkspaceController {
   // ===== 执行控制流 (Run / Stop / Reset) =====
 
   async run(options?: Partial<RunOptions>): Promise<RunSession> {
-    // 1. 同步当前编辑器内容
-    try {
-      const editor = this.editorRegistry.get(this.editorKind);
-      const latestProject = await editor.getProject();
-      this.project = latestProject;
-    } catch {}
+    // 1. 同步当前编辑器内容 (若为外部编辑器如 LiveCodes，则从适配器拉取最新工程)
+    if (this.editorKind !== 'lite') {
+      try {
+        const editor = this.editorRegistry.get(this.editorKind);
+        const latestProject = await editor.getProject();
+        this.project = latestProject;
+      } catch {}
+    }
 
     // 2. 校验运行时是否支持当前工程
     const validation = this.runtimeRegistry.validateProjectForRuntime(this.project, this.runtimeKind);
@@ -309,6 +354,20 @@ export class LabWorkspaceController {
     this.runtimeErrors = [];
     this.lastDurationMs = null;
     this.failClosedReason = '';
+    if (this.runtimeKind === 'browser-dom') {
+      try {
+        this.sandboxSrcDoc = buildIsolatedSandboxSrcDoc({
+          sessionId,
+          files: this.project.files,
+          theme: options?.theme ?? this.theme,
+          maxConsoleEntries: LAB_SECURITY_LIMITS.MAX_CONSOLE_ENTRIES,
+        });
+      } catch {
+        this.sandboxSrcDoc = '';
+      }
+    } else {
+      this.sandboxSrcDoc = '';
+    }
     this.sessionLifecycle = this.sessionManager.getState();
     this.notifySnapshot();
 
@@ -332,19 +391,29 @@ export class LabWorkspaceController {
       },
       onError: (err) => {
         this.runtimeErrors.push(err);
-        this.sessionManager.transition({ type: 'ERROR' });
+        if (err.message && (err.message.includes('[Sandbox Fail-Closed]') || err.message.includes('[Bundle Fail-Closed]'))) {
+          this.failClosedReason = err.message;
+          this.sandboxSrcDoc = '';
+        }
+        if (this.sessionManager.getState() !== 'error') {
+          this.sessionManager.transition({ type: 'ERROR' });
+        }
         this.sessionLifecycle = this.sessionManager.getState();
         this.eventBus.emit('error', err);
         this.notifySnapshot();
       },
       onComplete: (durationMs) => {
         this.lastDurationMs = durationMs;
-        this.sessionManager.transition({ type: 'EXECUTION_COMPLETE' });
+        if (this.sessionManager.getState() !== 'completed') {
+          this.sessionManager.transition({ type: 'EXECUTION_COMPLETE' });
+        }
         this.sessionLifecycle = this.sessionManager.getState();
         this.notifySnapshot();
       },
       onAbort: (reason) => {
-        this.sessionManager.transition({ type: 'EXECUTION_ABORT' }, { reason });
+        if (this.sessionManager.getState() !== 'aborted') {
+          this.sessionManager.transition({ type: 'EXECUTION_ABORT' }, { reason });
+        }
         this.sessionLifecycle = this.sessionManager.getState();
         this.runtimeErrors.push({
           message: reason,
@@ -355,13 +424,31 @@ export class LabWorkspaceController {
         this.notifySnapshot();
       },
       onStatusChange: (status) => {
-        if (status === 'running') this.sessionManager.transition({ type: 'EXECUTE' });
-        else if (status === 'ready') this.sessionManager.transition({ type: 'BRIDGE_READY' });
-        else if (status === 'completed') this.sessionManager.transition({ type: 'EXECUTION_COMPLETE' });
-        else if (status === 'aborted') this.sessionManager.transition({ type: 'EXECUTION_ABORT' });
-        else if (status === 'error') this.sessionManager.transition({ type: 'ERROR' });
+        const current = this.sessionManager.getState();
+        if (status === 'running') {
+          if (current === 'connecting') {
+            this.sessionManager.transition({ type: 'INNER_READY' });
+          }
+          if (this.sessionManager.getState() !== 'running') {
+            this.sessionManager.transition({ type: 'EXECUTE' });
+          }
+        } else if (status === 'ready') {
+          if (current !== 'ready') this.sessionManager.transition({ type: 'BRIDGE_READY' });
+        } else if (status === 'completed') {
+          if (current !== 'completed') this.sessionManager.transition({ type: 'EXECUTION_COMPLETE' });
+        } else if (status === 'aborted') {
+          if (current !== 'aborted') this.sessionManager.transition({ type: 'EXECUTION_ABORT' });
+        } else if (status === 'error') {
+          if (current !== 'error') this.sessionManager.transition({ type: 'ERROR' });
+        }
         this.sessionLifecycle = this.sessionManager.getState();
         this.eventBus.emit('status', this.sessionLifecycle);
+        this.notifySnapshot();
+      },
+      onBridgeFallback: () => {
+        this.bridgeFallbackForced = true;
+        this.isolationMode = 'opaque-srcdoc';
+        this.eventBus.emit('bridgeFallback');
         this.notifySnapshot();
       },
       ...options,
@@ -375,6 +462,7 @@ export class LabWorkspaceController {
     const activeSessionId = this.sessionManager.getSessionId();
     this.sessionManager.transition({ type: 'EXECUTION_ABORT' }, { reason: 'User requested execution stop' });
     this.sessionLifecycle = this.sessionManager.getState();
+    this.sandboxSrcDoc = '';
     const runtime = this.runtimeRegistry.get(this.runtimeKind);
     await runtime.stop(activeSessionId);
     this.notifySnapshot();
@@ -420,6 +508,24 @@ export class LabWorkspaceController {
   importBundle(encoded: string): { ok: boolean; errors?: string[] } {
     const res = WorkspacePersistence.decodeBundle(encoded);
     if (!res.ok || !res.data) {
+      const reasonDetail = res.errors?.join(' ') || 'Base64URL 解码失败或载荷体积超过安全上限';
+      const failMsg = `[Bundle Fail-Closed] 外部分享链接 (#bundle=) 校验未通过（${reasonDetail}）。安全策略已阻断加载并禁止回退自动运行其他实验。`;
+      this.sourceKind = 'bundle';
+      this.failClosedReason = failMsg;
+      this.sandboxSrcDoc = '';
+      const err: SandboxRuntimeError = {
+        message: failMsg,
+        line: null,
+        column: null,
+        timestamp: Date.now(),
+      };
+      this.runtimeErrors = [err];
+      if (this.sessionManager.getState() !== 'error') {
+        this.sessionManager.transition({ type: 'ERROR' });
+      }
+      this.sessionLifecycle = 'error';
+      this.eventBus.emit('error', err);
+      this.notifySnapshot();
       return { ok: false, errors: res.errors || ['解码失败'] };
     }
     const bundle = res.data;
@@ -440,6 +546,11 @@ export class LabWorkspaceController {
     this.dirty = false;
     this.clearConsole();
     this.clearErrors();
+    this.failClosedReason = '';
+    this.bridgeFallbackForced = false;
+    this.sandboxSrcDoc = '';
+    this.sessionManager.reset();
+    this.sessionLifecycle = 'idle';
 
     const editor = this.editorRegistry.get(this.editorKind);
     editor.setProject(this.project);
@@ -480,6 +591,11 @@ export class LabWorkspaceController {
     this.dirty = false;
     this.clearConsole();
     this.clearErrors();
+    this.failClosedReason = '';
+    this.bridgeFallbackForced = false;
+    this.sandboxSrcDoc = '';
+    this.sessionManager.reset();
+    this.sessionLifecycle = 'idle';
 
     const editor = this.editorRegistry.get(this.editorKind);
     editor.setProject(this.project);

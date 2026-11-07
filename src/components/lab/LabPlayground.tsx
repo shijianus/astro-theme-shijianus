@@ -94,8 +94,43 @@ export const LabPlayground: React.FC<LabPlaygroundProps> = ({
     ExecutionPolicy.resolveSourceKind(defaultExp.author)
   );
 
+  // 试验田主工作区控制器实例
+  const controllerRef = useRef<LabWorkspaceController | null>(null);
+  if (!controllerRef.current) {
+    const initialSourceKind = ExecutionPolicy.resolveSourceKind(defaultExp.author);
+    const initialExternalOrigin =
+      externalResolution.enabled && externalResolution.origin
+        ? externalResolution.origin
+        : null;
+    controllerRef.current = new LabWorkspaceController({
+      project: {
+        id: defaultExp.id,
+        slug: defaultExp.slug,
+        title: defaultExp.title,
+        files: defaultExp.files.map((f) => ({ ...f })),
+        runtime: defaultExp.runtime,
+        language: defaultExp.language,
+        defaultParams: defaultExp.defaultParams,
+      },
+      sourceKind: initialSourceKind,
+      isolationMode: initialExternalOrigin ? 'cross-origin' : 'opaque-srcdoc',
+      externalOrigin: initialExternalOrigin,
+      enableLiveCodes: false,
+      liveCodesAppUrl: livecodesAppUrl,
+      theme: readCurrentThemeMode(),
+    });
+  }
+
+  // 单一数据源：订阅 Workspace 快照
+  const [snapshot, setSnapshot] = useState<WorkspaceSnapshot>(() =>
+    controllerRef.current!.getSnapshot()
+  );
+
+  const isUntrustedCode = codeSourceKind !== 'official';
   const activeExternalOrigin =
-    externalResolution.enabled && externalResolution.origin
+    externalResolution.enabled &&
+    externalResolution.origin &&
+    (isUntrustedCode || !snapshot.bridgeFallbackForced)
       ? externalResolution.origin
       : null;
 
@@ -108,34 +143,6 @@ export const LabPlayground: React.FC<LabPlaygroundProps> = ({
     ? 'cross-origin'
     : 'opaque-srcdoc';
 
-  // 试验田主工作区控制器实例
-  const controllerRef = useRef<LabWorkspaceController | null>(null);
-  if (!controllerRef.current) {
-    const initialSourceKind = ExecutionPolicy.resolveSourceKind(defaultExp.author);
-    controllerRef.current = new LabWorkspaceController({
-      project: {
-        id: defaultExp.id,
-        slug: defaultExp.slug,
-        title: defaultExp.title,
-        files: defaultExp.files.map((f) => ({ ...f })),
-        runtime: defaultExp.runtime,
-        language: defaultExp.language,
-        defaultParams: defaultExp.defaultParams,
-      },
-      sourceKind: initialSourceKind,
-      isolationMode,
-      externalOrigin: activeExternalOrigin,
-      enableLiveCodes: false,
-      liveCodesAppUrl: livecodesAppUrl,
-      theme: readCurrentThemeMode(),
-    });
-  }
-
-  // 单一数据源：订阅 Workspace 快照
-  const [snapshot, setSnapshot] = useState<WorkspaceSnapshot>(() =>
-    controllerRef.current!.getSnapshot()
-  );
-
   const [activeBottomTab, setActiveBottomTab] = useState<'console' | 'errors' | 'security'>(
     'console'
   );
@@ -146,6 +153,7 @@ export const LabPlayground: React.FC<LabPlaygroundProps> = ({
   );
   const [mobileActiveTab, setMobileActiveTab] = useState<'editor' | 'preview' | 'console'>('editor');
   const [pendingImportBundle, setPendingImportBundle] = useState<PendingImportBundle | null>(null);
+  const [sandboxKey, setSandboxKey] = useState<number>(1);
 
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -168,9 +176,16 @@ export const LabPlayground: React.FC<LabPlaygroundProps> = ({
     const unsubscribe = ctrl.subscribe((nextSnapshot) => {
       setSnapshot(nextSnapshot);
       setCodeSourceKind(nextSnapshot.sourceKind);
+      if (nextSnapshot.runtimeErrors && nextSnapshot.runtimeErrors.length > 0) {
+        setActiveBottomTab('errors');
+      }
+    });
+    const unbindError = ctrl.on('error', () => {
+      setActiveBottomTab('errors');
     });
     return () => {
       unsubscribe();
+      unbindError();
     };
   }, []);
 
@@ -219,8 +234,13 @@ export const LabPlayground: React.FC<LabPlaygroundProps> = ({
         ctrl.updateFiles(filesOverride);
       }
       ctrl.setTheme(readCurrentThemeMode());
+      const iframe =
+        iframeRef.current ||
+        (typeof document !== 'undefined'
+          ? (document.querySelector('[data-testid="lab-sandbox-iframe"]') as HTMLIFrameElement | null)
+          : null);
       void ctrl.run({
-        iframe: iframeRef.current,
+        iframe,
         theme: readCurrentThemeMode(),
       });
     },
@@ -248,6 +268,7 @@ export const LabPlayground: React.FC<LabPlaygroundProps> = ({
       setShowTracePanel(
         mode === 'full-workshop' ? Boolean(found.visualizationConfig?.enabled) : false
       );
+      setSandboxKey((k) => k + 1);
 
       await ctrl.setProject(
         {
@@ -268,10 +289,17 @@ export const LabPlayground: React.FC<LabPlaygroundProps> = ({
       }
 
       if (expSourceKind === 'official' && found.previewConfig.autoRun) {
-        ctrl.run({
-          iframe: iframeRef.current,
-          theme: readCurrentThemeMode(),
-        });
+        setTimeout(() => {
+          const iframe =
+            iframeRef.current ||
+            (typeof document !== 'undefined'
+              ? (document.querySelector('[data-testid="lab-sandbox-iframe"]') as HTMLIFrameElement | null)
+              : null);
+          ctrl.run({
+            iframe,
+            theme: readCurrentThemeMode(),
+          });
+        }, 50);
       }
     },
     [mode]
@@ -415,7 +443,7 @@ export const LabPlayground: React.FC<LabPlaygroundProps> = ({
         )
       );
     } else {
-      setCodeSourceKind('imported');
+      setCodeSourceKind(controllerRef.current?.getSnapshot().sourceKind || 'imported');
       showToast(
         tr(
           '外部实验代码已安全载入！出于隔离策略，沙盒处于空闲状态，请审阅后手动点击「运行代码」。',
@@ -475,6 +503,7 @@ export const LabPlayground: React.FC<LabPlaygroundProps> = ({
           );
           return true;
         } else {
+          setActiveBottomTab('errors');
           showToast(
             trRef.current(
               '安全阻断：外部分享链接载荷无效或超限，已强制失败关闭',
@@ -515,10 +544,17 @@ export const LabPlayground: React.FC<LabPlaygroundProps> = ({
       );
 
       if (expSourceKind === 'official' && targetExp.previewConfig.autoRun) {
-        controllerRef.current?.run({
-          iframe: iframeRef.current,
-          theme: readCurrentThemeMode(),
-        });
+        setTimeout(() => {
+          const iframe =
+            iframeRef.current ||
+            (typeof document !== 'undefined'
+              ? (document.querySelector('[data-testid="lab-sandbox-iframe"]') as HTMLIFrameElement | null)
+              : null);
+          controllerRef.current?.run({
+            iframe,
+            theme: readCurrentThemeMode(),
+          });
+        }, 50);
       }
     };
 
@@ -554,7 +590,7 @@ export const LabPlayground: React.FC<LabPlaygroundProps> = ({
         toastMessage={toastMessage}
         hasMounted={hasMounted}
         isolationMode={isolationMode}
-        bridgeFallbackForced={false}
+        bridgeFallbackForced={snapshot.bridgeFallbackForced}
         externalResolutionEnabled={Boolean(externalResolution.enabled)}
         showTracePanel={showTracePanel}
         isHant={isHant}
@@ -608,8 +644,8 @@ export const LabPlayground: React.FC<LabPlaygroundProps> = ({
           currentExp,
           files: snapshot.project.files,
           sessionId: snapshot.sessionId,
-          sandboxSrcDoc: '',
-          sandboxKey: 1,
+          sandboxSrcDoc: snapshot.sandboxSrcDoc,
+          sandboxKey,
           isolationMode,
           activeExternalOrigin,
           codeSourceKind,

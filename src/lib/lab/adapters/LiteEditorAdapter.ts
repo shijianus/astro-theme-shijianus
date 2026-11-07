@@ -34,10 +34,10 @@ export class LiteEditorAdapter implements LabEditorAdapter {
   }
 
   async getProject(): Promise<LabProject> {
-    this.syncCurrentFileContent();
-    if (!this.currentProject) {
+    if (!this.container || !this.currentProject) {
       throw new Error('LiteEditorAdapter is not mounted');
     }
+    this.syncCurrentFileContent();
     return {
       ...this.currentProject,
       files: this.currentProject.files.map((f) => ({ ...f })),

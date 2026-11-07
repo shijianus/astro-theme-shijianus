@@ -11,6 +11,7 @@ export interface WorkspaceEventMap {
   'error': SandboxRuntimeError;
   'status': LabSessionLifecycle;
   'toast': string;
+  'bridgeFallback': void;
 }
 
 export type WorkspaceEventListener<K extends keyof WorkspaceEventMap> = (
@@ -46,7 +47,7 @@ export class WorkspaceEventBus {
     }
   }
 
-  emit<K extends keyof WorkspaceEventMap>(event: K, payload: WorkspaceEventMap[K]): void {
+  emit<K extends keyof WorkspaceEventMap>(event: K, payload?: WorkspaceEventMap[K]): void {
     const set = this.listeners.get(event);
     if (set) {
       for (const listener of Array.from(set)) {

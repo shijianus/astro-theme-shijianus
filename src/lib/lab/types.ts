@@ -68,6 +68,7 @@ export interface RunOptions {
   onAbort?: (reason: string) => void;
   onStatusChange?: (status: LabSessionLifecycle) => void;
   onHeartbeat?: () => void;
+  onBridgeFallback?: () => void;
 }
 
 export interface RunSession {

@@ -37,6 +37,7 @@ export class BrowserDomRuntime implements LabRuntimeAdapter {
   };
 
   private activeIframe: HTMLIFrameElement | null = null;
+  private selfCreatedIframe: HTMLIFrameElement | null = null;
   private container: HTMLElement | null = null;
   private messageListener: ((evt: MessageEvent) => void) | null = null;
   private watchdogTimer: ReturnType<typeof setTimeout> | null = null;
@@ -48,6 +49,7 @@ export class BrowserDomRuntime implements LabRuntimeAdapter {
   private lastInboundSeq = -1;
   private inboundMsgCount = 0;
   private consoleCount = 0;
+  private isSelfCreatedIframe = false;
   private isDisposed = false;
 
   async run(project: LabProject, options: RunOptions): Promise<RunSession> {
@@ -118,45 +120,68 @@ export class BrowserDomRuntime implements LabRuntimeAdapter {
       maxConsoleEntries: LAB_SECURITY_LIMITS.MAX_CONSOLE_ENTRIES,
     });
 
-    // 5. 挂载或复用 iframe
-    let iframe: HTMLIFrameElement;
-    if (options.iframe) {
-      iframe = options.iframe;
-      this.activeIframe = iframe;
-    } else if (options.container) {
-      iframe = document.createElement('iframe');
-      iframe.className = 'w-full h-full border-0';
-      iframe.title = 'Lab Sandbox Preview';
-      iframe.setAttribute('sandbox', 'allow-scripts allow-forms allow-modals');
-      iframe.setAttribute('referrerpolicy', 'no-referrer');
-      options.container.appendChild(iframe);
-      this.activeIframe = iframe;
-      this.container = options.container;
-    } else if (typeof document !== 'undefined') {
-      iframe = document.createElement('iframe');
-      iframe.setAttribute('sandbox', 'allow-scripts allow-forms allow-modals');
-      iframe.style.display = 'none';
-      document.body.appendChild(iframe);
-      this.activeIframe = iframe;
-      this.container = document.body;
-    } else {
-      throw new Error('[BrowserDomRuntime] Cannot run without DOM document/container');
-    }
-
-    // 6. 确定消息发送目标与允许接收来源 (Origin 验证)
+    // 5. 确定消息发送目标与允许接收来源 (Origin 验证)
     const isCrossOrigin = Boolean(liveResolution.enabled && liveResolution.origin);
     const targetOrigin = isCrossOrigin
       ? (liveResolution.origin as string)
       : '*'; // 注意：W3C HTML5 规范中，未设置 allow-same-origin 的 opaque-srcdoc origin 为 'null'，
              // 浏览器禁止对 'null' origin 指定字面量 targetOrigin，必须使用 '*'。跨站模式下严格使用 targetOrigin!
     const strictOrigins = isCrossOrigin ? [liveResolution.origin as string] : ['null'];
+    const sandboxAttr = isCrossOrigin
+      ? 'allow-scripts allow-same-origin allow-forms allow-modals'
+      : 'allow-scripts allow-forms allow-modals';
+
+    // 6. 挂载或复用 iframe
+    let iframe: HTMLIFrameElement;
+    const existingIframe =
+      (options.iframe && options.iframe.isConnected ? options.iframe : null) ||
+      (typeof document !== 'undefined' && typeof document.querySelector === 'function'
+        ? (document.querySelector('[data-testid="lab-sandbox-iframe"]') as HTMLIFrameElement | null)
+        : null);
+
+    if (existingIframe) {
+      iframe = existingIframe;
+      this.activeIframe = iframe;
+      this.isSelfCreatedIframe = false;
+      this.selfCreatedIframe = null;
+    } else if (options.container) {
+      iframe = document.createElement('iframe');
+      iframe.className = 'w-full h-full border-0';
+      iframe.title = 'Lab Sandbox Preview';
+      iframe.setAttribute('sandbox', sandboxAttr);
+      iframe.setAttribute('referrerpolicy', 'no-referrer');
+      options.container.appendChild(iframe);
+      this.activeIframe = iframe;
+      this.selfCreatedIframe = iframe;
+      this.container = options.container;
+      this.isSelfCreatedIframe = true;
+    } else if (typeof document !== 'undefined') {
+      iframe = document.createElement('iframe');
+      iframe.setAttribute('sandbox', sandboxAttr);
+      iframe.style.display = 'none';
+      document.body.appendChild(iframe);
+      this.activeIframe = iframe;
+      this.selfCreatedIframe = iframe;
+      this.container = document.body;
+      this.isSelfCreatedIframe = true;
+    } else {
+      throw new Error('[BrowserDomRuntime] Cannot run without DOM document/container');
+    }
 
     options.onStatusChange?.('connecting');
 
     // 7. 注册沙盒通信事件监听器
     this.messageListener = (event: MessageEvent) => {
       if (this.isDisposed || !this.activeIframe) return;
-      const expectedSource = this.activeIframe.contentWindow;
+      let expectedSource = this.activeIframe.contentWindow;
+      if (event.source && event.source !== expectedSource && typeof document !== 'undefined') {
+        const domIframe = document.querySelector('[data-testid="lab-sandbox-iframe"]') as HTMLIFrameElement | null;
+        if (domIframe && event.source === domIframe.contentWindow) {
+          this.activeIframe = domIframe;
+          this.isSelfCreatedIframe = false;
+          expectedSource = domIframe.contentWindow;
+        }
+      }
       if (!expectedSource) return;
 
       const verification = verifySandboxMessage(event, {
@@ -282,10 +307,26 @@ export class BrowserDomRuntime implements LabRuntimeAdapter {
         this.clearPingAndHandshakeTimers();
         if (sourceKind === 'official') {
           // 仅官方 preset 允许降级到本地 srcdoc
+          strictOrigins.push('null');
+          options.onBridgeFallback?.();
           iframe.srcdoc = srcDoc;
           options.onStatusChange?.('running');
         } else {
-          this.handleAbort(options, 'Cross-origin sandbox handshake timed out');
+          const failMsg = `[Sandbox Fail-Closed] 跨站沙盒握手超时：当前代码来源为 "${sourceKind}"，因无法建立安全跨站隔离，已强制失败关闭执行。`;
+          const err = {
+            message: failMsg,
+            line: null,
+            column: null,
+            timestamp: Date.now(),
+          };
+          if (this.isSelfCreatedIframe && iframe && iframe.parentNode) {
+            try {
+              iframe.parentNode.removeChild(iframe);
+            } catch {}
+          }
+          this.activeIframe = null;
+          options.onError?.(err);
+          options.onStatusChange?.('error');
         }
       }, 3000);
     } else {
@@ -401,17 +442,23 @@ export class BrowserDomRuntime implements LabRuntimeAdapter {
       this.messageListener = null;
     }
 
-    if (this.activeIframe) {
+    if (this.selfCreatedIframe) {
       try {
-        this.activeIframe.srcdoc = '';
-        if (this.container && this.activeIframe.parentNode === this.container) {
-          this.container.removeChild(this.activeIframe);
-        } else if (this.activeIframe.parentNode) {
-          this.activeIframe.parentNode.removeChild(this.activeIframe);
+        this.selfCreatedIframe.srcdoc = '';
+        if (this.selfCreatedIframe.parentNode) {
+          this.selfCreatedIframe.parentNode.removeChild(this.selfCreatedIframe);
         }
       } catch {}
-      this.activeIframe = null;
+      this.selfCreatedIframe = null;
     }
+
+    if (this.activeIframe && this.activeIframe !== this.selfCreatedIframe) {
+      try {
+        this.activeIframe.srcdoc = '';
+      } catch {}
+    }
+    this.activeIframe = null;
+    this.isSelfCreatedIframe = false;
     this.activeSessionId = null;
   }
 }

@@ -19,7 +19,7 @@ import {
 
 const LEGAL_TRANSITIONS: Record<SessionState, SessionTransitionEvent['type'][]> = {
   idle: ['START_CONNECT', 'EXECUTE', 'TERMINATE', 'RESET'],
-  connecting: ['BRIDGE_READY', 'INNER_READY', 'ERROR', 'EXECUTION_ABORT', 'TERMINATE', 'RESET'],
+  connecting: ['BRIDGE_READY', 'INNER_READY', 'EXECUTE', 'ERROR', 'EXECUTION_ABORT', 'TERMINATE', 'RESET'],
   ready: ['EXECUTE', 'ERROR', 'EXECUTION_ABORT', 'TERMINATE', 'RESET'],
   running: ['EXECUTION_COMPLETE', 'EXECUTION_ABORT', 'ERROR', 'TERMINATE', 'RESET'],
   completed: ['RESET', 'START_CONNECT', 'EXECUTE', 'TERMINATE'],

@@ -88,6 +88,7 @@ const mockDocument = {
     if (tag.toLowerCase() === 'iframe') return new MockIFrameElement();
     return new MockElement(tag);
   },
+  querySelector: () => null,
   body: new MockElement('BODY'),
 };
 

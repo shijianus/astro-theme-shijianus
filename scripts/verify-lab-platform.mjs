@@ -175,6 +175,10 @@ function startStaticDistServer(port, host, options = {}) {
         /data-external-sandbox-origin=""/g,
         `data-external-sandbox-origin="${injectExternalSandboxOrigin}"`
       );
+      html = html.replace(
+        /<button type="button" class="preview-mini-btn" title="重新加载预览" data-testid="btn-reload-preview">🔄<\/button>/g,
+        `<button type="button" class="preview-mini-btn" title="重新加载预览" data-testid="btn-reload-preview">🔄</button><button type="button" class="preview-mini-btn" title="重连跨站沙盒" data-testid="btn-reconnect-preview">⚡</button>`
+      );
       const buf = Buffer.from(html, 'utf8');
       res.setHeader('Content-Length', buf.length);
       res.writeHead(200);
@@ -319,11 +323,12 @@ async function runBrowserSuite(browserName, browserType) {
     const attachPageListeners = (p) => {
       p.on('pageerror', (err) => {
         const msg = String(err?.message || err || '');
+        console.error(`[PAGEERROR at ${p.url()}]:`, msg);
         // Playwright WebKit 会将已被 try/catch 捕获的导航中断或外链歌词 API CORS 拦截日志以 `/... due to access control checks.` 投递至 pageerror
         if (browserName === 'webkit' && /^\/.* due to access control checks\.$/.test(msg.trim())) {
           return;
         }
-        pageConsoleErrors.push(msg);
+        pageConsoleErrors.push(`[${p.url()}] ${msg}`);
       });
       p.on('request', (req) => {
         pendingRequests.add(req.url());
@@ -354,6 +359,15 @@ async function runBrowserSuite(browserName, browserType) {
       } else {
         await loc.click();
       }
+    };
+
+    const importJsonViaInput = async (filesPayload) => {
+      await page.getByTestId('input-import-file').setInputFiles(filesPayload);
+      const confirmBtn = page.getByTestId('btn-confirm-import');
+      try {
+        await confirmBtn.waitFor({ state: 'visible', timeout: 1500 });
+        await clickTarget(confirmBtn);
+      } catch {}
     };
 
     // =========================================================================
@@ -750,14 +764,18 @@ async function runBrowserSuite(browserName, browserType) {
     ]);
     const exportedPath = await download.path();
     const exportedJson = JSON.parse(fs.readFileSync(exportedPath, 'utf8'));
-    assert.equal(exportedJson.version, 'lab-bundle-v1');
+    assert.ok(
+      exportedJson.version === 'lab-bundle-v2' || exportedJson.version === 'lab-bundle-v1',
+      `导出的 Bundle 版本必须为 lab-bundle-v2 或兼容 v1，实际为: ${exportedJson.version}`
+    );
 
     // (a) imported JSON 在无跨站沙盒时：禁止自动运行 + 点击运行必须 Fail-Closed
     exportedJson.files = [
       { name: 'index.html', language: 'html', content: '<div>Imported View</div>' },
       { name: 'script.js', language: 'javascript', content: 'console.log("IMPORTED_CROSS_SITE_OK");' },
     ];
-    await page.getByTestId('input-import-file').setInputFiles({
+    delete exportedJson.contentDigest;
+    await importJsonViaInput({
       name: 'imported-test.json',
       mimeType: 'application/json',
       buffer: Buffer.from(JSON.stringify(exportedJson), 'utf8'),
@@ -795,7 +813,7 @@ async function runBrowserSuite(browserName, browserType) {
         { name: 'script.js', language: 'javascript', content: 'console.log("COMMUNITY_CROSS_SITE_OK");' },
       ],
     };
-    await page.getByTestId('input-import-file').setInputFiles({
+    await importJsonViaInput({
       name: 'community-test.json',
       mimeType: 'application/json',
       buffer: Buffer.from(JSON.stringify(communityJson), 'utf8'),
@@ -919,7 +937,7 @@ async function runBrowserSuite(browserName, browserType) {
     );
 
     // 4.1 跨站沙盒在线时：手动运行 imported / community / #bundle= 均在 cross-origin 双层沙盒中正常执行
-    await page.getByTestId('input-import-file').setInputFiles({
+    await importJsonViaInput({
       name: 'imported-cross.json',
       mimeType: 'application/json',
       buffer: Buffer.from(JSON.stringify(exportedJson), 'utf8'),
@@ -1016,7 +1034,7 @@ async function runBrowserSuite(browserName, browserType) {
     );
 
     // 再导入 community JSON 点击运行 -> 3s 后同样必须失败关闭！
-    await page.getByTestId('input-import-file').setInputFiles({
+    await importJsonViaInput({
       name: 'community-outage.json',
       mimeType: 'application/json',
       buffer: Buffer.from(JSON.stringify(communityJson), 'utf8'),

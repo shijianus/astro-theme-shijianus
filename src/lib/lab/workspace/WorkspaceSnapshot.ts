@@ -36,6 +36,8 @@ export interface WorkspaceSnapshot {
   supportedEditors: LabEditorKind[];
   supportedRuntimes: LabRuntimeKind[];
   liveCodesEnabled: boolean;
+  sandboxSrcDoc: string;
+  bridgeFallbackForced: boolean;
 }
 
 export function createInitialSnapshot(params: {
@@ -70,5 +72,7 @@ export function createInitialSnapshot(params: {
     supportedEditors: params.supportedEditors ?? ['lite', 'livecodes'],
     supportedRuntimes: params.supportedRuntimes ?? ['browser-dom', 'quickjs', 'curated-trace'],
     liveCodesEnabled: params.liveCodesEnabled ?? false,
+    sandboxSrcDoc: '',
+    bridgeFallbackForced: false,
   };
 }

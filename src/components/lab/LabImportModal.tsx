@@ -78,6 +78,7 @@ export const LabImportModal: React.FC<LabImportModalProps> = ({
         role="dialog"
         aria-modal="true"
         aria-labelledby="import-dialog-title"
+        data-testid="lab-import-modal"
         className="lab-modal-card theme-card"
         style={{
           width: '100%',
@@ -232,6 +233,7 @@ export const LabImportModal: React.FC<LabImportModalProps> = ({
           <button
             type="button"
             onClick={onCancel}
+            data-testid="btn-cancel-import"
             style={{
               padding: '8px 16px',
               backgroundColor: 'transparent',
@@ -248,6 +250,7 @@ export const LabImportModal: React.FC<LabImportModalProps> = ({
             ref={confirmBtnRef}
             type="button"
             onClick={onConfirm}
+            data-testid="btn-confirm-import"
             style={{
               padding: '8px 20px',
               backgroundColor: '#2563eb',
