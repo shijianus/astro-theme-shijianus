@@ -770,9 +770,12 @@ export function buildIsolatedSandboxSrcDoc(options: {
     return null;
   };
 
-  // 显式封禁后台线程构造器（配合 CSP worker-src 'none' 实现同步级 + 内核级双重拦截，防止绕过主线程循环守卫）
+  // 显式封禁后台线程构造器与存储/Cookie 访问器（配合 Opaque Origin 与 CSP worker-src 'none' 统一 Chromium/Firefox/WebKit 三核 SecurityError 语义）
   var blockedWorkerCtor = function() {
     throw new DOMException('Worker creation is disabled by Lab Sandbox policy', 'SecurityError');
+  };
+  var blockedStorageAccessor = function() {
+    throw new DOMException('Cookie and Storage access is disabled in Lab Opaque Sandbox', 'SecurityError');
   };
   try {
     Object.defineProperty(window, 'Worker', {
@@ -788,6 +791,13 @@ export function buildIsolatedSandboxSrcDoc(options: {
   } catch (_workerDefErr) {
     window.Worker = blockedWorkerCtor;
   }
+  try {
+    Object.defineProperty(document, 'cookie', {
+      get: blockedStorageAccessor,
+      set: blockedStorageAccessor,
+      configurable: false,
+    });
+  } catch (_cookieDefErr) {}
 
   // 计时器配额守卫：阻断字符串 eval 形式调用与定时器洪泛炸弹
   window.setTimeout = function(handler, timeout) {

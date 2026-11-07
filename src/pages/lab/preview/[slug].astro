@@ -156,6 +156,18 @@ const sidebarData = createSidebarData(posts);
     let bridgeAck = false;
     let bridgeSent = false;
     let handshakeTimer = null;
+    let pingInterval = null;
+
+    const clearBridgeTimers = () => {
+      if (handshakeTimer) {
+        clearTimeout(handshakeTimer);
+        handshakeTimer = null;
+      }
+      if (pingInterval) {
+        clearInterval(pingInterval);
+        pingInterval = null;
+      }
+    };
 
     const showNotice = (text, isFailClosed) => {
       if (!noticeEl) return;
@@ -172,7 +184,7 @@ const sidebarData = createSidebarData(posts);
 
     const mountFailClosed = (reason) => {
       useExternalBridge = false;
-      if (handshakeTimer) clearTimeout(handshakeTimer);
+      clearBridgeTimers();
       if (badgeEl) badgeEl.textContent = '🛑 Fail-Closed 已阻断';
       showNotice(reason, true);
       mountEl.innerHTML = '';
@@ -217,7 +229,7 @@ const sidebarData = createSidebarData(posts);
       useExternalBridge = true;
       bridgeAck = false;
       bridgeSent = false;
-      if (handshakeTimer) clearTimeout(handshakeTimer);
+      clearBridgeTimers();
       hideNotice();
       if (badgeEl) badgeEl.textContent = '🔒 Cross-Site + Opaque 双层隔离中';
 
@@ -230,13 +242,25 @@ const sidebarData = createSidebarData(posts);
       fresh.setAttribute('data-isolation-mode', 'cross-origin');
       fresh.className = 'standalone-sandbox-frame';
       fresh.src = extOriginRaw + '/';
-      fresh.addEventListener('load', () => {
+      const sendPing = () => {
+        if (bridgeAck || !useExternalBridge) {
+          if (pingInterval) {
+            clearInterval(pingInterval);
+            pingInterval = null;
+          }
+          return;
+        }
         try {
           fresh.contentWindow?.postMessage(
             { protocol: PROTOCOL, sessionId, type: 'PING', payload: {} },
             extOriginRaw
           );
         } catch (_e) {}
+      };
+      fresh.addEventListener('load', () => {
+        sendPing();
+        if (pingInterval) clearInterval(pingInterval);
+        pingInterval = setInterval(sendPing, 300);
       });
       mountEl.innerHTML = '';
       mountEl.appendChild(fresh);
@@ -254,7 +278,7 @@ const sidebarData = createSidebarData(posts);
             );
           }
         }
-      }, 3000);
+      }, 4500);
     };
 
     window.addEventListener('message', (evt) => {
@@ -262,7 +286,9 @@ const sidebarData = createSidebarData(posts);
       if (evt.origin !== extOriginRaw || !evt.data || evt.data.protocol !== PROTOCOL) return;
 
       if (evt.data.type === 'SANDBOX_BRIDGE_READY' && !bridgeSent) {
+        bridgeAck = true;
         bridgeSent = true;
+        clearBridgeTimers();
         const themedDoc = applyThemeToSrcDoc(baseSrcDoc, readTheme());
         iframe.contentWindow?.postMessage(
           {
@@ -275,7 +301,7 @@ const sidebarData = createSidebarData(posts);
         );
       } else if (evt.data.type === 'SANDBOX_READY' && evt.data.sessionId === sessionId) {
         bridgeAck = true;
-        if (handshakeTimer) clearTimeout(handshakeTimer);
+        clearBridgeTimers();
       }
     });
 
@@ -293,6 +319,7 @@ const sidebarData = createSidebarData(posts);
     const themeObs = new MutationObserver(() => {
       const nextTheme = readTheme();
       if (iframe && iframe.contentWindow) {
+        if (useExternalBridge && !bridgeAck) return;
         const target = useExternalBridge ? extOriginRaw : '*';
         try {
           iframe.contentWindow.postMessage(

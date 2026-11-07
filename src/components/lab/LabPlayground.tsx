@@ -32,7 +32,7 @@ interface LabPlaygroundProps {
 }
 
 const DRAFT_STORAGE_KEY = 'shijianus-lab-draft-v1';
-const BRIDGE_HANDSHAKE_TIMEOUT_MS = 3000;
+const BRIDGE_HANDSHAKE_TIMEOUT_MS = 4500;
 
 function readCurrentUiLocale(): 'zh-CN' | 'zh-Hant' {
   if (typeof document === 'undefined') return 'zh-CN';
@@ -118,8 +118,10 @@ export function LabPlayground({
   const [bridgeFallbackForced, setBridgeFallbackForced] = useState<boolean>(false);
   const [failClosedReason, setFailClosedReason] = useState<string>('');
   const [hostOriginState, setHostOriginState] = useState<string | null>(null);
+  const [hasMounted, setHasMounted] = useState<boolean>(false);
 
   useEffect(() => {
+    setHasMounted(true);
     if (typeof window !== 'undefined') {
       setHostOriginState(window.location.origin);
     }
@@ -174,6 +176,7 @@ export function LabPlayground({
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const watchdogTimerRef = useRef<number | null>(null);
   const bridgeHandshakeTimerRef = useRef<number | null>(null);
+  const bridgePingIntervalRef = useRef<number | null>(null);
   const toastTimerRef = useRef<number | null>(null);
 
   const sessionIdRef = useRef<string>(sessionId);
@@ -192,7 +195,7 @@ export function LabPlayground({
   bridgeFallbackForcedRef.current = bridgeFallbackForced;
 
   const pendingBridgeSrcDocRef = useRef<string>('');
-  const bridgeCodeDispatchedRef = useRef<boolean>(false);
+  const bridgeCodeDispatchedWinRef = useRef<Window | null>(null);
   const bridgeReadyAckRef = useRef<boolean>(false);
   const inboundMsgCountRef = useRef<number>(0);
 
@@ -204,6 +207,10 @@ export function LabPlayground({
     if (bridgeHandshakeTimerRef.current) {
       window.clearTimeout(bridgeHandshakeTimerRef.current);
       bridgeHandshakeTimerRef.current = null;
+    }
+    if (bridgePingIntervalRef.current) {
+      window.clearInterval(bridgePingIntervalRef.current);
+      bridgePingIntervalRef.current = null;
     }
   }, []);
 
@@ -236,10 +243,12 @@ export function LabPlayground({
       setThemeMode(next);
       const win = iframeRef.current?.contentWindow;
       if (win) {
-        const target =
-          isolationModeRef.current === 'cross-origin' && activeExternalOriginRef.current
-            ? activeExternalOriginRef.current
-            : '*';
+        const isCrossOrigin =
+          isolationModeRef.current === 'cross-origin' && Boolean(activeExternalOriginRef.current);
+        if (isCrossOrigin && !bridgeReadyAckRef.current) {
+          return;
+        }
+        const target = isCrossOrigin ? (activeExternalOriginRef.current as string) : '*';
         try {
           win.postMessage(
             {
@@ -281,9 +290,9 @@ export function LabPlayground({
     const extOrigin = activeExternalOriginRef.current;
     const win = iframeRef.current?.contentWindow;
     const srcDoc = pendingBridgeSrcDocRef.current;
-    if (!extOrigin || !win || !srcDoc || bridgeCodeDispatchedRef.current) return;
+    if (!extOrigin || !win || !srcDoc || bridgeCodeDispatchedWinRef.current === win) return;
 
-    bridgeCodeDispatchedRef.current = true;
+    bridgeCodeDispatchedWinRef.current = win;
     try {
       win.postMessage(
         {
@@ -295,28 +304,42 @@ export function LabPlayground({
         extOrigin
       );
     } catch {
-      // Handshake timeout will handle fallback if postMessage fails
+      bridgeCodeDispatchedWinRef.current = null;
     }
   }, []);
 
   const handleBridgeIframeLoad = useCallback(() => {
     if (isolationModeRef.current !== 'cross-origin') return;
-    const extOrigin = activeExternalOriginRef.current;
-    const win = iframeRef.current?.contentWindow;
-    if (!extOrigin || !win) return;
-    try {
-      win.postMessage(
-        {
-          protocol: LAB_SANDBOX_PROTOCOL_VERSION,
-          sessionId: sessionIdRef.current,
-          type: 'PING',
-          payload: {},
-        },
-        extOrigin
-      );
-    } catch {
-      // Handshake timeout will handle fallback
+    const sendPing = () => {
+      if (bridgeReadyAckRef.current || isolationModeRef.current !== 'cross-origin') {
+        if (bridgePingIntervalRef.current) {
+          window.clearInterval(bridgePingIntervalRef.current);
+          bridgePingIntervalRef.current = null;
+        }
+        return;
+      }
+      const extOrigin = activeExternalOriginRef.current;
+      const win = iframeRef.current?.contentWindow;
+      if (!extOrigin || !win) return;
+      try {
+        win.postMessage(
+          {
+            protocol: LAB_SANDBOX_PROTOCOL_VERSION,
+            sessionId: sessionIdRef.current,
+            type: 'PING',
+            payload: {},
+          },
+          extOrigin
+        );
+      } catch {
+        // Handshake timeout will handle fallback
+      }
+    };
+    sendPing();
+    if (bridgePingIntervalRef.current) {
+      window.clearInterval(bridgePingIntervalRef.current);
     }
+    bridgePingIntervalRef.current = window.setInterval(sendPing, 300);
   }, []);
 
   // 执行代码：重建隔离沙盒上下文并生成新的 Session ID
@@ -328,7 +351,7 @@ export function LabPlayground({
     ) => {
       const activeSourceKind = sourceKindOverride ?? codeSourceKindRef.current;
       const runtimeHostOrigin =
-        typeof window !== 'undefined' ? window.location.origin : hostOriginState;
+        typeof window !== 'undefined' ? window.location.origin : null;
       const liveResolution = resolveSafeExternalSandboxOrigin(
         externalSandboxOrigin,
         runtimeHostOrigin
@@ -353,7 +376,7 @@ export function LabPlayground({
       const nextSessionId = createSandboxSessionId();
       sessionIdRef.current = nextSessionId;
       inboundMsgCountRef.current = 0;
-      bridgeCodeDispatchedRef.current = false;
+      bridgeCodeDispatchedWinRef.current = null;
       bridgeReadyAckRef.current = false;
 
       setSessionId(nextSessionId);
@@ -489,7 +512,7 @@ export function LabPlayground({
 
       startExecutionWatchdog(nextSessionId);
     },
-    [clearTimers, externalSandboxOrigin, hostOriginState, showToast]
+    [clearTimers, externalSandboxOrigin, showToast]
   );
 
   // 终止并销毁当前沙盒上下文
@@ -498,6 +521,7 @@ export function LabPlayground({
     const prevSessionId = sessionIdRef.current;
     if (
       isolationModeRef.current === 'cross-origin' &&
+      bridgeReadyAckRef.current &&
       activeExternalOriginRef.current &&
       iframeRef.current?.contentWindow
     ) {
@@ -519,7 +543,7 @@ export function LabPlayground({
     const nextSessionId = createSandboxSessionId();
     sessionIdRef.current = nextSessionId;
     pendingBridgeSrcDocRef.current = '';
-    bridgeCodeDispatchedRef.current = false;
+    bridgeCodeDispatchedWinRef.current = null;
     bridgeReadyAckRef.current = false;
     inboundMsgCountRef.current = 0;
 
@@ -630,6 +654,15 @@ export function LabPlayground({
       const msg = verification.message;
 
       if (msg.type === 'SANDBOX_BRIDGE_READY') {
+        bridgeReadyAckRef.current = true;
+        if (bridgeHandshakeTimerRef.current) {
+          window.clearTimeout(bridgeHandshakeTimerRef.current);
+          bridgeHandshakeTimerRef.current = null;
+        }
+        if (bridgePingIntervalRef.current) {
+          window.clearInterval(bridgePingIntervalRef.current);
+          bridgePingIntervalRef.current = null;
+        }
         dispatchBridgeExecute();
         return;
       }
@@ -900,42 +933,58 @@ export function LabPlayground({
 
   // 导入实验 JSON（强制标记为 imported / community，禁用自动执行，跨站不可用时失败关闭）
   const handleImportJsonFile = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+    const inputEl = e.currentTarget;
+    const file = inputEl.files?.[0];
     if (!file) return;
     if (file.size > LAB_SECURITY_LIMITS.MAX_TOTAL_SOURCE_BYTES * 2) {
       showToast('导入失败：JSON 文件体积超过安全限制 (256KB)');
-      e.target.value = '';
+      inputEl.value = '';
       return;
     }
-    const reader = new FileReader();
-    reader.onload = () => {
-      try {
-        const parsed = JSON.parse(String(reader.result || '{}'));
-        const validated = validateLabPortableBundle(parsed);
-        if (!validated.ok || !validated.data) {
-          showToast(`导入校验拒绝: ${validated.errors.join('；')}`);
-          return;
+
+    const readPromise =
+      typeof file.text === 'function'
+        ? file.text()
+        : new Promise<string>((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(String(reader.result || ''));
+            reader.onerror = () => reject(reader.error || new Error('Read failed'));
+            reader.readAsText(file);
+          });
+
+    void readPromise
+      .then((rawText) => {
+        try {
+          const parsed = JSON.parse(rawText || '{}');
+          const validated = validateLabPortableBundle(parsed);
+          if (!validated.ok || !validated.data) {
+            showToast(`导入校验拒绝: ${validated.errors.join('；')}`);
+            return;
+          }
+          const importedKind: LabCodeSourceKind = validated.data.sourceKind || 'imported';
+          clearTimers();
+          const rotatedId = createSandboxSessionId();
+          sessionIdRef.current = rotatedId;
+          pendingBridgeSrcDocRef.current = '';
+          codeSourceKindRef.current = importedKind;
+          setSessionId(rotatedId);
+          setFiles(validated.data.files);
+          setActiveFileIdx(0);
+          setCodeSourceKind(importedKind);
+          setFailClosedReason('');
+          setSandboxSrcDoc('');
+          setExecStatus('idle');
+          showToast('实验导入成功！出于安全隔离策略，请审阅代码后手动点击「运行代码」');
+        } catch {
+          showToast('导入失败：无效的 JSON 文件格式');
         }
-        const importedKind: LabCodeSourceKind = validated.data.sourceKind || 'imported';
-        clearTimers();
-        const rotatedId = createSandboxSessionId();
-        sessionIdRef.current = rotatedId;
-        pendingBridgeSrcDocRef.current = '';
-        codeSourceKindRef.current = importedKind;
-        setSessionId(rotatedId);
-        setFiles(validated.data.files);
-        setActiveFileIdx(0);
-        setCodeSourceKind(importedKind);
-        setFailClosedReason('');
-        setSandboxSrcDoc('');
-        setExecStatus('idle');
-        showToast('实验导入成功！出于安全隔离策略，请审阅代码后手动点击「运行代码」');
-      } catch {
-        showToast('导入失败：无效的 JSON 文件格式');
-      }
-    };
-    reader.readAsText(file);
-    e.target.value = '';
+      })
+      .catch(() => {
+        showToast('导入失败：读取文件异常');
+      })
+      .finally(() => {
+        inputEl.value = '';
+      });
   };
 
   // 生成安全分享链接
@@ -1127,7 +1176,20 @@ export function LabPlayground({
             type="file"
             accept=".json,application/json"
             onChange={handleImportJsonFile}
-            style={{ display: 'none' }}
+            tabIndex={-1}
+            aria-hidden="true"
+            style={{
+              position: 'absolute',
+              width: '1px',
+              height: '1px',
+              padding: 0,
+              margin: '-1px',
+              overflow: 'hidden',
+              clip: 'rect(0, 0, 0, 0)',
+              border: 0,
+              opacity: 0,
+              pointerEvents: 'none',
+            }}
             data-testid="input-import-file"
           />
           <button
@@ -1175,7 +1237,7 @@ export function LabPlayground({
       )}
 
       {/* 官方实验本地 Opaque srcdoc 降级明确提示横幅 */}
-      {codeSourceKind === 'official' && isolationMode === 'opaque-srcdoc' && (
+      {hasMounted && codeSourceKind === 'official' && isolationMode === 'opaque-srcdoc' && (
         <div
           className="lab-fallback-banner"
           role="status"

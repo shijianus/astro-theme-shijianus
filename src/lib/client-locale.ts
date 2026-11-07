@@ -3669,10 +3669,15 @@ function shouldObserveLocaleMutations(variant: LocaleVariant) {
 async function ensureChineseConverters() {
   if (zhToTraditional && zhToSimplified) return;
   if (!chineseConverterPromise) {
-    chineseConverterPromise = import('opencc-js').then(({ Converter }) => {
-      zhToTraditional = Converter({ from: 'cn', to: 'tw' });
-      zhToSimplified = Converter({ from: 'tw', to: 'cn' });
-    });
+    chineseConverterPromise = import('opencc-js')
+      .then(({ Converter }) => {
+        zhToTraditional = Converter({ from: 'cn', to: 'tw' });
+        zhToSimplified = Converter({ from: 'tw', to: 'cn' });
+      })
+      .catch((err) => {
+        chineseConverterPromise = null;
+        throw err;
+      });
   }
   await chineseConverterPromise;
 }
@@ -4121,7 +4126,7 @@ export function initLocaleRuntime() {
 
   // Background pre-warm for OpenCC so switching to zh-Hant is instant with zero stutter
   const idleWarmup = () => {
-    void ensureChineseConverters();
+    void ensureChineseConverters().catch(() => {});
   };
   if ('requestIdleCallback' in window) {
     (window as any).requestIdleCallback(idleWarmup, { timeout: 3000 });
