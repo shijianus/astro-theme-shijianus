@@ -6788,6 +6788,22 @@
   1. 编写并执行本地端到端测试套件（`scripts/verify-music-pocket-close.mjs`），断言点击关闭按钮立即关闭、2秒内不自发重开、ESC按键关闭均100%全绿通过；
   2. 回归运行 Sonic 跨平台联动自动化测试（`scripts/verify-sonic-pocket-linkage.mjs`），确保音频与歌词链路同步功能完好无损。
 
+### Task 122: Astro Blog Lab Phase 2.7 独立全量审计、安全加固、双远端全量(--all)无损推送与 cf 目录-文件冲突解决 (`13e70ad`, `7abcd7f`, `666edb3`, `b29a3de`, `963f67d`, `03a57c0`, `ddc5874`)
+- [x] **Phase 2.7 独立可复现全量审计与安全加固**：
+  1. 修复非可信代码循环守卫漏洞：为无大括号 `for-of` / `for-in` 及头部闭包 IIFE 注入安全循环守卫，封堵 rAF 计时器洪泛与控制台日志序列化爆炸 (`13e70ad`)；
+  2. 隔离生产与预发布独立沙盒白名单：生产沙盒禁止预发布宿主，绑定双向 Session/Nonce 握手并新增 Wrangler 部署干跑门禁 (`7abcd7f`)；
+  3. 重构 Lab 跨站通信握手：生成每次运行专属 CSPRNG SessionId 与 Nonce，严格校验 postMessage 来源与宿主绑定，彻底清除 Astro `define:vars` 注入风险 (`666edb3`)；
+  4. 强化非可信代码 Fail-Closed 策略：畸形 `#bundle=` 严格拒绝执行，阻断草稿信任提权（Trust Laundering），并在 `pagehide` 卸载时彻底清理跨站会话 (`b29a3de`)；
+  5. 优化无障碍体验：为独立 Playground 与 Preview 路由补齐语义化 `h1` 标题 (`963f67d`)；
+  6. 建立 CI 与 10 点发布门禁：新增安全回归测试套件 `scripts/verify-lab-phase27-security.mjs`，CI 实施 SHA 强锁定与零 Functions/绑定验证 (`03a57c0`)；
+  7. 产出可复现独立审计与交付报告：编写 `LAB_PHASE_2_7_AUDIT_REPORT.md`，确立发布准备度结论为 CONDITIONAL GO (`ddc5874`)。
+- [x] **全量多远端(--all)无损推送与目录-文件冲突优雅解决**：
+  1. 严格遵守“禁止覆盖远端、零 `--force`、零删除远端历史”红线；
+  2. 推送 `origin`：执行 `git push --all origin` 与 `git push --tags origin`，本地 75 个分支与 10 个标签 100% 同步至 `origin` (astro-theme-shijianus)；
+  3. 解决 `cf` 远端 Directory-File 冲突：针对 `cf` 历史存在 `refs/heads/hexo-blog` 分支导致推送 `hexo-blog/20260322` 触发 `(directory file conflict)` 的情况，安全映射为 `hexo-blog/20260322:hexo-blog-20260322`，指向完全一致提交（`0add2ea`），既不删除 `hexo-blog` 也完整保留了提交树；
+  4. 推送 `cf`：75 个分支全部完成推送，`git push --tags cf` 10 个标签全部同步（Everything up-to-date）。
+
+
 
 
 
