@@ -79,6 +79,17 @@ export class LabWorkspaceController {
     this.editorRegistry = new EditorRegistry({
       enableLiveCodes: config.enableLiveCodes,
       liveCodesAppUrl: config.liveCodesAppUrl,
+      onFallbackToLite: () => {
+        this.setEditorKind('lite');
+      },
+      onProjectChange: (updatedProject) => {
+        this.project = {
+          ...updatedProject,
+          files: updatedProject.files.map((f) => ({ ...f })),
+        };
+        this.dirty = true;
+        this.notifySnapshot();
+      },
     });
     this.runtimeRegistry = new RuntimeRegistry();
     this.sessionManager = new SessionManager();

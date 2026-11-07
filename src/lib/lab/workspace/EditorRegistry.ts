@@ -1,20 +1,33 @@
 /**
  * Astro Blog「试验田 Lab」编辑器注册表 (EditorRegistry)
  */
-import type { LabEditorAdapter, LabEditorKind } from '../types.ts';
+import type { LabEditorAdapter, LabEditorKind, LabProject } from '../types.ts';
 import { LiteEditorAdapter } from '../adapters/LiteEditorAdapter.ts';
 import { LiveCodesEditorAdapter } from '../adapters/LiveCodesEditorAdapter.ts';
+
+export interface EditorRegistryOptions {
+  enableLiveCodes?: boolean;
+  liveCodesAppUrl?: string;
+  allowedHosts?: string[];
+  loadTimeoutMs?: number;
+  onFallbackToLite?: () => void;
+  onProjectChange?: (project: LabProject) => void;
+}
 
 export class EditorRegistry {
   private adapters = new Map<LabEditorKind, LabEditorAdapter>();
 
-  constructor(options?: { enableLiveCodes?: boolean; liveCodesAppUrl?: string }) {
+  constructor(options?: EditorRegistryOptions) {
     this.register('lite', new LiteEditorAdapter());
     this.register(
       'livecodes',
       new LiveCodesEditorAdapter({
         enableFeatureFlag: options?.enableLiveCodes,
         appUrl: options?.liveCodesAppUrl,
+        allowedHosts: options?.allowedHosts,
+        loadTimeoutMs: options?.loadTimeoutMs,
+        onFallbackToLite: options?.onFallbackToLite,
+        onProjectChange: options?.onProjectChange,
       })
     );
   }
@@ -36,11 +49,19 @@ export class EditorRegistry {
   }
 
   has(kind: LabEditorKind): boolean {
+    if (kind === 'livecodes') {
+      const adapter = this.adapters.get('livecodes') as LiveCodesEditorAdapter | undefined;
+      return Boolean(adapter?.isFeatureEnabled());
+    }
     return this.adapters.has(kind);
   }
 
   listKinds(): LabEditorKind[] {
-    return Array.from(this.adapters.keys());
+    const kinds: LabEditorKind[] = ['lite'];
+    if (this.has('livecodes')) {
+      kinds.push('livecodes');
+    }
+    return kinds;
   }
 
   async disposeAll(): Promise<void> {
