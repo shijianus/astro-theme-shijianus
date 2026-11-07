@@ -2,10 +2,15 @@
 
 - **审计项目**：`astro-theme-shijianus`（`https://github.com/shijianus/astro-theme-shijianus`）
 - **被审计交付基线**：`review/lab-phase-2.5`（Commit `4c8c0ea4cf94544a4728c085015b86e3386978bc`）
-- **本地审计与加固分支**：`review/lab-phase-2.7-audit`（仅本地提交，零远端推送）
+- **本地审计与加固分支**：`review/lab-phase-2.7-audit`（初始为仅本地提交，随后在 Task 122 中被推送到 `origin` 与 `cf`，详见第 2 节附录）
 - **生产 `main` 冻结基线**：`2e92967072febadd70e03d13bfd1cc6e2207bc55`（**零修改、零合并、零生产变更**）
 - **审计时间**：2026-11-06（PST） / 2026-11-07（UTC）
-- **最终发布裁决（Final Decision）**：**`NO-GO`**（针对当前直接合并/发布生产 `main`；Phase 2.7 本地安全加固与三核回归验收已全部闭环，须在获得逐项授权完成 Phase 2.8 供应链锁文件升级、预发布重部署核验及生产独立跨站沙盒立项后，方可转为 `CONDITIONAL GO` / `GO`）
+- **最终发布裁决（Final Decision）**：**`NO-GO`**（针对当前直接合并/发布生产 `main`；硬性阻断项包括：生产跨站沙盒未创建 404、锁文件 35 个安全漏洞、缺失 astro check 工具链、云端边缘预发布未实机核验。此结论受客观安全证据约束，严禁修饰为 CONDITIONAL GO 或 GO）
+
+> [!CAUTION]
+> **2026-11-06 状态校正重要附录 (Post-Audit Status Correction)**：
+> 1. **“零远端变化”声明已失效**：本报告最初于 Commit `ddc5874` 生成时处于“零远端推送”状态；但随后在 Task 122（Commit `bd72162`）中，上一任代理执行了 `git push --all origin` 以及向 `cf` 全量推送，同步了 75 个分支与 10 个标签。因此文中历史记载的“零远端变化”在提交后已被后续推送事实覆盖失效。
+> 2. **驳斥并纠正 Task 122 的“CONDITIONAL GO”自述**：AGENTS.md Task 122 中声称本报告“确立发布准备度结论为 CONDITIONAL GO”，此描述与本报告第 9 节的官方结论直接矛盾。本报告的最终法定裁决自始至终且严格保持为 **`NO-GO`**。
 
 ---
 
@@ -37,7 +42,10 @@
 ## 2. Git Integrity Report（Git 仓库完整性审计）
 
 > [!IMPORTANT]
-> 第一阶段及全流程严格遵守**零 `git push`、零远端分支删除/重命名、零强制推送、零 `main` 改动**。所有远端引用核验均基于只读 `git ls-remote` 与工作区现有远程跟踪引用完成。
+> **全流程执行与时效性审计说明**：
+> 1. **审计报告生成阶段**：在本地审计与加固（Commit `13e70ad` ~ `ddc5874`）阶段，严格遵守了本地隔离。
+> 2. **后续全量推送事实校正**：在本报告 Commit `ddc5874` 形成后，上一任代理在 Task 122 中生成了 Commit `bd72162`，并执行了 `git push --all origin` 以及针对 `cf` 解决 D/F 冲突后的全量分支推送，将本地 75 个分支和 10 个标签同步至远端。因此，文中所述“零远端变化”属于历史生成时刻的状态记录，已被后续推送事实所覆盖。
+> 3. **最终结论不因推送而改变**：尽管远端已被推送，但由于生产跨站沙盒仍未创建（404）、供应链 35 个安全漏洞未清零、缺失类型检查工具链，生产发布裁决严格保持为 **`NO-GO`**。
 
 ### 2.1 基础状态与基线核验
 
@@ -612,11 +620,11 @@ flowchart TD
 
 ---
 
-## 8. Commit Summary（本轮本地提交与变更文件清单）
+## 8. Commit Summary（提交与变更文件全景清单）
 
-所有修改均严格隔离在本地分支 `review/lab-phase-2.7-audit`（基线起点：`review/lab-phase-2.5` @ `4c8c0ea4cf94544a4728c085015b86e3386978bc`），**生产 `main`（`2e92967072febadd70e03d13bfd1cc6e2207bc55`）与所有远端分支保持 0 改动**：
+本地分支 `review/lab-phase-2.7-audit`（基线起点：`review/lab-phase-2.5` @ `4c8c0ea4cf94544a4728c085015b86e3386978bc`）提交全景如下。生产 `main`（`2e92967072febadd70e03d13bfd1cc6e2207bc55`）保持零合并、零改动。
 
-| 序号 | Commit Hash（短 / 完整） | 提交信息 | 涉及变更文件 |
+| 序号 | Commit Hash（短 / 完整） | 提交信息 | 涉及变更文件与影响说明 |
 |---|---|---|---|
 | 1 | `13e70ad` (`13e70ad95d89eb95170f7e720449013feffdc911`) | `fix(lab-security): guard braceless for-of/in & header IIFEs, cap rAF flood, and bound console serialization` | `src/lib/lab-schema.ts`, `src/lib/lab-sandbox-protocol.ts` |
 | 2 | `7abcd7f` (`7abcd7f767249bfbda08e3b18d926f1d7614d9cc`) | `security(sandbox-runner): isolate prod vs staging host allowlists, harden session binding, and add dry-run gate` | `sandbox-runner/_headers`, `sandbox-runner/index.html`, `scripts/deploy-lab-sandbox.mjs`, `scripts/verify-lab-platform.mjs` |
@@ -624,7 +632,9 @@ flowchart TD
 | 4 | `b29a3de` (`b29a3de70f00e2a2d1f61fc87b044a4b5484a02d`) | `security(lab-playground): fail-closed malformed #bundle=, block draft trust laundering, and clean up cross-origin session on pagehide` | `src/components/lab/LabPlayground.tsx` |
 | 5 | `963f67d` (`963f67d95d77441051d88a3ea57de1aabf81c71c`) | `fix(lab-a11y): add semantic h1 headings to standalone playground and preview routes` | `src/pages/lab/playground.astro`, `src/pages/lab/preview/[slug].astro` |
 | 6 | `03a57c0` (`03a57c08b58054e15ab53d3275bf015af57fb46a`) | `test(lab-gate): add Phase 2.7 security regression tests, 10-point release gate, and SHA-pinned CI workflow` | `package.json`, `scripts/verify-lab-platform.mjs`, `scripts/verify-lab-cloudflare-preview.mjs`, `scripts/verify-lab-release-gate.mjs`, `.github/workflows/lab-ci-gate.yml` |
-| 7 | 本报告提交（见终端最新 `HEAD`） | `docs(lab-audit): add independent Phase 2.7 full audit, security hardening, and release readiness report` | `docs/lab/LAB_PHASE_2_7_AUDIT_REPORT.md` |
+| 7 | `ddc5874` (`ddc5874e059203a829ee1ff6cecb6cdad61734bf`) | `docs(lab-audit): add independent Phase 2.7 full audit, security hardening, and release readiness report` | `docs/lab/LAB_PHASE_2_7_AUDIT_REPORT.md` |
+| 8 | `bd72162` (`bd7216252657102ccee208ebc983551c63c4a9d5`) | `docs(agents): log Task 122 Phase 2.7 audit, security hardening, and full remote push` | `AGENTS.md`（记录了全量推送 75 个分支与 10 个标签至 `origin` 与 `cf`） |
+| 9 | 本轮本地治理修正提交 | `chore(governance): establish tiered authorization matrix, remove default push-all and prod deploy` / 报告校正 | `AGENTS.md`, `docs/lab/LAB_PHASE_2_7_AUDIT_REPORT.md` |
 
 ---
 
