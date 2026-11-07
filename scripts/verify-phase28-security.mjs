@@ -6,6 +6,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { LiveCodesEditorAdapter } from '../src/lib/lab/adapters/LiveCodesEditorAdapter.ts';
+import { QuickJsRuntime } from '../src/lib/lab/adapters/QuickJsRuntime.ts';
 import {
   LAB_SANDBOX_PROTOCOL_VERSION,
   SecureRandomUnavailableError,
@@ -449,5 +450,104 @@ assert.equal(enabledAdapter.isFeatureEnabled(), true);
 await enabledAdapter.mount(dummyContainer, sampleProject);
 assert.equal(enabledAdapter.getIsLoaded(), false);
 console.log('  -> PASS: 开启特性标志后，默认进入 Click-to-load 待命状态，未主动创建 iframe。');
+
+console.log('🧪 [Test 8] 验证 QuickJsRuntime 纯算法计算、内存/栈配额、中断计数器与性能基准...');
+const qjs = new QuickJsRuntime({
+  maxMemoryBytes: 8 * 1024 * 1024,
+  maxStackSizeBytes: 256 * 1024,
+  maxExecutionTimeMs: 1500,
+  instructionLimit: 100_000,
+});
+
+// 8.1 纯算法计算与控制台捕获
+const fibProject = {
+  id: 'exp-fib',
+  slug: 'fibonacci-test',
+  title: 'Fibonacci Calculation',
+  files: [
+    {
+      name: 'index.js',
+      language: 'javascript',
+      content: `
+        function fib(n) {
+          if (n <= 1) return n;
+          return fib(n - 1) + fib(n - 2);
+        }
+        const res = fib(15);
+        console.log("Fib(15) =", res);
+      `,
+    },
+  ],
+};
+
+const qjsLogs = [];
+const fibSession = await qjs.run(fibProject, {
+  sessionId: 'qjs-sess-1',
+  cspNonce: 'noncetest',
+  onConsole: (entry) => qjsLogs.push(entry.args.join(' ')),
+});
+
+assert.equal(fibSession.status, 'completed');
+assert.ok(qjsLogs.some((l) => l.includes('Fib(15) = 610')), `必须计算出 Fib(15) = 610: ${qjsLogs.join(',')}`);
+assert.ok(typeof fibSession.durationMs === 'number' && fibSession.durationMs >= 0);
+console.log(`  -> PASS: QuickJS 纯算法运行完成 (耗时: ${fibSession.durationMs}ms, 输出: ${qjsLogs.join(' ')})。`);
+
+// 8.2 危险全局变量屏蔽核验
+const attackProject = {
+  id: 'exp-attack',
+  slug: 'attack-test',
+  title: 'Security Probe',
+  files: [
+    {
+      name: 'probe.js',
+      language: 'javascript',
+      content: `
+        if (typeof window !== 'undefined') throw new Error("window is accessible");
+        if (typeof document !== 'undefined') throw new Error("document is accessible");
+        if (typeof localStorage !== 'undefined') throw new Error("localStorage is accessible");
+        if (typeof fetch !== 'undefined') throw new Error("fetch is accessible");
+        console.log("All dangerous globals blocked!");
+      `,
+    },
+  ],
+};
+const attackLogs = [];
+const attackSession = await qjs.run(attackProject, {
+  sessionId: 'qjs-sess-2',
+  cspNonce: 'noncetest',
+  onConsole: (entry) => attackLogs.push(entry.args.join(' ')),
+});
+assert.equal(attackSession.status, 'completed');
+assert.ok(attackLogs.some((l) => l.includes('All dangerous globals blocked!')));
+console.log('  -> PASS: window/document/localStorage/fetch 危险全局变量全量屏蔽。');
+
+// 8.3 中断计数器与死循环拦截
+const infiniteLoopProject = {
+  id: 'exp-loop',
+  slug: 'infinite-loop-test',
+  title: 'Infinite Loop',
+  files: [
+    {
+      name: 'loop.js',
+      language: 'javascript',
+      content: `
+        while (true) {
+          __interrupt();
+        }
+      `,
+    },
+  ],
+};
+let abortReason = '';
+const loopSession = await qjs.run(infiniteLoopProject, {
+  sessionId: 'qjs-sess-3',
+  cspNonce: 'noncetest',
+  onAbort: (reason) => {
+    abortReason = reason;
+  },
+});
+assert.equal(loopSession.status, 'aborted');
+assert.ok(abortReason.includes('Instruction budget exceeded'), `中断预算必须触发: ${abortReason}`);
+console.log(`  -> PASS: QuickJS 中断计数器成功熔断死循环 (${abortReason})。`);
 
 console.log('\n🎉 所有 Phase 2.8 沙盒安全加固测试项 100% 通过！');

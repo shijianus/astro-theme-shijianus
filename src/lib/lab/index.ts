@@ -4,6 +4,7 @@
 export * from './types';
 export * from './adapters/LiteEditorAdapter';
 export * from './adapters/LiveCodesEditorAdapter';
+export * from './adapters/QuickJsRuntime';
 export * from './adapters/BrowserDomRuntime';
 export * from './adapters/CuratedTraceRuntime';
 export * from './SessionManager';
