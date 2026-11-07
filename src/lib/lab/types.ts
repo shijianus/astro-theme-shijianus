@@ -6,6 +6,7 @@ import type {
   LabLanguage,
   LabRuntimeType,
   LabExperiment,
+  LabVisualizationConfig,
 } from '../lab-schema.ts';
 import type {
   SandboxConsoleEntry,
@@ -47,6 +48,8 @@ export interface LabProject {
   authorRole?: 'owner' | 'contributor' | 'community';
   version?: string;
   defaultParams?: LabExperiment['defaultParams'];
+  visualizationConfig?: LabVisualizationConfig;
+  traceDefinition?: unknown;
 }
 
 export interface RunOptions {

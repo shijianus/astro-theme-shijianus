@@ -9,7 +9,7 @@
  *    - 算法逐行执行、变量监视、条件分支判定、数组状态演化与调用栈可视化 -> 由本模块生成受步数上限 (`MAX_TRACE_STEPS = 600`) 保护的不可变时间线快照。
  */
 
-import { type PresetAlgorithmId, LAB_SECURITY_LIMITS } from './lab-schema';
+import { type PresetAlgorithmId, LAB_SECURITY_LIMITS } from './lab-schema.ts';
 
 export type TraceEventType =
   | 'call'

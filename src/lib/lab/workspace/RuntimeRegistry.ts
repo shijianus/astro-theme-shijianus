@@ -39,7 +39,33 @@ export class RuntimeRegistry {
     return Array.from(this.adapters.keys());
   }
 
+  listKindsForProject(project: LabProject): LabRuntimeKind[] {
+    const kinds: LabRuntimeKind[] = ['browser-dom', 'quickjs'];
+    const hasTrace = Boolean(
+      project.traceDefinition ||
+      project.visualizationConfig?.enabled ||
+      project.slug === 'algorithm-execution-tracer'
+    );
+    if (hasTrace) {
+      kinds.push('curated-trace');
+    }
+    return kinds;
+  }
+
   validateProjectForRuntime(project: LabProject, kind: LabRuntimeKind): { ok: boolean; reason?: string } {
+    if (kind === 'curated-trace') {
+      const hasTrace = Boolean(
+        project.traceDefinition ||
+        project.visualizationConfig?.enabled ||
+        project.slug === 'algorithm-execution-tracer'
+      );
+      if (!hasTrace) {
+        return {
+          ok: false,
+          reason: '当前实验未包含执行追踪 (Trace) 声明或算法数据，无法使用 Curated Trace 运行时。',
+        };
+      }
+    }
     const caps = this.getCapabilities(kind);
     if (!caps.html) {
       const hasHtml = project.files.some((f) => f.name.endsWith('.html') && f.content.trim().length > 0);

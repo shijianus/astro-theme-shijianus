@@ -108,7 +108,7 @@ export class LabWorkspaceController {
       externalOrigin: this.externalOrigin,
       runtimeCapabilities: this.runtimeRegistry.getCapabilities(this.runtimeKind),
       supportedEditors: this.editorRegistry.listKinds(),
-      supportedRuntimes: this.runtimeRegistry.listKinds(),
+      supportedRuntimes: this.runtimeRegistry.listKindsForProject(this.project),
       liveCodesEnabled: this.editorRegistry.has('livecodes'),
     };
   }
@@ -132,6 +132,12 @@ export class LabWorkspaceController {
     this.dirty = false;
     this.clearConsole();
     this.clearErrors();
+
+    // 检查当前运行时是否与新工程兼容
+    const allowedKinds = this.runtimeRegistry.listKindsForProject(this.project);
+    if (!allowedKinds.includes(this.runtimeKind)) {
+      this.runtimeKind = 'browser-dom';
+    }
 
     // 同步给活动编辑器
     const editor = this.editorRegistry.get(this.editorKind);
