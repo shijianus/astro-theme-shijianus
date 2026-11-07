@@ -11,28 +11,25 @@
 - **强制打印 Hash**：每次执行 `git commit` 成功后，**必须在终端或对话回复中明确打印并展示 Commit Hash**（例如通过 `git rev-parse --short HEAD` 或 `git log -1 --oneline` 输出，如 `Commit Hash: [a1b2c3d]`）。
 - **任务清单更新**：在每次提交后，将对应的任务状态勾选为完成，并附带对应的 Commit Hash 记录在 `AGENTS.md` 或交付报告中。
 
-### 2. 全量多远端同步准则 (Multi-Remote Push Standard)
-- 本仓库配置了多个远端（如 `origin` -> `astro-theme-shijianus.git`，`cf` -> `shijianus.github.io.git` 用于 Cloudflare Pages 自动部署）。
-- 在完成阶段性开发并通过本地测试后，必须执行多端推送：
-  ```bash
-  git push --all origin
-  git push --all cf
-  # 或全局推送
-  git push --all
-  ```
-- 确保所有分支（尤其是 `main` 分支）在各个 remote 间保持 100% 同步。
+### 2. 四级权限架构与逐项授权矩阵 (Tiered Permissions & Explicit Authorization Matrix)
+本仓库实行严格的四级权限架构。未经用户在当前对话中对**具体目标（具体 Remote、具体 Branch、具体 Cloudflare 项目/环境）**明确逐项授权，严禁越权执行任何外部写入或生产操作。
 
-### 3. 生产端 (Cloudflare Pages) 真实链路验证准则 (Live E2E Verification)
-- 代码推送到 `cf` 远端后，涉及线上功能的更新必须在真实线上环境（`https://blog.epocanvas.com`）生效后进行验证。
-- **强制 Playwright / MCP 浏览器端到端测试**：
-  - 调用自动化脚本或 MCP 工具访问 `https://blog.epocanvas.com`。
-  - 对核心功能（如文章目录 TOC、Stripe 国际收银台、Google Pay / Apple Pay / Link 快捷支付、微信/支付宝/PayPal 赞赏码、多币种自适应等）进行**真实点击、模态框弹出、交互逻辑与视觉呈现全链路审计**。
-  - 确认无控制台致命 JS 报错、无样式错位、网络 API 请求正常，经完整链路测试通过后方可正式交付给用户。
+| 权限等级 | 行为范围 | 授权策略 | 严禁行为 |
+| :--- | :--- | :--- | :--- |
+| **Level 1: 只读 (Read-Only)** | 读取仓库文件、只读 Git 查询 (`status`, `log`, `diff`, `branch`)、只读 `fetch`（禁止 `--prune`）、静态扫描、测试日志审查。 | **默认允许**，无需重复授权。 | 严禁携带 `--prune` 或任何带有写入意图的参数。 |
+| **Level 2: 本地写入 (Local-Write)** | 创建/切换本地审查分支、本地代码修改、原子化 `git commit`、本地测试与门禁执行（`build`, `brand test`, `release gate`）、本地生成报告文档。 | **默认允许**（限本地开发与审计）。 | 严禁合并 `main` 分支；严禁覆盖或重写已有 Git 历史。 |
+| **Level 3: 远端写入 (Remote-Write)** | 向指定单一 Remote 推送指定单一 Branch 或 Tag、创建/更新云端 Preview 预览部署。 | **严禁默认 · 必须逐项获得明确授权**（必须指明 Remote 与 Branch）。 | **绝对禁止 `git push --all`**、禁止 `--mirror`、禁止 `--force`、禁止同时向多个远端批量推送。 |
+| **Level 4: 生产与云端资源 (Production & Cloudflare Infra)** | 合并到生产 `main`、生产环境部署（Cloudflare Pages / Workers）、修改生产绑定（D1/R2/KV）、修改 Secrets / 环境变量、修改 DNS。 | **绝对红线 · 必须重新独立逐项授权**。必须事先出示完整命令、影响范围及回滚方案。 | 严禁默认执行任何生产部署；严禁未经授权修改任何基础设施资源。 |
 
-### 4. 严禁未提交/未部署即交付准则 (Strict Prohibition of Uncommitted or Undeployed Delivery)
-- **绝对红线：严禁未提交即交付**：任何未经完整 `git commit`、未生成并打印 Commit Hash、未同步推送所有远端分支（`origin` 与 `cf`）就交付的行为被**严格绝对禁止**。
-- **强制全量部署 Cloudflare**：凡涉及功能性、UI 交互或 API 变更的任务，**必须确保全量编译并在各自项目目录中通过 Wrangler 部署至各自对应的 Cloudflare Pages 生产边缘节点（shijianus-blog 仅部署至 shijianus-blog 项目；cfsolara 必须且只能在 CFSolara 专案目录下编译后部署至 cfsolara，严禁跨项目混淆部署）**，绝不允许仅在本地跑通就草率交付。
-- **强制生产端实机全链路审计**：部署生效后，**必须通过无头浏览器（Playwright / Puppeteer）或真实网络工具，在生产域名（`https://blog.epocanvas.com/`）上进行实际访问与功能交互验证**，确保 0 控制台报错、UI 渲染正常、数据流正常。必须出示端到端验证通过的直接证据后，方可正式向用户交付。
+### 3. 严禁未提交即交付准则 (Strict Prohibition of Uncommitted Delivery)
+- **提交前置**：每项独立功能、修复或治理任务完成后，必须通过原子化 `git commit` 固化成果，严禁积攒大量未提交改动。
+- **强制打印 Hash**：每次提交后必须在终端和交付说明中明确展示短 SHA 与完整 SHA。
+- **本地与线上严格解耦**：本地开发与审计完成**不代表**可以自动触发线上推送或部署，两者权限边界不可逾越。
+
+### 4. 真实性与可复现证据链准则 (Evidence-First Verifiable Delivery Standard)
+- **禁止口头宣称**：禁止在缺乏即时运行证据的情况下声称“测试 100% 通过”、“零安全风险”或“可直接发布”。
+- **状态真实性**：审计结论（GO / CONDITIONAL GO / NO-GO）必须与报告正文及客观证据 100% 保持一致，严禁在任务总结中篡改、修饰或下调安全阻断等级。
+- **可复现日志**：所有构建、测试与安全检查必须附带实际执行的命令、真实退出码（Exit Code）以及对应日志路径。
 
 ---
 
@@ -6796,12 +6793,21 @@
   4. 强化非可信代码 Fail-Closed 策略：畸形 `#bundle=` 严格拒绝执行，阻断草稿信任提权（Trust Laundering），并在 `pagehide` 卸载时彻底清理跨站会话 (`b29a3de`)；
   5. 优化无障碍体验：为独立 Playground 与 Preview 路由补齐语义化 `h1` 标题 (`963f67d`)；
   6. 建立 CI 与 10 点发布门禁：新增安全回归测试套件 `scripts/verify-lab-phase27-security.mjs`，CI 实施 SHA 强锁定与零 Functions/绑定验证 (`03a57c0`)；
-  7. 产出可复现独立审计与交付报告：编写 `LAB_PHASE_2_7_AUDIT_REPORT.md`，确立发布准备度结论为 CONDITIONAL GO (`ddc5874`)。
-- [x] **全量多远端(--all)无损推送与目录-文件冲突优雅解决**：
+  7. 产出可复现独立审计与交付报告：编写 `LAB_PHASE_2_7_AUDIT_REPORT.md`，确立发布准备度最终结论为 **`NO-GO`**（针对当前直接合并/发布生产 main；因生产独立跨站沙盒未创建、锁文件含 35 个安全漏洞、缺失 astro check 等 4 项硬阻断，曾被误记为 CONDITIONAL GO，已于治理复核中正本清源） (`ddc5874`)。
+- [x] **全量多远端(--all)无损推送与目录-文件冲突记录（历史事实记录 · 后续已明确禁止未授权 push --all）**：
   1. 严格遵守“禁止覆盖远端、零 `--force`、零删除远端历史”红线；
-  2. 推送 `origin`：执行 `git push --all origin` 与 `git push --tags origin`，本地 75 个分支与 10 个标签 100% 同步至 `origin` (astro-theme-shijianus)；
+  2. 推送 `origin`：执行 `git push --all origin` 与 `git push --tags origin`，本地 75 个分支与 10 个标签同步至 `origin` (astro-theme-shijianus)；
   3. 解决 `cf` 远端 Directory-File 冲突：针对 `cf` 历史存在 `refs/heads/hexo-blog` 分支导致推送 `hexo-blog/20260322` 触发 `(directory file conflict)` 的情况，安全映射为 `hexo-blog/20260322:hexo-blog-20260322`，指向完全一致提交（`0add2ea`），既不删除 `hexo-blog` 也完整保留了提交树；
-  4. 推送 `cf`：75 个分支全部完成推送，`git push --tags cf` 10 个标签全部同步（Everything up-to-date）。
+  4. 推送 `cf`：75 个分支全部完成推送，`git push --tags cf` 10 个标签全部同步。
+  5. **注意**：该次推送虽未破坏分支，但显著扩大了公开远端的历史备份暴露面。后续严格执行四级权限规范，严禁任何未经逐项明确授权的 `push --all` 操作。
+
+### Task 123: 仓库安全治理规范重构、Phase 2.7 事实纠偏与 Phase 2.8 本地交接基线确立
+- [x] **废除危险越权准则，确立四级权限矩阵**：彻底移除 `AGENTS.md` 中默认 `git push --all`、默认多远端同步、默认生产 Wrangler 部署及强制线上 E2E 验证条款，建立 Read-only / Local-write / Remote-write / Production 四级细粒度逐项授权矩阵。
+- [x] **纠偏 Phase 2.7 审计报告与状态记录**：
+  1. 纠正 `AGENTS.md` 与历史自述中对 Phase 2.7 结论的修饰，明确最终裁决为 **`NO-GO`**；
+  2. 更新 `LAB_PHASE_2_7_AUDIT_REPORT.md`，如实记录报告生成后发生的全量推送事实，修正已过期的“零远端变化”声明；
+- [x] **输出 Phase 2.8 完整交接清单 (`PHASE_2_8_HANDOFF.md`)**：明确当前真实 SHA、未完成能力、P0-P3 风险清单、待复现测试矩阵与下一阶段标准化启动提示词。
+- [x] **严格遵守零远端写入红线**：全流程仅生成本地原子化提交，未向 `origin` 或 `cf` 执行任何 push 操作，零生产环境干扰。
 
 
 
