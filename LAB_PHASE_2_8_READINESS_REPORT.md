@@ -63,7 +63,7 @@
 | **起始审计基线** | `review/lab-phase-2.7-audit` | `79bfafe` (`79bfafe5a9d787d6d592ee5a3631f043b23b257f`) | 公开审计起点，NO-GO 状态已保留 |
 | **主分支当前** | `main` | `2e92967` (`2e92967072febadd70e03d13bfd1cc6e2207bc55`) | 生产对齐基准，无未授权合流 |
 | **治理移植分支** | `chore/governance-bootstrap` | `892bef0` (`892bef07f529c0069a61207d1e3a983711ac4234`) | 四级权限架构已固化，任务记录已归档 |
-| **Phase 2.8 审查分支** | `review/lab-phase-2.8-readiness` | `82ec46b` (`82ec46b28f9c7e5d3ea8b319444c27db8a7d263d`) | 最新就绪 HEAD，包含全部加固与测试 |
+| **Phase 2.8 审查分支** | `review/lab-phase-2.8-readiness` | `0f2e166` (`0f2e166cafc6258cc611f8bb831cf44bd9d10f1d`) | 最新就绪 HEAD，包含类型检查修复与 CI 跨浏览器同步加固 |
 
 ### 2.2 权限边界与历史授权审计
 
