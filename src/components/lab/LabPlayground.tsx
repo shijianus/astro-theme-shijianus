@@ -72,10 +72,16 @@ function encodeSharePayload(bundle: unknown): string {
 }
 
 function decodeSharePayload(encoded: string): unknown | null {
+  if (!encoded || encoded.length > LAB_SECURITY_LIMITS.MAX_TOTAL_SOURCE_BYTES * 2) {
+    return null;
+  }
   try {
     const base64 = encoded.replace(/-/g, '+').replace(/_/g, '/');
     const pad = base64.length % 4 === 0 ? '' : '='.repeat(4 - (base64.length % 4));
     const binary = atob(base64 + pad);
+    if (binary.length > LAB_SECURITY_LIMITS.MAX_TOTAL_SOURCE_BYTES * 2) {
+      return null;
+    }
     const bytes = new Uint8Array(binary.length);
     for (let i = 0; i < binary.length; i++) {
       bytes[i] = binary.charCodeAt(i);
@@ -85,6 +91,30 @@ function decodeSharePayload(encoded: string): unknown | null {
   } catch {
     return null;
   }
+}
+
+function isUnmodifiedOfficialPresetFiles(slug: unknown, candidateFiles: LabFile[]): boolean {
+  if (typeof slug !== 'string' || !slug) return false;
+  const official = getExperimentBySlug(slug);
+  if (!official || resolveExperimentSourceKind(official.author) !== 'official') {
+    return false;
+  }
+  if (official.files.length !== candidateFiles.length) {
+    return false;
+  }
+  for (let i = 0; i < official.files.length; i++) {
+    const orig = official.files[i];
+    const cand = candidateFiles[i];
+    if (
+      !cand ||
+      orig.name !== cand.name ||
+      orig.language !== cand.language ||
+      orig.content !== cand.content
+    ) {
+      return false;
+    }
+  }
+  return true;
 }
 
 export function LabPlayground({
@@ -569,25 +599,41 @@ export function LabPlayground({
         const rawEncoded = hash.slice('#bundle='.length);
         const decoded = decodeSharePayload(rawEncoded);
         const validated = validateLabPortableBundle(decoded);
+        clearTimers();
+        const rotatedId = createSandboxSessionId();
+        sessionIdRef.current = rotatedId;
+        pendingBridgeSrcDocRef.current = '';
+        codeSourceKindRef.current = 'bundle';
+        setSessionId(rotatedId);
+        setCodeSourceKind('bundle');
+        setSandboxSrcDoc('');
+        setSandboxKey((k) => k + 1);
+
         if (validated.ok && validated.data) {
           const bundle = validated.data;
-          clearTimers();
-          const rotatedId = createSandboxSessionId();
-          sessionIdRef.current = rotatedId;
-          pendingBridgeSrcDocRef.current = '';
-          codeSourceKindRef.current = 'bundle';
-          setSessionId(rotatedId);
           setFiles(bundle.files);
           setActiveFileIdx(0);
-          setCodeSourceKind('bundle');
           setFailClosedReason('');
-          setSandboxSrcDoc('');
+          setRuntimeErrors([]);
           setExecStatus('idle');
           showToast(
             '已加载外部分享代码（禁止自动运行，仅允许在独立跨站沙盒就绪时手动运行）'
           );
           return true;
         }
+
+        // 损坏、超限或非法的 #bundle= 载荷必须强制失败关闭 (Fail-Closed)，严禁回退自动运行默认官方实验
+        const reasonDetail =
+          decoded === null
+            ? 'Base64URL 解码失败或载荷体积超过安全上限'
+            : validated.errors.join(' ') || 'Schema 校验未通过';
+        const failMsg = `[Bundle Fail-Closed] 外部分享链接 (#bundle=) 校验未通过（${reasonDetail}）。安全策略已阻断加载并禁止回退自动运行其他实验。`;
+        setFailClosedReason(failMsg);
+        setRuntimeErrors([{ message: failMsg, timestamp: Date.now() }]);
+        setExecStatus('error');
+        setActiveBottomTab('errors');
+        showToast('安全阻断：外部分享链接载荷无效或超限，已强制失败关闭');
+        return true;
       }
       return false;
     };
@@ -743,10 +789,46 @@ export function LabPlayground({
     };
   }, [clearTimers, dispatchBridgeExecute]);
 
-  // 组件卸载时清理所有定时器
+  // 组件卸载或页面离开 (pagehide) 时立即清理定时器并通知跨站沙盒销毁内部子帧
   useEffect(() => {
-    return () => {
+    const sendTerminateToCrossOrigin = () => {
+      if (
+        isolationModeRef.current === 'cross-origin' &&
+        bridgeReadyAckRef.current &&
+        activeExternalOriginRef.current &&
+        iframeRef.current?.contentWindow
+      ) {
+        try {
+          iframeRef.current.contentWindow.postMessage(
+            {
+              protocol: LAB_SANDBOX_PROTOCOL_VERSION,
+              sessionId: sessionIdRef.current,
+              type: 'TERMINATE_SESSION',
+              payload: {},
+            },
+            activeExternalOriginRef.current
+          );
+        } catch {
+          // ignore cross-frame teardown errors
+        }
+      }
+    };
+
+    const handlePageHide = () => {
       clearTimers();
+      sendTerminateToCrossOrigin();
+    };
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('pagehide', handlePageHide);
+    }
+
+    return () => {
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('pagehide', handlePageHide);
+      }
+      clearTimers();
+      sendTerminateToCrossOrigin();
       if (toastTimerRef.current) {
         window.clearTimeout(toastTimerRef.current);
       }
@@ -880,10 +962,14 @@ export function LabPlayground({
         showToast(`草稿校验失败: ${validated.errors[0] || '格式错误'}`);
         return;
       }
-      const restoredKind: LabCodeSourceKind =
-        parsed.draftOriginKind === 'official'
-          ? 'official'
-          : (validated.data.sourceKind ?? 'imported');
+      // 防信任洗白 (Anti-Trust-Laundering)：仅当草稿的 slug 与全部文件内容与不可变官方预设 100% 一致时才维持 'official'，
+      // 任何经修改或通过 localStorage 注入的代码一律降级为非可信来源 ('imported' / 原非官方等级)，强制受跨站沙盒与 Fail-Closed 约束
+      const isExactOfficial =
+        parsed.draftOriginKind === 'official' &&
+        isUnmodifiedOfficialPresetFiles(parsed.slug, validated.data.files);
+      const restoredKind: LabCodeSourceKind = isExactOfficial
+        ? 'official'
+        : (validated.data.sourceKind ?? 'imported');
       clearTimers();
       pendingBridgeSrcDocRef.current = '';
       codeSourceKindRef.current = restoredKind;
