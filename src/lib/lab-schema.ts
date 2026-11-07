@@ -313,7 +313,8 @@ export function validateLabFiles(files: unknown): LabValidationResult<LabFile[]>
  * 任何外部导入或投稿的实验，其 autoRun 强制重置为 false，externalResources 强制清空，确保零信任默认安全。
  */
 export interface LabPortableBundle {
-  version: 'lab-bundle-v1';
+  version: 'lab-bundle-v1' | 'lab-bundle-v2';
+  schemaVersion?: 'lab-bundle-v2';
   slug: string;
   title: string;
   description: string;
@@ -321,8 +322,19 @@ export interface LabPortableBundle {
   language: LabLanguage;
   files: LabFile[];
   exportedAt: string;
+  contentDigest?: string; // 内容校验摘要 (Content Integrity Digest)：仅用于检测意外截断与传输损坏，绝非身份认证或数字签名凭据
   forkedFrom?: string | null;
   sourceKind?: 'imported' | 'community' | 'bundle';
+}
+
+export function computeBundleContentDigest(files: LabFile[]): string {
+  const serialized = files.map((f) => `${f.name}:${f.language}:${f.content}`).join('|');
+  let hash = 0x811c9dc5;
+  for (let i = 0; i < serialized.length; i++) {
+    hash ^= serialized.charCodeAt(i);
+    hash = Math.imul(hash, 0x01000193);
+  }
+  return `fnv1a-${(hash >>> 0).toString(16).padStart(8, '0')}`;
 }
 
 export function validateLabPortableBundle(input: unknown): LabValidationResult<LabPortableBundle> {
@@ -332,6 +344,20 @@ export function validateLabPortableBundle(input: unknown): LabValidationResult<L
   }
 
   const obj = input as Record<string, unknown>;
+  const rawVersion = typeof obj.schemaVersion === 'string'
+    ? obj.schemaVersion
+    : typeof obj.version === 'string'
+      ? obj.version
+      : 'lab-bundle-v1';
+
+  // 版本判定与显式迁移 (Fail-Closed)
+  if (rawVersion !== 'lab-bundle-v1' && rawVersion !== 'lab-bundle-v2') {
+    return {
+      ok: false,
+      errors: [`未知的实验包版本 "${rawVersion}"，安全策略已实施强制失败关闭 (Fail-Closed)。`],
+    };
+  }
+
   const title = typeof obj.title === 'string' ? obj.title.trim() : '';
   const description = typeof obj.description === 'string' ? obj.description.trim() : '';
   const slugRaw = typeof obj.slug === 'string' ? obj.slug.trim().toLowerCase() : 'custom-experiment';
@@ -369,16 +395,28 @@ export function validateLabPortableBundle(input: unknown): LabValidationResult<L
     return { ok: false, errors };
   }
 
+  // 若存在内容校验摘要，校验传输完整性 (防止意外截断或损坏)
+  const files = filesValidation.data;
+  const computedDigest = computeBundleContentDigest(files);
+  if (typeof obj.contentDigest === 'string' && obj.contentDigest.trim()) {
+    if (obj.contentDigest.trim() !== computedDigest) {
+      errors.push('实验代码内容摘要不匹配，数据可能在传输过程中被意外截断或损坏。');
+      return { ok: false, errors };
+    }
+  }
+
   return {
     ok: true,
     data: {
-      version: 'lab-bundle-v1',
+      version: 'lab-bundle-v2',
+      schemaVersion: 'lab-bundle-v2',
       slug,
       title,
       description,
       category,
       language,
-      files: filesValidation.data,
+      files,
+      contentDigest: computedDigest,
       exportedAt: typeof obj.exportedAt === 'string' ? obj.exportedAt : new Date().toISOString(),
       forkedFrom: typeof obj.forkedFrom === 'string' ? obj.forkedFrom : null,
       sourceKind: isCommunityPayload

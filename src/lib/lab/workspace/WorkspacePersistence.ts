@@ -5,6 +5,7 @@
  */
 import type { LabProject } from '../types.ts';
 import { PortableBundleCodec } from '../PortableBundleCodec.ts';
+import { computeBundleContentDigest, validateLabPortableBundle } from '../../lab-schema.ts';
 import type { LabCodeSourceKind } from '../../lab-sandbox-protocol.ts';
 
 const STORAGE_PREFIX = 'shijianus:lab:draft:';
@@ -69,16 +70,18 @@ export class WorkspacePersistence {
    * 编码便携实验包 (URL-Safe Base64)
    */
   static exportBundle(project: LabProject, sourceKind?: LabCodeSourceKind): string {
+    const cleanFiles = project.files.map((f) => ({
+      name: f.name,
+      language: f.language,
+      content: f.content,
+    }));
     return PortableBundleCodec.encode({
-      version: 'lab-bundle-v1',
-      manifestVersion: '1.0.0',
+      version: 'lab-bundle-v2',
+      schemaVersion: 'lab-bundle-v2',
       slug: project.slug,
       title: project.title,
-      files: project.files.map((f) => ({
-        name: f.name,
-        language: f.language,
-        content: f.content,
-      })),
+      files: cleanFiles,
+      contentDigest: computeBundleContentDigest(cleanFiles as any),
       exportedAt: new Date().toISOString(),
       ...(sourceKind === 'community' ? { sourceKind: 'community' } : {}),
     });
@@ -108,7 +111,7 @@ export class WorkspacePersistence {
   }
 
   /**
-   * 解码 URL Hash 或 Base64 实验包
+   * 解码 URL Hash 或 Base64 实验包 (包含 Schema 校验与显式 v1->v2 迁移)
    */
   static decodeBundle(encoded: string): { ok: boolean; data?: any; errors?: string[] } {
     try {
@@ -116,7 +119,7 @@ export class WorkspacePersistence {
       if (!decoded) {
         return { ok: false, errors: ['便携包数据解析失败或格式损坏'] };
       }
-      return { ok: true, data: decoded };
+      return validateLabPortableBundle(decoded);
     } catch (err: any) {
       return { ok: false, errors: [err?.message || '解码失败'] };
     }

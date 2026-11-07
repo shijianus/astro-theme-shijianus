@@ -426,7 +426,7 @@ export const LabPlayground: React.FC<LabPlaygroundProps> = ({
     setPendingImportBundle(null);
   }, [pendingImportBundle, showToast, tr]);
 
-  // 分享链接
+  // 分享链接：实施 URL 2048 字符安全上限保护
   const handleShareLink = useCallback(async () => {
     const bundle = controllerRef.current?.exportBundle();
     if (!bundle) {
@@ -434,6 +434,16 @@ export const LabPlayground: React.FC<LabPlaygroundProps> = ({
       return;
     }
     const shareUrl = `${window.location.origin}${window.location.pathname}#bundle=${bundle}`;
+    if (shareUrl.length > 2048) {
+      handleExportJson();
+      showToast(
+        tr(
+          '工程内容超出 URL 安全长度限制 (2048 字符)，已自动为您转换为「导出 JSON」离线文件进行分享。',
+          '工程內容超出 URL 安全長度限制 (2048 字元)，已自動為您轉換為「匯出 JSON」離線檔案進行分享。'
+        )
+      );
+      return;
+    }
     try {
       await navigator.clipboard.writeText(shareUrl);
       showToast(
@@ -445,7 +455,7 @@ export const LabPlayground: React.FC<LabPlaygroundProps> = ({
     } catch {
       showToast(tr('无法写入剪贴板，请手动复制 URL', '無法寫入剪貼簿，請手動複製 URL'));
     }
-  }, [showToast, tr]);
+  }, [handleExportJson, showToast, tr]);
 
   // URL Hash 与 Query 同步
   useEffect(() => {
