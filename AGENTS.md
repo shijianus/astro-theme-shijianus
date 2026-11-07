@@ -6814,6 +6814,22 @@
 - [x] **妥善处理 `cf` 远端 D/F 目录-文件冲突**：针对 `cf` 远端历史存在 `refs/heads/hexo-blog` 分支导致推送 `hexo-blog/20260322` 触发 `(directory file conflict)` 的情况，安全映射为 `hexo-blog/20260322:hexo-blog-20260322`，确保本地提交 100% 完整推送到远端无丢失、零冲突报错。
 - [x] **双远端全量分支与标签同步**：全量推送到 `origin` 与 `cf`，并经 `git ls-remote` 实机取证双远端所有分支与标签已 100% 同步。
 
+### Task 125: Astro Theme Shijianus — Lab Phase 2.8 Completion Sprint 全量工程收口与契约验收
+- [x] **纠偏基线与报告修正**：纠正 Phase 2.8 报告中的事实高估与漂移，删除失效陈述，保留 Phase 2.7 NO-GO 判定 (`208336a`)。
+- [x] **工具链与供应链门禁升级**：升级至 Astro 7.4.7、Node 24 LTS，固化 GitHub Actions 为完整 40 位 SHA，建立 `security/npm-audit-exceptions.json` 版本化例外登记，清理 `.deploy_git` 消除 exit 128 (`9942f4e`)。
+- [x] **剔除客户端 AGPL-3.0 传染风险**：将 `@applemusic-like-lyrics/lyric` 替换为自主实现的零依赖 MIT 歌词解析引擎，生成软件许可证清单 (`60f72dd`)。
+- [x] **Workspace 控制层架构重构**：实现 `LabWorkspaceController`、`EditorRegistry` 和 `RuntimeRegistry` 唯一接管状态机、工程持久化与执行生命周期 (`6eda7d7`)。
+- [x] **完成 Browser DOM 运行时适配器**：实现 `BrowserDomRuntime`，支持 cross-origin / opaque 双模态、严格来源验证、双向 Sequence 递增与资源生命周期回收 (`66e9088`)。
+- [x] **真正实现 WebAssembly QuickJS 隔离运行时**：引入 `quickjs-emscripten`，通过 Dedicated Worker + WASM 实现指令预算、内存配额（8MB）、爆栈防护与全局变量纯净化 (`bbbb824`)。
+- [x] **确定性算法追踪运行时**：实现 `CuratedTraceRuntime`，遵循 Schema v1 规范，提供 100% 确定性追踪执行与单步/播放控制 (`cdaa058`)。
+- [x] **可选自托管 LiveCodes 编辑器集成**：特性标志控制、HTTPS 白名单校验、Click-to-Load 待命与双向工程代码同步 (`9d8c7d2`)。
+- [x] **会话状态机与 Sequence 防御强化**：`SessionManager` 严格管理状态跃迁，全面拦截重放、乱序与过期 Session 消息 (`40c21c2`)。
+- [x] **响应式工作台 UX 与移动端适配**：桌面大屏与移动端 390x844 全适配，零横向溢出，支持暗黑模式与键盘快捷键 (`f821807`)。
+- [x] **带版本加固传输协议 v2**：实现 `lab-bundle-v2` 规范，集成 SHA-256 内容摘要、Emoji/UTF-8 往返无损与向前兼容迁移 (`006b4f5`)。
+- [x] **三核跨浏览器全链路端到端验收与水合加固**：解决 SSR/Client 跨站沙盒水合不一致，Chromium、Firefox、WebKit 三核全绿，未捕获 JS 异常数为 0 (`32b4f05`, `a211429`)。
+- [x] **生成证据充分的 Phase 2.8 完成报告**：生成 `LAB_PHASE_2_8_COMPLETION_REPORT.md`，记录 18 项要求结论、全量 Commit SHA、可复现命令集与严格 Level 2 权限边界。
+
+
 
 
 
