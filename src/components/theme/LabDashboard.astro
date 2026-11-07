@@ -1,8 +1,18 @@
 ---
 import { OFFICIAL_LAB_EXPERIMENTS } from '../../data/lab-experiments';
 import { LAB_CATEGORY_META, type LabCategory } from '../../lib/lab-schema';
+import { encodeSafeInlineJson } from '../../lib/lab-sandbox-protocol';
 
 const experiments = OFFICIAL_LAB_EXPERIMENTS;
+const safeExperimentsJson = encodeSafeInlineJson(
+  experiments.map((e) => ({
+    slug: e.slug,
+    title: e.title,
+    subtitle: e.subtitle,
+    principles: e.principles,
+    files: e.files,
+  }))
+);
 const categories = Object.entries(LAB_CATEGORY_META) as Array<
   [LabCategory, { label: string; shortLabel: string; description: string }]
 >;
@@ -581,19 +591,16 @@ const allTags = Array.from(
   </div>
 </section>
 
-<script
-  is:inline
-  define:vars={{
-    serializedExperiments: experiments.map((e) => ({
-      slug: e.slug,
-      title: e.title,
-      subtitle: e.subtitle,
-      principles: e.principles,
-      files: e.files,
-    })),
-  }}
->
+<script type="application/json" id="lab-dashboard-experiments-json" set:html={safeExperimentsJson}></script>
+<script is:inline>
   (() => {
+    const expDataNode = document.getElementById('lab-dashboard-experiments-json');
+    let serializedExperiments = [];
+    try {
+      serializedExperiments = expDataNode ? JSON.parse(expDataNode.textContent || '[]') : [];
+    } catch {
+      serializedExperiments = [];
+    }
     // 1. 星轨模拟器 (保留原有完整逻辑)
     const canvas = document.getElementById('lab-star-canvas');
     if (canvas) {

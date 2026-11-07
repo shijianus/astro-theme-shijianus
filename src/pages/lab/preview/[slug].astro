@@ -7,7 +7,6 @@ import {
 } from '../../../data/lab-experiments';
 import {
   buildIsolatedSandboxSrcDoc,
-  createSandboxSessionId,
   resolveExperimentSourceKind,
   resolveSafeExternalSandboxOrigin,
 } from '../../../lib/lab-sandbox-protocol';
@@ -36,9 +35,12 @@ const rawSandboxOrigin =
 const sandboxResolution = resolveSafeExternalSandboxOrigin(rawSandboxOrigin);
 const safeExternalOrigin = sandboxResolution.enabled ? sandboxResolution.origin || '' : '';
 
-const initialSessionId = createSandboxSessionId();
+// 严禁在静态构建期固化单次 sessionId 或 CSP Nonce；构建期仅写入占位符，每次浏览器访问与重置均使用客户端 CSPRNG 动态签发一次性随机令牌
+const BUILD_SESSION_PLACEHOLDER = '__LAB_RUNTIME_SESSION_ID__';
+const BUILD_NONCE_PLACEHOLDER = 'LAB_RUNTIME_CSP_NONCE_PLACEHOLDER';
 const initialSrcDoc = buildIsolatedSandboxSrcDoc({
-  sessionId: initialSessionId,
+  sessionId: BUILD_SESSION_PLACEHOLDER,
+  cspNonce: BUILD_NONCE_PLACEHOLDER,
   files: experiment.files,
   theme: 'dark',
 });
@@ -57,7 +59,7 @@ const sidebarData = createSidebarData(posts);
   <section
     class="lab-standalone-preview"
     data-preview-slug={experiment.slug}
-    data-session-id={initialSessionId}
+    data-session-id=""
     data-source-kind={sourceKind}
     data-frame-title={`Standalone Sandbox Preview - ${experiment.title}`}
     data-external-sandbox-origin={safeExternalOrigin}
@@ -121,36 +123,95 @@ const sidebarData = createSidebarData(posts);
     const noticeEl = document.getElementById('preview-fallback-banner');
     if (!rootEl || !mountEl || !payloadTpl) return;
 
+    const SESSION_PLACEHOLDER = '__LAB_RUNTIME_SESSION_ID__';
+    const NONCE_PLACEHOLDER = 'LAB_RUNTIME_CSP_NONCE_PLACEHOLDER';
+
     const baseSrcDoc = payloadTpl.getAttribute('data-srcdoc') || '';
-    const sessionId = rootEl.getAttribute('data-session-id') || '';
     const sourceKind = rootEl.getAttribute('data-source-kind') || 'official';
     const frameTitle = rootEl.getAttribute('data-frame-title') || 'Standalone Sandbox Preview';
-    const extOriginRaw = rootEl.getAttribute('data-external-sandbox-origin') || '';
+    const extOriginRaw = (rootEl.getAttribute('data-external-sandbox-origin') || '').trim();
+    let sessionId = '';
     let iframe = null;
+
+    const mintCsprngHex = () => {
+      if (!window.crypto || typeof window.crypto.getRandomValues !== 'function') {
+        return null;
+      }
+      const bytes = new Uint8Array(16);
+      window.crypto.getRandomValues(bytes);
+      return Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('');
+    };
+
+    const rotateSessionId = () => {
+      const hex = mintCsprngHex();
+      if (!hex) return null;
+      sessionId = `lab-sess-${hex}`;
+      rootEl.setAttribute('data-session-id', sessionId);
+      return sessionId;
+    };
 
     const readTheme = () =>
       document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
 
-    const applyThemeToSrcDoc = (doc, theme) =>
-      doc.replace(/<html([^>]*)data-theme="(?:dark|light)"/, `<html$1data-theme="${theme}"`);
+    const buildFreshRuntimeSrcDoc = (theme, activeSessionId) => {
+      const nonceHex = mintCsprngHex();
+      if (!nonceHex || !activeSessionId) return null;
+      const freshNonce = `labnonce${nonceHex}`;
+      return baseSrcDoc
+        .split(SESSION_PLACEHOLDER)
+        .join(activeSessionId)
+        .split(NONCE_PLACEHOLDER)
+        .join(freshNonce)
+        .replace(/<html([^>]*)data-theme="(?:dark|light)"/, `<html$1data-theme="${theme}"`);
+    };
 
-    let hasValidExternalOrigin = false;
-    if (extOriginRaw) {
+    const isBlockedSharedHostname = (hostname) =>
+      hostname === 'epocanvas.com' ||
+      hostname.endsWith('.epocanvas.com') ||
+      hostname === 'epocanvas.tech' ||
+      hostname.endsWith('.epocanvas.tech') ||
+      hostname === 'pvzos.com' ||
+      hostname.endsWith('.pvzos.com') ||
+      hostname === 'shijianus.com' ||
+      hostname.endsWith('.shijianus.com') ||
+      hostname === 'shijianus-blog.pages.dev' ||
+      hostname.endsWith('.shijianus-blog.pages.dev') ||
+      hostname === 'shijianus-github-io.pages.dev' ||
+      hostname.endsWith('.shijianus-github-io.pages.dev') ||
+      hostname === 'shijianus.github.io' ||
+      hostname === 'shijian.qzz.io' ||
+      hostname.endsWith('.shijian.qzz.io') ||
+      hostname === '831511.xyz' ||
+      hostname.endsWith('.831511.xyz');
+
+    let validatedExternalOrigin = '';
+    if (extOriginRaw && !extOriginRaw.includes('*') && !/\s/.test(extOriginRaw)) {
       try {
         const parsed = new URL(extOriginRaw);
+        const hostname = parsed.hostname.toLowerCase();
+        const isLoopback = hostname === 'localhost' || hostname === '127.0.0.1';
+        const hostIsLoopback =
+          window.location.protocol === 'http:' &&
+          (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+        const protoAllowed =
+          parsed.protocol === 'https:' || (parsed.protocol === 'http:' && isLoopback && hostIsLoopback);
         if (
+          protoAllowed &&
+          !parsed.username &&
+          !parsed.password &&
+          (!parsed.pathname || parsed.pathname === '/') &&
+          !parsed.search &&
+          !parsed.hash &&
           parsed.origin !== window.location.origin &&
-          (parsed.protocol === 'https:' ||
-            (parsed.protocol === 'http:' &&
-              window.location.protocol === 'http:' &&
-              (parsed.hostname === 'localhost' || parsed.hostname === '127.0.0.1')))
+          !isBlockedSharedHostname(hostname)
         ) {
-          hasValidExternalOrigin = true;
+          validatedExternalOrigin = parsed.origin;
         }
       } catch (_err) {
-        hasValidExternalOrigin = false;
+        validatedExternalOrigin = '';
       }
     }
+    const hasValidExternalOrigin = Boolean(validatedExternalOrigin);
 
     let useExternalBridge = hasValidExternalOrigin;
     let bridgeAck = false;
@@ -204,13 +265,18 @@ const sidebarData = createSidebarData(posts);
         return;
       }
       useExternalBridge = false;
+      const nextSession = rotateSessionId();
+      const nextDoc = nextSession ? buildFreshRuntimeSrcDoc(readTheme(), nextSession) : null;
+      if (!nextSession || !nextDoc) {
+        mountFailClosed('[Sandbox Fail-Closed] 当前浏览器缺少安全随机数生成器 (CSPRNG)，已拒绝启动沙盒。');
+        return;
+      }
       if (badgeEl) badgeEl.textContent = '🔒 Opaque Fallback 隔离运行中';
       showNotice(
         fallbackReason ||
           'ℹ️ 官方实验提示：当前未配置外部独立跨站沙盒，该受审阅官方实验已回退至本地无 allow-same-origin 的 Opaque srcdoc 强隔离模式运行。',
         false
       );
-      const nextDoc = applyThemeToSrcDoc(baseSrcDoc, readTheme());
       const fresh = document.createElement('iframe');
       fresh.id = 'standalone-sandbox-iframe';
       fresh.title = frameTitle;
@@ -218,6 +284,7 @@ const sidebarData = createSidebarData(posts);
       fresh.setAttribute('referrerpolicy', 'no-referrer');
       fresh.setAttribute('data-testid', 'standalone-preview-iframe');
       fresh.setAttribute('data-isolation-mode', 'opaque-srcdoc');
+      fresh.setAttribute('data-session-id', nextSession);
       fresh.className = 'standalone-sandbox-frame';
       fresh.srcdoc = nextDoc;
       mountEl.innerHTML = '';
@@ -226,6 +293,11 @@ const sidebarData = createSidebarData(posts);
     };
 
     const mountCrossOriginBridge = () => {
+      const nextSession = rotateSessionId();
+      if (!nextSession) {
+        mountFailClosed('[Sandbox Fail-Closed] 当前浏览器缺少安全随机数生成器 (CSPRNG)，已拒绝启动沙盒。');
+        return;
+      }
       useExternalBridge = true;
       bridgeAck = false;
       bridgeSent = false;
@@ -240,10 +312,11 @@ const sidebarData = createSidebarData(posts);
       fresh.setAttribute('referrerpolicy', 'no-referrer');
       fresh.setAttribute('data-testid', 'standalone-preview-iframe');
       fresh.setAttribute('data-isolation-mode', 'cross-origin');
+      fresh.setAttribute('data-session-id', nextSession);
       fresh.className = 'standalone-sandbox-frame';
-      fresh.src = extOriginRaw + '/';
+      fresh.src = validatedExternalOrigin + '/';
       const sendPing = () => {
-        if (bridgeAck || !useExternalBridge) {
+        if (bridgeAck || !useExternalBridge || sessionId !== nextSession) {
           if (pingInterval) {
             clearInterval(pingInterval);
             pingInterval = null;
@@ -252,8 +325,8 @@ const sidebarData = createSidebarData(posts);
         }
         try {
           fresh.contentWindow?.postMessage(
-            { protocol: PROTOCOL, sessionId, type: 'PING', payload: {} },
-            extOriginRaw
+            { protocol: PROTOCOL, sessionId: nextSession, type: 'PING', payload: {} },
+            validatedExternalOrigin
           );
         } catch (_e) {}
       };
@@ -267,29 +340,37 @@ const sidebarData = createSidebarData(posts);
       iframe = fresh;
 
       handshakeTimer = setTimeout(() => {
-        if (!bridgeAck) {
+        if (!bridgeAck && sessionId === nextSession) {
           if (sourceKind === 'official') {
             mountLocalSrcDoc(
-              `ℹ️ 官方实验回退提示：独立跨站沙盒 (${extOriginRaw}) 握手超时，官方预设实验已在明确提示后回退至本地 Opaque srcdoc 强隔离模式。`
+              `ℹ️ 官方实验回退提示：独立跨站沙盒 (${validatedExternalOrigin}) 握手超时，官方预设实验已在明确提示后回退至本地 Opaque srcdoc 强隔离模式。`
             );
           } else {
             mountFailClosed(
-              `🛑 [Sandbox Fail-Closed] 独立跨站沙盒 (${extOriginRaw}) 不可达，非官方实验禁止降级执行，已强制失败关闭。`
+              `🛑 [Sandbox Fail-Closed] 独立跨站沙盒 (${validatedExternalOrigin}) 不可达，非官方实验禁止降级执行，已强制失败关闭。`
             );
           }
         }
       }, 4500);
     };
 
-    window.addEventListener('message', (evt) => {
+    const handleInboundMessage = (evt) => {
       if (!useExternalBridge || !iframe || evt.source !== iframe.contentWindow) return;
-      if (evt.origin !== extOriginRaw || !evt.data || evt.data.protocol !== PROTOCOL) return;
+      if (evt.origin !== validatedExternalOrigin || !evt.data || evt.data.protocol !== PROTOCOL) return;
 
-      if (evt.data.type === 'SANDBOX_BRIDGE_READY' && !bridgeSent) {
+      if (
+        evt.data.type === 'SANDBOX_BRIDGE_READY' &&
+        !bridgeSent &&
+        (evt.data.sessionId === sessionId || evt.data.sessionId === '__bridge_init__')
+      ) {
+        const themedDoc = buildFreshRuntimeSrcDoc(readTheme(), sessionId);
+        if (!themedDoc) {
+          mountFailClosed('[Sandbox Fail-Closed] 无法签发一次性 CSP Nonce，已阻断沙盒运行。');
+          return;
+        }
         bridgeAck = true;
         bridgeSent = true;
         clearBridgeTimers();
-        const themedDoc = applyThemeToSrcDoc(baseSrcDoc, readTheme());
         iframe.contentWindow?.postMessage(
           {
             protocol: PROTOCOL,
@@ -297,13 +378,14 @@ const sidebarData = createSidebarData(posts);
             type: 'EXECUTE_CODE',
             payload: { srcDoc: themedDoc },
           },
-          extOriginRaw
+          validatedExternalOrigin
         );
       } else if (evt.data.type === 'SANDBOX_READY' && evt.data.sessionId === sessionId) {
         bridgeAck = true;
         clearBridgeTimers();
       }
-    });
+    };
+    window.addEventListener('message', handleInboundMessage);
 
     if (sourceKind !== 'official') {
       // 非官方代码严禁自动执行
@@ -320,7 +402,7 @@ const sidebarData = createSidebarData(posts);
       const nextTheme = readTheme();
       if (iframe && iframe.contentWindow) {
         if (useExternalBridge && !bridgeAck) return;
-        const target = useExternalBridge ? extOriginRaw : '*';
+        const target = useExternalBridge ? validatedExternalOrigin : '*';
         try {
           iframe.contentWindow.postMessage(
             {
@@ -338,6 +420,23 @@ const sidebarData = createSidebarData(posts);
       attributes: true,
       attributeFilter: ['data-theme'],
     });
+
+    const cleanupStandalonePreview = () => {
+      clearBridgeTimers();
+      themeObs.disconnect();
+      window.removeEventListener('message', handleInboundMessage);
+      if (useExternalBridge && bridgeAck && validatedExternalOrigin && iframe?.contentWindow && sessionId) {
+        try {
+          iframe.contentWindow.postMessage(
+            { protocol: PROTOCOL, sessionId, type: 'TERMINATE_SESSION', payload: {} },
+            validatedExternalOrigin
+          );
+        } catch (_e) {}
+      }
+      if (mountEl) mountEl.innerHTML = '';
+      iframe = null;
+    };
+    window.addEventListener('pagehide', cleanupStandalonePreview, { once: true });
 
     if (reloadBtn) {
       reloadBtn.addEventListener('click', () => {
