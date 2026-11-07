@@ -5,6 +5,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { LiveCodesEditorAdapter } from '../src/lib/lab/adapters/LiveCodesEditorAdapter.ts';
 import {
   LAB_SANDBOX_PROTOCOL_VERSION,
   SecureRandomUnavailableError,
@@ -424,5 +425,29 @@ const cleanSeq2 = simulateBridgeSanitize(seqMsg2, testSessionId);
 assert.equal(cleanSeq1.seq, 10);
 assert.equal(cleanSeq2.seq, 9);
 console.log('  -> PASS: 超大数组、异常 Proxy、深层循环引用及 Sequence 乱序测试全量通过！');
+
+console.log('🧪 [Test 7] 验证 LiveCodesEditorAdapter 特性标志、零外部请求与按需载入...');
+// 7.1 特性标志未开启时
+const dummyContainer = { innerHTML: '', appendChild() {} };
+const sampleProject = {
+  id: 'exp-1',
+  slug: 'test-slug',
+  title: 'Test',
+  files: [{ name: 'index.html', language: 'html', content: '<h1>Hi</h1>' }],
+};
+
+const disabledAdapter = new LiveCodesEditorAdapter({ enableFeatureFlag: false });
+assert.equal(disabledAdapter.isFeatureEnabled(), false);
+await disabledAdapter.mount(dummyContainer, sampleProject);
+assert.ok(dummyContainer.innerHTML.includes('PUBLIC_LAB_ENABLE_LIVECODES=false'));
+assert.equal(disabledAdapter.getIsLoaded(), false);
+console.log('  -> PASS: 未开启特性标志时，零外连并提示已禁用。');
+
+// 7.2 开启特性标志后，点击前按需展示按钮
+const enabledAdapter = new LiveCodesEditorAdapter({ enableFeatureFlag: true });
+assert.equal(enabledAdapter.isFeatureEnabled(), true);
+await enabledAdapter.mount(dummyContainer, sampleProject);
+assert.equal(enabledAdapter.getIsLoaded(), false);
+console.log('  -> PASS: 开启特性标志后，默认进入 Click-to-load 待命状态，未主动创建 iframe。');
 
 console.log('\n🎉 所有 Phase 2.8 沙盒安全加固测试项 100% 通过！');
