@@ -13,7 +13,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import assert from 'node:assert/strict';
-import yaml from 'js-yaml';
+import * as yaml from 'js-yaml';
 import { chromium } from 'playwright';
 
 const __filename = fileURLToPath(import.meta.url);

@@ -12,7 +12,7 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import yaml from 'js-yaml';
+import * as yaml from 'js-yaml';
 import { fetchFeedSafely, normalizeDate } from '../src/lib/feed-parser.ts';
 
 const __filename = fileURLToPath(import.meta.url);

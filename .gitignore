@@ -3,6 +3,10 @@ dist/
 # generated types
 .astro/
 
+# gitlink & deploy relics
+.deploy_git/
+.deploy_git
+
 # dependencies
 node_modules/
 
