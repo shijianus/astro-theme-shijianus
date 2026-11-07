@@ -1060,8 +1060,12 @@ async function main() {
   assert.ok(sandboxHeaders['Content-Security-Policy']?.includes("connect-src 'none'"));
   assert.ok(sandboxHeaders['Content-Security-Policy']?.includes("worker-src 'none'"));
   assert.ok(sandboxHeaders['Content-Security-Policy']?.includes("frame-src 'self' blob:"));
-  assert.ok(sandboxHeaders['Content-Security-Policy']?.includes('frame-ancestors https://blog.epocanvas.com'));
-  assert.ok(sandboxHeaders['Content-Security-Policy']?.includes('https://*.shijianus-blog.pages.dev'));
+  assert.ok(sandboxHeaders['Content-Security-Policy']?.includes('frame-ancestors https://blog.epocanvas.com;'));
+  assert.equal(
+    sandboxHeaders['Content-Security-Policy']?.includes('shijianus-blog.pages.dev'),
+    false,
+    '生产默认态 sandbox-runner/_headers 严禁放行宽泛 Preview 子域 (*.shijianus-blog.pages.dev)，仅允许 --env staging 预发布打包注入'
+  );
   assert.equal(
     sandboxHeaders['Content-Security-Policy']?.includes('localhost'),
     false,

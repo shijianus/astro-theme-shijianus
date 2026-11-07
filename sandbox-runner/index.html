@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh-CN" data-sandbox-env="production">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -38,15 +38,31 @@
       var mountEl = document.getElementById('frame-mount');
       var innerFrame = document.getElementById('inner-runner');
 
+      function isStagingSandboxRuntime() {
+        var envAttr = document.documentElement.getAttribute('data-sandbox-env');
+        var hostName = window.location.hostname;
+        return (
+          envAttr === 'staging' &&
+          (hostName === 'epocanvas-lab-sandbox-staging.pages.dev' ||
+            /^[a-z0-9-]+\.epocanvas-lab-sandbox-staging\.pages\.dev$/.test(hostName))
+        );
+      }
+
       function isAllowedHostOrigin(origin) {
         if (typeof origin !== 'string' || !origin) return false;
         if (origin === window.location.origin) return false;
         if (window.location.protocol === 'https:') {
-          return (
-            origin === 'https://blog.epocanvas.com' ||
-            origin === 'https://shijianus-blog.pages.dev' ||
-            /^https:\/\/[a-z0-9-]+\.shijianus-blog\.pages\.dev$/.test(origin)
-          );
+          if (origin === 'https://blog.epocanvas.com') {
+            return true;
+          }
+          // 仅当预发布沙盒实例显式标记为 staging 且运行在 staging 专用域名时，允许主站 Preview 子域嵌入调试
+          if (isStagingSandboxRuntime()) {
+            return (
+              origin === 'https://shijianus-blog.pages.dev' ||
+              /^https:\/\/[a-z0-9-]+\.shijianus-blog\.pages\.dev$/.test(origin)
+            );
+          }
+          return false;
         }
         // 仅当桥接器本身运行于本地 HTTP 回环地址时允许本地开发/多 Origin 验收端口
         var hostName = window.location.hostname;
@@ -100,10 +116,8 @@
           var reqSessionId = typeof event.data.sessionId === 'string' ? event.data.sessionId.slice(0, 128) : '';
           if (!reqSessionId) return;
 
-          activeHostOrigin = event.origin;
-
           if (cmdType === 'PING') {
-            activeSessionId = reqSessionId;
+            // 探针仅回执当前桥接可达状态，绝不覆盖正在运行会话的 activeSessionId 或 activeHostOrigin
             window.parent.postMessage(
               {
                 protocol: PROTOCOL,
@@ -111,14 +125,15 @@
                 type: 'SANDBOX_BRIDGE_READY',
                 payload: {}
               },
-              activeHostOrigin
+              event.origin
             );
             return;
           }
 
           if (cmdType === 'TERMINATE_SESSION') {
-            if (activeSessionId === reqSessionId) {
+            if (activeSessionId && activeSessionId === reqSessionId && activeHostOrigin === event.origin) {
               activeSessionId = null;
+              activeHostOrigin = null;
               forwardedCount = 0;
               recreateInnerFrame('');
             }
@@ -126,11 +141,18 @@
           }
 
           if (cmdType === 'SET_THEME') {
-            if (innerFrame && innerFrame.contentWindow && event.data.payload) {
+            if (
+              activeSessionId &&
+              activeSessionId === reqSessionId &&
+              activeHostOrigin === event.origin &&
+              innerFrame &&
+              innerFrame.contentWindow &&
+              event.data.payload
+            ) {
               innerFrame.contentWindow.postMessage(
                 {
                   protocol: PROTOCOL,
-                  sessionId: activeSessionId || reqSessionId,
+                  sessionId: activeSessionId,
                   type: 'SET_THEME',
                   payload: { theme: event.data.payload.theme === 'dark' ? 'dark' : 'light' }
                 },
@@ -146,6 +168,7 @@
             typeof event.data.payload.srcDoc === 'string' &&
             event.data.payload.srcDoc.length <= MAX_SRCDOC_CHARS
           ) {
+            activeHostOrigin = event.origin;
             activeSessionId = reqSessionId;
             forwardedCount = 0;
             recreateInnerFrame(event.data.payload.srcDoc);
