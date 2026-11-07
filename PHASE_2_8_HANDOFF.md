@@ -6,16 +6,16 @@
 
 ## 1. 当前 Git 状态与引用基线 (Exact Git State)
 
-- **当前审查分支**：[`review/lab-phase-2.7-audit`](file:///home/shijian/projects/shijianus-blog)
+- **当前审查分支**：[`review/lab-phase-2.7-audit`](.)
 - **基线祖先链**：`main` (`2e92967`) -> `review/lab-phase-2.5` (`4c8c0ea`) -> `review/lab-phase-2.7-audit`
 - **远端当前状态**：
   - `origin/main` & `cf/main`：`2e92967072febadd70e03d13bfd1cc6e2207bc55`（严格同步，零修改）
-  - `origin/review/lab-phase-2.7-audit` & `cf/review/lab-phase-2.7-audit`：`bd7216252657102ccee208ebc983551c63c4a9d5`
-- **本轮本地治理与交接提交**：
+  - `origin/review/lab-phase-2.7-audit` & `cf/review/lab-phase-2.7-audit`：`79bfafe5a9d787d6d592ee5a3631f043b23b257f`（经 Task 124 明确授权同步一致）
+- **基线治理与交接提交链**：
   1. `37a2fa0` `chore(governance): establish tiered authorization matrix, remove default push-all and prod deploy`
   2. `2d622ca` `docs(lab-audit): correct post-audit remote push status and re-affirm Phase 2.7 NO-GO decision`
   3. `4b8c78e` `docs(lab-handoff): add Phase 2.8 architecture, risk matrix, and release readiness handoff specifications`
-  4. `[当前提交]` `docs(agents): log Task 124 authorized full push to origin and cf`
+  4. `79bfafe` `docs(agents): log Task 124 authorized full push to origin and cf`
 - **工作区状态**：干净（`nothing to commit, working tree clean`）。
 
 ---
@@ -54,26 +54,25 @@ flowchart TD
 
 ### 核心路径清单
 - **页面路由**：
-  - [`src/pages/lab/index.astro`](file:///home/shijian/projects/shijianus-blog/src/pages/lab/index.astro)
-  - [`src/pages/lab/[slug].astro`](file:///home/shijian/projects/shijianus-blog/src/pages/lab/[slug].astro)
-  - [`src/pages/lab/playground.astro`](file:///home/shijian/projects/shijianus-blog/src/pages/lab/playground.astro)
-  - [`src/pages/lab/preview/[slug].astro`](file:///home/shijian/projects/shijianus-blog/src/pages/lab/preview/[slug].astro)
+  - [`src/pages/lab/index.astro`](src/pages/lab/index.astro)
+  - [`src/pages/lab/[slug].astro`](src/pages/lab/[slug].astro)
+  - [`src/pages/lab/playground.astro`](src/pages/lab/playground.astro)
+  - [`src/pages/lab/preview/[slug].astro`](src/pages/lab/preview/[slug].astro)
 - **组件与核心逻辑**：
-  - [`src/components/lab/LabPlayground.tsx`](file:///home/shijian/projects/shijianus-blog/src/components/lab/LabPlayground.tsx)
-  - [`src/components/lab/LabExecutionVisualizer.tsx`](file:///home/shijian/projects/shijianus-blog/src/components/lab/LabExecutionVisualizer.tsx)
-  - [`src/lib/lab-schema.ts`](file:///home/shijian/projects/shijianus-blog/src/lib/lab-schema.ts)
-  - [`src/lib/lab-sandbox-protocol.ts`](file:///home/shijian/projects/shijianus-blog/src/lib/lab-sandbox-protocol.ts)
-  - [`src/lib/lab-tracer.ts`](file:///home/shijian/projects/shijianus-blog/src/lib/lab-tracer.ts)
+  - [`src/components/lab/LabPlayground.tsx`](src/components/lab/LabPlayground.tsx)
+  - [`src/components/lab/LabExecutionVisualizer.tsx`](src/components/lab/LabExecutionVisualizer.tsx)
+  - [`src/lib/lab-schema.ts`](src/lib/lab-schema.ts)
+  - [`src/lib/lab-sandbox-protocol.ts`](src/lib/lab-sandbox-protocol.ts)
+  - [`src/lib/lab-tracer.ts`](src/lib/lab-tracer.ts)
 - **沙盒运行端**：
-  - [`sandbox-runner/index.html`](file:///home/shijian/projects/shijianus-blog/sandbox-runner/index.html)
-  - [`sandbox-runner/_headers`](file:///home/shijian/projects/shijianus-blog/sandbox-runner/_headers)
-  - [`sandbox-runner/404.html`](file:///home/shijian/projects/shijianus-blog/sandbox-runner/404.html)
+  - [`sandbox-runner/index.html`](sandbox-runner/index.html)
+  - [`sandbox-runner/_headers`](sandbox-runner/_headers)
+  - [`sandbox-runner/404.html`](sandbox-runner/404.html)
 - **部署与测试脚本**：
-  - [`scripts/deploy-lab-sandbox.mjs`](file:///home/shijian/projects/shijianus-blog/scripts/deploy-lab-sandbox.mjs)
-  - [`scripts/verify-lab-platform.mjs`](file:///home/shijian/projects/shijianus-blog/scripts/verify-lab-platform.mjs)
-  - [`scripts/verify-lab-cloudflare-preview.mjs`](file:///home/shijian/projects/shijianus-blog/scripts/verify-lab-cloudflare-preview.mjs)
-  - [`scripts/verify-lab-release-gate.mjs`](file:///home/shijian/projects/shijianus-blog/scripts/verify-lab-release-gate.mjs)
-  - [`scripts/verify-lab-phase27-security.mjs`](file:///home/shijian/projects/shijianus-blog/scripts/verify-lab-phase27-security.mjs)
+  - [`scripts/deploy-lab-sandbox.mjs`](scripts/deploy-lab-sandbox.mjs)
+  - [`scripts/verify-lab-platform.mjs`](scripts/verify-lab-platform.mjs)
+  - [`scripts/verify-lab-cloudflare-preview.mjs`](scripts/verify-lab-cloudflare-preview.mjs)
+  - [`scripts/verify-lab-release-gate.mjs`](scripts/verify-lab-release-gate.mjs)
 
 ---
 
@@ -107,12 +106,12 @@ flowchart TD
 
 - [ ] **Adapter 架构解耦重构 (Architecture Decoupling)**：
   - 定义统一接口：`LabEditorAdapter` 与 `LabRuntimeAdapter`；
-  - 拆分巨型组件 `LabPlayground.tsx`（当前接近 1000 行），将编辑器、状态机、控制台、网络握手彻底解耦；
+  - 拆分巨型组件 `LabPlayground.tsx`（实测 1,776 行，历史自述误记为 1,000 行）、`src/lib/lab-schema.ts`（实测 2,800 行）与 `src/lib/lab-sandbox-protocol.ts`（实测 1,065 行），将编辑器、状态机、控制台、网络握手彻底解耦；
   - 现有轻量编辑器提取为 `LiteEditorAdapter`；
   - 现有沙盒运行器提取为 `BrowserDomRuntime`；
   - 现有执行追踪器提取为 `CuratedTraceRuntime`。
 - [ ] **清除不可预测伪随机降级 (Eliminate Math.random Fallback)**：
-  - [`src/lib/lab-sandbox-protocol.ts:284`](file:///home/shijian/projects/shijianus-blog/src/lib/lab-sandbox-protocol.ts#L284) 中的 `createRandomToken` 仍保留 `Math.random()` 降级通道；
+  - [`src/lib/lab-sandbox-protocol.ts:284`](src/lib/lab-sandbox-protocol.ts#L284) 中的 `createRandomToken` 仍保留 `Math.random()` 降级通道；
   - Phase 2.8 必须强制要求：当 `crypto.getRandomValues` 或 `crypto.randomUUID` 不可用时，**直接 Fail-Closed 拒绝运行非可信代码**，绝不降级。
 - [ ] **postMessage 运行时 Schema 校验 (Runtime Payload Schema)**：
   - 当前 postMessage 依赖基础类型断言，缺乏严格的运行时 Schema 校验库；
@@ -122,9 +121,10 @@ flowchart TD
   - **QuickJS-Emscripten**：完成纯 JavaScript 算法运行的内存与执行超时硬抢占技术原型验证；
   - **执行追踪器定位**：在文档中明确固化其仅适用于预定义的“有限教学模型”，非全功能 JS 调试器。
 - [ ] **供应链与类型系统补齐 (Supply Chain & Types)**：
-  - 清理 `yarn.lock` 漂移，锁死唯一包管理器为 `npm`；
-  - 修复 `package-lock.json` 中的 35 个安全漏洞（包括升级 `astro` 至安全的 6.x 最新版）；
-  - 安装 `typescript` 与 `@astrojs/check`，彻底打通 `npx astro check` 静态类型门禁。
+  - 清理 `yarn.lock` 漂移，增加 `packageManager` 字段固定 npm 版本，锁死唯一包管理器为 `npm`；
+  - 升级 Astro 及官方生态：最低 Astro >= 7.2.8，推荐升级至 Astro 7.4.7 或当前核实的更新稳定版本，并同步升级 `@astrojs/mdx`、`@astrojs/react`、`@astrojs/node`；
+  - 重新核验并修复当前 35 个已知漏洞（含 2 Critical / 27 High），消除 `astro <= 7.3.1` 与 `dompurify <= 3.4.16` 风险；
+  - 安装 `typescript` 与 `@astrojs/check`，配置 `npm run check` 并在 CI 与发布门禁中彻底打通静态类型检查。
 - [ ] **Cloudflare 独立沙盒生产部署 (需明确授权)**：
   - 创建独立的 Cloudflare Pages 生产沙盒项目 `epocanvas-lab-sandbox`，配置独立 eTLD+1 域名，消除 HTTP 404 硬阻断。
 
@@ -136,13 +136,13 @@ flowchart TD
 | :--- | :--- | :--- | :--- | :--- |
 | **P0 (已阻断)** | 非可信代码逃逸与越权生产部署 | `AGENTS.md` | 全局治理 | **已修复**：删除自动部署规则，确立四级权限授权矩阵。 |
 | **P1** | 生产跨站沙盒在 Cloudflare 不存在（HTTP 404） | 云端边缘 / Pages API | 生产环境 | **硬阻断**：缺少物理隔离沙盒。生产环境必须保持 Fail-Closed 禁止非可信代码运行。需用户授权创建项目。 |
-| **P1** | 依赖锁文件存在 35 个已知漏洞 (2 Critical, 27 High) | `package-lock.json`, `package.json` | 供应链安全 | **硬阻断**：受 `astro@6.1.3` 及 `mermaid -> dompurify` 漏洞影响。Phase 2.8 需在单一 commit 中升级修复。 |
-| **P1** | 安全 Token 存在 `Math.random` 降级通路 | [`src/lib/lab-sandbox-protocol.ts:284`](file:///home/shijian/projects/shijianus-blog/src/lib/lab-sandbox-protocol.ts#L284) | 凭证防伪造 | **待修复**：删除降级代码，Web Crypto 缺失时立即抛错中断。 |
+| **P1** | 依赖锁文件存在 35 个已知漏洞 (2 Critical, 27 High) | `package-lock.json`, `package.json` | 供应链安全 | **硬阻断**：历史 Phase 2.7 记录 35 个漏洞；Phase 2.8 基线实测确认仍存在 35 个漏洞（2 Critical, 27 High, 4 Moderate, 2 Low；`--omit=dev` 存在 29 个）。需升级至安全 Astro 7.4.7+ 彻底修复。 |
+| **P1** | 安全 Token 存在 `Math.random` 降级通路 | [`src/lib/lab-sandbox-protocol.ts:284`](src/lib/lab-sandbox-protocol.ts#L284) | 凭证防伪造 | **待修复**：删除降级代码，Web Crypto 缺失时立即抛错中断。 |
 | **P1** | 53 个 scratch 文件与历史分支暴露 | `scratch/`, 远端 `cf` 仓库 | 仓库历史 | **待清理**：按授权从跟踪树移除 `scratch/` 文件；清理公开远端冗余备份分支。 |
 | **P2** | 孤立 gitlink 缺失 `.gitmodules` | `.deploy_git` (模式 160000) | Git 完整性 | **待修复**：运行 `git rm --cached .deploy_git` 移除无效 gitlink。 |
 | **P2** | 深递归、ReDoS 与超大内存不可抢占 | 浏览器 DOM 运行时 | 客户端可用性 | **设计限制**：无法靠静态 AST 插桩解决，依赖跨站沙盒进程隔离与 iframe 强制卸载机制。 |
 | **P2** | 类型检查处于 BLOCKED 状态 | `package.json` | 静态质量 | **待打通**：未安装 `@astrojs/check`，无法执行 `astro check`。 |
-| **P3** | `LabPlayground.tsx` 巨型组件维护风险 | [`src/components/lab/LabPlayground.tsx`](file:///home/shijian/projects/shijianus-blog/src/components/lab/LabPlayground.tsx) | 架构可维护性 | **重构待办**：通过 Adapter 模式拆分逻辑与渲染层。 |
+| **P3** | `LabPlayground.tsx` 巨型组件维护风险 | [`src/components/lab/LabPlayground.tsx`](src/components/lab/LabPlayground.tsx) | 架构可维护性 | **重构待办**：`LabPlayground.tsx` 达 1,776 行，`lab-schema.ts` 达 2,800 行；通过 Adapter 模式拆分逻辑与渲染层。 |
 
 ---
 
@@ -164,7 +164,6 @@ flowchart TD
    ```bash
    npm run test:brand
    npm run test:lab:gate
-   node scripts/verify-lab-phase27-security.mjs
    ```
 4. **本地三核实机浏览器测试**：
    ```bash
@@ -200,7 +199,7 @@ flowchart TD
 
 本轮目标：
 1. 检出/创建本地独立分支 review/lab-phase-2.8-readiness（基于当前 HEAD）；
-2. 修复供应链与锁文件：清理 yarn.lock，更新 package.json / package-lock.json 消除 Critical/High 漏洞，安装 typescript 与 @astrojs/check；
+2. 修复供应链与锁文件：清理 yarn.lock，升级至安全 Astro 7.4.7+，更新 package.json / package-lock.json 消除 Critical/High 漏洞，安装 typescript 与 @astrojs/check；
 3. 执行 npx astro check、npm run build 与安全发布门禁；
 4. 架构重构：基于 Adapter 模式拆分 LabPlayground.tsx（LiteEditorAdapter, BrowserDomRuntime, CuratedTraceRuntime）；
 5. 彻底删除 lab-sandbox-protocol.ts 中的 Math.random 回退，确立 Web Crypto 缺失时的 Fail-Closed 机制；

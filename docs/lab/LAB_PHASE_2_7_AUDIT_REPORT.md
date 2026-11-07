@@ -35,7 +35,7 @@
 3. `[666edb3]` 修复 `/lab/preview/[slug]/` 静态固化 Nonce/Session 问题，改为每次运行客户端 `crypto.getRandomValues` 动态签发一次性 128-bit `sessionId` 与 `cspNonce`；补齐 `SANDBOX_BRIDGE_READY` 的 `sessionId` 校验与主站全域名后缀黑名单；移除 `LabDashboard.astro` 中唯一残留的 `define:vars`。
 4. `[b29a3de]` 修复损坏/超限 `#bundle=` 静默回退自动执行 `official` 默认实验的问题（改为直接进入 `Fail-Closed` 阻断态）；对 `localStorage` 草稿增加逐文件字节级官方基线核对，彻底封堵伪造 `draftOriginKind: "official"` 的信任洗白路径；新增 `pagehide` 跨站沙盒 `DISPOSE_SESSION` 清理。
 5. `[963f67d]` 修复无障碍审计发现的 `/lab/playground/` 与 `/lab/preview/[slug]/` 缺失语义化 `<h1>` 标题缺陷。
-6. `[03a57c0]` 扩展三浏览器回归套件、修正无外部 IPv6 Linux 容器下 Firefox Preview DNS 解析配置、新增 10 项自动化发布门禁脚本 [verify-lab-release-gate.mjs](file:///home/shijian/projects/shijianus-blog/scripts/verify-lab-release-gate.mjs) 及最小权限 + 40 位 Commit SHA 固定的 CI 工作流 [lab-ci-gate.yml](file:///home/shijian/projects/shijianus-blog/.github/workflows/lab-ci-gate.yml)。
+6. `[03a57c0]` 扩展三浏览器回归套件、修正无外部 IPv6 Linux 容器下 Firefox Preview DNS 解析配置、新增 10 项自动化发布门禁脚本 [verify-lab-release-gate.mjs](../../scripts/verify-lab-release-gate.mjs) 及最小权限 + 40 位 Commit SHA 固定的 CI 工作流 [lab-ci-gate.yml](../../.github/workflows/lab-ci-gate.yml)。
 
 ---
 
@@ -190,7 +190,7 @@
 
 ## 3. Architecture Review（完整代码架构审计）
 
-> 审计注意：历史文档提及的 `LAB_SECURITY.md`、`LAB_DEPLOYMENT.md`、`LAB_TEST_REPORT.md` 在实际仓库中并不位于根目录，而位于 `docs/lab/` 子目录（[LAB_SECURITY.md](file:///home/shijian/projects/shijianus-blog/docs/lab/LAB_SECURITY.md)、[LAB_DEPLOYMENT.md](file:///home/shijian/projects/shijianus-blog/docs/lab/LAB_DEPLOYMENT.md)、[LAB_TEST_REPORT.md](file:///home/shijian/projects/shijianus-blog/docs/lab/LAB_TEST_REPORT.md)）。以下架构关系全部依据实际源代码还原。
+> 审计注意：历史文档提及的 `LAB_SECURITY.md`、`LAB_DEPLOYMENT.md`、`LAB_TEST_REPORT.md` 在实际仓库中并不位于根目录，而位于 `docs/lab/` 子目录（[LAB_SECURITY.md](../../docs/lab/LAB_SECURITY.md)、[LAB_DEPLOYMENT.md](../../docs/lab/LAB_DEPLOYMENT.md)、[LAB_TEST_REPORT.md](../../docs/lab/LAB_TEST_REPORT.md)）。以下架构关系全部依据实际源代码还原。
 
 ```mermaid
 flowchart TD
@@ -232,42 +232,42 @@ flowchart TD
 
 ### 3.1 九大子系统真实架构关系
 
-1. **Astro 主站（[astro.config.mjs](file:///home/shijian/projects/shijianus-blog/astro.config.mjs)、`src/pages/lab/`）**：
+1. **Astro 主站（[astro.config.mjs](../../astro.config.mjs)、`src/pages/lab/`）**：
    - 采用 `BLOG_BUILD_TARGET=static` 构建为纯静态 HTML + 客户端 React Island（`@astrojs/react`），同时在 Cloudflare Pages 上挂载 `functions/` 边缘中间件与业务 API（评论 D1、打赏 Stripe、翻译 AI 等）。
    - Lab 共暴露 4 类静态路由：`/lab/`（实验广场）、`/lab/[slug]/`（6 个静态生成详情页）、`/lab/playground/`（代码工坊）、`/lab/preview/[slug]/`（6 个轻量独立预览页）。
-2. **Lab 数据层（[lab-experiments.ts](file:///home/shijian/projects/shijianus-blog/src/data/lab-experiments.ts)、[lab-schema.ts](file:///home/shijian/projects/shijianus-blog/src/lib/lab-schema.ts)）**：
+2. **Lab 数据层（[lab-experiments.ts](../../src/data/lab-experiments.ts)、[lab-schema.ts](../../src/lib/lab-schema.ts)）**：
    - 官方实验由编译期常量 `OFFICIAL_LAB_EXPERIMENTS` 提供（星空轨迹、翼尖涡流、Web Audio 触感、汇率换算、算法追踪、Verlet 绳索物理共 6 项），`sourceKind` 固定为 `'official'`。
    - 外部输入支持 `lab-bundle-v1` JSON 文件导入（大小上限 `512KB`、文件数上限 `8`、单文件上限 `128KB`、总源码上限 `256KB`）以及 URL Hash `#bundle=` Base64URL 分享载荷（编码上限 `32KB`）。所有外部导入与 `#bundle=` 均在校验层被强制标记为非官方来源（`'imported'` / `'community'` / `'bundle'`）。
-3. **实验编辑与预览（[LabPlayground.tsx](file:///home/shijian/projects/shijianus-blog/src/components/lab/LabPlayground.tsx)、[LabDashboard.astro](file:///home/shijian/projects/shijianus-blog/src/components/theme/LabDashboard.astro)、[preview/[slug].astro](file:///home/shijian/projects/shijianus-blog/src/pages/lab/preview/[slug].astro)）**：
+3. **实验编辑与预览（[LabPlayground.tsx](../../src/components/lab/LabPlayground.tsx)、[LabDashboard.astro](../../src/components/theme/LabDashboard.astro)、[preview/[slug].astro](../../src/pages/lab/preview/[slug].astro)）**：
    - 零首屏重型编辑器（未使用 Monaco/CodeMirror），采用轻量受控 `<textarea>` + 行号同步列，显式挂载 `ignore-opencc` 与 `data-no-translate="true"` 防止 OpenCC 简繁转换破坏代码标识符。
    - 维护四元来源分类 `CodeSourceKind = 'official' | 'imported' | 'community' | 'bundle'` 与三级降级策略 `resolveSandboxDegradationPolicy`：
      - `official`：跨站沙盒在线时运行于 `cross-origin`；未配置或握手超时时展示明确 `official-fallback-banner` 横幅并回退至主站本地 `opaque-srcdoc`（`sandbox="allow-scripts"`，无 `allow-same-origin`）。
      - `imported` / `community` / `bundle`：**严禁自动运行**，且当跨站沙盒未配置、非法或 3 秒（预览网 4.5 秒）握手超时时强制触发 **Fail-Closed**，销毁 iframe 并展示阻断告警。
-4. **代码转换与执行追踪（[lab-schema.ts](file:///home/shijian/projects/shijianus-blog/src/lib/lab-schema.ts#L2080-L2490)、[lab-tracer.ts](file:///home/shijian/projects/shijianus-blog/src/lib/lab-tracer.ts)、[ExecutionVisualizer.tsx](file:///home/shijian/projects/shijianus-blog/src/components/lab/ExecutionVisualizer.tsx)）**：
+4. **代码转换与执行追踪（[lab-schema.ts](../../src/lib/lab-schema.ts#L2080-L2490)、[lab-tracer.ts](../../src/lib/lab-tracer.ts)、[ExecutionVisualizer.tsx](../../src/components/lab/ExecutionVisualizer.tsx)）**：
    - **TypeScript 轻量编译**：自定义词法扫描器 `transpileTypeScriptLite` 执行纯类型擦除，显式拦截运行时语义构造（`enum`、构造函数参数属性 `public/private/protected/readonly`、`namespace`、JSX）。
    - **编译期循环插桩**：`instrumentJavaScriptLoops` 对 `while`、`for`、`do...while` 注入闭包私有单调时钟守卫 `__guard()`（每 256 次迭代检查一次，硬超时 `2200ms`，防止用户脚本篡改 `window.performance.now`）。
    - **算法可视化**：`lab-tracer.ts` 与 `ExecutionVisualizer.tsx` 采用纯确定性状态机生成二分查找与快速排序帧快照，**不执行 `eval` 或任意用户输入代码**。
-5. **独立跨站沙盒（[sandbox-runner/index.html](file:///home/shijian/projects/shijianus-blog/sandbox-runner/index.html)、[sandbox-runner/_headers](file:///home/shijian/projects/shijianus-blog/sandbox-runner/_headers)）**：
+5. **独立跨站沙盒（[sandbox-runner/index.html](../../sandbox-runner/index.html)、[sandbox-runner/_headers](../../sandbox-runner/_headers)）**：
    - 采用**双层嵌套隔离架构**：
      - 外层桥接器部署在独立跨站域名（如 Staging `epocanvas-lab-sandbox-staging.pages.dev`、生产规划独立 eTLD+1 `lab-sandbox.epocanvas-sandbox.com`），主站以 `<iframe sandbox="allow-scripts allow-same-origin" referrerpolicy="no-referrer">` 加载，利用浏览器 Site Isolation 将桥接器及子帧分配至独立渲染进程（OOPIF），并校验父窗口 `event.origin` 白名单。
      - 内层执行帧由外层桥接器动态创建，强制 `sandbox="allow-scripts"`（**剥离 `allow-same-origin`**），使其 `window.origin === "null"`（Opaque Origin），即使与外层桥接器也处于跨源隔离态，并通过内联 `<meta http-equiv="Content-Security-Policy">` 施加一次性 `nonce-<128bit>` 脚本门禁与 `connect-src 'none'`。
-6. **`postMessage` 通信协议（[lab-sandbox-protocol.ts](file:///home/shijian/projects/shijianus-blog/src/lib/lab-sandbox-protocol.ts)）**：
+6. **`postMessage` 通信协议（[lab-sandbox-protocol.ts](../../src/lib/lab-sandbox-protocol.ts)）**：
    - 协议标识固定为 `LAB_SANDBOX_PROTOCOL_V1`。
    - 宿主 -> 桥接器消息：`PING`、`EXECUTE_SRCDOC`、`SET_THEME`、`DISPOSE_SESSION`（严格指定 `targetOrigin = activeExternalOrigin`，绝不使用 `'*'` 发送源码载荷）。
    - 桥接器/内层帧 -> 宿主消息：`SANDBOX_BRIDGE_READY`、`SANDBOX_READY`、`CONSOLE_EVENT`、`RUNTIME_ERROR`、`EXECUTION_COMPLETE`、`HEARTBEAT`。宿主端双重校验 `event.source === iframeRef.current.contentWindow`、预期 `event.origin`（跨站精确 Origin 或本地回退 `'null'`）以及 128-bit 随机 `sessionId`。
-7. **Cloudflare Pages 部署架构（[sync-lab-sandbox-env.mjs](file:///home/shijian/projects/shijianus-blog/scripts/sync-lab-sandbox-env.mjs)、[deploy-lab-sandbox.mjs](file:///home/shijian/projects/shijianus-blog/scripts/deploy-lab-sandbox.mjs)、[wrangler.jsonc](file:///home/shijian/projects/shijianus-blog/wrangler.jsonc)）**：
+7. **Cloudflare Pages 部署架构（[sync-lab-sandbox-env.mjs](../../scripts/sync-lab-sandbox-env.mjs)、[deploy-lab-sandbox.mjs](../../scripts/deploy-lab-sandbox.mjs)、[wrangler.jsonc](../../wrangler.jsonc)）**：
    - 主站构建前通过 `sync-lab-sandbox-env.mjs` 将构建环境变量 `PUBLIC_LAB_SANDBOX_ORIGIN` 同步写入 `functions/generated/lab-env.ts`，供边缘中间件在 SSR/Functions 层读取。
    - 独立沙盒通过 `deploy-lab-sandbox.mjs` 将 `sandbox-runner/` 复制到系统临时目录（避免向上继承仓库根部 `wrangler.jsonc` 的 D1/AI 配置与 `functions/` 目录），执行零 Functions、零绑定的纯静态上传。
-8. **CSP 与浏览器安全边界（[functions/_middleware.ts](file:///home/shijian/projects/shijianus-blog/functions/_middleware.ts)、[public/_headers](file:///home/shijian/projects/shijianus-blog/public/_headers)、[sandbox-runner/_headers](file:///home/shijian/projects/shijianus-blog/sandbox-runner/_headers)）**：
+8. **CSP 与浏览器安全边界（[functions/_middleware.ts](../../functions/_middleware.ts)、[public/_headers](../../public/_headers)、[sandbox-runner/_headers](../../sandbox-runner/_headers)）**：
    - 主站边缘中间件动态校验外部沙盒 Origin（拦截全部主站同站/兄弟域名后缀），合法时才将其追加至 `frame-src`。
    - 独立沙盒通过 `! Access-Control-Allow-Origin` 剥离默认通配符 CORS 头，施加 `default-src 'none'; connect-src 'none'; worker-src 'none'; object-src 'none'` 与环境隔离的 `frame-ancestors`。
-9. **自动化测试与门禁系统（`scripts/verify-lab-*.mjs`、[.github/workflows/lab-ci-gate.yml](file:///home/shijian/projects/shijianus-blog/.github/workflows/lab-ci-gate.yml)）**：
-   - 由三套互补脚本组成：[verify-lab-release-gate.mjs](file:///home/shijian/projects/shijianus-blog/scripts/verify-lab-release-gate.mjs)（10 项静态产物、Nonce、CSP、沙盒干跑、Cloudflare 只读零绑定核验、密钥扫描、锁文件漂移与 Git 基线门禁）、[verify-lab-platform.mjs](file:///home/shijian/projects/shijianus-blog/scripts/verify-lab-platform.mjs)（本地三端口跨站仿真 + Chromium/Firefox/WebKit 全量渗透与无障碍验收）、[verify-lab-cloudflare-preview.mjs](file:///home/shijian/projects/shijianus-blog/scripts/verify-lab-cloudflare-preview.mjs)（线上 Preview 与 Staging 真实边缘头及跨站三核验收）。
+9. **自动化测试与门禁系统（`scripts/verify-lab-*.mjs`、[.github/workflows/lab-ci-gate.yml](../../.github/workflows/lab-ci-gate.yml)）**：
+   - 由三套互补脚本组成：[verify-lab-release-gate.mjs](../../scripts/verify-lab-release-gate.mjs)（10 项静态产物、Nonce、CSP、沙盒干跑、Cloudflare 只读零绑定核验、密钥扫描、锁文件漂移与 Git 基线门禁）、[verify-lab-platform.mjs](../../scripts/verify-lab-platform.mjs)（本地三端口跨站仿真 + Chromium/Firefox/WebKit 全量渗透与无障碍验收）、[verify-lab-cloudflare-preview.mjs](../../scripts/verify-lab-cloudflare-preview.mjs)（线上 Preview 与 Staging 真实边缘头及跨站三核验收）。
 
 ### 3.2 识别出的重复代码、隐藏耦合与技术债务
 
 1. **三处黑名单与协议逻辑重复维护（代码重复与漂移隐患）**：
-   - 主站域名拦截列表在 [lab-sandbox-protocol.ts](file:///home/shijian/projects/shijianus-blog/src/lib/lab-sandbox-protocol.ts#L56-L78)、[functions/_middleware.ts](file:///home/shijian/projects/shijianus-blog/functions/_middleware.ts#L3-L25) 以及 [preview/[slug].astro](file:///home/shijian/projects/shijianus-blog/src/pages/lab/preview/[slug].astro#L163-L195) 的客户端内联脚本中存在三份拷贝。这直接导致本轮审计前 `preview/[slug].astro` 遗漏了部分兄弟域名后缀（已在 `[666edb3]` 对齐补全，后续 Phase 2.8 建议抽取构建期共享常量注入）。
+   - 主站域名拦截列表在 [lab-sandbox-protocol.ts](../../src/lib/lab-sandbox-protocol.ts#L56-L78)、[functions/_middleware.ts](../../functions/_middleware.ts#L3-L25) 以及 [preview/[slug].astro](../../src/pages/lab/preview/[slug].astro#L163-L195) 的客户端内联脚本中存在三份拷贝。这直接导致本轮审计前 `preview/[slug].astro` 遗漏了部分兄弟域名后缀（已在 `[666edb3]` 对齐补全，后续 Phase 2.8 建议抽取构建期共享常量注入）。
 2. **自定义字符级 TS 擦除器与循环插桩器的维护复杂度**：
    - `transpileTypeScriptLite` 与 `instrumentJavaScriptLoops` 手写字符状态机虽然实现了零运行时重依赖，但对复杂 ECMAScript 语法边界（如正则表达式字面量与除法歧义、嵌套模板字符串表达式 `${...}`、解构赋值类型注解）存在固有的解析脆弱性。本轮已发现并修复了无花括号 `for (... of/in ...)` 与 `for` 头部 IIFE 两处真实插桩盲区。
 3. **构建期 `prebuild` 副作用污染工作区**：
@@ -284,9 +284,9 @@ flowchart TD
 ### SEC-01：生产跨站沙盒默认允许过宽的 `*.shijianus-blog.pages.dev` 宿主来源及外层桥接会话可被提前抢占
 - **严重等级**：**P1**
 - **文件与代码位置**：
-  - [sandbox-runner/_headers](file:///home/shijian/projects/shijianus-blog/sandbox-runner/_headers#L6)
-  - [sandbox-runner/index.html](file:///home/shijian/projects/shijianus-blog/sandbox-runner/index.html#L42-L135)
-  - [scripts/deploy-lab-sandbox.mjs](file:///home/shijian/projects/shijianus-blog/scripts/deploy-lab-sandbox.mjs#L15-L120)
+  - [sandbox-runner/_headers](../../sandbox-runner/_headers#L6)
+  - [sandbox-runner/index.html](../../sandbox-runner/index.html#L42-L135)
+  - [scripts/deploy-lab-sandbox.mjs](../../scripts/deploy-lab-sandbox.mjs#L15-L120)
 - **复现条件**：
   1. 直接检视基线 `4c8c0ea` 的 `sandbox-runner/_headers` 与 `sandbox-runner/index.html`：生产默认配置同时放行了 `https://blog.epocanvas.com`、`https://shijianus-blog.pages.dev` 及通配符 `https://*.shijianus-blog.pages.dev`。
   2. 此外，`sandbox-runner/index.html` 在收到任意白名单源发来的 `PING` 或 `SET_THEME` 消息时，会无条件覆盖 `activeSessionId = data.sessionId`。
@@ -308,8 +308,8 @@ flowchart TD
 ### SEC-02：独立预览页静态构建期固化复用 `sessionId` / `cspNonce` 且 `LabDashboard.astro` 存在 `define:vars` 叠加 `astro@6.1.3` 逃逸面
 - **严重等级**：**P1**
 - **文件与代码位置**：
-  - [src/pages/lab/preview/[slug].astro](file:///home/shijian/projects/shijianus-blog/src/pages/lab/preview/[slug].astro#L32-L295)
-  - [src/components/theme/LabDashboard.astro](file:///home/shijian/projects/shijianus-blog/src/components/theme/LabDashboard.astro#L6-L16)（原第 586 行 `<script define:vars={{ experiments }}>`）
+  - [src/pages/lab/preview/[slug].astro](../../src/pages/lab/preview/[slug].astro#L32-L295)
+  - [src/components/theme/LabDashboard.astro](../../src/components/theme/LabDashboard.astro#L6-L16)（原第 586 行 `<script define:vars={{ experiments }}>`）
 - **复现条件**：
   1. 检查基线静态构建产物 `dist/lab/preview/*/index.html`：`createLabSessionId()` 与 `createSandboxCspNonce()` 在 Astro SSG 构建期仅执行一次，导致所有访问者、每次页面刷新与点击“重置”均永久复用同一个硬编码 `sessionId` 和同一个 `<meta>` CSP `nonce-labnonce...`。
   2. 同时，`preview/[slug].astro` 在处理 `SANDBOX_BRIDGE_READY` 时未校验 `data.sessionId === activeSessionId`，且其内联主站域名黑名单缺少 `.epocanvas.tech`、`.pvzos.com` 等后缀。
@@ -331,9 +331,9 @@ flowchart TD
 ### SEC-03：供应链锁文件三重漂移与 `package-lock.json` 存在 35 个未修复漏洞（2 Critical / 27 High）
 - **严重等级**：**P1（生产发布阻断项）**
 - **文件与代码位置**：
-  - [package.json](file:///home/shijian/projects/shijianus-blog/package.json#L41-L79)
-  - [package-lock.json](file:///home/shijian/projects/shijianus-blog/package-lock.json)
-  - [yarn.lock](file:///home/shijian/projects/shijianus-blog/yarn.lock)
+  - [package.json](../../package.json#L41-L79)
+  - [package-lock.json](../../package-lock.json)
+  - [yarn.lock](../../yarn.lock)
 - **复现条件**：
   执行 `npm audit --registry=https://registry.npmjs.org --json` 并比对 `package-lock.json`、`yarn.lock` 与 `node_modules/.pnpm` 实际版本。
 - **实际影响**：
@@ -355,7 +355,7 @@ flowchart TD
 ### SEC-04：编译期循环保护被无花括号 `for..of/in` 与头部 IIFE 绕过、`requestAnimationFrame` 无上限洪泛及 `console` 超大对象序列化卡死
 - **严重等级**：**P2**
 - **文件与代码位置**：
-  - [src/lib/lab-schema.ts](file:///home/shijian/projects/shijianus-blog/src/lib/lab-schema.ts#L2285-L2665)
+  - [src/lib/lab-schema.ts](../../src/lib/lab-schema.ts#L2285-L2665)
 - **复现条件**：
   1. 在代码工坊运行 `const g=(function*(){while(1)yield 1})(); for (const x of g) x;`：原 `instrumentJavaScriptLoops` 在无花括号单语句 `for` 分支中固定注入 `const __g = ...; for (...) { __g(); ... }`，对于 `for (const x of ...)` / `for (const k in ...)` 会将原三段式外层变量写法套用或因头部 `(` 嵌套 IIFE `for (; (() => { while(true){} })(); ) {}` 未递归插桩而直接死循环卡死渲染线程。
   2. 运行 `for (let i=0; i<10000; i++) requestAnimationFrame(function f(){ requestAnimationFrame(f); })`：原沙盒仅限制了 `setTimeout`/`setInterval`（256 上限），未限制 `requestAnimationFrame`。
@@ -374,8 +374,8 @@ flowchart TD
 ### SEC-05：损坏/超限 `#bundle=` 回退自动执行官方代码、篡改本地草稿可伪造 `official` 信任等级及页面卸载缺少会话销毁通知
 - **严重等级**：**P2**
 - **文件与代码位置**：
-  - [src/components/lab/LabPlayground.tsx](file:///home/shijian/projects/shijianus-blog/src/components/lab/LabPlayground.tsx#L395-L535)
-  - [src/components/lab/LabPlayground.tsx](file:///home/shijian/projects/shijianus-blog/src/components/lab/LabPlayground.tsx#L905-L965)
+  - [src/components/lab/LabPlayground.tsx](../../src/components/lab/LabPlayground.tsx#L395-L535)
+  - [src/components/lab/LabPlayground.tsx](../../src/components/lab/LabPlayground.tsx#L905-L965)
 - **复现条件**：
   1. 访问 `/lab/playground/?slug=star-trails-simulator#bundle=!!!corrupted`：原初始化逻辑在 `decodeShareBundle` 返回 `ok: false` 后，未阻断后续 `defaultExp` 回退分支，导致页面带错误 Toast 却在后台自动挂载并执行了默认官方实验。
   2. 在同源脚本或 DevTools/扩展存储污染场景下，向 `localStorage['shijianus-lab-draft-v1']` 写入 `{ slug: "star-trails-simulator", draftOriginKind: "official", files: [恶意修改代码] }` 并点击“读草稿”：原 `handleLoadDraft` 直接信任了 JSON 内的 `draftOriginKind === 'official'` 字段，使非官方代码在无跨站沙盒时可降级进入本地 `opaque-srcdoc` 运行，违背“非官方代码无跨站沙盒严禁执行”铁律。
@@ -393,8 +393,8 @@ flowchart TD
 ### SEC-06：纯编译期循环插桩无法抢占同步递归、灾难性回溯正则（ReDoS）、内建迭代器消费与 `TypedArray` 内存耗尽
 - **严重等级**：**P2（JavaScript 单线程运行时固有边界 · 已诚实披露并建立双层缓解）**
 - **文件与代码位置**：
-  - [src/lib/lab-schema.ts](file:///home/shijian/projects/shijianus-blog/src/lib/lab-schema.ts#L2285-L2490)
-  - [src/components/lab/LabPlayground.tsx](file:///home/shijian/projects/shijianus-blog/src/components/lab/LabPlayground.tsx#L730-L810)
+  - [src/lib/lab-schema.ts](../../src/lib/lab-schema.ts#L2285-L2490)
+  - [src/components/lab/LabPlayground.tsx](../../src/components/lab/LabPlayground.tsx#L730-L810)
 - **复现条件**：
   在沙盒中执行以下非显式 `for/while/do` 循环语句的 CPU/内存耗尽载荷：
   1. 深层直接/相互递归：`function f(){ return f(); } f();`（触发引擎调用栈上限 `RangeError: Maximum call stack size exceeded` 前短暂阻塞，或尾递归/异步微任务链持续占用）；
@@ -416,8 +416,8 @@ flowchart TD
 ### SEC-07：主站边缘中间件全局 CSP 仍保留 `'unsafe-inline'` / `'unsafe-eval'` 与宽泛 `connect-src https:`，且外层沙盒桥接器受限于 `srcdoc` CSP 继承规则
 - **严重等级**：**P2**
 - **文件与代码位置**：
-  - [functions/_middleware.ts](file:///home/shijian/projects/shijianus-blog/functions/_middleware.ts#L92-L128)
-  - [sandbox-runner/_headers](file:///home/shijian/projects/shijianus-blog/sandbox-runner/_headers#L6)
+  - [functions/_middleware.ts](../../functions/_middleware.ts#L92-L128)
+  - [sandbox-runner/_headers](../../sandbox-runner/_headers#L6)
 - **复现条件**：
   检查线上 `review-lab-phase-2-5.shijianus-blog.pages.dev` 与 `epocanvas-lab-sandbox-staging.pages.dev` 实际 HTTP 响应头。
 - **实际影响**：
@@ -435,7 +435,7 @@ flowchart TD
 ### SEC-08：既有 GitHub Actions 缺少最小权限与 Commit SHA 固定、运行环境 API Token 权限偏宽及 Preview 环境共享 D1/AI 绑定
 - **严重等级**：**P2**
 - **文件与代码位置**：
-  - [.github/workflows/deploy.yml](file:///home/shijian/projects/shijianus-blog/.github/workflows/deploy.yml#L1-L40)
+  - [.github/workflows/deploy.yml](../../.github/workflows/deploy.yml#L1-L40)
   - Cloudflare Pages 项目 `shijianus-blog`（`deployment_configs.preview`）
 - **复现条件**：
   1. 读取 `.github/workflows/deploy.yml`：未声明顶层 `permissions:`（默认可能继承仓库读写权限），且 `actions/checkout@v4`、`actions/setup-node@v4`、`cloudflare/wrangler-action@v3` 仅使用可变主版本标签而非 40 位不可变 Commit SHA。
@@ -444,7 +444,7 @@ flowchart TD
   1. 第三方 Action 标签若遭供应链投毒可获取 CI `GITHUB_TOKEN` 与部署凭据；
   2. `shijianus-blog` 的所有 Preview 分支部署均可经由 Pages Functions 访问同一 D1 数据库（注：独立沙盒项目 `epocanvas-lab-sandbox-staging` 已通过 API 实证 100% 零绑定，不受此影响）。
 - **修复建议**：
-  1. 本轮已新建独立门禁工作流 [.github/workflows/lab-ci-gate.yml](file:///home/shijian/projects/shijianus-blog/.github/workflows/lab-ci-gate.yml)，强制声明 `permissions: { contents: read }` 并将 `actions/checkout`（`11bd71901bbe5b1630ceea73d27597364c9af683`）与 `actions/setup-node`（`1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a`）固定至 40 位 Commit SHA。
+  1. 本轮已新建独立门禁工作流 [.github/workflows/lab-ci-gate.yml](../../.github/workflows/lab-ci-gate.yml)，强制声明 `permissions: { contents: read }` 并将 `actions/checkout`（`11bd71901bbe5b1630ceea73d27597364c9af683`）与 `actions/setup-node`（`1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a`）固定至 40 位 Commit SHA。
   2. 在 Phase 2.8 获得授权后，同步加固 `.github/workflows/deploy.yml` 的 SHA 固定与最小权限，为沙盒部署单独签发仅含 `Cloudflare Pages: Edit`（限定账户且无 D1/R2/KV/DNS 权限）的最小作用域 Token，并为 `shijianus-blog` Preview 环境拆分独立测试 D1 数据库。
 - **修复状态**：**新增 Lab CI 门禁工作流已完成（Commit `[03a57c0]`）；既有 `deploy.yml` 与云端权限收敛待授权执行**
 - **验证证据**：
@@ -455,7 +455,7 @@ flowchart TD
 ### SEC-09：历史 Git 提交残留已轮换旧凭证痕迹与 `cf` 公开仓库暴露 70+ 个临时/备份分支
 - **严重等级**：**P2**
 - **文件与代码位置**：
-  - Git 历史提交（`255f385` 之前的 7 个早期提交）及 [AGENTS.md](file:///home/shijian/projects/shijianus-blog/AGENTS.md#L86)
+  - Git 历史提交（`255f385` 之前的 7 个早期提交）及 [AGENTS.md](../../AGENTS.md#L86)
   - 远端 `cf`（`git@github.com:shijianus/shijianus.github.io.git`）70+ 个非生产分支与非正式标签
 - **复现条件**：
   执行只读 `git log --all -G "..."` 与 `git for-each-ref refs/remotes/cf`。
@@ -474,8 +474,8 @@ flowchart TD
 ### SEC-10：`/lab/playground/` 与 `/lab/preview/[slug]/` 页面缺失语义化一级标题 `<h1>`
 - **严重等级**：**P3（无障碍合规缺陷）**
 - **文件与代码位置**：
-  - [src/pages/lab/playground.astro](file:///home/shijian/projects/shijianus-blog/src/pages/lab/playground.astro#L31-L36)
-  - [src/pages/lab/preview/[slug].astro](file:///home/shijian/projects/shijianus-blog/src/pages/lab/preview/[slug].astro#L74-L78)
+  - [src/pages/lab/playground.astro](../../src/pages/lab/playground.astro#L31-L36)
+  - [src/pages/lab/preview/[slug].astro](../../src/pages/lab/preview/[slug].astro#L74-L78)
 - **复现条件**：
   在 `/lab/playground/` 与 `/lab/preview/star-trails-simulator/` 运行 DOM 语义与 WCAG 1.3.1 / 2.4.6 地标与标题层级检查，`document.querySelectorAll('h1').length === 0`。
 - **实际影响**：屏幕阅读器用户进入独立代码工坊或独立预览页时无法通过一级标题快速定位页面主旨。
@@ -538,7 +538,7 @@ flowchart TD
 - **Firefox 基线失败根因取证记录**：
   - 初始运行 `verify-lab-cloudflare-preview.mjs` 时，Chromium 通过，**Firefox 157.0 失败**（`isolationMode: 'opaque-srcdoc' !== 'cross-origin'`）。
   - 独立诊断脚本取证证实：当前 Linux 容器仅具备 IPv4 接口（`curl -4` 耗时 `207ms`，`curl -6` 立即返回 `EXIT_6` 无路由），但容器本地 DNS 转发器对 `AAAA`（IPv6）查询固定阻塞 **5,000ms** 超时。Chromium 与 WebKit 调用系统 `getaddrinfo(AI_ADDRCONFIG)` 自动跳过无外部 IPv6 接口时的 `AAAA` 查询；而无头 Firefox 内部解析器默认并发请求 `A` + `AAAA` 并等待响应，导致主站与跨站沙盒两次导航累计耗费 `10,668ms`，超过 `4,500ms` 握手窗口而触发预期的超时降级。
-  - **处置分类**：**测试运行环境网络栈耦合缺陷（非产品缺陷）**。在 [verify-lab-cloudflare-preview.mjs](file:///home/shijian/projects/shijianus-blog/scripts/verify-lab-cloudflare-preview.mjs) 中通过 `os.networkInterfaces()` 自动检测宿主机是否存在非回环 IPv6 接口，仅在纯 IPv4 宿主上为无头 Firefox 注入 `network.dns.disableIPv6: true`（对齐 OS `AI_ADDRCONFIG` 语义，未延长 `4,500ms` 产品握手超时、未弱化任何断言）。复测 Firefox 跨站双层握手仅耗时 `1,749ms`。
+  - **处置分类**：**测试运行环境网络栈耦合缺陷（非产品缺陷）**。在 [verify-lab-cloudflare-preview.mjs](../../scripts/verify-lab-cloudflare-preview.mjs) 中通过 `os.networkInterfaces()` 自动检测宿主机是否存在非回环 IPv6 接口，仅在纯 IPv4 宿主上为无头 Firefox 注入 `network.dns.disableIPv6: true`（对齐 OS `AI_ADDRCONFIG` 语义，未延长 `4,500ms` 产品握手超时、未弱化任何断言）。复测 Firefox 跨站双层握手仅耗时 `1,749ms`。
 
 | 真实跨站验收项 | Chromium `156.0.8078.4` | Firefox `157.0` | WebKit `27.2` | 生产环境攻击性测试 |
 |---|---|---|---|---|
@@ -604,7 +604,7 @@ flowchart TD
 - **优先级**：P1（紧随 Phase 2.7 授权后启动）
 - **前置依赖**：用户明确批准远端推送与 Cloudflare 资源变更清单。
 - **规划工作项**：
-  1. **锁文件统一与依赖安全升级**：移除 `yarn.lock`，升级 `astro` 至最新安全补丁版（消除 2 Critical / 27 High 告警），引入 `typescript` 与 `@astrojs/check` 打通 `astro check` 类型门禁；
+  1. **锁文件统一与依赖安全升级**：移除 `yarn.lock`，新增 `packageManager` 字段固定 npm，升级 Astro 及官方生态至安全 Astro 7（最低 Astro >= 7.2.8，推荐 Astro 7.4.7+），彻底清零 2 Critical / 27 High 供应链告警，引入 `typescript` 与 `@astrojs/check` 打通 `astro check` 类型门禁；
   2. **CI 工作流与最小权限 Token 治理**：将 `.github/workflows/deploy.yml` 改造为 40 位 SHA 固定 + 显式最小 `permissions`，签发仅限沙盒 Pages 项目的专用部署 Token，拆分 `shijianus-blog` Preview 环境的测试 D1 数据库；
   3. **Staging/Preview 验证闭环**：推送 `review/lab-phase-2.7-audit` 至 `origin`，重部署 `epocanvas-lab-sandbox-staging` 与 Preview 主站，执行真实边缘三核验收；
   4. **生产沙盒立项与受控发布**：注册独立 eTLD+1 沙盒域名，创建零绑定 `epocanvas-lab-sandbox` 生产项目，执行 Gate 6 线上零绑定 API 核验，执行一次完整的模拟故障 Fail-Closed 与回滚演练后，方才合并 `main` 上线；
@@ -647,7 +647,7 @@ flowchart TD
 尽管本轮在本地分支 `review/lab-phase-2.7-audit` 上已全面修复审计发现的代码级 P1/P2/P3 缺陷（生产沙盒默认宿主收紧、动态一次性 CSPRNG Nonce/Session、移除 `define:vars`、无花括号 `for..of/in` 与 `rAF` 防护、损坏 `#bundle=` 与篡改草稿 Fail-Closed、语义化 `<h1>`），并通过了静态构建、10 项安全发布门禁以及本地与真实 Cloudflare Preview 的 **Chromium + Firefox + WebKit 三核全链路回归验证（0 未捕获异常）**，但遵循“证据优先、不得将未验证或缺失基础设施的项目标记为通过”的严格工程准则，当前时间点仍存在以下 **4 项尚未解除的客观发布阻断项**：
 
 1. **生产跨站沙盒基础设施尚未存在（硬阻断）**：Cloudflare Pages API 实测 `epocanvas-lab-sandbox` 为 `HTTP 404`（未创建），独立跨站域名亦未配置。在“没有独立跨站沙盒就不允许执行非可信代码”的安全铁律下，生产环境尚不具备完整的跨站进程隔离运行条件。
-2. **供应链高危/严重漏洞与锁文件漂移尚未清零（硬阻断）**：`package-lock.json` 仍锁定含 **2 Critical + 27 High** 漏洞的旧版依赖树（`astro@6.1.3`、`mermaid@11.4.1 -> dompurify`），且并存 `yarn.lock` 与本地 pnpm 安装漂移。
+2. **供应链高危/严重漏洞与锁文件漂移尚未清零（硬阻断）**：`package-lock.json` 仍锁定含 **2 Critical + 27 High** 漏洞的旧版依赖树（`astro@6.1.3`、`mermaid@11.4.1 -> dompurify`），且并存 `yarn.lock` 与本地 pnpm 安装漂移。Phase 2.8 目标升级至安全 Astro 7.4.7+ 并统一为 npm 工具链彻底解决。
 3. **全量 TypeScript / Astro 静态类型门禁尚未打通（未验证阻断）**：因缺失 `typescript` 与 `@astrojs/check`，`astro check` 处于 `BLOCKED` 状态，不能在未运行类型门禁的情况下签发生产放行。
 4. **本轮 Phase 2.7 安全补丁尚未在云端预发布边缘实机部署核验**：受本轮零远端写入与零云端变更禁令保护，线上 Preview（`6dcc30ac`，`d492f432`）与 Staging 沙盒（`6f74e870`）运行的仍是修复前版本。
 
