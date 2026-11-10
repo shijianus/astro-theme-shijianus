@@ -125,6 +125,37 @@ function startStaticDistServer(port, host, options = {}) {
     const parsedUrl = new URL(req.url || '/', `http://${host}:${port}`);
     const reqPath = decodeURIComponent(parsedUrl.pathname);
 
+    if (reqPath === '/api/exchange-rate') {
+      const fxPayload = JSON.stringify({
+        success: true,
+        base: 'USD',
+        rates: { USD: 1, CNY: 7.25, EUR: 0.92, JPY: 152.0, GBP: 0.77, TWD: 32.1, HKD: 7.78 },
+        fallback: false,
+      });
+      res.writeHead(200, {
+        'Content-Type': 'application/json; charset=utf-8',
+        'Content-Length': Buffer.byteLength(fxPayload),
+        'Content-Security-Policy': cspHeader,
+      });
+      res.end(fxPayload);
+      return;
+    }
+
+    if (reqPath === '/api/lab') {
+      const labPayload = JSON.stringify({
+        success: true,
+        platform: { name: 'shijianus Lab Platform', version: '2.8.0', bundleSpec: 'lab-bundle-v2' },
+        stats: { totalOfficialExperiments: 6 },
+      });
+      res.writeHead(200, {
+        'Content-Type': 'application/json; charset=utf-8',
+        'Content-Length': Buffer.byteLength(labPayload),
+        'Content-Security-Policy': cspHeader,
+      });
+      res.end(labPayload);
+      return;
+    }
+
     let filePath = path.join(DIST_DIR, reqPath);
     if (fs.existsSync(filePath) && fs.statSync(filePath).isDirectory()) {
       filePath = path.join(filePath, 'index.html');
@@ -395,6 +426,12 @@ async function runBrowserSuite(browserName, browserType) {
     await page.fill('#fx-input-val', '100');
     await page.dispatchEvent('#fx-input-val', 'input');
     assert.equal((await page.locator('#fx-cny-out').textContent())?.trim(), '¥ 725.00');
+    await clickTarget('#btn-fx-live-sync');
+    await page.waitForFunction(
+      () => document.querySelector('#fx-rate-source-badge')?.textContent?.includes('已同步边缘实时汇率'),
+      null,
+      { timeout: 5000 }
+    );
 
     await clickTarget('[data-filter-category="physics"]');
     assert.equal(await page.locator('#lab-experiments-grid [data-exp-slug]:visible').count(), 2);
@@ -569,6 +606,31 @@ async function runBrowserSuite(browserName, browserType) {
       throw e;
     }
     assert.ok(page.url().includes('slug=verlet-rope-physics'));
+
+    // 3.1b 验证多运行时切换 (Browser DOM -> QuickJS WASM -> Browser DOM) 与无头计算监视视口
+    await page.getByTestId('runtime-selector').selectOption('quickjs');
+    await page.waitForFunction(
+      () =>
+        document.querySelector('[data-testid="lab-headless-runtime-monitor"]') !== null &&
+        document.querySelector('#lab-playground-workspace')?.getAttribute('data-exec-status') ===
+          'completed',
+      null,
+      { timeout: 10000, polling: 100 }
+    );
+    assert.equal(await page.getByTestId('lab-headless-runtime-monitor').isVisible(), true);
+    assert.ok(
+      (await page.getByTestId('lab-headless-runtime-monitor').innerText()).includes('QuickJS WebAssembly'),
+      '切换至 QuickJS 运行时后应显示无头计算沙盒监视视口'
+    );
+    await page.getByTestId('runtime-selector').selectOption('browser-dom');
+    await page.waitForFunction(
+      () =>
+        document.querySelector('[data-testid="lab-sandbox-iframe"]') !== null &&
+        document.querySelector('#lab-playground-workspace')?.getAttribute('data-exec-status') ===
+          'completed',
+      null,
+      { timeout: 10000, polling: 100 }
+    );
 
     await clickTarget(page.locator('[data-file-tab="script.ts"]'));
     await page.waitForSelector('[data-file-tab="script.ts"][aria-selected="true"]', { timeout: 5000 });

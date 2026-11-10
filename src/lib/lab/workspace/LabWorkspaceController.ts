@@ -67,13 +67,20 @@ export class LabWorkspaceController {
   private previewIframe: HTMLIFrameElement | null = null;
   private isDisposed = false;
 
+  private normalizeRuntimeKind(raw?: string): LabRuntimeKind {
+    if (raw === 'quickjs' || raw === 'curated-trace' || raw === 'browser-dom') {
+      return raw;
+    }
+    return 'browser-dom';
+  }
+
   constructor(config: LabWorkspaceControllerConfig) {
     this.project = {
       ...config.project,
       files: config.project.files.map((f) => ({ ...f })),
     };
     this.editorKind = config.editorKind ?? 'lite';
-    this.runtimeKind = config.runtimeKind ?? (config.project.runtime as LabRuntimeKind) ?? 'browser-dom';
+    this.runtimeKind = this.normalizeRuntimeKind(config.runtimeKind ?? config.project.runtime);
     this.sourceKind = config.sourceKind ?? 'official';
     this.isolationMode = config.isolationMode ?? 'cross-origin';
     this.externalOrigin = config.externalOrigin ?? null;
@@ -96,19 +103,7 @@ export class LabWorkspaceController {
     });
     this.runtimeRegistry = new RuntimeRegistry();
     this.sessionManager = new SessionManager();
-
-    if (this.sourceKind === 'official' && this.runtimeKind === 'browser-dom') {
-      try {
-        this.sandboxSrcDoc = buildIsolatedSandboxSrcDoc({
-          sessionId: this.sessionManager.getSessionId(),
-          files: this.project.files,
-          theme: this.theme,
-          maxConsoleEntries: LAB_SECURITY_LIMITS.MAX_CONSOLE_ENTRIES,
-        });
-      } catch {
-        this.sandboxSrcDoc = '';
-      }
-    }
+    this.sandboxSrcDoc = '';
   }
 
   // ===== 快照订阅与获取 =====
@@ -170,28 +165,16 @@ export class LabWorkspaceController {
     this.clearErrors();
     this.failClosedReason = '';
     this.bridgeFallbackForced = false;
-    if (this.sourceKind === 'official' && this.runtimeKind === 'browser-dom') {
-      try {
-        this.sandboxSrcDoc = buildIsolatedSandboxSrcDoc({
-          sessionId: this.sessionManager.getSessionId(),
-          files: this.project.files,
-          theme: this.theme,
-          maxConsoleEntries: LAB_SECURITY_LIMITS.MAX_CONSOLE_ENTRIES,
-        });
-      } catch {
-        this.sandboxSrcDoc = '';
-      }
-    } else {
-      this.sandboxSrcDoc = '';
-    }
-    this.sessionManager.reset();
-    this.sessionLifecycle = 'idle';
 
     // 检查当前运行时是否与新工程兼容
     const allowedKinds = this.runtimeRegistry.listKindsForProject(this.project);
     if (!allowedKinds.includes(this.runtimeKind)) {
       this.runtimeKind = 'browser-dom';
     }
+
+    this.sandboxSrcDoc = '';
+    this.sessionManager.reset();
+    this.sessionLifecycle = 'idle';
 
     // 同步给活动编辑器
     const editor = this.editorRegistry.get(this.editorKind);
@@ -265,6 +248,11 @@ export class LabWorkspaceController {
 
   setExternalOrigin(origin: string | null): void {
     this.externalOrigin = origin;
+    if (origin && !this.bridgeFallbackForced) {
+      this.isolationMode = 'cross-origin';
+    } else if (!origin) {
+      this.isolationMode = 'opaque-srcdoc';
+    }
     this.notifySnapshot();
   }
 
@@ -313,6 +301,13 @@ export class LabWorkspaceController {
 
     this.runtimeKind = kind;
     this.notifySnapshot();
+    if (this.sourceKind === 'official') {
+      await this.run({
+        iframe: this.previewIframe,
+        container: this.previewContainer,
+        theme: this.theme,
+      });
+    }
   }
 
   // ===== 执行控制流 (Run / Stop / Reset) =====

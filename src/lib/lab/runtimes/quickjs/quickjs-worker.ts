@@ -196,8 +196,13 @@ export async function handleHostMessage(msg: QuickJsHostToWorkerMessage): Promis
   }
 }
 
-// 自动挂载 Dedicated Worker 消息监听
-if (typeof self !== 'undefined' && typeof self.addEventListener === 'function') {
+// 仅在真正的 Dedicated Web Worker 作用域内自动挂载消息监听，防止主线程 import 时误绑定 window.onmessage
+const isDedicatedWorkerScope =
+  typeof self !== 'undefined' &&
+  typeof (self as any).WorkerGlobalScope !== 'undefined' &&
+  self instanceof (self as any).WorkerGlobalScope;
+
+if (isDedicatedWorkerScope && typeof self.addEventListener === 'function') {
   self.addEventListener('message', (e: MessageEvent) => {
     void handleHostMessage(e.data);
   });

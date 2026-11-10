@@ -183,11 +183,15 @@ export const LabPlayground: React.FC<LabPlaygroundProps> = ({
     const unbindError = ctrl.on('error', () => {
       setActiveBottomTab('errors');
     });
+    const unbindToast = ctrl.on('toast', (msg) => {
+      showToast(msg);
+    });
     return () => {
       unsubscribe();
       unbindError();
+      unbindToast();
     };
-  }, []);
+  }, [showToast]);
 
   // 同步外部 Origin 变更到控制器
   useEffect(() => {
@@ -615,7 +619,15 @@ export const LabPlayground: React.FC<LabPlaygroundProps> = ({
           totalBytes: snapshot.project.files.reduce((a, f) => a + (f.content?.length || 0), 0),
           fileInputRef,
           onSelectExperiment: handleSelectExperiment,
-          onSelectRuntime: (rk) => controllerRef.current?.setRuntimeKind(rk as any),
+          onSelectRuntime: (rk) => {
+            const iframe =
+              iframeRef.current ||
+              (typeof document !== 'undefined'
+                ? (document.querySelector('[data-testid="lab-sandbox-iframe"]') as HTMLIFrameElement | null)
+                : null);
+            controllerRef.current?.setPreviewIframe(iframe);
+            void controllerRef.current?.setRuntimeKind(rk as any);
+          },
           onSelectEditor: (ek) => controllerRef.current?.setEditorKind(ek as any),
           onRun: () => executeInSandbox(),
           onStop: terminateSandbox,
@@ -646,6 +658,7 @@ export const LabPlayground: React.FC<LabPlaygroundProps> = ({
           sessionId: snapshot.sessionId,
           sandboxSrcDoc: snapshot.sandboxSrcDoc,
           sandboxKey,
+          runtimeKind: snapshot.runtimeKind,
           isolationMode,
           activeExternalOrigin,
           codeSourceKind,

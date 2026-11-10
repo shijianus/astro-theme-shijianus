@@ -382,6 +382,13 @@ const allTags = Array.from(
             <strong id="fx-jpy-out">¥ 1520</strong>
           </div>
         </div>
+
+        <div class="fx-sync-bar" style="display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 10px; font-size: 12px; color: var(--theme-text-muted, #64748b);">
+          <span id="fx-rate-source-badge" data-testid="fx-rate-source-badge">基准汇率：USD 锚定（确定性预设）</span>
+          <button type="button" id="btn-fx-live-sync" class="lab-link-btn" data-testid="btn-fx-live-sync" style="padding: 4px 10px; font-size: 11px;">
+            🔄 同步边缘实时汇率
+          </button>
+        </div>
       </div>
 
       <div class="lab-card__footer">
@@ -847,6 +854,39 @@ const allTags = Array.from(
 
     if (fxInput) fxInput.addEventListener('input', calculateFX);
     if (fxFrom) fxFrom.addEventListener('change', calculateFX);
+
+    const btnFxLiveSync = document.getElementById('btn-fx-live-sync');
+    const fxSourceBadge = document.getElementById('fx-rate-source-badge');
+    if (btnFxLiveSync) {
+      btnFxLiveSync.addEventListener('click', async () => {
+        btnFxLiveSync.setAttribute('disabled', 'true');
+        if (fxSourceBadge) fxSourceBadge.textContent = '⏳ 正在请求边缘汇率接口 (/api/exchange-rate)...';
+        try {
+          const res = await fetch('/api/exchange-rate?base=USD', { headers: { Accept: 'application/json' } });
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+          const data = await res.json();
+          if (data && data.rates && typeof data.rates === 'object') {
+            Object.keys(rates).forEach((k) => {
+              if (typeof data.rates[k] === 'number' && data.rates[k] > 0) {
+                rates[k] = data.rates[k];
+              }
+            });
+            calculateFX();
+            if (fxSourceBadge) {
+              fxSourceBadge.textContent = data.fallback
+                ? '📦 边缘兜底汇率已同步 (/api/exchange-rate)'
+                : '⚡ 已同步边缘实时汇率 (CNY=' + Number(rates.CNY).toFixed(2) + ')';
+            }
+          }
+        } catch {
+          if (fxSourceBadge) {
+            fxSourceBadge.textContent = '📦 静态环境 · 保持确定性基准汇率 (CNY=7.25)';
+          }
+        } finally {
+          btnFxLiveSync.removeAttribute('disabled');
+        }
+      });
+    }
 
     // 6. Verlet 悬链线质点物理仿真卡片预览
     const vCanvas = document.getElementById('lab-verlet-canvas');

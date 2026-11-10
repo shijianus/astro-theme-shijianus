@@ -554,4 +554,47 @@ assert.ok(loopSession.status === 'running' || loopSession.status === 'aborted');
 assert.ok(abortReason.includes('timed out') || abortReason.includes('Instruction budget') || abortReason.includes('Loop budget'), `中断预算必须触发: ${abortReason}`);
 console.log(`  -> PASS: QuickJS 中断计数器成功熔断死循环 (${abortReason})。`);
 
+console.log('🧪 [Test 9] 验证 Cloudflare Pages Function 后端接口 (functions/api/lab.ts)...');
+const { onRequest: onLabApiRequest } = await import('../functions/api/lab.ts');
+const getLabRes = await onLabApiRequest({
+  request: new Request('https://blog.epocanvas.com/api/lab?category=physics', { method: 'GET' }),
+  env: {},
+});
+assert.equal(getLabRes.status, 200);
+const getLabJson = await getLabRes.json();
+assert.equal(getLabJson.success, true);
+assert.equal(getLabJson.platform.version, '2.8.0');
+assert.equal(getLabJson.stats.totalOfficialExperiments, 6);
+assert.equal(getLabJson.experiments.length, 2);
+
+const postValidRes = await onLabApiRequest({
+  request: new Request('https://blog.epocanvas.com/api/lab', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      action: 'validate-bundle',
+      files: [{ name: 'algo.ts', language: 'typescript', content: 'console.log(1 + 1);' }],
+    }),
+  }),
+  env: {},
+});
+assert.equal(postValidRes.status, 200);
+const postValidJson = await postValidRes.json();
+assert.equal(postValidJson.valid, true);
+assert.ok(postValidJson.digest.startsWith('sha256-'));
+
+const postInvalidRes = await onLabApiRequest({
+  request: new Request('https://blog.epocanvas.com/api/lab', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      action: 'validate-bundle',
+      files: [{ name: 'evil.exe', language: 'javascript', content: 'bad' }],
+    }),
+  }),
+  env: {},
+});
+assert.equal(postInvalidRes.status, 422);
+console.log('  -> PASS: /api/lab 后端元数据查询与便携包配额/SHA-256 校验全部通过。');
+
 console.log('\n🎉 所有 Phase 2.8 沙盒安全加固测试项 100% 通过！');

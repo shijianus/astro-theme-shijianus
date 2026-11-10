@@ -25,6 +25,7 @@ export interface LabPreviewPanelProps {
   sessionId: string;
   sandboxSrcDoc: string;
   sandboxKey: number;
+  runtimeKind?: 'browser-dom' | 'quickjs' | 'curated-trace';
   isolationMode: SandboxIsolationMode;
   activeExternalOrigin: string | null;
   codeSourceKind: LabCodeSourceKind;
@@ -54,6 +55,7 @@ export const LabPreviewPanel: React.FC<LabPreviewPanelProps> = ({
   sessionId,
   sandboxSrcDoc,
   sandboxKey,
+  runtimeKind = 'browser-dom',
   isolationMode,
   activeExternalOrigin,
   codeSourceKind,
@@ -303,6 +305,96 @@ export const LabPreviewPanel: React.FC<LabPreviewPanelProps> = ({
                 </p>
               </div>
             )
+          ) : !failClosedReason &&
+            execStatus !== 'terminated' &&
+            execStatus !== 'idle' &&
+            (runtimeKind === 'quickjs' || runtimeKind === 'curated-trace') ? (
+            <div
+              className="sandbox-headless-monitor"
+              data-testid="lab-headless-runtime-monitor"
+              style={{
+                padding: '18px',
+                minHeight: '280px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '12px',
+                color: '#e2e8f0',
+                background: 'linear-gradient(180deg, rgba(15, 23, 42, 0.96), rgba(2, 6, 23, 0.98))',
+              }}
+            >
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  flexWrap: 'wrap',
+                  gap: '8px',
+                  paddingBottom: '10px',
+                  borderBottom: '1px solid rgba(148, 163, 184, 0.16)',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ fontSize: '18px' }}>
+                    {runtimeKind === 'quickjs' ? '⚡' : '🧭'}
+                  </span>
+                  <div>
+                    <div style={{ fontSize: '13px', fontWeight: 700, color: '#f8fafc' }}>
+                      {runtimeKind === 'quickjs'
+                        ? tr('QuickJS WebAssembly 隔离计算沙盒 (Dedicated Worker)', 'QuickJS WebAssembly 隔離計算沙盒 (Dedicated Worker)')
+                        : tr('Curated Trace 确定性追踪引擎 (lab-trace-v1)', 'Curated Trace 確定性追蹤引擎 (lab-trace-v1)')}
+                    </div>
+                    <div style={{ fontSize: '11px', color: '#94a3b8' }}>
+                      {runtimeKind === 'quickjs'
+                        ? tr('纯算法计算模式 · 内存上限 16MB · 调用栈上限 512KB · 零 DOM / 零网络暴露', '純演算法計算模式 · 記憶體上限 16MB · 呼叫堆疊上限 512KB · 零 DOM / 零網路暴露')
+                        : tr('零 eval 静态状态机 · 最大步数 600 · O(1) 时间轴任意步进回放', '零 eval 靜態狀態機 · 最大步數 600 · O(1) 時間軸任意步進回放')}
+                    </div>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={onRunCode}
+                  className="lab-pg-btn is-run"
+                  style={{ padding: '5px 12px', fontSize: '12px', borderRadius: '6px' }}
+                >
+                  ▶ {tr('重新运行计算', '重新執行計算')}
+                </button>
+              </div>
+
+              <div
+                style={{
+                  flex: 1,
+                  background: '#090d16',
+                  border: '1px solid rgba(56, 189, 248, 0.2)',
+                  borderRadius: '6px',
+                  padding: '12px',
+                  fontFamily: 'monospace',
+                  fontSize: '12px',
+                  overflowY: 'auto',
+                  maxHeight: '210px',
+                }}
+              >
+                {runtimeErrors.length > 0 ? (
+                  runtimeErrors.map((err, idx) => (
+                    <div key={idx} style={{ color: '#f87171', marginBottom: '6px' }}>
+                      ✖ {err.message}
+                    </div>
+                  ))
+                ) : consoleEntries.length > 0 ? (
+                  consoleEntries.map((entry) => (
+                    <div key={entry.id} style={{ color: '#38bdf8', marginBottom: '6px', lineHeight: 1.5 }}>
+                      <span style={{ color: '#64748b', marginRight: '8px' }}>[{entry.level.toUpperCase()}]</span>
+                      {entry.args.join(' ')}
+                    </div>
+                  ))
+                ) : (
+                  <div style={{ color: '#64748b' }}>
+                    {execStatus === 'running'
+                      ? tr('⏳ 正在隔离运行时中执行计算...', '⏳ 正在隔離執行時中執行計算...')
+                      : tr('✓ 计算已完成，详见下方 Console 输出。', '✓ 計算已完成，詳見下方 Console 輸出。')}
+                  </div>
+                )}
+              </div>
+            </div>
           ) : (
             <div
               className={`sandbox-empty-placeholder ${failClosedReason ? 'is-fail-closed' : ''}`}

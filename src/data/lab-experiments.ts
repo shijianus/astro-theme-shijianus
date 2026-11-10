@@ -156,16 +156,7 @@ export const OFFICIAL_LAB_EXPERIMENTS: LabExperiment[] = [
       {
         name: 'script.js',
         language: 'javascript',
-        content: `const canvas = document.getElementById('star-canvas');
-const ctx = canvas.getContext('2d');
-const latRange = document.getElementById('lat-range');
-const spdRange = document.getElementById('spd-range');
-const latOut = document.getElementById('lat-out');
-const spdOut = document.getElementById('spd-out');
-const btnClear = document.getElementById('btn-clear');
-const btnBloom = document.getElementById('btn-bloom');
-
-let angle = 0;
+        content: `let angle = 0;
 let bloom = true;
 const stars = Array.from({ length: 120 }, (_, i) => ({
   radius: Math.random() * 190 + 10,
@@ -176,48 +167,69 @@ const stars = Array.from({ length: 120 }, (_, i) => ({
 
 console.log('[StarTrails] 已初始化 120 颗恒星极坐标粒子，当前北天极仰角 39° N');
 
-function render() {
-  requestAnimationFrame(render);
-  const speed = Number(spdRange.value) * 0.0005;
-  angle += speed;
-
-  ctx.fillStyle = 'rgba(10, 15, 29, 0.15)';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-  const cx = canvas.width / 2;
-  const cy = canvas.height * (1 - (Number(latRange.value) / 90) * 0.7);
-
-  for (const s of stars) {
-    const cur = s.theta + angle;
-    const x = cx + Math.cos(cur) * s.radius;
-    const y = cy + Math.sin(cur) * (s.radius * 0.6);
-    ctx.beginPath();
-    ctx.arc(x, y, s.size, 0, Math.PI * 2);
-    ctx.fillStyle = s.color;
-    ctx.shadowBlur = bloom ? 6 : 0;
-    ctx.shadowColor = s.color;
-    ctx.fill();
+if (typeof document === 'undefined') {
+  const cx = 280;
+  const cy = 240 * (1 - (39 / 90) * 0.7);
+  for (let frame = 0; frame < 60; frame++) {
+    angle += 15 * 0.0005;
   }
-}
-render();
+  const sample = stars[0];
+  const sx = (cx + Math.cos(sample.theta + angle) * sample.radius).toFixed(2);
+  const sy = (cy + Math.sin(sample.theta + angle) * (sample.radius * 0.6)).toFixed(2);
+  console.log(\`[StarTrails][QuickJS WASM] 60 帧天球极坐标投影计算完成 | 极点 cy=\${cy.toFixed(1)} | 采样星轨终点=(\${sx}, \${sy})\`);
+} else {
+  const canvas = document.getElementById('star-canvas');
+  const ctx = canvas.getContext('2d');
+  const latRange = document.getElementById('lat-range');
+  const spdRange = document.getElementById('spd-range');
+  const latOut = document.getElementById('lat-out');
+  const spdOut = document.getElementById('spd-out');
+  const btnClear = document.getElementById('btn-clear');
+  const btnBloom = document.getElementById('btn-bloom');
 
-latRange.addEventListener('input', () => {
-  latOut.textContent = latRange.value + '° N';
-  console.log('[StarTrails] 调整观测纬度:', latRange.value + '° N');
-});
-spdRange.addEventListener('input', () => {
-  spdOut.textContent = (Number(spdRange.value) / 10).toFixed(1) + 'x';
-});
-btnClear.addEventListener('click', () => {
-  ctx.fillStyle = '#0a0f1d';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-  console.info('[StarTrails] 画布长曝光残影已清零');
-});
-btnBloom.addEventListener('click', () => {
-  bloom = !bloom;
-  btnBloom.textContent = bloom ? '光晕: 开启' : '光晕: 关闭';
-  btnBloom.classList.toggle('active', bloom);
-});`,
+  function render() {
+    requestAnimationFrame(render);
+    const speed = Number(spdRange.value) * 0.0005;
+    angle += speed;
+
+    ctx.fillStyle = 'rgba(10, 15, 29, 0.15)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    const cx = canvas.width / 2;
+    const cy = canvas.height * (1 - (Number(latRange.value) / 90) * 0.7);
+
+    for (const s of stars) {
+      const cur = s.theta + angle;
+      const x = cx + Math.cos(cur) * s.radius;
+      const y = cy + Math.sin(cur) * (s.radius * 0.6);
+      ctx.beginPath();
+      ctx.arc(x, y, s.size, 0, Math.PI * 2);
+      ctx.fillStyle = s.color;
+      ctx.shadowBlur = bloom ? 6 : 0;
+      ctx.shadowColor = s.color;
+      ctx.fill();
+    }
+  }
+  render();
+
+  latRange.addEventListener('input', () => {
+    latOut.textContent = latRange.value + '° N';
+    console.log('[StarTrails] 调整观测纬度:', latRange.value + '° N');
+  });
+  spdRange.addEventListener('input', () => {
+    spdOut.textContent = (Number(spdRange.value) / 10).toFixed(1) + 'x';
+  });
+  btnClear.addEventListener('click', () => {
+    ctx.fillStyle = '#0a0f1d';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    console.info('[StarTrails] 画布长曝光残影已清零');
+  });
+  btnBloom.addEventListener('click', () => {
+    bloom = !bloom;
+    btnBloom.textContent = bloom ? '光晕: 开启' : '光晕: 关闭';
+    btnBloom.classList.toggle('active', bloom);
+  });
+}`,
       },
     ],
   },
@@ -372,31 +384,38 @@ btnBloom.addEventListener('click', () => {
       {
         name: 'script.js',
         language: 'javascript',
-        content: `const plane = document.getElementById('plane-box');
-const pitchIn = document.getElementById('pitch-in');
-const rollIn = document.getElementById('roll-in');
-const pitchOut = document.getElementById('pitch-out');
-const rollOut = document.getElementById('roll-out');
-const btnTurbo = document.getElementById('btn-turbo');
+        content: `console.log('[Aerodynamic] 3D 姿态仿真已就绪 (Pitch=15°, Roll=-10°)');
 
-function syncAttitude() {
-  const pitch = Number(pitchIn.value);
-  const roll = Number(rollIn.value);
-  pitchOut.textContent = pitch + '°';
-  rollOut.textContent = roll + '°';
-  plane.style.transform = \`rotateX(\${pitch}deg) rotateZ(\${roll}deg)\`;
-  console.log(\`[Aerodynamic] 姿态矩阵已更新: Pitch=\${pitch}°, Roll=\${roll}°\`);
-}
+if (typeof document === 'undefined') {
+  const pitchRad = (15 * Math.PI) / 180;
+  const rollRad = (-10 * Math.PI) / 180;
+  const liftCoeff = (Math.cos(pitchRad) * Math.cos(rollRad)).toFixed(4);
+  console.log(\`[Aerodynamic][QuickJS WASM] 欧拉旋转矩阵计算完成: cos(Pitch)·cos(Roll)=\${liftCoeff}\`);
+} else {
+  const plane = document.getElementById('plane-box');
+  const pitchIn = document.getElementById('pitch-in');
+  const rollIn = document.getElementById('roll-in');
+  const pitchOut = document.getElementById('pitch-out');
+  const rollOut = document.getElementById('roll-out');
+  const btnTurbo = document.getElementById('btn-turbo');
 
-pitchIn.addEventListener('input', syncAttitude);
-rollIn.addEventListener('input', syncAttitude);
-btnTurbo.addEventListener('click', () => {
-  console.info('[Aerodynamic] 触发 720° 桶滚加速机动 (Barrel Roll)');
-  plane.classList.add('barrel-roll');
-  setTimeout(() => plane.classList.remove('barrel-roll'), 1150);
-});
+  function syncAttitude() {
+    const pitch = Number(pitchIn.value);
+    const roll = Number(rollIn.value);
+    pitchOut.textContent = pitch + '°';
+    rollOut.textContent = roll + '°';
+    plane.style.transform = \`rotateX(\${pitch}deg) rotateZ(\${roll}deg)\`;
+    console.log(\`[Aerodynamic] 姿态矩阵已更新: Pitch=\${pitch}°, Roll=\${roll}°\`);
+  }
 
-console.log('[Aerodynamic] 3D 姿态仿真已就绪 (Pitch=15°, Roll=-10°)');`,
+  pitchIn.addEventListener('input', syncAttitude);
+  rollIn.addEventListener('input', syncAttitude);
+  btnTurbo.addEventListener('click', () => {
+    console.info('[Aerodynamic] 触发 720° 桶滚加速机动 (Barrel Roll)');
+    plane.classList.add('barrel-roll');
+    setTimeout(() => plane.classList.remove('barrel-roll'), 1150);
+  });
+}`,
       },
     ],
   },
@@ -494,97 +513,110 @@ console.log('[Aerodynamic] 3D 姿态仿真已就绪 (Pitch=15°, Roll=-10°)');`
       {
         name: 'script.js',
         language: 'javascript',
-        content: `let audioCtx = null;
-function getCtx() {
-  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  if (audioCtx.state === 'suspended') audioCtx.resume();
-  return audioCtx;
-}
+        content: `if (typeof document === 'undefined') {
+  const chordFreqs = [523.25, 659.25, 783.99, 1046.5];
+  const sampleRate = 44100;
+  let energy = 0;
+  for (let n = 0; n < 128; n++) {
+    const t = n / sampleRate;
+    const sample = chordFreqs.reduce((acc, f) => acc + Math.sin(2 * Math.PI * f * t) * 0.08, 0);
+    energy += sample * sample;
+  }
+  const rms = Math.sqrt(energy / 128).toFixed(4);
+  console.log(\`[WebAudio][QuickJS WASM] 6 路合成器 DSP 时域波形包络计算完成 | C5-E5-G5-C6 128点采样 RMS=\${rms}\`);
+} else {
+  let audioCtx = null;
+  function getCtx() {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    return audioCtx;
+  }
 
-function triggerSynth(type) {
-  const ctx = getCtx();
-  const t = ctx.currentTime;
-  console.log('[WebAudio] 触发合成器音色:', type, 'at', t.toFixed(3) + 's');
+  function triggerSynth(type) {
+    const ctx = getCtx();
+    const t = ctx.currentTime;
+    console.log('[WebAudio] 触发合成器音色:', type, 'at', t.toFixed(3) + 's');
 
-  if (type === 'cyber') {
-    [880, 1108, 1318, 1760].forEach((freq, idx) => {
+    if (type === 'cyber') {
+      [880, 1108, 1318, 1760].forEach((freq, idx) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.frequency.setValueAtTime(freq, t + idx * 0.05);
+        gain.gain.setValueAtTime(0.1, t + idx * 0.05);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + idx * 0.05 + 0.3);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(t + idx * 0.05);
+        osc.stop(t + idx * 0.05 + 0.35);
+      });
+    } else if (type === 'laser') {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
-      osc.frequency.setValueAtTime(freq, t + idx * 0.05);
-      gain.gain.setValueAtTime(0.1, t + idx * 0.05);
-      gain.gain.exponentialRampToValueAtTime(0.001, t + idx * 0.05 + 0.3);
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start(t + idx * 0.05);
-      osc.stop(t + idx * 0.05 + 0.35);
-    });
-  } else if (type === 'laser') {
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.frequency.setValueAtTime(1400, t);
-    osc.frequency.exponentialRampToValueAtTime(100, t + 0.2);
-    gain.gain.setValueAtTime(0.2, t);
-    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.2);
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.start(t);
-    osc.stop(t + 0.25);
-  } else if (type === 'click') {
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.type = 'triangle';
-    osc.frequency.setValueAtTime(600, t);
-    gain.gain.setValueAtTime(0.15, t);
-    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.04);
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.start(t);
-    osc.stop(t + 0.05);
-  } else if (type === 'shutter') {
-    [400, 250].forEach((freq, idx) => {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = 'sawtooth';
-      osc.frequency.setValueAtTime(freq, t + idx * 0.08);
-      gain.gain.setValueAtTime(0.12, t + idx * 0.08);
-      gain.gain.exponentialRampToValueAtTime(0.001, t + idx * 0.08 + 0.06);
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start(t + idx * 0.08);
-      osc.stop(t + idx * 0.08 + 0.07);
-    });
-  } else if (type === 'chord') {
-    [523.25, 659.25, 783.99, 1046.5].forEach((freq) => {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(freq, t);
-      gain.gain.setValueAtTime(0.08, t);
-      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.6);
+      osc.frequency.setValueAtTime(1400, t);
+      osc.frequency.exponentialRampToValueAtTime(100, t + 0.2);
+      gain.gain.setValueAtTime(0.2, t);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.2);
       osc.connect(gain);
       gain.connect(ctx.destination);
       osc.start(t);
-      osc.stop(t + 0.65);
-    });
-  } else if (type === 'jump') {
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.type = 'square';
-    osc.frequency.setValueAtTime(150, t);
-    osc.frequency.linearRampToValueAtTime(600, t + 0.15);
-    gain.gain.setValueAtTime(0.1, t);
-    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.18);
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.start(t);
-    osc.stop(t + 0.2);
+      osc.stop(t + 0.25);
+    } else if (type === 'click') {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(600, t);
+      gain.gain.setValueAtTime(0.15, t);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.04);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(t);
+      osc.stop(t + 0.05);
+    } else if (type === 'shutter') {
+      [400, 250].forEach((freq, idx) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(freq, t + idx * 0.08);
+        gain.gain.setValueAtTime(0.12, t + idx * 0.08);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + idx * 0.08 + 0.06);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(t + idx * 0.08);
+        osc.stop(t + idx * 0.08 + 0.07);
+      });
+    } else if (type === 'chord') {
+      [523.25, 659.25, 783.99, 1046.5].forEach((freq) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, t);
+        gain.gain.setValueAtTime(0.08, t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.6);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(t);
+        osc.stop(t + 0.65);
+      });
+    } else if (type === 'jump') {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'square';
+      osc.frequency.setValueAtTime(150, t);
+      osc.frequency.linearRampToValueAtTime(600, t + 0.15);
+      gain.gain.setValueAtTime(0.1, t);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.18);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(t);
+      osc.stop(t + 0.2);
+    }
   }
-}
 
-document.querySelectorAll('.synth-pad').forEach((btn) => {
-  btn.addEventListener('click', () => triggerSynth(btn.dataset.tone));
-});
-console.log('[WebAudio] 6 路合成器打击垫已绑定，点击任意按钮可实时合成波形');`,
+  document.querySelectorAll('.synth-pad').forEach((btn) => {
+    btn.addEventListener('click', () => triggerSynth(btn.dataset.tone));
+  });
+  console.log('[WebAudio] 6 路合成器打击垫已绑定，点击任意按钮可实时合成波形');
+}`,
       },
     ],
   },
@@ -718,25 +750,31 @@ console.log('[WebAudio] 6 路合成器打击垫已绑定，点击任意按钮可
         name: 'script.js',
         language: 'javascript',
         content: `const rates = { USD: 1, CNY: 7.25, EUR: 0.92, JPY: 152.0, GBP: 0.77, TWD: 32.1, HKD: 7.78 };
-const amountEl = document.getElementById('fx-amount');
-const fromEl = document.getElementById('fx-from');
 
-function updateFX() {
-  const val = Math.max(0, parseFloat(amountEl.value) || 0);
-  const from = fromEl.value;
-  const usdBase = val / (rates[from] || 1);
+if (typeof document === 'undefined') {
+  const usdBase = 10;
+  console.log(\`[FXConverter] 10 USD => USD基准 $\${usdBase.toFixed(4)} | CNY ¥\${(usdBase * rates.CNY).toFixed(2)} | EUR €\${(usdBase * rates.EUR).toFixed(2)} | JPY ¥\${Math.round(usdBase * rates.JPY)}\`);
+} else {
+  const amountEl = document.getElementById('fx-amount');
+  const fromEl = document.getElementById('fx-from');
 
-  document.getElementById('out-cny').textContent = '¥ ' + (usdBase * rates.CNY).toFixed(2);
-  document.getElementById('out-usd').textContent = '$ ' + usdBase.toFixed(2);
-  document.getElementById('out-eur').textContent = '€ ' + (usdBase * rates.EUR).toFixed(2);
-  document.getElementById('out-jpy').textContent = '¥ ' + Math.round(usdBase * rates.JPY);
+  function updateFX() {
+    const val = Math.max(0, parseFloat(amountEl.value) || 0);
+    const from = fromEl.value;
+    const usdBase = val / (rates[from] || 1);
 
-  console.log(\`[FXConverter] \${val} \${from} => USD基准 \$\${usdBase.toFixed(4)}\`);
-}
+    document.getElementById('out-cny').textContent = '¥ ' + (usdBase * rates.CNY).toFixed(2);
+    document.getElementById('out-usd').textContent = '$ ' + usdBase.toFixed(2);
+    document.getElementById('out-eur').textContent = '€ ' + (usdBase * rates.EUR).toFixed(2);
+    document.getElementById('out-jpy').textContent = '¥ ' + Math.round(usdBase * rates.JPY);
 
-amountEl.addEventListener('input', updateFX);
-fromEl.addEventListener('change', updateFX);
-updateFX();`,
+    console.log(\`[FXConverter] \${val} \${from} => USD基准 \$\${usdBase.toFixed(4)}\`);
+  }
+
+  amountEl.addEventListener('input', updateFX);
+  fromEl.addEventListener('change', updateFX);
+  updateFX();
+}`,
       },
     ],
   },
@@ -863,11 +901,7 @@ updateFX();`,
       {
         name: 'script.js',
         language: 'javascript',
-        content: `const stage = document.getElementById('bars-stage');
-const summary = document.getElementById('step-summary');
-const btn = document.getElementById('btn-run-sort');
-
-function bubbleSortWithTrace(input) {
+        content: `function bubbleSortWithTrace(input) {
   const arr = [...input];
   const n = arr.length;
   let comparisons = 0;
@@ -896,25 +930,33 @@ function bubbleSortWithTrace(input) {
   return { arr, comparisons, swaps };
 }
 
-function renderBars(arr, sorted = false) {
-  const max = Math.max(...arr, 1);
-  stage.innerHTML = arr.map((val) => {
-    const h = Math.max(24, Math.round((val / max) * 145));
-    return \`<div class="bar-item \${sorted ? 'sorted' : ''}" style="height:\${h}px">\${val}</div>\`;
-  }).join('');
-}
+if (typeof document === 'undefined') {
+  bubbleSortWithTrace([38, 14, 29, 7, 42, 19, 11]);
+} else {
+  const stage = document.getElementById('bars-stage');
+  const summary = document.getElementById('step-summary');
+  const btn = document.getElementById('btn-run-sort');
 
-function runDemo(sample) {
-  const res = bubbleSortWithTrace(sample);
-  renderBars(res.arr, true);
-  summary.textContent = \`排序完成：[\${res.arr.join(', ')}] · 共比较 \${res.comparisons} 次，交换 \${res.swaps} 次\`;
-}
+  function renderBars(arr, sorted = false) {
+    const max = Math.max(...arr, 1);
+    stage.innerHTML = arr.map((val) => {
+      const h = Math.max(24, Math.round((val / max) * 145));
+      return \`<div class="bar-item \${sorted ? 'sorted' : ''}" style="height:\${h}px">\${val}</div>\`;
+    }).join('');
+  }
 
-runDemo([38, 14, 29, 7, 42, 19, 11]);
-btn.addEventListener('click', () => {
-  const rand = Array.from({ length: 7 }, () => Math.floor(Math.random() * 45) + 5);
-  runDemo(rand);
-});`,
+  function runDemo(sample) {
+    const res = bubbleSortWithTrace(sample);
+    renderBars(res.arr, true);
+    summary.textContent = \`排序完成：[\${res.arr.join(', ')}] · 共比较 \${res.comparisons} 次，交换 \${res.swaps} 次\`;
+  }
+
+  runDemo([38, 14, 29, 7, 42, 19, 11]);
+  btn.addEventListener('click', () => {
+    const rand = Array.from({ length: 7 }, () => Math.floor(Math.random() * 45) + 5);
+    runDemo(rand);
+  });
+}`,
       },
     ],
   },
@@ -1018,10 +1060,6 @@ btn.addEventListener('click', () => {
   pinned: boolean;
 }
 
-const canvas = document.getElementById('rope-canvas') as HTMLCanvasElement;
-const ctx = canvas.getContext('2d')!;
-const btnImpulse = document.getElementById('btn-impulse') as HTMLButtonElement;
-
 const NODE_COUNT: number = 18;
 const SEGMENT_LEN: number = 10;
 const GRAVITY: number = 0.42;
@@ -1066,43 +1104,56 @@ function stepPhysics(): void {
   }
 }
 
-function draw(): void {
-  requestAnimationFrame(draw);
-  stepPhysics();
-  ctx.fillStyle = '#0f172a';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-  ctx.beginPath();
-  ctx.moveTo(nodes[0].x, nodes[0].y);
-  for (let i = 1; i < nodes.length; i++) {
-    ctx.lineTo(nodes[i].x, nodes[i].y);
-  }
-  ctx.strokeStyle = '#60a5fa';
-  ctx.lineWidth = 3;
-  ctx.stroke();
-
-  for (let i = 0; i < nodes.length; i++) {
-    ctx.beginPath();
-    ctx.arc(nodes[i].x, nodes[i].y, i === 0 || i === nodes.length - 1 ? 5 : 3, 0, Math.PI * 2);
-    ctx.fillStyle = i === 0 ? '#f59e0b' : i === nodes.length - 1 ? '#34d399' : '#e2e8f0';
-    ctx.fill();
-  }
-}
-
-canvas.addEventListener('mousemove', (e: MouseEvent) => {
-  const rect = canvas.getBoundingClientRect();
-  const scaleX = canvas.width / rect.width;
-  nodes[0].x = (e.clientX - rect.left) * scaleX;
-});
-
-btnImpulse.addEventListener('click', () => {
-  const tail = nodes[nodes.length - 1];
-  tail.oldX -= 32;
-  console.log('[VerletPhysics] 已对末端质点施加横向冲量 Δvx = +32');
-});
-
 console.log('[VerletPhysics] TypeScript 物理仿真已启动，共', NODE_COUNT, '个约束质点');
-draw();`,
+
+if (typeof document === 'undefined') {
+  for (let step = 0; step < 30; step++) {
+    stepPhysics();
+  }
+  const tail = nodes[nodes.length - 1];
+  console.log(\`[VerletPhysics][QuickJS WASM] 30 帧约束松弛求解完成 | 末端质点坐标=(\${tail.x.toFixed(2)}, \${tail.y.toFixed(2)})\`);
+} else {
+  const canvas = document.getElementById('rope-canvas') as HTMLCanvasElement;
+  const ctx = canvas.getContext('2d')!;
+  const btnImpulse = document.getElementById('btn-impulse') as HTMLButtonElement;
+
+  function draw(): void {
+    requestAnimationFrame(draw);
+    stepPhysics();
+    ctx.fillStyle = '#0f172a';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.beginPath();
+    ctx.moveTo(nodes[0].x, nodes[0].y);
+    for (let i = 1; i < nodes.length; i++) {
+      ctx.lineTo(nodes[i].x, nodes[i].y);
+    }
+    ctx.strokeStyle = '#60a5fa';
+    ctx.lineWidth = 3;
+    ctx.stroke();
+
+    for (let i = 0; i < nodes.length; i++) {
+      ctx.beginPath();
+      ctx.arc(nodes[i].x, nodes[i].y, i === 0 || i === nodes.length - 1 ? 5 : 3, 0, Math.PI * 2);
+      ctx.fillStyle = i === 0 ? '#f59e0b' : i === nodes.length - 1 ? '#34d399' : '#e2e8f0';
+      ctx.fill();
+    }
+  }
+
+  canvas.addEventListener('mousemove', (e: MouseEvent) => {
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    nodes[0].x = (e.clientX - rect.left) * scaleX;
+  });
+
+  btnImpulse.addEventListener('click', () => {
+    const tail = nodes[nodes.length - 1];
+    tail.oldX -= 32;
+    console.log('[VerletPhysics] 已对末端质点施加横向冲量 Δvx = +32');
+  });
+
+  draw();
+}`,
       },
     ],
   },

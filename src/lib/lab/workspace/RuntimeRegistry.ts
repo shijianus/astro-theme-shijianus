@@ -66,13 +66,14 @@ export class RuntimeRegistry {
         };
       }
     }
-    const caps = this.getCapabilities(kind);
-    if (!caps.html) {
-      const hasHtml = project.files.some((f) => f.name.endsWith('.html') && f.content.trim().length > 0);
-      if (hasHtml && kind === 'quickjs') {
+    if (kind === 'quickjs') {
+      const hasScript = project.files.some(
+        (f) => (f.name.endsWith('.js') || f.name.endsWith('.ts')) && f.content.trim().length > 0
+      );
+      if (!hasScript) {
         return {
           ok: false,
-          reason: `QuickJS 隔离环境仅支持纯 JavaScript 计算，不支持 HTML 页面渲染。请切换到「Browser DOM」运行时。`,
+          reason: `QuickJS 隔离环境仅支持 JavaScript / TypeScript 计算，当前项目不包含脚本文件。请切换到「Browser DOM」运行时。`,
         };
       }
     }

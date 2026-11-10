@@ -47,6 +47,7 @@ export class QuickJsWorkerRuntime implements LabRuntimeAdapter {
   private activeSessionId: string | null = null;
   private watchdogTimer: ReturnType<typeof setTimeout> | null = null;
   private currentRunOptions: RunOptions | null = null;
+  private pendingExecution: { sessionId: string; code: string; timeoutMs: number } | null = null;
   private isDisposed = false;
 
   constructor(config: QuickJsWorkerConfig = {}) {
@@ -65,14 +66,10 @@ export class QuickJsWorkerRuntime implements LabRuntimeAdapter {
         if (this.config.workerUrl) {
           this.worker = new Worker(this.config.workerUrl, { type: 'module' });
         } else {
-          // 在未指定外部 workerUrl 时，构建内联 Blob Worker 载入 quickjs-worker
-          const workerSource = `
-            import { handleHostMessage } from '${new URL('./quickjs-worker.ts', import.meta.url).href}';
-            self.addEventListener('message', (e) => handleHostMessage(e.data));
-          `;
-          const blob = new Blob([workerSource], { type: 'application/javascript' });
-          const blobUrl = URL.createObjectURL(blob);
-          this.worker = new Worker(blobUrl, { type: 'module' });
+          // 使用标准 Vite Module Worker 语法，确保构建期将 quickjs-worker.ts 编译为同源独立 JS chunk
+          this.worker = new Worker(new URL('./quickjs-worker.ts', import.meta.url), {
+            type: 'module',
+          });
         }
 
         this.worker.onmessage = (e: MessageEvent<QuickJsWorkerToHostMessage>) => {
@@ -92,12 +89,20 @@ export class QuickJsWorkerRuntime implements LabRuntimeAdapter {
         });
       } catch (e) {
         console.warn('[QuickJsWorkerRuntime] Worker init fallback:', e);
+        this.worker = null;
       }
     }
   }
 
   private handleWorkerCrash(err: ErrorEvent | any): void {
     console.error('[QuickJsWorkerRuntime] Worker crashed:', err);
+    this.destroyWorker();
+    if (this.pendingExecution && this.activeSessionId === this.pendingExecution.sessionId) {
+      const pending = this.pendingExecution;
+      this.pendingExecution = null;
+      void this.runDirectSimulation(pending.sessionId, pending.code, pending.timeoutMs);
+      return;
+    }
     if (this.currentRunOptions) {
       this.currentRunOptions.onError?.({
         message: `QuickJS Worker crashed: ${err?.message || 'Abnormal termination'}. Auto-rebuilding worker instance.`,
@@ -107,7 +112,6 @@ export class QuickJsWorkerRuntime implements LabRuntimeAdapter {
       });
       this.currentRunOptions.onStatusChange?.('error');
     }
-    this.destroyWorker();
     this.initWorker();
   }
 
@@ -126,13 +130,13 @@ export class QuickJsWorkerRuntime implements LabRuntimeAdapter {
     this.currentRunOptions = options;
     this.isDisposed = false;
 
-    // 1. 纯度检查：QuickJS 仅支持纯 JS 计算，不支持渲染 HTML
-    const hasHtml = project.files.some(
-      (f) => f.name.endsWith('.html') && f.content.trim().length > 0
+    // 1. 脚本检查：QuickJS 仅执行项目中的 JavaScript / TypeScript 逻辑脚本（自动忽略 HTML/CSS 视图层）
+    const scriptFiles = project.files.filter(
+      (f) => (f.name.endsWith('.js') || f.name.endsWith('.ts')) && f.content.trim().length > 0
     );
-    if (hasHtml) {
+    if (scriptFiles.length === 0) {
       const err = {
-        message: 'QuickJS 隔离环境仅支持纯 JavaScript 算法计算，不支持 HTML 页面渲染。请切换到「Browser DOM」运行时。',
+        message: 'QuickJS 隔离环境仅支持 JavaScript / TypeScript 算法计算，当前项目未包含可执行脚本。请切换到「Browser DOM」运行时。',
         line: null,
         column: null,
         timestamp: Date.now(),
@@ -147,8 +151,8 @@ export class QuickJsWorkerRuntime implements LabRuntimeAdapter {
       };
     }
 
-    // 2. 编译并提取脚本文件
-    const compilation = compileExperimentFiles(project.files);
+    // 2. 编译并提取脚本文件（对 TypeScript 执行受限类型擦除）
+    const compilation = compileExperimentFiles(scriptFiles);
     if (!compilation.ok) {
       const err = {
         message: `编译失败: ${compilation.errors.join('; ')}`,
@@ -166,12 +170,9 @@ export class QuickJsWorkerRuntime implements LabRuntimeAdapter {
       };
     }
 
-    const jsCode = project.files
-      .filter((f) => f.name.endsWith('.js') || f.name.endsWith('.ts'))
-      .map((f) => f.content)
-      .join('\n;\n');
+    const jsCode = compilation.js.trim();
 
-    if (!jsCode.trim()) {
+    if (!jsCode) {
       const err = {
         message: '未检测到可执行的 JavaScript 代码。',
         line: null,
@@ -200,6 +201,11 @@ export class QuickJsWorkerRuntime implements LabRuntimeAdapter {
     this.initWorker();
 
     if (this.worker) {
+      this.pendingExecution = {
+        sessionId: options.sessionId,
+        code: jsCode,
+        timeoutMs: timeout,
+      };
       this.postToWorker({
         type: 'EXECUTE',
         sessionId: options.sessionId,
@@ -257,6 +263,10 @@ export class QuickJsWorkerRuntime implements LabRuntimeAdapter {
 
     if ('sessionId' in msg && msg.sessionId && msg.sessionId !== this.activeSessionId) {
       return; // 丢弃不属于当前活跃会话的消息
+    }
+
+    if (msg.type !== 'READY') {
+      this.pendingExecution = null;
     }
 
     switch (msg.type) {
