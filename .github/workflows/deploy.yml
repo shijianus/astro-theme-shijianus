@@ -31,6 +31,7 @@ jobs:
           SITE_BASE: /
           PUBLIC_STATIC_EXPORT: 1
           PUBLIC_RUNTIME_API_BASE: https://shijianus-blog.pages.dev
+          PUBLIC_LAB_SANDBOX_ORIGIN: https://epocanvas-lab-sandbox.pages.dev
 
   deploy:
     needs: build
