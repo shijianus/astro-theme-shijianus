@@ -88,6 +88,30 @@ const OFFICIAL_EXPERIMENTS_META: LabExperimentSummary[] = [
     tags: ['TypeScript', 'Verlet积分', '物理引擎', '约束求解'],
     updatedAt: '2026-11-10',
   },
+  {
+    id: 'exp-07-svg-morph',
+    slug: 'interactive-svg-morph',
+    title: 'SVG 动态流体滤镜与有机变幻 (Organic SVG Fluid & Gooey Morph)',
+    subtitle: '原生 SVG <filter> 矩阵与贝塞尔流体质感',
+    category: 'visual',
+    language: 'html-css-js',
+    runtime: 'browser-dom',
+    version: '1.2.0',
+    tags: ['SVG Filter', 'feColorMatrix', '流体动力学', '矢量变形', '60FPS'],
+    updatedAt: '2026-11-10',
+  },
+  {
+    id: 'exp-08-svg-fractal',
+    slug: 'svg-generative-fractal',
+    title: 'SVG 参数化几何动力齿轮与多重极光分形 (Kinetic SVG Mandala & Fractal Gears)',
+    subtitle: 'SVG 极坐标矢量数学、动态渐变与机械动力学',
+    category: 'visual',
+    language: 'html-css-js',
+    runtime: 'browser-dom',
+    version: '1.2.0',
+    tags: ['SVG Path', '参数化几何', '分形几何', '数学美学', '矢量导出'],
+    updatedAt: '2026-11-10',
+  },
 ];
 
 const LAB_QUOTAS = {

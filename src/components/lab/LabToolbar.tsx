@@ -18,6 +18,8 @@ export interface LabToolbarProps {
   execStatus: 'idle' | 'running' | 'completed' | 'error' | 'terminated' | 'connecting' | 'ready' | 'aborted';
   isHant: boolean;
   dirty?: boolean;
+  layoutMode?: 'split-equal' | 'preview-focus' | 'code-focus';
+  onSelectLayoutMode?: (mode: 'split-equal' | 'preview-focus' | 'code-focus') => void;
   runtimeKind?: string;
   supportedRuntimes?: string[];
   editorKind?: string;
@@ -49,6 +51,8 @@ export const LabToolbar: React.FC<LabToolbarProps> = ({
   execStatus,
   isHant,
   dirty = false,
+  layoutMode = 'split-equal',
+  onSelectLayoutMode,
   runtimeKind = 'browser-dom',
   supportedRuntimes = ['browser-dom', 'quickjs'],
   editorKind = 'lite',
@@ -224,6 +228,42 @@ export const LabToolbar: React.FC<LabToolbarProps> = ({
       </div>
 
       <div className="lab-pg-toolbar__actions">
+        {/* 工作区布局切换器 */}
+        {onSelectLayoutMode && (
+          <div className="lab-layout-switcher" role="group" aria-label={tr('工作区布局', '工作區版面配置')}>
+            <button
+              type="button"
+              className={`lab-layout-btn ${layoutMode === 'split-equal' ? 'is-active' : ''}`}
+              onClick={() => onSelectLayoutMode('split-equal')}
+              title={tr('50/50 均衡对等分屏', '50/50 均衡對等分屏')}
+              data-testid="layout-btn-equal"
+            >
+              <span>◫</span>
+              <span>{tr('均衡', '均衡')}</span>
+            </button>
+            <button
+              type="button"
+              className={`lab-layout-btn ${layoutMode === 'preview-focus' ? 'is-active' : ''}`}
+              onClick={() => onSelectLayoutMode('preview-focus')}
+              title={tr('侧重预览 (36% 代码 : 64% 大视口预览)', '側重預覽 (36% 程式碼 : 64% 大視口預覽)')}
+              data-testid="layout-btn-preview"
+            >
+              <span>◨</span>
+              <span>{tr('大预览', '大預覽')}</span>
+            </button>
+            <button
+              type="button"
+              className={`lab-layout-btn ${layoutMode === 'code-focus' ? 'is-active' : ''}`}
+              onClick={() => onSelectLayoutMode('code-focus')}
+              title={tr('侧重编码 (64% 沉浸代码 : 36% 紧凑预览)', '側重編碼 (64% 沉浸程式碼 : 36% 緊湊預覽)')}
+              data-testid="layout-btn-code"
+            >
+              <span>◧</span>
+              <span>{tr('大代码', '大程式碼')}</span>
+            </button>
+          </div>
+        )}
+
         {/* 一级主要动作 */}
         <button
           type="button"

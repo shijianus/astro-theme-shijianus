@@ -28,7 +28,7 @@ const allTags = Array.from(
       <div class="lab-hero__top-row">
         <div class="lab-hero__badge">
           <span class="badge-dot"></span>
-          <span>LAB EXPERIMENTS · 极客交互代码实验平台</span>
+          <span>LAB EXPERIMENTS · 创意图形与算法实验室</span>
         </div>
         <div class="lab-hero__cta-group">
           <a href="/lab/playground/" class="lab-hero__cta is-primary" data-testid="hero-link-playground">
@@ -37,12 +37,15 @@ const allTags = Array.from(
           <a href="/lab/algorithm-execution-tracer/" class="lab-hero__cta" data-testid="hero-link-tracer">
             🧭 算法逐步执行可视化
           </a>
+          <a href="/lab/interactive-svg-morph/" class="lab-hero__cta" data-testid="hero-link-svg-morph">
+            🫧 SVG 矢量滤镜工坊
+          </a>
         </div>
       </div>
 
-      <h1 class="lab-hero__title">探索代码边界，把物理回响与执行逻辑融入数字界面</h1>
+      <h1 class="lab-hero__title">探索代码边界，在隔离沙盒中直观感受物理与矢量数学</h1>
       <p class="lab-hero__desc">
-        这里是集「实时互动实验展厅」、「隔离沙盒代码工坊」与「程序执行逻辑逐步可视化」于一体的极客试验田。所有实验均支持查看原理说明、检视完整源码、在独立 Opaque-Origin 安全沙盒中在线修改运行及导出分享。
+        这里是专为极客与开发者打造的创意图形展厅与独立交互工坊。涵盖天体极坐标星轨、3D 空间气动力学、原生 SVG 滤镜流体、参数化几何齿轮分形与算法逐行可视化。所有实验均提供真实交互演示、自包含完整源码与原理剖析，支持在独立安全沙盒中在线修改运行、单步调试及一键导出。
       </p>
 
       <div class="lab-stats">
@@ -51,16 +54,16 @@ const allTags = Array.from(
           <small>官方在线实验</small>
         </div>
         <div class="stat-item">
-          <strong>0</strong>
-          <small>首屏重型编辑器依赖</small>
+          <strong>100%</strong>
+          <small>开放自包含源码</small>
         </div>
         <div class="stat-item">
           <strong>60 FPS</strong>
           <small>GPU 硬件加速</small>
         </div>
         <div class="stat-item">
-          <strong>Opaque Sandbox</strong>
-          <small>零 Cookie/DOM 越权隔离</small>
+          <strong>双层隔离</strong>
+          <small>Opaque 跨站安全沙盒</small>
         </div>
       </div>
     </div>
@@ -134,7 +137,7 @@ const allTags = Array.from(
       </div>
 
       <div class="canvas-preview-box">
-        <canvas id="lab-star-canvas" width="460" height="220" class="lab-canvas"></canvas>
+        <canvas id="lab-star-canvas" width="600" height="340" class="lab-canvas"></canvas>
       </div>
 
       <div class="controls-grid">
@@ -501,7 +504,7 @@ const allTags = Array.from(
       </div>
 
       <div class="canvas-preview-box">
-        <canvas id="lab-verlet-canvas" width="460" height="220" class="lab-canvas"></canvas>
+        <canvas id="lab-verlet-canvas" width="600" height="340" class="lab-canvas"></canvas>
       </div>
 
       <div class="controls-grid">
@@ -534,6 +537,175 @@ const allTags = Array.from(
             ⚡ 在线编辑运行
           </a>
           <a href="/lab/preview/verlet-rope-physics/" class="lab-link-btn">
+            ↗ 预览
+          </a>
+        </div>
+      </div>
+    </article>
+
+    <!-- 实验 7：SVG 动态流体滤镜与有机变幻 (feColorMatrix) -->
+    <article
+      class="lab-card theme-card"
+      data-exp-slug="interactive-svg-morph"
+      data-exp-category="visual"
+      data-exp-tags="SVG Filter,feColorMatrix,流体动力学,矢量变形,60FPS"
+      data-exp-title="SVG 动态流体滤镜与有机变幻 Organic SVG Fluid feColorMatrix 滤镜与贝塞尔流体质感"
+    >
+      <div class="lab-card__header">
+        <div class="card-icon">🫧</div>
+        <div class="card-title-group">
+          <div class="card-title-row">
+            <h2 class="card-title">SVG 动态流体滤镜与有机变幻 (SVG Gooey Morph)</h2>
+            <span class="card-badge is-highlight">原生矢量 · v1.2.0</span>
+          </div>
+          <span class="card-sub">原生 SVG &lt;filter&gt; 模糊扩散与 feColorMatrix 阈值阶跃流体融合</span>
+        </div>
+      </div>
+
+      <div class="svg-preview-box">
+        <svg id="dash-morph-svg" viewBox="0 0 600 340" class="lab-dash-svg">
+          <defs>
+            <radialGradient id="dash-bg-glow" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="#425aef" stop-opacity="0.25" />
+              <stop offset="100%" stop-color="#020617" stop-opacity="0" />
+            </radialGradient>
+            <linearGradient id="dash-morph-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#38bdf8" />
+              <stop offset="50%" stop-color="#425aef" />
+              <stop offset="100%" stop-color="#a855f7" />
+            </linearGradient>
+            <filter id="dash-goo" x="-30%" y="-30%" width="160%" height="160%">
+              <feGaussianBlur in="SourceGraphic" stdDeviation="14" result="blur" id="dash-filter-blur" />
+              <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 28 -10" result="goo" id="dash-filter-matrix" />
+              <feBlend in="SourceGraphic" in2="goo" />
+            </filter>
+          </defs>
+          <rect width="600" height="340" fill="#030712" />
+          <circle cx="300" cy="170" r="240" fill="url(#dash-bg-glow)" />
+          <g filter="url(#dash-goo)">
+            <circle id="dash-orb-center" cx="300" cy="170" r="54" fill="url(#dash-morph-grad)" />
+            <circle id="dash-orb-drag" cx="300" cy="170" r="42" fill="url(#dash-morph-grad)" />
+            <circle id="dash-orb-sat-1" cx="220" cy="140" r="28" fill="url(#dash-morph-grad)" />
+            <circle id="dash-orb-sat-2" cx="380" cy="140" r="25" fill="url(#dash-morph-grad)" />
+            <circle id="dash-orb-sat-3" cx="300" cy="250" r="24" fill="url(#dash-morph-grad)" />
+          </g>
+          <circle id="dash-cursor-ring" cx="300" cy="170" r="16" fill="none" stroke="#38bdf8" stroke-width="1.5" stroke-dasharray="4 4" opacity="0.6" />
+        </svg>
+      </div>
+
+      <div class="controls-grid">
+        <div class="control-row">
+          <label>流体张力阈值 (Tension): <span id="dash-tension-val">28</span></label>
+          <input type="range" id="dash-slider-tension" min="16" max="42" value="28" class="lab-slider" />
+        </div>
+        <div class="control-actions">
+          <button id="btn-dash-morph-pulse" type="button" class="lab-btn is-active">⚡ 施加流体扰动脉冲</button>
+          <button id="btn-dash-morph-grad" type="button" class="lab-btn">切换极光配色</button>
+        </div>
+      </div>
+
+      <div class="lab-card__footer">
+        <div class="card-tag-row">
+          <span class="tech-tag">#SVG Filter</span>
+          <span class="tech-tag">#feColorMatrix</span>
+          <span class="tech-tag">#流体动力学</span>
+          <span class="tech-tag">#60FPS</span>
+        </div>
+        <div class="card-action-links">
+          <button
+            type="button"
+            class="lab-link-btn btn-open-source-modal"
+            data-target-slug="interactive-svg-morph"
+          >
+            📄 源码与原理
+          </button>
+          <a href="/lab/interactive-svg-morph/" class="lab-link-btn">🔍 实验详情</a>
+          <a href="/lab/playground/?slug=interactive-svg-morph" class="lab-link-btn is-accent">
+            ⚡ 在线编辑运行
+          </a>
+          <a href="/lab/preview/interactive-svg-morph/" class="lab-link-btn">
+            ↗ 预览
+          </a>
+        </div>
+      </div>
+    </article>
+
+    <!-- 实验 8：SVG 参数化几何动力齿轮与多重极光分形 -->
+    <article
+      class="lab-card theme-card"
+      data-exp-slug="svg-generative-fractal"
+      data-exp-category="visual"
+      data-exp-tags="SVG Path,参数化几何,分形几何,数学美学,矢量导出"
+      data-exp-title="SVG 参数化几何动力齿轮与多重极光分形 Kinetic SVG Mandala 极坐标矢量数学 动态渐变与机械动力学"
+    >
+      <div class="lab-card__header">
+        <div class="card-icon">⚙️</div>
+        <div class="card-title-group">
+          <div class="card-title-row">
+            <h2 class="card-title">SVG 参数化几何动力齿轮与多重分形 (Kinetic Mandala)</h2>
+            <span class="card-badge is-highlight">原生矢量 · v1.2.0</span>
+          </div>
+          <span class="card-sub">SVG 极坐标矢量数学、动态渐变旋转与机械齿轮啮合传动动力学</span>
+        </div>
+      </div>
+
+      <div class="svg-preview-box">
+        <svg id="dash-fractal-svg" viewBox="-300 -170 600 340" class="lab-dash-svg">
+          <defs>
+            <radialGradient id="dash-aurora-sun" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.3" />
+              <stop offset="60%" stop-color="#425aef" stop-opacity="0.08" />
+              <stop offset="100%" stop-color="#020617" stop-opacity="0" />
+            </radialGradient>
+            <linearGradient id="dash-aurora-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#38bdf8" />
+              <stop offset="35%" stop-color="#818cf8" />
+              <stop offset="70%" stop-color="#c084fc" />
+              <stop offset="100%" stop-color="#f472b6" />
+            </linearGradient>
+            <filter id="dash-mandala-glow" x="-20%" y="-20%" width="140%" height="140%">
+              <feDropShadow dx="0" dy="0" stdDeviation="4" flood-color="#38bdf8" flood-opacity="0.6" />
+            </filter>
+          </defs>
+          <rect x="-300" y="-170" width="600" height="340" fill="#030712" />
+          <circle cx="0" cy="0" r="160" fill="url(#dash-aurora-sun)" />
+          <g id="dash-mandala-outer" filter="url(#dash-mandala-glow)"></g>
+          <g id="dash-gear-cluster"></g>
+          <g id="dash-sacred-core"></g>
+        </svg>
+      </div>
+
+      <div class="controls-grid">
+        <div class="control-row">
+          <label>分形对称阶数 (Symmetry N): <span id="dash-sym-val">8</span></label>
+          <input type="range" id="dash-slider-sym" min="4" max="16" value="8" class="lab-slider" />
+        </div>
+        <div class="control-actions">
+          <button id="btn-dash-fractal-speed" type="button" class="lab-btn is-active">旋转速度: 1.5x</button>
+          <button id="btn-dash-fractal-copy" type="button" class="lab-btn">📋 复制纯 SVG 代码</button>
+        </div>
+      </div>
+
+      <div class="lab-card__footer">
+        <div class="card-tag-row">
+          <span class="tech-tag">#SVG Path</span>
+          <span class="tech-tag">#参数化几何</span>
+          <span class="tech-tag">#分形几何</span>
+          <span class="tech-tag">#矢量导出</span>
+        </div>
+        <div class="card-action-links">
+          <button
+            type="button"
+            class="lab-link-btn btn-open-source-modal"
+            data-target-slug="svg-generative-fractal"
+          >
+            📄 源码与原理
+          </button>
+          <a href="/lab/svg-generative-fractal/" class="lab-link-btn">🔍 实验详情</a>
+          <a href="/lab/playground/?slug=svg-generative-fractal" class="lab-link-btn is-accent">
+            ⚡ 在线编辑运行
+          </a>
+          <a href="/lab/preview/svg-generative-fractal/" class="lab-link-btn">
             ↗ 预览
           </a>
         </div>
@@ -623,9 +795,9 @@ const allTags = Array.from(
       let stars = [];
       let bloom = true;
 
-      for (let i = 0; i < 120; i++) {
+      for (let i = 0; i < 160; i++) {
         stars.push({
-          radius: Math.random() * 160 + 10,
+          radius: Math.random() * 240 + 15,
           theta: Math.random() * Math.PI * 2,
           size: Math.random() * 1.5 + 0.5,
           color: i % 5 === 0 ? '#60a5fa' : i % 8 === 0 ? '#fde047' : '#ffffff',
@@ -895,11 +1067,11 @@ const allTags = Array.from(
       const btnWave = document.getElementById('btn-verlet-wave');
       const btnGrav = document.getElementById('btn-verlet-gravity');
       let gravDir = 1;
-      const nodes = Array.from({ length: 16 }, (_, i) => ({
-        x: 140 + i * 11,
-        y: 35,
-        oldX: 140 + i * 11,
-        oldY: 35,
+      const nodes = Array.from({ length: 20 }, (_, i) => ({
+        x: 180 + i * 13,
+        y: 50,
+        oldX: 180 + i * 13,
+        oldY: 50,
         pinned: i === 0,
       }));
 
@@ -962,7 +1134,231 @@ const allTags = Array.from(
       }
     }
 
-    // 7. 分类、标签与关键词实时筛选
+    // 7. SVG 动态流体滤镜卡片预览 (feColorMatrix)
+    const morphSvg = document.getElementById('dash-morph-svg');
+    if (morphSvg) {
+      const orbCenter = document.getElementById('dash-orb-center');
+      const orbDrag = document.getElementById('dash-orb-drag');
+      const cursorRing = document.getElementById('dash-cursor-ring');
+      const filterBlur = document.getElementById('dash-filter-blur');
+      const filterMatrix = document.getElementById('dash-filter-matrix');
+      const morphGrad = document.getElementById('dash-morph-grad');
+      const sliderTension = document.getElementById('dash-slider-tension');
+      const tensionVal = document.getElementById('dash-tension-val');
+      const btnPulse = document.getElementById('btn-dash-morph-pulse');
+      const btnGrad = document.getElementById('btn-dash-morph-grad');
+
+      const satellites = [
+        { el: document.getElementById('dash-orb-sat-1'), cx: 220, cy: 140, baseAngle: 0, r: 85, speed: 0.02 },
+        { el: document.getElementById('dash-orb-sat-2'), cx: 380, cy: 140, baseAngle: Math.PI * 0.7, r: 95, speed: -0.018 },
+        { el: document.getElementById('dash-orb-sat-3'), cx: 300, cy: 250, baseAngle: Math.PI * 1.4, r: 80, speed: 0.024 },
+      ];
+
+      let dragOrb = { x: 300, y: 170, vx: 0, vy: 0 };
+      let targetPos = { x: 300, y: 170 };
+      let isDragging = false;
+      let tick = 0;
+
+      function updateDashFilter() {
+        if (!sliderTension || !filterBlur || !filterMatrix) return;
+        const tension = parseInt(sliderTension.value, 10);
+        if (tensionVal) tensionVal.textContent = String(tension);
+        filterMatrix.setAttribute('values', `1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 ${tension} -${Math.floor(tension * 0.36)}`);
+      }
+
+      if (sliderTension) sliderTension.addEventListener('input', updateDashFilter);
+
+      morphSvg.addEventListener('pointerdown', (e) => {
+        isDragging = true;
+        const rect = morphSvg.getBoundingClientRect();
+        targetPos.x = ((e.clientX - rect.left) / rect.width) * 600;
+        targetPos.y = ((e.clientY - rect.top) / rect.height) * 340;
+        if (cursorRing) cursorRing.setAttribute('opacity', '1');
+      });
+
+      window.addEventListener('pointermove', (e) => {
+        if (!isDragging) return;
+        const rect = morphSvg.getBoundingClientRect();
+        targetPos.x = ((e.clientX - rect.left) / rect.width) * 600;
+        targetPos.y = ((e.clientY - rect.top) / rect.height) * 340;
+      });
+
+      window.addEventListener('pointerup', () => {
+        isDragging = false;
+        targetPos.x = 300;
+        targetPos.y = 170;
+        if (cursorRing) cursorRing.setAttribute('opacity', '0.4');
+      });
+
+      function animateMorph() {
+        requestAnimationFrame(animateMorph);
+        tick++;
+
+        const k = isDragging ? 0.12 : 0.05;
+        const damping = 0.85;
+        dragOrb.vx = (dragOrb.vx + (targetPos.x - dragOrb.x) * k) * damping;
+        dragOrb.vy = (dragOrb.vy + (targetPos.y - dragOrb.y) * k) * damping;
+        dragOrb.x += dragOrb.vx;
+        dragOrb.y += dragOrb.vy;
+
+        if (orbDrag) {
+          orbDrag.setAttribute('cx', dragOrb.x.toFixed(1));
+          orbDrag.setAttribute('cy', dragOrb.y.toFixed(1));
+        }
+        if (cursorRing) {
+          cursorRing.setAttribute('cx', targetPos.x.toFixed(1));
+          cursorRing.setAttribute('cy', targetPos.y.toFixed(1));
+        }
+
+        satellites.forEach((sat) => {
+          if (!sat.el) return;
+          const angle = sat.baseAngle + tick * sat.speed;
+          sat.el.setAttribute('cx', (300 + Math.cos(angle) * sat.r).toFixed(1));
+          sat.el.setAttribute('cy', (170 + Math.sin(angle) * (sat.r * 0.7)).toFixed(1));
+        });
+      }
+      animateMorph();
+
+      if (btnPulse) {
+        btnPulse.addEventListener('click', () => {
+          dragOrb.vx += (Math.random() - 0.5) * 60;
+          dragOrb.vy += (Math.random() - 0.5) * 60;
+        });
+      }
+
+      let gradIndex = 0;
+      const gradSchemes = [
+        ['#38bdf8', '#425aef', '#a855f7'],
+        ['#f59e0b', '#ef4444', '#831843'],
+        ['#34d399', '#059669', '#064e3b'],
+      ];
+      if (btnGrad && morphGrad) {
+        btnGrad.addEventListener('click', () => {
+          gradIndex = (gradIndex + 1) % gradSchemes.length;
+          const stops = morphGrad.querySelectorAll('stop');
+          const scheme = gradSchemes[gradIndex];
+          stops[0].setAttribute('stop-color', scheme[0]);
+          stops[1].setAttribute('stop-color', scheme[1]);
+          stops[2].setAttribute('stop-color', scheme[2]);
+        });
+      }
+    }
+
+    // 8. SVG 参数化几何动力齿轮与多重分形卡片预览
+    const fractalSvg = document.getElementById('dash-fractal-svg');
+    if (fractalSvg) {
+      const mandalaOuter = document.getElementById('dash-mandala-outer');
+      const gearCluster = document.getElementById('dash-gear-cluster');
+      const sacredCore = document.getElementById('dash-sacred-core');
+      const sliderSym = document.getElementById('dash-slider-sym');
+      const symVal = document.getElementById('dash-sym-val');
+      const btnSpeed = document.getElementById('btn-dash-fractal-speed');
+      const btnCopy = document.getElementById('btn-dash-fractal-copy');
+
+      let fractalAngle = 0;
+      let fractalSpeed = 0.015;
+
+      function createDashGear(cx, cy, rOuter, rInner, teeth) {
+        const pts = [];
+        const step = (Math.PI * 2) / teeth;
+        for (let i = 0; i < teeth; i++) {
+          const a0 = i * step;
+          const a1 = a0 + step * 0.25;
+          const a2 = a0 + step * 0.5;
+          const a3 = a0 + step * 0.75;
+          pts.push(`${cx + Math.cos(a0) * rInner},${cy + Math.sin(a0) * rInner}`);
+          pts.push(`${cx + Math.cos(a1) * rOuter},${cy + Math.sin(a1) * rOuter}`);
+          pts.push(`${cx + Math.cos(a2) * rOuter},${cy + Math.sin(a2) * rOuter}`);
+          pts.push(`${cx + Math.cos(a3) * rInner},${cy + Math.sin(a3) * rInner}`);
+        }
+        return `M ${pts.join(' L ')} Z`;
+      }
+
+      function buildDashFractal() {
+        if (!sliderSym || !mandalaOuter || !gearCluster || !sacredCore) return;
+        const sym = parseInt(sliderSym.value, 10);
+        if (symVal) symVal.textContent = String(sym);
+
+        // 曼陀罗外环
+        const petals = [];
+        const step = (Math.PI * 2) / sym;
+        for (let i = 0; i < sym; i++) {
+          const a = i * step;
+          const x0 = Math.cos(a) * 45;
+          const y0 = Math.sin(a) * 45;
+          const xTip = Math.cos(a) * 145;
+          const yTip = Math.sin(a) * 145;
+          const cx1 = Math.cos(a - 0.3) * 105;
+          const cy1 = Math.sin(a - 0.3) * 105;
+          const cx2 = Math.cos(a + 0.3) * 105;
+          const cy2 = Math.sin(a + 0.3) * 105;
+          petals.push(`<path d="M ${x0.toFixed(1)} ${y0.toFixed(1)} C ${cx1.toFixed(1)} ${cy1.toFixed(1)}, ${cx2.toFixed(1)} ${cy2.toFixed(1)}, ${xTip.toFixed(1)} ${yTip.toFixed(1)} S ${cx1.toFixed(1)} ${cy1.toFixed(1)}, ${x0.toFixed(1)} ${y0.toFixed(1)}" fill="none" stroke="url(#dash-aurora-grad)" stroke-width="1.6" opacity="0.85" />`);
+        }
+        mandalaOuter.innerHTML = petals.join('');
+
+        // 齿轮集群
+        const cGearD = createDashGear(0, 0, 62, 52, 20);
+        let satHtml = '';
+        for (let k = 0; k < 4; k++) {
+          const theta = (k * Math.PI) / 2;
+          const sx = Math.cos(theta) * 102;
+          const sy = Math.sin(theta) * 102;
+          satHtml += `<path class="dash-sat-${k}" d="${createDashGear(sx, sy, 32, 25, 10)}" fill="none" stroke="url(#dash-aurora-grad)" stroke-width="1.3" opacity="0.9" />`;
+        }
+        gearCluster.innerHTML = `<path id="dash-center-gear" d="${cGearD}" fill="none" stroke="url(#dash-aurora-grad)" stroke-width="1.8" />${satHtml}`;
+
+        // 核心几何
+        const starPts = [];
+        for (let j = 0; j < sym * 2; j++) {
+          const ang = (j * Math.PI) / sym;
+          const rad = j % 2 === 0 ? 36 : 16;
+          starPts.push(`${(Math.cos(ang) * rad).toFixed(1)},${(Math.sin(ang) * rad).toFixed(1)}`);
+        }
+        sacredCore.innerHTML = `<polygon points="${starPts.join(' ')}" fill="url(#dash-aurora-grad)" opacity="0.3" /><polygon points="${starPts.join(' ')}" fill="none" stroke="url(#dash-aurora-grad)" stroke-width="1.4" /><circle cx="0" cy="0" r="5" fill="#ffffff" />`;
+      }
+
+      if (sliderSym) sliderSym.addEventListener('input', buildDashFractal);
+      buildDashFractal();
+
+      function animateDashFractal() {
+        requestAnimationFrame(animateDashFractal);
+        fractalAngle += fractalSpeed;
+        if (mandalaOuter) mandalaOuter.setAttribute('transform', `rotate(${(fractalAngle * 25).toFixed(2)})`);
+        const cGear = document.getElementById('dash-center-gear');
+        if (cGear) cGear.setAttribute('transform', `rotate(${(fractalAngle * 40).toFixed(2)})`);
+        for (let k = 0; k < 4; k++) {
+          const sat = document.querySelector(`.dash-sat-${k}`);
+          if (sat) {
+            const theta = (k * Math.PI) / 2;
+            sat.setAttribute('transform', `rotate(${(-fractalAngle * 80).toFixed(2)}, ${(Math.cos(theta) * 102).toFixed(1)}, ${(Math.sin(theta) * 102).toFixed(1)})`);
+          }
+        }
+        if (sacredCore) sacredCore.setAttribute('transform', `rotate(${(-fractalAngle * 50).toFixed(2)})`);
+      }
+      animateDashFractal();
+
+      if (btnSpeed) {
+        btnSpeed.addEventListener('click', () => {
+          fractalSpeed = fractalSpeed > 0.02 ? 0.008 : fractalSpeed > 0.01 ? 0.03 : 0.015;
+          btnSpeed.textContent = `旋转速度: ${(fractalSpeed / 0.01).toFixed(1)}x`;
+        });
+      }
+
+      if (btnCopy) {
+        btnCopy.addEventListener('click', () => {
+          const clone = fractalSvg.cloneNode(true);
+          const xml = '<?xml version="1.0" encoding="UTF-8"?>\n' + clone.outerHTML;
+          navigator.clipboard.writeText(xml).then(() => {
+            alert('✅ 纯标准 SVG 代码已成功复制至剪贴板！');
+          }).catch(() => {
+            console.log(xml);
+            alert('已在 Console 打印完整 SVG 代码。');
+          });
+        });
+      }
+    }
+
+    // 9. 分类、标签与关键词实时筛选
     let currentCat = 'all';
     let currentTag = 'all';
     let currentQuery = '';
@@ -1459,12 +1855,13 @@ const allTags = Array.from(
   /* 画布预览框 */
   .canvas-preview-box {
     width: 100%;
-    height: 220px;
+    height: 340px;
     background: #0a0f1d;
     border-radius: 8px;
     overflow: hidden;
     margin-bottom: 18px;
     position: relative;
+    border: 1px solid rgba(255, 255, 255, 0.06);
   }
 
   .lab-canvas {
@@ -1473,13 +1870,40 @@ const allTags = Array.from(
     display: block;
   }
 
+  /* 原生 SVG 预览框 */
+  .svg-preview-box {
+    width: 100%;
+    height: 340px;
+    background: #030712;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 18px;
+    position: relative;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .lab-dash-svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+    cursor: grab;
+    user-select: none;
+  }
+
+  .lab-dash-svg:active {
+    cursor: grabbing;
+  }
+
   /* 算法追踪缩略预览 */
   .algo-mini-preview {
-    height: 220px;
+    height: 340px;
     border-radius: 8px;
     background: #0f172a;
     border: 1px solid rgba(255, 255, 255, 0.08);
-    padding: 14px;
+    padding: 18px;
     margin-bottom: 16px;
     display: flex;
     flex-direction: column;
@@ -1611,7 +2035,7 @@ const allTags = Array.from(
   /* 3D 纸飞机视窗 */
   .plane-preview-box {
     width: 100%;
-    height: 220px;
+    height: 340px;
     background: radial-gradient(circle, rgba(66, 90, 239, 0.08) 0%, rgba(0, 0, 0, 0.02) 80%);
     border-radius: 8px;
     border: 1px solid rgba(0, 0, 0, 0.05);

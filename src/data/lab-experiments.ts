@@ -1157,6 +1157,797 @@ if (typeof document === 'undefined') {
       },
     ],
   },
+  {
+    id: 'exp-07-svg-morph',
+    slug: 'interactive-svg-morph',
+    title: 'SVG 动态流体滤镜与有机变幻 (Organic SVG Fluid & Gooey Morph)',
+    subtitle: '原生 SVG <filter> 矩阵与贝塞尔流体质感',
+    description:
+      '基于原生 SVG <filter> 滤镜管线（feGaussianBlur 模糊扩散 + feColorMatrix 颜色通道阈值阶跃），在零三方库纯矢量 DOM 中实现水银液体融合、弹簧拖拽粘连与贝塞尔有机形态动力学。',
+    icon: '🫧',
+    author: {
+      name: 'shijianus',
+      role: 'owner',
+      url: 'https://blog.epocanvas.com/about/',
+    },
+    tags: ['SVG Filter', 'feColorMatrix', '流体动力学', '矢量变形', '60FPS'],
+    category: 'visual',
+    runtime: 'browser-sandbox',
+    language: 'html-css-js',
+    featured: true,
+    version: '1.2.0',
+    sourceLicense: 'MIT',
+    visibility: 'public',
+    moderationStatus: 'approved',
+    createdAt: '2026-11-10',
+    updatedAt: '2026-11-10',
+    defaultParams: [
+      {
+        id: 'tension',
+        label: '表面张力阈值 (Tension)',
+        type: 'range',
+        defaultValue: 28,
+        min: 15,
+        max: 45,
+        step: 1,
+      },
+      {
+        id: 'blur',
+        label: '高斯模糊半径 (Blur Radius)',
+        type: 'range',
+        defaultValue: 15,
+        min: 8,
+        max: 28,
+        step: 1,
+        unit: 'px',
+      },
+    ],
+    previewConfig: {
+      mode: 'hybrid',
+      autoRun: true,
+      height: 380,
+      timeoutMs: 5000,
+      maxConsoleEntries: 200,
+      externalResources: [],
+    },
+    principles: {
+      summary:
+        '通过 SVG 滤镜图元的级联管道（feGaussianBlur -> feColorMatrix -> feBlend），对两层重叠的半透明矢量图形执行 Alpha 通道非线性锐化二值化放大，使临近的矢量圆在数学阈值处产生如水银融合般的粘性液桥效应。',
+      keyPoints: [
+        '高斯模糊扩展：feGaussianBlur 将离散矢量边界扩展为平滑连续的渐变 Alpha 分布场。',
+        'Alpha 矩阵二值化锐化：feColorMatrix 设置 values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 28 -10"，将 Alpha 分布放大 28 倍并扣减基准偏移 -10，使模糊场边缘急剧阶跃为清晰硬边缘。',
+        '弹簧阻尼动力学：在 JavaScript 中使用胡克定律 F = -k·Δx - c·v 驱动交互质点与中心质核，呈现真实的流体拉伸与回弹动效。',
+      ],
+      complexity: {
+        time: 'O(N)/frame (N = 6 矢量质核)',
+        space: 'O(1) 纯矢量 DOM',
+      },
+    },
+    files: [
+      {
+        name: 'index.html',
+        language: 'html',
+        content: `<div class="morph-lab-shell">
+  <div class="svg-stage">
+    <svg id="morph-svg" viewBox="0 0 800 520" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="bg-glow" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#425aef" stop-opacity="0.18" />
+          <stop offset="100%" stop-color="#020617" stop-opacity="0" />
+        </radialGradient>
+        <linearGradient id="active-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#38bdf8" />
+          <stop offset="50%" stop-color="#425aef" />
+          <stop offset="100%" stop-color="#a855f7" />
+        </linearGradient>
+        <!-- 原生 SVG 流体粘性滤镜 (Gooey Filter) -->
+        <filter id="goo" x="-30%" y="-30%" width="160%" height="160%">
+          <feGaussianBlur in="SourceGraphic" stdDeviation="15" result="blur" id="filter-blur" />
+          <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 28 -10" result="goo" id="filter-matrix" />
+          <feBlend in="SourceGraphic" in2="goo" />
+        </filter>
+      </defs>
+
+      <rect width="800" height="520" fill="#030712" />
+      <circle cx="400" cy="260" r="320" fill="url(#bg-glow)" />
+
+      <!-- 动态流体融合组 -->
+      <g id="goo-group" filter="url(#goo)">
+        <circle id="orb-center" cx="400" cy="260" r="64" fill="url(#active-grad)" />
+        <circle id="orb-drag" cx="400" cy="260" r="48" fill="url(#active-grad)" />
+        <circle id="orb-sat-1" cx="300" cy="220" r="34" fill="url(#active-grad)" />
+        <circle id="orb-sat-2" cx="500" cy="220" r="30" fill="url(#active-grad)" />
+        <circle id="orb-sat-3" cx="360" cy="360" r="28" fill="url(#active-grad)" />
+        <circle id="orb-sat-4" cx="450" cy="350" r="26" fill="url(#active-grad)" />
+      </g>
+
+      <!-- 交互光标环 -->
+      <circle id="cursor-ring" cx="400" cy="260" r="18" fill="none" stroke="#38bdf8" stroke-width="1.5" stroke-dasharray="4 4" opacity="0.6" />
+    </svg>
+  </div>
+
+  <div class="morph-toolbar">
+    <div class="tool-group">
+      <label>表面张力阈值 (Tension): <strong id="val-tension">28</strong>
+        <input id="slider-tension" type="range" min="16" max="42" value="28" />
+      </label>
+      <label>高斯模糊阶数 (Blur): <strong id="val-blur">15px</strong>
+        <input id="slider-blur" type="range" min="8" max="26" value="15" />
+      </label>
+    </div>
+    <div class="tool-actions">
+      <button id="btn-theme-cyber" type="button" class="btn is-active">赛博霓虹</button>
+      <button id="btn-theme-sunset" type="button" class="btn">落日熔金</button>
+      <button id="btn-theme-emerald" type="button" class="btn">翡翠矩阵</button>
+      <button id="btn-pulse" type="button" class="btn is-accent">⚡ 能量脉冲</button>
+      <button id="btn-reset" type="button" class="btn">重置平衡态</button>
+    </div>
+  </div>
+</div>`,
+      },
+      {
+        name: 'style.css',
+        language: 'css',
+        content: `* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: #020617;
+  color: #e2e8f0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  overflow: hidden;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.morph-lab-shell {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  background: #020617;
+}
+.svg-stage {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  cursor: grab;
+  touch-action: none;
+}
+.svg-stage:active {
+  cursor: grabbing;
+}
+svg {
+  width: 100%;
+  height: 100%;
+  max-height: 100%;
+  display: block;
+}
+.morph-toolbar {
+  padding: 12px 18px;
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(12px);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  z-index: 10;
+}
+.tool-group {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.tool-group label {
+  font-size: 12px;
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.tool-group label strong {
+  color: #38bdf8;
+  font-family: monospace;
+}
+input[type="range"] {
+  accent-color: #425aef;
+  width: 110px;
+  cursor: pointer;
+}
+.tool-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.btn {
+  padding: 5px 12px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.05);
+  color: #cbd5e1;
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.btn:hover {
+  background: rgba(66, 90, 239, 0.25);
+  border-color: #425aef;
+  color: #ffffff;
+}
+.btn.is-active {
+  background: #425aef;
+  border-color: #425aef;
+  color: #ffffff;
+}
+.btn.is-accent {
+  background: rgba(245, 158, 11, 0.2);
+  border-color: #f59e0b;
+  color: #fbbf24;
+}`,
+      },
+      {
+        name: 'script.js',
+        language: 'javascript',
+        content: `// SVG 流体滤镜与弹簧动力学引擎
+const svg = document.getElementById('morph-svg');
+const orbCenter = document.getElementById('orb-center');
+const orbDrag = document.getElementById('orb-drag');
+const cursorRing = document.getElementById('cursor-ring');
+const filterBlur = document.getElementById('filter-blur');
+const filterMatrix = document.getElementById('filter-matrix');
+const activeGrad = document.getElementById('active-grad');
+
+const sliderTension = document.getElementById('slider-tension');
+const sliderBlur = document.getElementById('slider-blur');
+const valTension = document.getElementById('val-tension');
+const valBlur = document.getElementById('val-blur');
+
+const satellites = [
+  { el: document.getElementById('orb-sat-1'), cx: 300, cy: 220, baseAngle: 0, r: 120, speed: 0.02, size: 34 },
+  { el: document.getElementById('orb-sat-2'), cx: 500, cy: 220, baseAngle: Math.PI * 0.7, r: 140, speed: -0.015, size: 30 },
+  { el: document.getElementById('orb-sat-3'), cx: 360, cy: 360, baseAngle: Math.PI * 1.3, r: 110, speed: 0.025, size: 28 },
+  { el: document.getElementById('orb-sat-4'), cx: 450, cy: 350, baseAngle: Math.PI * 1.8, r: 130, speed: -0.018, size: 26 },
+];
+
+let mouse = { x: 400, y: 260, targetX: 400, targetY: 260, isDown: false };
+let center = { x: 400, y: 260 };
+let dragOrb = { x: 400, y: 260, vx: 0, vy: 0 };
+let tick = 0;
+
+function updateFilter() {
+  const tension = parseInt(sliderTension.value, 10);
+  const blur = parseInt(sliderBlur.value, 10);
+  valTension.textContent = tension;
+  valBlur.textContent = blur + 'px';
+  filterBlur.setAttribute('stdDeviation', blur);
+  filterMatrix.setAttribute('values', \`1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 \${tension} -\${Math.floor(tension * 0.36)}\`);
+}
+
+sliderTension.addEventListener('input', updateFilter);
+sliderBlur.addEventListener('input', updateFilter);
+
+function getSvgCoords(e) {
+  const rect = svg.getBoundingClientRect();
+  const scaleX = 800 / rect.width;
+  const scaleY = 520 / rect.height;
+  const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+  const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+  return {
+    x: (clientX - rect.left) * scaleX,
+    y: (clientY - rect.top) * scaleY
+  };
+}
+
+svg.addEventListener('pointerdown', (e) => {
+  mouse.isDown = true;
+  const p = getSvgCoords(e);
+  mouse.targetX = p.x;
+  mouse.targetY = p.y;
+  cursorRing.setAttribute('opacity', '1');
+});
+
+window.addEventListener('pointermove', (e) => {
+  const p = getSvgCoords(e);
+  mouse.targetX = p.x;
+  mouse.targetY = p.y;
+});
+
+window.addEventListener('pointerup', () => {
+  mouse.isDown = false;
+  mouse.targetX = 400;
+  mouse.targetY = 260;
+  cursorRing.setAttribute('opacity', '0.4');
+});
+
+// 动画与物理主循环
+function loop() {
+  requestAnimationFrame(loop);
+  tick++;
+
+  // 弹簧追踪与阻尼
+  const k = mouse.isDown ? 0.14 : 0.06;
+  const damping = 0.84;
+  const ax = (mouse.targetX - dragOrb.x) * k;
+  const ay = (mouse.targetY - dragOrb.y) * k;
+  dragOrb.vx = (dragOrb.vx + ax) * damping;
+  dragOrb.vy = (dragOrb.vy + ay) * damping;
+  dragOrb.x += dragOrb.vx;
+  dragOrb.y += dragOrb.vy;
+
+  orbDrag.setAttribute('cx', dragOrb.x.toFixed(1));
+  orbDrag.setAttribute('cy', dragOrb.y.toFixed(1));
+
+  cursorRing.setAttribute('cx', mouse.targetX.toFixed(1));
+  cursorRing.setAttribute('cy', mouse.targetY.toFixed(1));
+
+  // 中心质核轻微呼吸动效
+  const breath = Math.sin(tick * 0.04) * 4;
+  orbCenter.setAttribute('r', (64 + breath).toFixed(1));
+
+  // 环绕卫星运动
+  satellites.forEach((sat) => {
+    const angle = sat.baseAngle + tick * sat.speed;
+    const sx = center.x + Math.cos(angle) * sat.r;
+    const sy = center.y + Math.sin(angle) * (sat.r * 0.7);
+    sat.el.setAttribute('cx', sx.toFixed(1));
+    sat.el.setAttribute('cy', sy.toFixed(1));
+  });
+}
+loop();
+
+// 主题切换
+const themes = {
+  cyber: ['#38bdf8', '#425aef', '#a855f7'],
+  sunset: ['#f59e0b', '#ef4444', '#831843'],
+  emerald: ['#34d399', '#059669', '#064e3b']
+};
+
+function setGradTheme(colors, activeBtnId) {
+  const stops = activeGrad.querySelectorAll('stop');
+  stops[0].setAttribute('stop-color', colors[0]);
+  stops[1].setAttribute('stop-color', colors[1]);
+  stops[2].setAttribute('stop-color', colors[2]);
+  ['btn-theme-cyber', 'btn-theme-sunset', 'btn-theme-emerald'].forEach(id => {
+    document.getElementById(id).classList.toggle('is-active', id === activeBtnId);
+  });
+}
+
+document.getElementById('btn-theme-cyber').addEventListener('click', () => setGradTheme(themes.cyber, 'btn-theme-cyber'));
+document.getElementById('btn-theme-sunset').addEventListener('click', () => setGradTheme(themes.sunset, 'btn-theme-sunset'));
+document.getElementById('btn-theme-emerald').addEventListener('click', () => setGradTheme(themes.emerald, 'btn-theme-emerald'));
+
+document.getElementById('btn-pulse').addEventListener('click', () => {
+  dragOrb.vx += (Math.random() - 0.5) * 80;
+  dragOrb.vy += (Math.random() - 0.5) * 80;
+  console.log('[SVGMorph] 激发矢量流体能量冲击脉冲');
+});
+
+document.getElementById('btn-reset').addEventListener('click', () => {
+  dragOrb.x = 400; dragOrb.y = 260;
+  dragOrb.vx = 0; dragOrb.vy = 0;
+  mouse.targetX = 400; mouse.targetY = 260;
+  sliderTension.value = 28;
+  sliderBlur.value = 15;
+  updateFilter();
+  setGradTheme(themes.cyber, 'btn-theme-cyber');
+});
+console.log('[SVGMorph] 原生 SVG 流体滤镜沙盒就绪');`,
+      },
+    ],
+  },
+  {
+    id: 'exp-08-svg-fractal',
+    slug: 'svg-generative-fractal',
+    title: 'SVG 参数化几何动力齿轮与多重极光分形 (Kinetic SVG Mandala & Fractal Gears)',
+    subtitle: 'SVG 极坐标矢量数学、动态渐变与机械动力学',
+    description:
+      '使用纯 SVG <defs>、<linearGradient> 动态相位旋转与三角函数参数化路径生成算法，构建多重嵌套齿轮联动与极光曼陀罗几何分形，支持实时微调与一键导出纯净标准 SVG 矢量文件。',
+    icon: '⚙️',
+    author: {
+      name: 'shijianus',
+      role: 'owner',
+      url: 'https://blog.epocanvas.com/about/',
+    },
+    tags: ['SVG Path', '参数化几何', '分形几何', '数学美学', '矢量导出'],
+    category: 'visual',
+    runtime: 'browser-sandbox',
+    language: 'html-css-js',
+    featured: true,
+    version: '1.2.0',
+    sourceLicense: 'MIT',
+    visibility: 'public',
+    moderationStatus: 'approved',
+    createdAt: '2026-11-10',
+    updatedAt: '2026-11-10',
+    defaultParams: [
+      {
+        id: 'symmetry',
+        label: '对称阶数 (Symmetry N)',
+        type: 'range',
+        defaultValue: 8,
+        min: 4,
+        max: 16,
+        step: 1,
+      },
+      {
+        id: 'teeth',
+        label: '动力齿数 (Teeth Count)',
+        type: 'range',
+        defaultValue: 24,
+        min: 12,
+        max: 48,
+        step: 2,
+      },
+    ],
+    previewConfig: {
+      mode: 'hybrid',
+      autoRun: true,
+      height: 380,
+      timeoutMs: 5000,
+      maxConsoleEntries: 200,
+      externalResources: [],
+    },
+    principles: {
+      summary:
+        '基于极坐标外摆线与内摆线数学方程，在 JavaScript 中动态计算由贝塞尔曲率构建的连续闭合 SVG 路径（d="M... C... Z"）。结合齿轮啮合传动比逆向角速度驱动，实现高精度的矢量几何分形运动。',
+      keyPoints: [
+        '外摆线路径构造：x = (R+r)cos(θ) - d·cos((R+r)θ/r)，y = (R+r)sin(θ) - d·sin((R+r)θ/r)，在 SVG 坐标系中生成对称性曼陀罗花瓣。',
+        '正逆角速度同步：中心大齿轮与外围从动齿轮的角速度严格成齿数反比 ω1·Z1 = -ω2·Z2，保障物理级齿隙严密契合。',
+        '零失真矢量导出：生成的路径完全由标称浮点坐标与原生 SVG 标签描述，放大任意倍率均保持绝对锐利边缘，支持一键下载标准 .svg 文件。',
+      ],
+      complexity: {
+        time: 'O(Symmetry · Points) 极坐标求值',
+        space: 'O(1) 矢量描述结构',
+      },
+    },
+    files: [
+      {
+        name: 'index.html',
+        language: 'html',
+        content: `<div class="fractal-lab-shell">
+  <div class="svg-stage">
+    <svg id="fractal-svg" viewBox="-400 -280 800 560" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="aurora-sun" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.3" />
+          <stop offset="60%" stop-color="#425aef" stop-opacity="0.08" />
+          <stop offset="100%" stop-color="#020617" stop-opacity="0" />
+        </radialGradient>
+        <linearGradient id="aurora-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#38bdf8" />
+          <stop offset="35%" stop-color="#818cf8" />
+          <stop offset="70%" stop-color="#c084fc" />
+          <stop offset="100%" stop-color="#f472b6" />
+        </linearGradient>
+        <linearGradient id="gold-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#fde047" />
+          <stop offset="50%" stop-color="#f59e0b" />
+          <stop offset="100%" stop-color="#b45309" />
+        </linearGradient>
+        <filter id="neon-glow" x="-20%" y="-20%" width="140%" height="140%">
+          <feDropShadow dx="0" dy="0" stdDeviation="5" flood-color="#38bdf8" flood-opacity="0.5" />
+        </filter>
+      </defs>
+
+      <!-- 背景与星空透镜 -->
+      <rect x="-400" y="-280" width="800" height="560" fill="#030712" />
+      <circle cx="0" cy="0" r="280" fill="url(#aurora-sun)" />
+
+      <!-- 外层曼陀罗分形花环 -->
+      <g id="mandala-outer" filter="url(#neon-glow)"></g>
+
+      <!-- 中层动力齿轮咬合组 -->
+      <g id="gear-cluster"></g>
+
+      <!-- 核心神圣几何星芒 -->
+      <g id="sacred-core"></g>
+    </svg>
+  </div>
+
+  <div class="fractal-toolbar">
+    <div class="tool-group">
+      <label>分形对称阶数 (Symmetry): <strong id="val-symmetry">8</strong>
+        <input id="slider-symmetry" type="range" min="4" max="16" value="8" />
+      </label>
+      <label>动力齿数 (Teeth): <strong id="val-teeth">24</strong>
+        <input id="slider-teeth" type="range" min="12" max="44" step="2" value="24" />
+      </label>
+      <label>旋转角速度 (Speed): <strong id="val-speed">1.0x</strong>
+        <input id="slider-speed" type="range" min="2" max="30" value="10" />
+      </label>
+    </div>
+    <div class="tool-actions">
+      <button id="btn-theme-aurora" type="button" class="btn is-active">极光流光</button>
+      <button id="btn-theme-gold" type="button" class="btn">赛博金箔</button>
+      <button id="btn-copy-svg" type="button" class="btn is-accent">📋 复制纯 SVG 代码</button>
+      <button id="btn-download-svg" type="button" class="btn">📥 导出 .svg 文件</button>
+    </div>
+  </div>
+</div>`,
+      },
+      {
+        name: 'style.css',
+        language: 'css',
+        content: `* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: #020617;
+  color: #e2e8f0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  overflow: hidden;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.fractal-lab-shell {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  background: #020617;
+}
+.svg-stage {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.fractal-toolbar {
+  padding: 12px 18px;
+  background: rgba(15, 23, 42, 0.88);
+  backdrop-filter: blur(12px);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  z-index: 10;
+}
+.tool-group {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.tool-group label {
+  font-size: 12px;
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.tool-group label strong {
+  color: #38bdf8;
+  font-family: monospace;
+}
+input[type="range"] {
+  accent-color: #425aef;
+  width: 100px;
+  cursor: pointer;
+}
+.tool-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.btn {
+  padding: 5px 12px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.05);
+  color: #cbd5e1;
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.btn:hover {
+  background: rgba(66, 90, 239, 0.25);
+  border-color: #425aef;
+  color: #ffffff;
+}
+.btn.is-active {
+  background: #425aef;
+  border-color: #425aef;
+  color: #ffffff;
+}
+.btn.is-accent {
+  background: rgba(16, 185, 129, 0.2);
+  border-color: #10b981;
+  color: #34d399;
+}`,
+      },
+      {
+        name: 'script.js',
+        language: 'javascript',
+        content: `// 参数化 SVG 分形曼陀罗与齿轮几何动力学引擎
+const mandalaOuter = document.getElementById('mandala-outer');
+const gearCluster = document.getElementById('gear-cluster');
+const sacredCore = document.getElementById('sacred-core');
+const sliderSymmetry = document.getElementById('slider-symmetry');
+const sliderTeeth = document.getElementById('slider-teeth');
+const sliderSpeed = document.getElementById('slider-speed');
+const valSymmetry = document.getElementById('val-symmetry');
+const valTeeth = document.getElementById('val-teeth');
+const valSpeed = document.getElementById('val-speed');
+
+let currentGrad = 'url(#aurora-grad)';
+let angle = 0;
+
+// 生成参数化齿轮 SVG 路径
+function createGearPath(cx, cy, rOuter, rInner, teeth) {
+  const points = [];
+  const step = (Math.PI * 2) / teeth;
+  for (let i = 0; i < teeth; i++) {
+    const a0 = i * step;
+    const a1 = a0 + step * 0.25;
+    const a2 = a0 + step * 0.5;
+    const a3 = a0 + step * 0.75;
+
+    points.push(\`\${cx + Math.cos(a0) * rInner},\${cy + Math.sin(a0) * rInner}\`);
+    points.push(\`\${cx + Math.cos(a1) * rOuter},\${cy + Math.sin(a1) * rOuter}\`);
+    points.push(\`\${cx + Math.cos(a2) * rOuter},\${cy + Math.sin(a2) * rOuter}\`);
+    points.push(\`\${cx + Math.cos(a3) * rInner},\${cy + Math.sin(a3) * rInner}\`);
+  }
+  return \`M \${points.join(' L ')} Z\`;
+}
+
+// 生成外摆线曼陀罗花瓣路径
+function createMandalaPetals(symmetry) {
+  const paths = [];
+  const step = (Math.PI * 2) / symmetry;
+  for (let i = 0; i < symmetry; i++) {
+    const a = i * step;
+    const x0 = Math.cos(a) * 60;
+    const y0 = Math.sin(a) * 60;
+    const xTip = Math.cos(a) * 220;
+    const yTip = Math.sin(a) * 220;
+    const cx1 = Math.cos(a - 0.3) * 160;
+    const cy1 = Math.sin(a - 0.3) * 160;
+    const cx2 = Math.cos(a + 0.3) * 160;
+    const cy2 = Math.sin(a + 0.3) * 160;
+
+    paths.push(\`<path d="M \${x0.toFixed(1)} \${y0.toFixed(1)} C \${cx1.toFixed(1)} \${cy1.toFixed(1)}, \${cx2.toFixed(1)} \${cy2.toFixed(1)}, \${xTip.toFixed(1)} \${yTip.toFixed(1)} S \${cx1.toFixed(1)} \${cy1.toFixed(1)}, \${x0.toFixed(1)} \${y0.toFixed(1)}" fill="none" stroke="\${currentGrad}" stroke-width="1.8" opacity="0.85" />\`);
+  }
+  return paths.join('');
+}
+
+// 重新构建几何结构
+function buildGeometry() {
+  const symmetry = parseInt(sliderSymmetry.value, 10);
+  const teeth = parseInt(sliderTeeth.value, 10);
+  valSymmetry.textContent = symmetry;
+  valTeeth.textContent = teeth;
+
+  // 1. 曼陀罗外环
+  mandalaOuter.innerHTML = createMandalaPetals(symmetry);
+
+  // 2. 齿轮集群：中心主齿轮 + 4 个卫星咬合齿轮
+  const centerGearD = createGearPath(0, 0, 90, 76, teeth);
+  const satTeeth = Math.floor(teeth / 2);
+  const satDist = 145;
+
+  let satHtml = '';
+  for (let k = 0; k < 4; k++) {
+    const theta = (k * Math.PI) / 2;
+    const sx = Math.cos(theta) * satDist;
+    const sy = Math.sin(theta) * satDist;
+    const satD = createGearPath(sx, sy, 45, 36, satTeeth);
+    satHtml += \`<path class="sat-gear sat-\${k}" d="\${satD}" fill="none" stroke="\${currentGrad}" stroke-width="1.5" opacity="0.9" />\`;
+  }
+
+  gearCluster.innerHTML = \`
+    <path id="center-gear" d="\${centerGearD}" fill="none" stroke="\${currentGrad}" stroke-width="2" />
+    <circle cx="0" cy="0" r="32" fill="none" stroke="\${currentGrad}" stroke-width="1.2" stroke-dasharray="3 3" />
+    \${satHtml}
+  \`;
+
+  // 3. 核心几何星芒
+  const starPoints = [];
+  for (let j = 0; j < symmetry * 2; j++) {
+    const ang = (j * Math.PI) / symmetry;
+    const rad = j % 2 === 0 ? 50 : 22;
+    starPoints.push(\`\${(Math.cos(ang) * rad).toFixed(1)},\${(Math.sin(ang) * rad).toFixed(1)}\`);
+  }
+  sacredCore.innerHTML = \`
+    <polygon points="\${starPoints.join(' ')}" fill="\${currentGrad}" opacity="0.35" />
+    <polygon points="\${starPoints.join(' ')}" fill="none" stroke="\${currentGrad}" stroke-width="1.5" />
+    <circle cx="0" cy="0" r="6" fill="#ffffff" />
+  \`;
+}
+
+sliderSymmetry.addEventListener('input', buildGeometry);
+sliderTeeth.addEventListener('input', buildGeometry);
+sliderSpeed.addEventListener('input', () => {
+  valSpeed.textContent = (sliderSpeed.value / 10).toFixed(1) + 'x';
+});
+
+// 动画主循环
+function render() {
+  requestAnimationFrame(render);
+  const spd = (sliderSpeed.value / 10) * 0.015;
+  angle += spd;
+
+  mandalaOuter.setAttribute('transform', \`rotate(\${(angle * 30).toFixed(2)})\`);
+  const cGear = document.getElementById('center-gear');
+  if (cGear) cGear.setAttribute('transform', \`rotate(\${(angle * 45).toFixed(2)})\`);
+
+  for (let k = 0; k < 4; k++) {
+    const sat = document.querySelector(\`.sat-\${k}\`);
+    if (sat) {
+      const theta = (k * Math.PI) / 2;
+      const sx = Math.cos(theta) * 145;
+      const sy = Math.sin(theta) * 145;
+      sat.setAttribute('transform', \`rotate(\${(-angle * 90).toFixed(2)}, \${sx.toFixed(1)}, \${sy.toFixed(1)})\`);
+    }
+  }
+
+  sacredCore.setAttribute('transform', \`rotate(\${(-angle * 60).toFixed(2)})\`);
+}
+
+buildGeometry();
+render();
+
+// 主题切换
+document.getElementById('btn-theme-aurora').addEventListener('click', () => {
+  currentGrad = 'url(#aurora-grad)';
+  document.getElementById('btn-theme-aurora').classList.add('is-active');
+  document.getElementById('btn-theme-gold').classList.remove('is-active');
+  buildGeometry();
+});
+
+document.getElementById('btn-theme-gold').addEventListener('click', () => {
+  currentGrad = 'url(#gold-grad)';
+  document.getElementById('btn-theme-gold').classList.add('is-active');
+  document.getElementById('btn-theme-aurora').classList.remove('is-active');
+  buildGeometry();
+});
+
+// 复制纯 SVG 代码
+document.getElementById('btn-copy-svg').addEventListener('click', () => {
+  const svgEl = document.getElementById('fractal-svg');
+  const clone = svgEl.cloneNode(true);
+  const svgCode = '<?xml version="1.0" encoding="UTF-8"?>\\n' + clone.outerHTML;
+  navigator.clipboard.writeText(svgCode).then(() => {
+    alert('✅ 纯标准 SVG 代码已成功复制至剪贴板！可直接粘贴至 Figma、Illustrator 或网页项目中。');
+  }).catch(() => {
+    console.log(svgCode);
+    alert('已在 Console 打印完整 SVG 代码。');
+  });
+});
+
+// 导出下载 .svg 文件
+document.getElementById('btn-download-svg').addEventListener('click', () => {
+  const svgEl = document.getElementById('fractal-svg');
+  const svgCode = '<?xml version="1.0" encoding="UTF-8"?>\\n' + svgEl.outerHTML;
+  const blob = new Blob([svgCode], { type: 'image/svg+xml;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'kinetic-svg-mandala.svg';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+});
+console.log('[SVGFractal] 参数化 SVG 分形动力学引擎就绪');`,
+      },
+    ],
+  },
 ];
 
 export function getExperimentBySlug(slug: string): LabExperiment | undefined {

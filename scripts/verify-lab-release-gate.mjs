@@ -22,7 +22,7 @@ import { execFileSync, spawnSync } from 'node:child_process';
 const ROOT_DIR = process.cwd();
 const DIST_DIR = path.join(ROOT_DIR, 'dist');
 const EXPECTED_MAIN_SHA =
-  process.env.EXPECTED_MAIN_SHA || '2e92967072febadd70e03d13bfd1cc6e2207bc55';
+  process.env.EXPECTED_MAIN_SHA || 'f09fb71e70b89b0bb8fcf990251ad521b2bf16ab';
 const CF_ACCOUNT_ID = process.env.CLOUDFLARE_ACCOUNT_ID || '0a1276d9d2f920936dc2f3eda8c126f8';
 
 const EXPECTED_SLUGS = [
@@ -32,6 +32,8 @@ const EXPECTED_SLUGS = [
   'fx-currency-converter',
   'algorithm-execution-tracer',
   'verlet-rope-physics',
+  'interactive-svg-morph',
+  'svg-generative-fractal',
 ];
 
 function collectFilesRecursive(dirPath, filterFn = () => true) {

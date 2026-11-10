@@ -415,8 +415,8 @@ async function runBrowserSuite(browserName, browserType) {
     );
     assert.equal(
       await page.locator('#lab-experiments-grid [data-exp-slug]').count(),
-      6,
-      '应展示全部 6 个官方实验卡片'
+      8,
+      '应展示全部 8 个官方实验卡片'
     );
     assert.equal(await page.locator('#lab-star-canvas').count(), 1);
     assert.equal(await page.locator('#plane-3d').count(), 1);
@@ -471,7 +471,7 @@ async function runBrowserSuite(browserName, browserType) {
     // =========================================================================
     // Part 2: 全部 6 个详情页零报错巡检与 ExecutionVisualizer
     // =========================================================================
-    console.log(`🔍 [${browserName} · Part 2] 巡检 6 个详情页、官方本地回退提示与算法可视化器...`);
+    console.log(`🔍 [${browserName} · Part 2] 巡检全部详情页、官方本地回退提示与算法可视化器...`);
     const allSlugs = [
       'star-trails-simulator',
       'aerodynamic-contrail',
@@ -479,6 +479,8 @@ async function runBrowserSuite(browserName, browserType) {
       'fx-currency-converter',
       'algorithm-execution-tracer',
       'verlet-rope-physics',
+      'interactive-svg-morph',
+      'svg-generative-fractal',
     ];
 
     for (const slug of allSlugs) {
@@ -964,7 +966,11 @@ async function runBrowserSuite(browserName, browserType) {
     );
     assert.equal(await page.getByTestId('lab-sandbox-iframe').count(), 0);
     await clickTarget(page.getByTestId('btn-run-code'));
-    await page.waitForTimeout(200);
+    await page.waitForFunction(
+      () => document.querySelector('#lab-playground-workspace')?.getAttribute('data-fail-closed') === 'true',
+      null,
+      { timeout: 5000 }
+    );
     assert.equal(await page.locator('#lab-playground-workspace').getAttribute('data-fail-closed'), 'true');
     assert.equal(await page.getByTestId('lab-sandbox-iframe').count(), 0);
     engineReport.degradationPolicy.unconfiguredSandboxFailClosed =

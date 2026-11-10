@@ -1,7 +1,7 @@
 /**
  * Astro Blog「试验田 Lab」控制台、错误列表与安全契约抽屉组件
  */
-import React from 'react';
+import React, { useState } from 'react';
 import type { SandboxConsoleEntry, SandboxRuntimeError, SandboxIsolationMode } from '../../lib/lab-sandbox-protocol';
 import { LAB_SECURITY_LIMITS } from '../../lib/lab-schema';
 
@@ -29,16 +29,20 @@ export const LabConsolePanel: React.FC<LabConsolePanelProps> = ({
   isHant,
 }) => {
   const tr = (zhCn: string, zhHant: string) => (isHant ? zhHant : zhCn);
+  const [isCollapsed, setIsCollapsed] = useState<boolean>(false);
 
   return (
-    <div className="lab-console-drawer">
+    <div className={`lab-console-drawer ${isCollapsed ? 'is-collapsed' : ''}`} data-testid="lab-console-drawer">
       <div className="console-tabs-bar">
         <div className="console-tabs" role="tablist">
           <button
             type="button"
             role="tab"
             aria-selected={activeBottomTab === 'console'}
-            onClick={() => setActiveBottomTab('console')}
+            onClick={() => {
+              setActiveBottomTab('console');
+              if (isCollapsed) setIsCollapsed(false);
+            }}
             className={`console-tab ${activeBottomTab === 'console' ? 'is-active' : ''}`}
             data-testid="tab-console"
           >
@@ -48,7 +52,10 @@ export const LabConsolePanel: React.FC<LabConsolePanelProps> = ({
             type="button"
             role="tab"
             aria-selected={activeBottomTab === 'errors'}
-            onClick={() => setActiveBottomTab('errors')}
+            onClick={() => {
+              setActiveBottomTab('errors');
+              if (isCollapsed) setIsCollapsed(false);
+            }}
             className={`console-tab ${
               activeBottomTab === 'errors' ? 'is-active' : ''
             } ${runtimeErrors.length > 0 ? 'has-error' : ''}`}
@@ -60,7 +67,10 @@ export const LabConsolePanel: React.FC<LabConsolePanelProps> = ({
             type="button"
             role="tab"
             aria-selected={activeBottomTab === 'security'}
-            onClick={() => setActiveBottomTab('security')}
+            onClick={() => {
+              setActiveBottomTab('security');
+              if (isCollapsed) setIsCollapsed(false);
+            }}
             className={`console-tab ${activeBottomTab === 'security' ? 'is-active' : ''}`}
             data-testid="tab-security"
           >
@@ -68,14 +78,25 @@ export const LabConsolePanel: React.FC<LabConsolePanelProps> = ({
           </button>
         </div>
 
-        <button
-          type="button"
-          onClick={onClearConsole}
-          className="console-clear-btn"
-          data-testid="btn-clear-console"
-        >
-          {tr('清空输出', '清空輸出')}
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <button
+            type="button"
+            onClick={onClearConsole}
+            className="console-clear-btn"
+            data-testid="btn-clear-console"
+          >
+            {tr('清空', '清空')}
+          </button>
+          <button
+            type="button"
+            onClick={() => setIsCollapsed(!isCollapsed)}
+            className="console-clear-btn"
+            data-testid="btn-toggle-console-collapse"
+            title={isCollapsed ? tr('展开控制台', '展開控制台') : tr('收起控制台', '收起控制台')}
+          >
+            {isCollapsed ? tr('▲ 展开', '▲ 展開') : tr('▼ 收起', '▼ 收起')}
+          </button>
+        </div>
       </div>
 
       <div className="console-output-body" data-testid="console-output-body">

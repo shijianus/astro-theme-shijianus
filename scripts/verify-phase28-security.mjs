@@ -564,7 +564,7 @@ assert.equal(getLabRes.status, 200);
 const getLabJson = await getLabRes.json();
 assert.equal(getLabJson.success, true);
 assert.equal(getLabJson.platform.version, '2.8.0');
-assert.equal(getLabJson.stats.totalOfficialExperiments, 6);
+assert.equal(getLabJson.stats.totalOfficialExperiments, 8);
 assert.equal(getLabJson.experiments.length, 2);
 
 const postValidRes = await onLabApiRequest({

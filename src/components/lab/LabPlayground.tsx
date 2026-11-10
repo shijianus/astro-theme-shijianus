@@ -77,6 +77,7 @@ export const LabPlayground: React.FC<LabPlaygroundProps> = ({
   const [selectedSlug, setSelectedSlug] = useState<string>(defaultExp.slug);
   const [currentExp, setCurrentExp] = useState<LabExperiment>(defaultExp);
   const [hostOriginState, setHostOriginState] = useState<string | null>(null);
+  const [layoutMode, setLayoutMode] = useState<'split-equal' | 'preview-focus' | 'code-focus'>('split-equal');
 
   useEffect(() => {
     setHasMounted(true);
@@ -598,6 +599,7 @@ export const LabPlayground: React.FC<LabPlaygroundProps> = ({
         externalResolutionEnabled={Boolean(externalResolution.enabled)}
         showTracePanel={showTracePanel}
         isHant={isHant}
+        layoutMode={layoutMode}
         mobileActiveTab={mobileActiveTab}
         onSelectMobileTab={setMobileActiveTab}
         onRetryCrossOriginSandbox={() => executeInSandbox()}
@@ -612,6 +614,8 @@ export const LabPlayground: React.FC<LabPlaygroundProps> = ({
           execStatus,
           isHant,
           dirty: snapshot.dirty,
+          layoutMode,
+          onSelectLayoutMode: setLayoutMode,
           runtimeKind: snapshot.runtimeKind,
           supportedRuntimes: snapshot.supportedRuntimes,
           editorKind: snapshot.editorKind,

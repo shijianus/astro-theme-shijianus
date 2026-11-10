@@ -25,6 +25,7 @@ export interface LabPlaygroundShellProps {
   externalResolutionEnabled: boolean;
   showTracePanel: boolean;
   isHant: boolean;
+  layoutMode?: 'split-equal' | 'preview-focus' | 'code-focus';
   mobileActiveTab?: 'editor' | 'preview' | 'console';
   onSelectMobileTab?: (tab: 'editor' | 'preview' | 'console') => void;
   toolbarProps: LabToolbarProps;
@@ -46,6 +47,7 @@ export const LabPlaygroundShell: React.FC<LabPlaygroundShellProps> = ({
   externalResolutionEnabled,
   showTracePanel,
   isHant,
+  layoutMode = 'split-equal',
   mobileActiveTab = 'editor',
   onSelectMobileTab,
   toolbarProps,
@@ -60,6 +62,7 @@ export const LabPlaygroundShell: React.FC<LabPlaygroundShellProps> = ({
       id="lab-playground-workspace"
       className="lab-playground-root"
       data-mode={mode}
+      data-layout={layoutMode}
       data-exec-status={execStatus}
       data-isolation-mode={effectiveIsolationMode}
       data-source-kind={codeSourceKind}
