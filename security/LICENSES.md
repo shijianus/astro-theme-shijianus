@@ -1,8 +1,8 @@
 # 开源依赖许可证合规报告 (Open Source License Inventory)
 
-> **生成时间**: 2026-11-07T16:45:37.546Z  
-> **包总数**: 895  
-> **强互惠 / 限制型许可证包数**: 29  
+> **生成时间**: 2026-11-10T15:56:15.896Z  
+> **包总数**: 836  
+> **强互惠 / 限制型许可证包数**: 15  
 
 ---
 
@@ -13,34 +13,20 @@
 
 | 包名 | 版本 | 许可证 | 作用域 | 是否直属依赖 |
 | :--- | :--- | :--- | :--- | :--- |
-| `@img/sharp-libvips-darwin-arm64` | `1.2.4` | **LGPL-3.0-or-later** | `dev` | 传递 |
-| `@img/sharp-libvips-darwin-arm64` | `1.3.4` | **LGPL-3.0-or-later** | `production` | 传递 |
-| `@img/sharp-libvips-darwin-x64` | `1.2.4` | **LGPL-3.0-or-later** | `dev` | 传递 |
-| `@img/sharp-libvips-darwin-x64` | `1.3.4` | **LGPL-3.0-or-later** | `production` | 传递 |
-| `@img/sharp-libvips-linux-arm` | `1.2.4` | **LGPL-3.0-or-later** | `dev` | 传递 |
-| `@img/sharp-libvips-linux-arm` | `1.3.4` | **LGPL-3.0-or-later** | `production` | 传递 |
-| `@img/sharp-libvips-linux-arm64` | `1.2.4` | **LGPL-3.0-or-later** | `dev` | 传递 |
-| `@img/sharp-libvips-linux-arm64` | `1.3.4` | **LGPL-3.0-or-later** | `production` | 传递 |
-| `@img/sharp-libvips-linux-ppc64` | `1.2.4` | **LGPL-3.0-or-later** | `dev` | 传递 |
-| `@img/sharp-libvips-linux-ppc64` | `1.3.4` | **LGPL-3.0-or-later** | `production` | 传递 |
-| `@img/sharp-libvips-linux-riscv64` | `1.2.4` | **LGPL-3.0-or-later** | `dev` | 传递 |
-| `@img/sharp-libvips-linux-riscv64` | `1.3.4` | **LGPL-3.0-or-later** | `production` | 传递 |
-| `@img/sharp-libvips-linux-s390x` | `1.2.4` | **LGPL-3.0-or-later** | `dev` | 传递 |
-| `@img/sharp-libvips-linux-s390x` | `1.3.4` | **LGPL-3.0-or-later** | `production` | 传递 |
-| `@img/sharp-libvips-linux-x64` | `1.2.4` | **LGPL-3.0-or-later** | `dev` | 传递 |
-| `@img/sharp-libvips-linux-x64` | `1.3.4` | **LGPL-3.0-or-later** | `production` | 传递 |
-| `@img/sharp-libvips-linuxmusl-arm64` | `1.2.4` | **LGPL-3.0-or-later** | `dev` | 传递 |
-| `@img/sharp-libvips-linuxmusl-arm64` | `1.3.4` | **LGPL-3.0-or-later** | `production` | 传递 |
-| `@img/sharp-libvips-linuxmusl-x64` | `1.2.4` | **LGPL-3.0-or-later** | `dev` | 传递 |
-| `@img/sharp-libvips-linuxmusl-x64` | `1.3.4` | **LGPL-3.0-or-later** | `production` | 传递 |
-| `@img/sharp-wasm32` | `0.35.5` | **Apache-2.0 AND LGPL-3.0-or-later AND MIT** | `production` | 传递 |
-| `@img/sharp-wasm32` | `0.34.5` | **Apache-2.0 AND LGPL-3.0-or-later AND MIT** | `dev` | 传递 |
-| `@img/sharp-win32-arm64` | `0.34.5` | **Apache-2.0 AND LGPL-3.0-or-later** | `dev` | 传递 |
-| `@img/sharp-win32-arm64` | `0.35.5` | **Apache-2.0 AND LGPL-3.0-or-later** | `production` | 传递 |
-| `@img/sharp-win32-ia32` | `0.34.5` | **Apache-2.0 AND LGPL-3.0-or-later** | `dev` | 传递 |
-| `@img/sharp-win32-ia32` | `0.35.5` | **Apache-2.0 AND LGPL-3.0-or-later** | `production` | 传递 |
-| `@img/sharp-win32-x64` | `0.34.5` | **Apache-2.0 AND LGPL-3.0-or-later** | `dev` | 传递 |
-| `@img/sharp-win32-x64` | `0.35.5` | **Apache-2.0 AND LGPL-3.0-or-later** | `production` | 传递 |
+| `@img/sharp-libvips-darwin-arm64` | `1.3.4` | **LGPL-3.0-or-later** | `dev` | 传递 |
+| `@img/sharp-libvips-darwin-x64` | `1.3.4` | **LGPL-3.0-or-later** | `dev` | 传递 |
+| `@img/sharp-libvips-linux-arm` | `1.3.4` | **LGPL-3.0-or-later** | `dev` | 传递 |
+| `@img/sharp-libvips-linux-arm64` | `1.3.4` | **LGPL-3.0-or-later** | `dev` | 传递 |
+| `@img/sharp-libvips-linux-ppc64` | `1.3.4` | **LGPL-3.0-or-later** | `dev` | 传递 |
+| `@img/sharp-libvips-linux-riscv64` | `1.3.4` | **LGPL-3.0-or-later** | `dev` | 传递 |
+| `@img/sharp-libvips-linux-s390x` | `1.3.4` | **LGPL-3.0-or-later** | `dev` | 传递 |
+| `@img/sharp-libvips-linux-x64` | `1.3.4` | **LGPL-3.0-or-later** | `dev` | 传递 |
+| `@img/sharp-libvips-linuxmusl-arm64` | `1.3.4` | **LGPL-3.0-or-later** | `dev` | 传递 |
+| `@img/sharp-libvips-linuxmusl-x64` | `1.3.4` | **LGPL-3.0-or-later** | `dev` | 传递 |
+| `@img/sharp-wasm32` | `0.35.5` | **Apache-2.0 AND LGPL-3.0-or-later AND MIT** | `dev` | 传递 |
+| `@img/sharp-win32-arm64` | `0.35.5` | **Apache-2.0 AND LGPL-3.0-or-later** | `dev` | 传递 |
+| `@img/sharp-win32-ia32` | `0.35.5` | **Apache-2.0 AND LGPL-3.0-or-later** | `dev` | 传递 |
+| `@img/sharp-win32-x64` | `0.35.5` | **Apache-2.0 AND LGPL-3.0-or-later** | `dev` | 传递 |
 | `elkjs` | `0.12.1` | **EPL-2.0 OR GPL-3.0-or-later** | `production` | 传递 |
 
 ---
@@ -100,13 +86,13 @@
 | `@chevrotain/utils` | `13.2.0` | `Apache-2.0` | `production` | - |
 | `@clack/core` | `1.5.1` | `MIT` | `production` | - |
 | `@clack/prompts` | `1.8.1` | `MIT` | `production` | - |
-| `@cloudflare/kv-asset-handler` | `0.4.2` | `MIT OR Apache-2.0` | `dev` | - |
-| `@cloudflare/unenv-preset` | `2.16.1` | `MIT OR Apache-2.0` | `dev` | - |
-| `@cloudflare/workerd-darwin-64` | `1.20260424.1` | `Apache-2.0` | `dev` | - |
-| `@cloudflare/workerd-darwin-arm64` | `1.20260424.1` | `Apache-2.0` | `dev` | - |
-| `@cloudflare/workerd-linux-64` | `1.20260424.1` | `Apache-2.0` | `dev` | - |
-| `@cloudflare/workerd-linux-arm64` | `1.20260424.1` | `Apache-2.0` | `dev` | - |
-| `@cloudflare/workerd-windows-64` | `1.20260424.1` | `Apache-2.0` | `dev` | - |
+| `@cloudflare/kv-asset-handler` | `0.5.0` | `MIT OR Apache-2.0` | `dev` | - |
+| `@cloudflare/unenv-preset` | `2.16.2` | `MIT OR Apache-2.0` | `dev` | - |
+| `@cloudflare/workerd-darwin-64` | `1.20261110.1` | `Apache-2.0` | `dev` | - |
+| `@cloudflare/workerd-darwin-arm64` | `1.20261110.1` | `Apache-2.0` | `dev` | - |
+| `@cloudflare/workerd-linux-64` | `1.20261110.1` | `Apache-2.0` | `dev` | - |
+| `@cloudflare/workerd-linux-arm64` | `1.20261110.1` | `Apache-2.0` | `dev` | - |
+| `@cloudflare/workerd-windows-64` | `1.20261110.1` | `Apache-2.0` | `dev` | - |
 | `@cspotcode/source-map-support` | `0.8.1` | `MIT` | `dev` | - |
 | `@emmetio/abbreviation` | `2.3.3` | `MIT` | `dev` | - |
 | `@emmetio/css-abbreviation` | `2.1.8` | `MIT` | `dev` | - |
@@ -119,112 +105,62 @@
 | `@emnapi/runtime` | `1.11.3` | `MIT` | `production` | - |
 | `@emnapi/wasi-threads` | `1.2.2` | `MIT` | `production` | - |
 | `@emnapi/wasi-threads` | `1.2.3` | `MIT` | `production` | - |
-| `@esbuild/aix-ppc64` | `0.27.7` | `MIT` | `production` | - |
-| `@esbuild/aix-ppc64` | `0.27.3` | `MIT` | `dev` | - |
-| `@esbuild/android-arm` | `0.27.7` | `MIT` | `production` | - |
-| `@esbuild/android-arm` | `0.27.3` | `MIT` | `dev` | - |
-| `@esbuild/android-arm64` | `0.27.7` | `MIT` | `production` | - |
-| `@esbuild/android-arm64` | `0.27.3` | `MIT` | `dev` | - |
-| `@esbuild/android-x64` | `0.27.7` | `MIT` | `production` | - |
-| `@esbuild/android-x64` | `0.27.3` | `MIT` | `dev` | - |
-| `@esbuild/darwin-arm64` | `0.27.7` | `MIT` | `production` | - |
-| `@esbuild/darwin-arm64` | `0.27.3` | `MIT` | `dev` | - |
-| `@esbuild/darwin-x64` | `0.27.7` | `MIT` | `production` | - |
-| `@esbuild/darwin-x64` | `0.27.3` | `MIT` | `dev` | - |
-| `@esbuild/freebsd-arm64` | `0.27.7` | `MIT` | `production` | - |
-| `@esbuild/freebsd-arm64` | `0.27.3` | `MIT` | `dev` | - |
-| `@esbuild/freebsd-x64` | `0.27.7` | `MIT` | `production` | - |
-| `@esbuild/freebsd-x64` | `0.27.3` | `MIT` | `dev` | - |
-| `@esbuild/linux-arm` | `0.27.7` | `MIT` | `production` | - |
-| `@esbuild/linux-arm` | `0.27.3` | `MIT` | `dev` | - |
-| `@esbuild/linux-arm64` | `0.27.7` | `MIT` | `production` | - |
-| `@esbuild/linux-arm64` | `0.27.3` | `MIT` | `dev` | - |
-| `@esbuild/linux-ia32` | `0.27.7` | `MIT` | `production` | - |
-| `@esbuild/linux-ia32` | `0.27.3` | `MIT` | `dev` | - |
-| `@esbuild/linux-loong64` | `0.27.7` | `MIT` | `production` | - |
-| `@esbuild/linux-loong64` | `0.27.3` | `MIT` | `dev` | - |
-| `@esbuild/linux-mips64el` | `0.27.7` | `MIT` | `production` | - |
-| `@esbuild/linux-mips64el` | `0.27.3` | `MIT` | `dev` | - |
-| `@esbuild/linux-ppc64` | `0.27.7` | `MIT` | `production` | - |
-| `@esbuild/linux-ppc64` | `0.27.3` | `MIT` | `dev` | - |
-| `@esbuild/linux-riscv64` | `0.27.7` | `MIT` | `production` | - |
-| `@esbuild/linux-riscv64` | `0.27.3` | `MIT` | `dev` | - |
-| `@esbuild/linux-s390x` | `0.27.7` | `MIT` | `production` | - |
-| `@esbuild/linux-s390x` | `0.27.3` | `MIT` | `dev` | - |
-| `@esbuild/linux-x64` | `0.27.7` | `MIT` | `production` | - |
-| `@esbuild/linux-x64` | `0.27.3` | `MIT` | `dev` | - |
-| `@esbuild/netbsd-arm64` | `0.27.7` | `MIT` | `production` | - |
-| `@esbuild/netbsd-arm64` | `0.27.3` | `MIT` | `dev` | - |
-| `@esbuild/netbsd-x64` | `0.27.7` | `MIT` | `production` | - |
-| `@esbuild/netbsd-x64` | `0.27.3` | `MIT` | `dev` | - |
-| `@esbuild/openbsd-arm64` | `0.27.7` | `MIT` | `production` | - |
-| `@esbuild/openbsd-arm64` | `0.27.3` | `MIT` | `dev` | - |
-| `@esbuild/openbsd-x64` | `0.27.7` | `MIT` | `production` | - |
-| `@esbuild/openbsd-x64` | `0.27.3` | `MIT` | `dev` | - |
-| `@esbuild/openharmony-arm64` | `0.27.7` | `MIT` | `production` | - |
-| `@esbuild/openharmony-arm64` | `0.27.3` | `MIT` | `dev` | - |
-| `@esbuild/sunos-x64` | `0.27.7` | `MIT` | `production` | - |
-| `@esbuild/sunos-x64` | `0.27.3` | `MIT` | `dev` | - |
-| `@esbuild/win32-arm64` | `0.27.7` | `MIT` | `production` | - |
-| `@esbuild/win32-arm64` | `0.27.3` | `MIT` | `dev` | - |
-| `@esbuild/win32-ia32` | `0.27.7` | `MIT` | `production` | - |
-| `@esbuild/win32-ia32` | `0.27.3` | `MIT` | `dev` | - |
-| `@esbuild/win32-x64` | `0.27.7` | `MIT` | `production` | - |
-| `@esbuild/win32-x64` | `0.27.3` | `MIT` | `dev` | - |
+| `@esbuild/aix-ppc64` | `0.28.2` | `MIT` | `production` | - |
+| `@esbuild/android-arm` | `0.28.2` | `MIT` | `production` | - |
+| `@esbuild/android-arm64` | `0.28.2` | `MIT` | `production` | - |
+| `@esbuild/android-x64` | `0.28.2` | `MIT` | `production` | - |
+| `@esbuild/darwin-arm64` | `0.28.2` | `MIT` | `production` | - |
+| `@esbuild/darwin-x64` | `0.28.2` | `MIT` | `production` | - |
+| `@esbuild/freebsd-arm64` | `0.28.2` | `MIT` | `production` | - |
+| `@esbuild/freebsd-x64` | `0.28.2` | `MIT` | `production` | - |
+| `@esbuild/linux-arm` | `0.28.2` | `MIT` | `production` | - |
+| `@esbuild/linux-arm64` | `0.28.2` | `MIT` | `production` | - |
+| `@esbuild/linux-ia32` | `0.28.2` | `MIT` | `production` | - |
+| `@esbuild/linux-loong64` | `0.28.2` | `MIT` | `production` | - |
+| `@esbuild/linux-mips64el` | `0.28.2` | `MIT` | `production` | - |
+| `@esbuild/linux-ppc64` | `0.28.2` | `MIT` | `production` | - |
+| `@esbuild/linux-riscv64` | `0.28.2` | `MIT` | `production` | - |
+| `@esbuild/linux-s390x` | `0.28.2` | `MIT` | `production` | - |
+| `@esbuild/linux-x64` | `0.28.2` | `MIT` | `production` | - |
+| `@esbuild/netbsd-arm64` | `0.28.2` | `MIT` | `production` | - |
+| `@esbuild/netbsd-x64` | `0.28.2` | `MIT` | `production` | - |
+| `@esbuild/openbsd-arm64` | `0.28.2` | `MIT` | `production` | - |
+| `@esbuild/openbsd-x64` | `0.28.2` | `MIT` | `production` | - |
+| `@esbuild/openharmony-arm64` | `0.28.2` | `MIT` | `production` | - |
+| `@esbuild/sunos-x64` | `0.28.2` | `MIT` | `production` | - |
+| `@esbuild/win32-arm64` | `0.28.2` | `MIT` | `production` | - |
+| `@esbuild/win32-ia32` | `0.28.2` | `MIT` | `production` | - |
+| `@esbuild/win32-x64` | `0.28.2` | `MIT` | `production` | - |
 | `@gera2ld/jsx-dom` | `2.2.2` | `ISC` | `production` | - |
 | `@iconify/types` | `2.0.0` | `MIT` | `production` | - |
 | `@iconify/utils` | `3.1.7` | `MIT` | `production` | - |
 | `@img/colour` | `1.1.0` | `MIT` | `production` | - |
-| `@img/sharp-darwin-arm64` | `0.34.5` | `Apache-2.0` | `dev` | - |
-| `@img/sharp-darwin-arm64` | `0.35.5` | `Apache-2.0` | `production` | - |
-| `@img/sharp-darwin-x64` | `0.34.5` | `Apache-2.0` | `dev` | - |
-| `@img/sharp-darwin-x64` | `0.35.5` | `Apache-2.0` | `production` | - |
-| `@img/sharp-freebsd-wasm32` | `0.35.5` | `Apache-2.0` | `production` | - |
-| `@img/sharp-libvips-darwin-arm64` | `1.2.4` | `LGPL-3.0-or-later` | `dev` | - |
-| `@img/sharp-libvips-darwin-arm64` | `1.3.4` | `LGPL-3.0-or-later` | `production` | - |
-| `@img/sharp-libvips-darwin-x64` | `1.2.4` | `LGPL-3.0-or-later` | `dev` | - |
-| `@img/sharp-libvips-darwin-x64` | `1.3.4` | `LGPL-3.0-or-later` | `production` | - |
-| `@img/sharp-libvips-linux-arm` | `1.2.4` | `LGPL-3.0-or-later` | `dev` | - |
-| `@img/sharp-libvips-linux-arm` | `1.3.4` | `LGPL-3.0-or-later` | `production` | - |
-| `@img/sharp-libvips-linux-arm64` | `1.2.4` | `LGPL-3.0-or-later` | `dev` | - |
-| `@img/sharp-libvips-linux-arm64` | `1.3.4` | `LGPL-3.0-or-later` | `production` | - |
-| `@img/sharp-libvips-linux-ppc64` | `1.2.4` | `LGPL-3.0-or-later` | `dev` | - |
-| `@img/sharp-libvips-linux-ppc64` | `1.3.4` | `LGPL-3.0-or-later` | `production` | - |
-| `@img/sharp-libvips-linux-riscv64` | `1.2.4` | `LGPL-3.0-or-later` | `dev` | - |
-| `@img/sharp-libvips-linux-riscv64` | `1.3.4` | `LGPL-3.0-or-later` | `production` | - |
-| `@img/sharp-libvips-linux-s390x` | `1.2.4` | `LGPL-3.0-or-later` | `dev` | - |
-| `@img/sharp-libvips-linux-s390x` | `1.3.4` | `LGPL-3.0-or-later` | `production` | - |
-| `@img/sharp-libvips-linux-x64` | `1.2.4` | `LGPL-3.0-or-later` | `dev` | - |
-| `@img/sharp-libvips-linux-x64` | `1.3.4` | `LGPL-3.0-or-later` | `production` | - |
-| `@img/sharp-libvips-linuxmusl-arm64` | `1.2.4` | `LGPL-3.0-or-later` | `dev` | - |
-| `@img/sharp-libvips-linuxmusl-arm64` | `1.3.4` | `LGPL-3.0-or-later` | `production` | - |
-| `@img/sharp-libvips-linuxmusl-x64` | `1.2.4` | `LGPL-3.0-or-later` | `dev` | - |
-| `@img/sharp-libvips-linuxmusl-x64` | `1.3.4` | `LGPL-3.0-or-later` | `production` | - |
-| `@img/sharp-linux-arm` | `0.34.5` | `Apache-2.0` | `dev` | - |
-| `@img/sharp-linux-arm` | `0.35.5` | `Apache-2.0` | `production` | - |
-| `@img/sharp-linux-arm64` | `0.34.5` | `Apache-2.0` | `dev` | - |
-| `@img/sharp-linux-arm64` | `0.35.5` | `Apache-2.0` | `production` | - |
-| `@img/sharp-linux-ppc64` | `0.34.5` | `Apache-2.0` | `dev` | - |
-| `@img/sharp-linux-ppc64` | `0.35.5` | `Apache-2.0` | `production` | - |
-| `@img/sharp-linux-riscv64` | `0.34.5` | `Apache-2.0` | `dev` | - |
-| `@img/sharp-linux-riscv64` | `0.35.5` | `Apache-2.0` | `production` | - |
-| `@img/sharp-linux-s390x` | `0.34.5` | `Apache-2.0` | `dev` | - |
-| `@img/sharp-linux-s390x` | `0.35.5` | `Apache-2.0` | `production` | - |
-| `@img/sharp-linux-x64` | `0.34.5` | `Apache-2.0` | `dev` | - |
-| `@img/sharp-linux-x64` | `0.35.5` | `Apache-2.0` | `production` | - |
-| `@img/sharp-linuxmusl-arm64` | `0.34.5` | `Apache-2.0` | `dev` | - |
-| `@img/sharp-linuxmusl-arm64` | `0.35.5` | `Apache-2.0` | `production` | - |
-| `@img/sharp-linuxmusl-x64` | `0.34.5` | `Apache-2.0` | `dev` | - |
-| `@img/sharp-linuxmusl-x64` | `0.35.5` | `Apache-2.0` | `production` | - |
-| `@img/sharp-wasm32` | `0.35.5` | `Apache-2.0 AND LGPL-3.0-or-later AND MIT` | `production` | - |
-| `@img/sharp-wasm32` | `0.34.5` | `Apache-2.0 AND LGPL-3.0-or-later AND MIT` | `dev` | - |
-| `@img/sharp-webcontainers-wasm32` | `0.35.5` | `Apache-2.0` | `production` | - |
-| `@img/sharp-win32-arm64` | `0.34.5` | `Apache-2.0 AND LGPL-3.0-or-later` | `dev` | - |
-| `@img/sharp-win32-arm64` | `0.35.5` | `Apache-2.0 AND LGPL-3.0-or-later` | `production` | - |
-| `@img/sharp-win32-ia32` | `0.34.5` | `Apache-2.0 AND LGPL-3.0-or-later` | `dev` | - |
-| `@img/sharp-win32-ia32` | `0.35.5` | `Apache-2.0 AND LGPL-3.0-or-later` | `production` | - |
-| `@img/sharp-win32-x64` | `0.34.5` | `Apache-2.0 AND LGPL-3.0-or-later` | `dev` | - |
-| `@img/sharp-win32-x64` | `0.35.5` | `Apache-2.0 AND LGPL-3.0-or-later` | `production` | - |
+| `@img/sharp-darwin-arm64` | `0.35.5` | `Apache-2.0` | `dev` | - |
+| `@img/sharp-darwin-x64` | `0.35.5` | `Apache-2.0` | `dev` | - |
+| `@img/sharp-freebsd-wasm32` | `0.35.5` | `Apache-2.0` | `dev` | - |
+| `@img/sharp-libvips-darwin-arm64` | `1.3.4` | `LGPL-3.0-or-later` | `dev` | - |
+| `@img/sharp-libvips-darwin-x64` | `1.3.4` | `LGPL-3.0-or-later` | `dev` | - |
+| `@img/sharp-libvips-linux-arm` | `1.3.4` | `LGPL-3.0-or-later` | `dev` | - |
+| `@img/sharp-libvips-linux-arm64` | `1.3.4` | `LGPL-3.0-or-later` | `dev` | - |
+| `@img/sharp-libvips-linux-ppc64` | `1.3.4` | `LGPL-3.0-or-later` | `dev` | - |
+| `@img/sharp-libvips-linux-riscv64` | `1.3.4` | `LGPL-3.0-or-later` | `dev` | - |
+| `@img/sharp-libvips-linux-s390x` | `1.3.4` | `LGPL-3.0-or-later` | `dev` | - |
+| `@img/sharp-libvips-linux-x64` | `1.3.4` | `LGPL-3.0-or-later` | `dev` | - |
+| `@img/sharp-libvips-linuxmusl-arm64` | `1.3.4` | `LGPL-3.0-or-later` | `dev` | - |
+| `@img/sharp-libvips-linuxmusl-x64` | `1.3.4` | `LGPL-3.0-or-later` | `dev` | - |
+| `@img/sharp-linux-arm` | `0.35.5` | `Apache-2.0` | `dev` | - |
+| `@img/sharp-linux-arm64` | `0.35.5` | `Apache-2.0` | `dev` | - |
+| `@img/sharp-linux-ppc64` | `0.35.5` | `Apache-2.0` | `dev` | - |
+| `@img/sharp-linux-riscv64` | `0.35.5` | `Apache-2.0` | `dev` | - |
+| `@img/sharp-linux-s390x` | `0.35.5` | `Apache-2.0` | `dev` | - |
+| `@img/sharp-linux-x64` | `0.35.5` | `Apache-2.0` | `dev` | - |
+| `@img/sharp-linuxmusl-arm64` | `0.35.5` | `Apache-2.0` | `dev` | - |
+| `@img/sharp-linuxmusl-x64` | `0.35.5` | `Apache-2.0` | `dev` | - |
+| `@img/sharp-wasm32` | `0.35.5` | `Apache-2.0 AND LGPL-3.0-or-later AND MIT` | `dev` | - |
+| `@img/sharp-webcontainers-wasm32` | `0.35.5` | `Apache-2.0` | `dev` | - |
+| `@img/sharp-win32-arm64` | `0.35.5` | `Apache-2.0 AND LGPL-3.0-or-later` | `dev` | - |
+| `@img/sharp-win32-ia32` | `0.35.5` | `Apache-2.0 AND LGPL-3.0-or-later` | `dev` | - |
+| `@img/sharp-win32-x64` | `0.35.5` | `Apache-2.0 AND LGPL-3.0-or-later` | `dev` | - |
 | `@jitl/quickjs-ffi-types` | `0.32.0` | `MIT` | `production` | - |
 | `@jitl/quickjs-wasmfile-debug-asyncify` | `0.32.0` | `MIT` | `production` | - |
 | `@jitl/quickjs-wasmfile-debug-sync` | `0.32.0` | `MIT` | `production` | - |
@@ -246,7 +182,7 @@
 | `@poppinss/colors` | `4.1.6` | `MIT` | `dev` | - |
 | `@poppinss/dumper` | `0.6.5` | `MIT` | `dev` | - |
 | `@poppinss/exception` | `1.2.3` | `MIT` | `dev` | - |
-| `@puppeteer/browsers` | `3.2.1` | `Apache-2.0` | `dev` | - |
+| `@puppeteer/browsers` | `3.2.7` | `Apache-2.0` | `dev` | - |
 | `@rolldown/binding-android-arm-eabi` | `1.2.16` | `MIT` | `production` | - |
 | `@rolldown/binding-android-arm64` | `1.2.16` | `MIT` | `production` | - |
 | `@rolldown/binding-darwin-arm64` | `1.2.16` | `MIT` | `production` | - |
@@ -297,7 +233,7 @@
 | `@shikijs/types` | `4.6.0` | `MIT` | `production` | - |
 | `@shikijs/vscode-textmate` | `10.1.0` | `MIT` | `production` | - |
 | `@sindresorhus/is` | `7.2.0` | `MIT` | `dev` | - |
-| `@speed-highlight/core` | `1.2.15` | `CC0-1.0` | `dev` | - |
+| `@speed-highlight/core` | `1.2.24` | `CC0-1.0` | `dev` | - |
 | `@stripe/stripe-js` | `9.15.0` | `MIT` | `production` | ✓ |
 | `@tailwindcss/node` | `4.2.2` | `MIT` | `production` | - |
 | `@tailwindcss/node` | `4.2.4` | `MIT` | `dev` | - |
@@ -398,7 +334,7 @@
 | `ajv-i18n` | `4.2.0` | `MIT` | `dev` | - |
 | `am-i-vibing` | `0.5.0` | `MIT` | `production` | - |
 | `ansi-regex` | `6.5.0` | `MIT` | `dev` | - |
-| `ansi-regex` | `6.3.0` | `MIT` | `dev` | - |
+| `ansi-regex` | `6.6.0` | `MIT` | `dev` | - |
 | `ansi-regex` | `5.0.1` | `MIT` | `production` | - |
 | `ansi-styles` | `6.2.3` | `MIT` | `dev` | - |
 | `ansi-styles` | `4.3.0` | `MIT` | `production` | - |
@@ -412,12 +348,12 @@
 | `autoprefixer` | `10.5.0` | `MIT` | `dev` | ✓ |
 | `axobject-query` | `4.1.0` | `Apache-2.0` | `production` | - |
 | `bail` | `2.0.2` | `MIT` | `production` | - |
-| `baseline-browser-mapping` | `2.10.13` | `Apache-2.0` | `dev` | - |
+| `baseline-browser-mapping` | `2.11.35` | `Apache-2.0` | `dev` | - |
 | `blake3-wasm` | `2.1.5` | `MIT` | `dev` | - |
 | `boolbase` | `1.0.0` | `ISC` | `production` | - |
-| `browserslist` | `4.28.2` | `MIT` | `dev` | - |
+| `browserslist` | `4.29.5` | `MIT` | `dev` | - |
 | `camelcase` | `5.3.1` | `MIT` | `production` | - |
-| `caniuse-lite` | `1.0.30001791` | `CC-BY-4.0` | `dev` | - |
+| `caniuse-lite` | `1.0.30001823` | `CC-BY-4.0` | `dev` | - |
 | `ccount` | `2.0.1` | `MIT` | `production` | - |
 | `character-entities` | `2.0.2` | `MIT` | `production` | - |
 | `character-entities-html4` | `2.1.0` | `MIT` | `production` | - |
@@ -427,7 +363,7 @@
 | `cheerio-select` | `2.1.0` | `BSD-2-Clause` | `production` | - |
 | `chevrotain` | `13.2.0` | `Apache-2.0` | `production` | - |
 | `chokidar` | `5.0.0` | `MIT` | `production` | - |
-| `chromium-bidi` | `17.0.2` | `Apache-2.0` | `dev` | - |
+| `chromium-bidi` | `157.0.8090-0` | `Apache-2.0` | `dev` | - |
 | `ci-info` | `4.4.0` | `MIT` | `production` | - |
 | `cliui` | `9.0.1` | `ISC` | `dev` | - |
 | `cliui` | `6.0.0` | `ISC` | `production` | - |
@@ -438,7 +374,6 @@
 | `comma-separated-tokens` | `2.0.3` | `MIT` | `production` | - |
 | `commander` | `11.1.0` | `MIT` | `production` | - |
 | `commander` | `7.2.0` | `MIT` | `production` | - |
-| `commander` | `8.3.0` | `MIT` | `production` | - |
 | `commander` | `15.1.0` | `MIT` | `production` | - |
 | `common-ancestor-path` | `2.0.0` | `BlueOak-1.0.0` | `production` | - |
 | `cookie` | `2.0.2` | `MIT` | `production` | - |
@@ -506,7 +441,7 @@
 | `detect-libc` | `2.1.2` | `Apache-2.0` | `production` | - |
 | `devalue` | `6.0.3` | `MIT` | `production` | - |
 | `devlop` | `1.1.0` | `MIT` | `production` | - |
-| `devtools-protocol` | `0.0.1666840` | `BSD-3-Clause` | `dev` | - |
+| `devtools-protocol` | `0.0.1717327` | `BSD-3-Clause` | `dev` | - |
 | `diff` | `9.0.0` | `BSD-3-Clause` | `production` | - |
 | `dijkstrajs` | `1.0.3` | `MIT` | `production` | - |
 | `dom-serializer` | `2.0.0` | `MIT` | `production` | - |
@@ -516,7 +451,7 @@
 | `domutils` | `3.2.2` | `BSD-2-Clause` | `production` | - |
 | `dset` | `3.1.4` | `MIT` | `production` | - |
 | `ee-first` | `1.1.1` | `MIT` | `production` | - |
-| `electron-to-chromium` | `1.5.331` | `ISC` | `dev` | - |
+| `electron-to-chromium` | `1.5.479` | `ISC` | `dev` | - |
 | `elkjs` | `0.12.1` | `EPL-2.0 OR GPL-3.0-or-later` | `production` | - |
 | `emmet` | `2.4.11` | `MIT` | `dev` | - |
 | `emoji-regex` | `10.6.0` | `MIT` | `dev` | - |
@@ -531,8 +466,7 @@
 | `es-toolkit` | `1.53.2` | `MIT` | `production` | - |
 | `esast-util-from-estree` | `2.0.0` | `MIT` | `production` | - |
 | `esast-util-from-js` | `2.0.1` | `MIT` | `production` | - |
-| `esbuild` | `0.27.7` | `MIT` | `production` | - |
-| `esbuild` | `0.27.3` | `MIT` | `dev` | - |
+| `esbuild` | `0.28.2` | `MIT` | `production` | - |
 | `escalade` | `3.2.0` | `MIT` | `dev` | - |
 | `escape-html` | `1.0.3` | `MIT` | `production` | - |
 | `escape-string-regexp` | `5.0.0` | `MIT` | `production` | - |
@@ -604,8 +538,7 @@
 | `json-schema-traverse` | `1.0.0` | `MIT` | `dev` | - |
 | `jsonc-parser` | `2.3.1` | `MIT` | `dev` | - |
 | `jsonc-parser` | `3.3.1` | `MIT` | `production` | - |
-| `katex` | `0.16.11` | `MIT` | `production` | ✓ |
-| `katex` | `0.18.10` | `MIT` | `production` | ✓ |
+| `katex` | `0.19.1` | `MIT` | `production` | ✓ |
 | `khroma` | `2.1.0` | `UNSPECIFIED` | `production` | - |
 | `kleur` | `4.1.5` | `MIT` | `dev` | - |
 | `layout-base` | `2.0.1` | `MIT` | `production` | - |
@@ -634,7 +567,7 @@
 | `lightningcss-win32-arm64-msvc` | `1.32.0` | `MPL-2.0` | `production` | - |
 | `lightningcss-win32-x64-msvc` | `1.33.0` | `MPL-2.0` | `production` | - |
 | `lightningcss-win32-x64-msvc` | `1.32.0` | `MPL-2.0` | `production` | - |
-| `lilconfig` | `3.1.3` | `MIT` | `dev` | - |
+| `lilconfig` | `3.1.5` | `MIT` | `dev` | - |
 | `linkify-it` | `5.0.2` | `MIT` | `production` | - |
 | `locate-path` | `5.0.0` | `MIT` | `production` | - |
 | `lodash-es` | `4.18.1` | `MIT` | `production` | - |
@@ -645,7 +578,7 @@
 | `magic-string` | `0.30.21` | `MIT` | `production` | - |
 | `magicast` | `0.5.5` | `MIT` | `production` | - |
 | `markdown-extensions` | `2.0.0` | `MIT` | `production` | - |
-| `markdown-it` | `14.3.1` | `MIT` | `production` | - |
+| `markdown-it` | `14.3.3` | `MIT` | `production` | - |
 | `markdown-it-ins` | `4.0.0` | `MIT` | `production` | - |
 | `markdown-it-mark` | `4.0.0` | `MIT` | `production` | - |
 | `markdown-it-sub` | `2.0.0` | `MIT` | `production` | - |
@@ -718,10 +651,10 @@
 | `micromark-util-types` | `2.0.2` | `MIT` | `production` | - |
 | `mime-db` | `1.54.0` | `MIT` | `production` | - |
 | `mime-types` | `3.0.2` | `MIT` | `production` | - |
-| `miniflare` | `4.20260424.0` | `MIT` | `dev` | - |
+| `miniflare` | `5.20261110.0-beta` | `MIT` | `dev` | - |
 | `mitt` | `3.0.1` | `MIT` | `dev` | - |
 | `mmdb-lib` | `3.0.2` | `MIT` | `production` | - |
-| `modern-tar` | `0.8.4` | `MIT` | `dev` | - |
+| `modern-tar` | `0.8.6` | `MIT` | `dev` | - |
 | `mrmime` | `2.0.1` | `MIT` | `production` | - |
 | `ms` | `2.1.3` | `MIT` | `production` | - |
 | `muggle-string` | `0.4.1` | `MIT` | `dev` | - |
@@ -730,7 +663,7 @@
 | `nlcst-to-string` | `4.0.0` | `MIT` | `production` | - |
 | `node-fetch-native` | `1.6.7` | `MIT` | `production` | - |
 | `node-mock-http` | `1.0.5` | `MIT` | `production` | - |
-| `node-releases` | `2.0.37` | `MIT` | `dev` | - |
+| `node-releases` | `2.0.63` | `MIT` | `dev` | - |
 | `normalize-path` | `3.0.0` | `MIT` | `production` | - |
 | `npm2url` | `0.2.4` | `MIT` | `production` | - |
 | `nth-check` | `2.1.1` | `BSD-2-Clause` | `production` | - |
@@ -772,8 +705,8 @@
 | `process-ancestry` | `0.1.0` | `MIT` | `production` | - |
 | `property-information` | `7.1.0` | `MIT` | `production` | - |
 | `punycode.js` | `2.3.1` | `MIT` | `production` | - |
-| `puppeteer` | `25.8.0` | `Apache-2.0` | `dev` | ✓ |
-| `puppeteer-core` | `25.8.0` | `Apache-2.0` | `dev` | - |
+| `puppeteer` | `25.17.0` | `Apache-2.0` | `dev` | ✓ |
+| `puppeteer-core` | `25.17.0` | `Apache-2.0` | `dev` | - |
 | `qrcode` | `1.5.4` | `MIT` | `production` | ✓ |
 | `quickjs-emscripten` | `0.32.0` | `MIT` | `production` | ✓ |
 | `quickjs-emscripten-core` | `0.32.0` | `MIT` | `production` | - |
@@ -825,7 +758,6 @@
 | `set-blocking` | `2.0.0` | `ISC` | `production` | - |
 | `setprototypeof` | `1.2.0` | `ISC` | `production` | - |
 | `sharp` | `0.35.5` | `Apache-2.0` | `production` | - |
-| `sharp` | `0.34.5` | `Apache-2.0` | `dev` | - |
 | `shiki` | `4.6.0` | `MIT` | `production` | - |
 | `simple-icons` | `16.29.0` | `CC0-1.0` | `dev` | ✓ |
 | `sisteransi` | `1.0.5` | `MIT` | `production` | - |
@@ -838,7 +770,6 @@
 | `std-env` | `4.3.0` | `MIT` | `production` | - |
 | `string-width` | `7.2.0` | `MIT` | `dev` | - |
 | `string-width` | `8.3.0` | `MIT` | `dev` | - |
-| `string-width` | `8.2.2` | `MIT` | `dev` | - |
 | `string-width` | `4.2.3` | `MIT` | `production` | - |
 | `stringify-entities` | `4.0.4` | `MIT` | `production` | - |
 | `strip-ansi` | `7.2.0` | `MIT` | `dev` | - |
@@ -863,7 +794,7 @@
 | `trough` | `2.2.0` | `MIT` | `production` | - |
 | `ts-dedent` | `2.3.0` | `MIT` | `production` | - |
 | `tslib` | `2.8.1` | `0BSD` | `production` | - |
-| `typed-query-selector` | `2.12.2` | `MIT` | `dev` | - |
+| `typed-query-selector` | `2.12.3` | `MIT` | `dev` | - |
 | `typesafe-path` | `0.2.2` | `MIT` | `dev` | - |
 | `typescript` | `5.9.3` | `Apache-2.0` | `dev` | ✓ |
 | `typescript-auto-import-cache` | `0.3.6` | `MIT` | `dev` | - |
@@ -871,8 +802,7 @@
 | `ufo` | `1.6.4` | `MIT` | `production` | - |
 | `ultrahtml` | `1.7.0` | `MIT` | `production` | - |
 | `uncrypto` | `0.1.3` | `MIT` | `production` | - |
-| `undici` | `6.28.0` | `MIT` | `production` | - |
-| `undici` | `7.24.8` | `MIT` | `dev` | - |
+| `undici` | `7.30.2` | `MIT` | `production` | - |
 | `undici` | `8.12.4` | `MIT` | `production` | - |
 | `undici-types` | `7.19.2` | `MIT` | `production` | - |
 | `unenv` | `2.0.0-rc.24` | `MIT` | `dev` | - |
@@ -888,13 +818,13 @@
 | `unist-util-visit-children` | `3.0.0` | `MIT` | `production` | - |
 | `unist-util-visit-parents` | `6.1.0` | `MIT` | `production` | - |
 | `unstorage` | `1.17.6` | `MIT` | `production` | - |
-| `update-browserslist-db` | `1.2.3` | `MIT` | `dev` | - |
+| `update-browserslist-db` | `1.3.4` | `MIT` | `dev` | - |
 | `verkit` | `0.5.0` | `MIT` | `production` | - |
 | `vfile` | `6.0.3` | `MIT` | `production` | - |
 | `vfile-location` | `5.0.3` | `MIT` | `production` | - |
 | `vfile-message` | `4.0.3` | `MIT` | `production` | - |
 | `vite` | `8.3.6` | `MIT` | `production` | - |
-| `vite` | `7.3.1` | `MIT` | `production` | - |
+| `vite` | `7.3.8` | `MIT` | `production` | - |
 | `vitefu` | `1.1.3` | `MIT` | `production` | - |
 | `volar-service-css` | `0.0.71` | `MIT` | `dev` | - |
 | `volar-service-emmet` | `0.0.71` | `MIT` | `dev` | - |
@@ -917,16 +847,15 @@
 | `vscode-nls` | `5.2.0` | `MIT` | `dev` | - |
 | `vscode-uri` | `3.2.0` | `MIT` | `dev` | - |
 | `web-namespaces` | `2.0.1` | `MIT` | `production` | - |
-| `webdriver-bidi-protocol` | `0.4.2` | `Apache-2.0` | `dev` | - |
+| `webdriver-bidi-protocol` | `1.0.2` | `Apache-2.0` | `dev` | - |
 | `whatwg-encoding` | `3.1.1` | `MIT` | `production` | - |
 | `whatwg-mimetype` | `4.0.0` | `MIT` | `production` | - |
 | `which-module` | `2.0.1` | `ISC` | `production` | - |
-| `workerd` | `1.20260424.1` | `Apache-2.0` | `dev` | - |
-| `wrangler` | `4.85.0` | `MIT OR Apache-2.0` | `dev` | ✓ |
+| `workerd` | `1.20261110.1` | `Apache-2.0` | `dev` | - |
+| `wrangler` | `4.160.0` | `MIT OR Apache-2.0` | `dev` | ✓ |
 | `wrap-ansi` | `9.0.2` | `MIT` | `dev` | - |
 | `wrap-ansi` | `6.2.0` | `MIT` | `production` | - |
-| `ws` | `8.21.3` | `MIT` | `dev` | - |
-| `ws` | `8.18.0` | `MIT` | `dev` | - |
+| `ws` | `8.22.2` | `MIT` | `dev` | - |
 | `xxhash-wasm` | `1.1.0` | `MIT` | `production` | - |
 | `y18n` | `5.0.8` | `ISC` | `dev` | - |
 | `y18n` | `4.0.3` | `ISC` | `production` | - |
@@ -934,13 +863,11 @@
 | `yaml` | `2.8.3` | `ISC` | `dev` | - |
 | `yaml-language-server` | `1.23.0` | `MIT` | `dev` | - |
 | `yargs` | `18.2.0` | `MIT` | `dev` | - |
-| `yargs` | `18.1.0` | `MIT` | `dev` | - |
 | `yargs` | `15.4.1` | `MIT` | `production` | - |
 | `yargs-parser` | `22.0.0` | `ISC` | `production` | - |
 | `yargs-parser` | `18.1.3` | `ISC` | `production` | - |
 | `yocto-queue` | `1.2.2` | `MIT` | `production` | - |
 | `youch` | `4.1.0-beta.10` | `MIT` | `dev` | - |
 | `youch-core` | `0.3.3` | `MIT` | `dev` | - |
-| `zod` | `3.25.76` | `MIT` | `dev` | - |
 | `zod` | `4.6.7` | `MIT` | `production` | - |
 | `zwitch` | `2.0.4` | `MIT` | `production` | - |
