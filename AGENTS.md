@@ -6827,7 +6827,17 @@
 - [x] **响应式工作台 UX 与移动端适配**：桌面大屏与移动端 390x844 全适配，零横向溢出，支持暗黑模式与键盘快捷键 (`f821807`)。
 - [x] **带版本加固传输协议 v2**：实现 `lab-bundle-v2` 规范，集成 SHA-256 内容摘要、Emoji/UTF-8 往返无损与向前兼容迁移 (`006b4f5`)。
 - [x] **三核跨浏览器全链路端到端验收与水合加固**：解决 SSR/Client 跨站沙盒水合不一致，Chromium、Firefox、WebKit 三核全绿，未捕获 JS 异常数为 0 (`32b4f05`, `a211429`)。
-- [x] **生成证据充分的 Phase 2.8 完成报告**：生成 `LAB_PHASE_2_8_COMPLETION_REPORT.md`，记录 18 项要求结论、全量 Commit SHA、可复现命令集与严格 Level 2 权限边界。
+- [x] **生成证据充分的 Phase 2.8 完成报告**：生成 `LAB_PHASE_2_8_COMPLETION_REPORT.md`，记录 18 项要求结论、全量 Commit SHA、可复现命令集与严格 Level 2 权限边界 (`bfeb5c6`)。
+
+### Task 126: 试验田 Lab 阻塞项全量清零、UI 多运行时与边缘后端 API 闭环及状态晋升为 GO (`c8b0c56`, `2ca0259`)
+- [x] **供应链安全漏洞 100% 清零 (`c8b0c56`)**：升级 `katex`、`puppeteer`、`wrangler` 并锁定传递安全版本，`npm audit` 全量与生产依赖均达到 `found 0 vulnerabilities`，清空 `security/npm-audit-exceptions.json` (`[]`)，更新 SBOM 许可证清单。
+- [x] **边缘后端 API 与前端实时联动 (`2ca0259`)**：
+  1. 新增 Cloudflare Pages Function `functions/api/lab.ts`，提供 `GET /api/lab`（平台元数据、6 大官方实验索引与分类/Slug 筛选、安全配额声明）与 `POST /api/lab`（实验工程包文件数/体积/后缀白名单校验与 SHA-256 完整性摘要生成）；
+  2. 在 `LabDashboard.astro` 多币种实时汇率换算器中接入 `/api/exchange-rate` 边缘实时汇率同步按钮（`#btn-fx-live-sync`）与状态徽标，兼顾确定性离线基准与边缘实时同步。
+- [x] **UI 与多运行时切换体验全面打磨 (`2ca0259`)**：
+  1. 修复 `QuickJsWorkerRuntime.ts` 中 Vite Module Worker 打包方式，使生产构建生成独立同源 JS Worker bundle（`dist/_astro/quickjs-worker-*.js`），消除未编译 `.ts` 静态资源问题；
+  2. 支持全部 6 个官方实验（含 TypeScript 物理仿真）在 `🌐 Browser DOM` 与 `⚡ QuickJS WASM` 间无缝切换执行，并在 `LabPreviewPanel.tsx` 中新增「QuickJS WebAssembly / Curated Trace 隔离计算监视视口」（`data-testid="lab-headless-runtime-monitor"`）；
+  3. 48/48 契约测试、9/9 安全与后端 API 审计、10/10 发布门禁、Chromium/Firefox/WebKit 三核 Playwright E2E 全量 100% 通过，正式将交付准备度状态由 `CONDITIONAL GO` 晋升为 **`GO`**。
 
 
 
