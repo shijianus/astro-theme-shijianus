@@ -6839,6 +6839,27 @@
   2. 支持全部 6 个官方实验（含 TypeScript 物理仿真）在 `🌐 Browser DOM` 与 `⚡ QuickJS WASM` 间无缝切换执行，并在 `LabPreviewPanel.tsx` 中新增「QuickJS WebAssembly / Curated Trace 隔离计算监视视口」（`data-testid="lab-headless-runtime-monitor"`）；
   3. 48/48 契约测试、9/9 安全与后端 API 审计、10/10 发布门禁、Chromium/Firefox/WebKit 三核 Playwright E2E 全量 100% 通过，正式将交付准备度状态由 `CONDITIONAL GO` 晋升为 **`GO`**。
 
+### Task 127: 试验田 (Lab) 用户视角前端 UI 重构、高质量原生 SVG 矢量实验嵌入与展示空间扩容 (`02e889d`)
+- [x] **用户视角前端 UI 全面重写与交互打磨 (`02e889d`)**：
+  1. 重写 `LabDashboard.astro` Hero 展区：塑造高质感极客工程化视觉，呈现 4 大核心指标（8 官方在线实验、100% 开放源码、60 FPS 硬件加速、双层安全沙盒）与三大快捷直达入口（进入代码工坊、算法单步调试器、SVG 矢量滤镜工坊）；
+  2. 全局卡片预览框高度由 220px 大幅扩充至 340px，星轨与悬链线高精 Canvas 像素比调优；
+  3. 工具栏新增工作区三档分屏快速切换器（`◫ 均衡 50/50`、`◨ 大预览 36/64`、`◧ 大代码 64/36`），满足开发者沉浸编码与大屏视觉审视需求；
+  4. 控制台抽屉重构为可折叠手风琴面板（`is-collapsed` 折叠至 38px 状态条），支持一键展开/收起，将纵向视口最大化交还给交互预览。
+- [x] **高质量原生可编辑 SVG 程式码实验扩充 (`02e889d`)**：
+  1. 新增实验 7：`SVG 动态流体滤镜与有机变幻 (interactive-svg-morph)`，包含原生 `<filter>`、`<feGaussianBlur>`、`<feColorMatrix>` 阈值阶跃计算、水银液态流体交互、弹簧阻尼拖拽与配色方案切换；
+  2. 新增实验 8：`SVG 参数化几何动力齿轮与多重极光分形 (svg-generative-fractal)`，集成极坐标外摆线与内摆线算法、动态极光渐变旋转、一键复制纯 SVG 原生程式码与导出下载标准 `.svg` 矢量文件；
+  3. 边缘后端 API (`functions/api/lab.ts`) 同步登记 2 个新实验元数据与分类索引（官方实验总数扩充至 8 个）。
+- [x] **展示空间彻底扩容与局促扁平问题根治 (`02e889d`)**：
+  1. 修复 `.lab-pg-workspace` 与 `.lab-pg-split` 样式选择器映射，工作区高度从 540px 扩容至 `720px`（`clamp(700px, 80vh, 920px)`）；
+  2. 沙盒视口高度从扁平的 290px 大幅提升至 480px（控制台收起时可达 640px），编辑器最小高度由 360px 提升至 480px，彻底告别扁平局促；
+  3. 所有圆角规范严格恪守 `<= 8px`，暗黑模式与明亮模式双向自适应，移动端 `390×844` 保持零横向溢出。
+- [x] **契约与全套自动化测试验收全量 100% PASS (`02e889d`)**：
+  1. `npx astro check` 175 文件 0 errors / 0 warnings；
+  2. `npm run build` 330 个静态页面成功构建；
+  3. 全部 7 套安全与契约测试脚本 100% 通过；
+  4. Playwright Chromium + Firefox + WebKit 三核跨浏览器 E2E 测试全部 100% 通过。
+
+
 
 
 
