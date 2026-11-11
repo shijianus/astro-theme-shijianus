@@ -2274,11 +2274,11 @@ export const MULTILINGUAL_DICTIONARY: Record<string, TranslationDict> = {
     es: 'Construir el blog como software mantenido a largo plazo.',
     de: 'Den Blog als langfristig gewartete Software entwickeln.'
   },
-  '保持高密度信息、明确反馈和稳定排版，把博客做成真正可生长的内容系统。': {
-    en: 'Maintaining high information density, clear feedback, and stable layout into a truly evolving content system.',
-    fr: 'Maintenir une haute densité d information, des retours clairs et une mise en page stable dans un système évolutif.',
-    es: 'Mantener alta densidad de información, retroalimentación clara y maquetación estable en un sistema en constante evolución.',
-    de: 'Hohe Informationsdichte, klares Feedback und stabiles Layout zu einem zukunftsfähigen Inhaltssystem verbinden.'
+  '以时代为画布，深潜细脉，广构通衢。在算法与速朽的喧嚣之外，把每一次构建都沉淀为自由生长的思想秩序。': {
+    en: 'Using the epoch as canvas: delve into hidden pulses, build lasting thoroughfares. Beyond ephemeral noise, crystallizing every construct into an evolving order of thought.',
+    fr: 'Avec l époque pour toile : creuser les veines profondes, bâtir des voies durables. Loin du tumulte éphémère, façonner chaque création en un ordre de pensée vivant.',
+    es: 'Con la época por lienzo: profundizar en venas ocultas, forjar vías perdurables. Lejos del ruido efímero, cristalizar cada construcción en un orden de pensamiento vivo.',
+    de: 'Die Epoche als Leinwand: verborgene Adern vertiefen, dauerhafte Wege bahnen. Jenseits kurzlebigen Lärms jedes Werk zu einer lebendigen Ordnung des Denkens reifen lassen.'
   },
   '运行状态': { en: 'Operational Status', fr: 'État du système', es: 'Estado del sistema', de: 'Betriebsstatus' },
   '持续维护中': { en: 'Under Active Maintenance', fr: 'En maintenance active', es: 'En mantenimiento activo', de: 'Wird aktiv gepflegt' },

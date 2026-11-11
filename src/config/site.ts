@@ -641,7 +641,7 @@ export const siteConfig = {
     startedAt: '2020-06-01',
     badges: ['Astro', 'React', 'Tailwind', 'TypeScript', 'MDX'],
     quote: '把博客当成长期维护的软件来做。',
-    customText: '保持高密度信息、明确反馈和稳定排版，把博客做成真正可生长的内容系统。',
+    customText: '以时代为画布，深潜细脉，广构通衢。在算法与速朽的喧嚣之外，把每一次构建都沉淀为自由生长的思想秩序。',
     miniLogoVideo: '/media/shijianus/avatar-dynamic.mp4',
     socialBar: {
       left: [

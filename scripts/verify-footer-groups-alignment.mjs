@@ -89,6 +89,17 @@ async function run() {
     const footerGrid = await page.$('#site-footer-grid');
     assert.ok(footerGrid, '必须存在 #site-footer-grid 栅格容器');
 
+    const customTextEl = await page.$('.footer_custom_text');
+    assert.ok(customTextEl, '必须存在 .footer_custom_text 宣言说明');
+    const customTextContent = (await customTextEl.textContent())?.trim();
+    console.log(`💬 [Step 1.5] 提取到页脚创新宣言文本: "${customTextContent}"`);
+    assert.strictEqual(
+      customTextContent,
+      '以时代为画布，深潜细脉，广构通衢。在算法与速朽的喧嚣之外，把每一次构建都沉淀为自由生长的思想秩序。',
+      '页脚宣言文本必须完全匹配新版创新文本'
+    );
+    console.log('  ✅ 页脚自定义创新宣言文本验证通过！');
+
     // 提取所有 footer-group 数据
     const groupsData = await page.evaluate(() => {
       const groups = Array.from(document.querySelectorAll('#site-footer-grid .footer-group'));
