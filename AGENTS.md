@@ -6906,7 +6906,7 @@
   2. 桌面端 5 列（服务、主题、导航、协议、友链）继续保持每组 4 项、列高 `168.0px`（误差 `0.00px`）的绝对基线对齐；
   3. 桌面、平板、移动端跨视口审计 100% 通过。
 
-### Task 133: 修复导航栏磨砂非透明底色、恢复随身听默认集成开启与实现根目录至实验田精准域转场
+### Task 133: 修复导航栏磨砂非透明底色、恢复随身听默认集成开启与实现根目录至实验田精准域转场 (`4756539`)
 - [x] **导航栏底色透明严重缺陷根治 (`src/styles/global.css` & `src/styles/final-pass.css`)**:
   1. 在 `global.css` 根变量中补齐 `--anzhiyu-maskbg: var(--maskbg);` 与 `--anzhiyu-maskbgdeep: var(--maskbgdeep);`；
   2. 在 `final-pass.css` 中重构 `#page-header.nav-fixed #nav, #page-header.not-top-img #nav, .site-header.not-top-img #nav`：外层容器透明并固定定位，内层 `#nav` 显式绑定 `--maskbgdeep`（浅色 `#ffffffd9` / 深色 `#121418e0`）磨砂底色；
