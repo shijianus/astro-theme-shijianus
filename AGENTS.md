@@ -6861,7 +6861,7 @@
   4. Playwright Chromium + Firefox + WebKit 三核跨浏览器 E2E 测试全部 100% 通过；
   5. 专用 Playwright 真实视觉与尺寸度量审计套件（`scripts/verify-lab-visual-audit.mjs`）100% 通过，落盘 6 份高精度实机全景与移动端屏幕截图。
 
-### Task 128: 试验田 (Lab) 生产环境部署、双远端同步与线上真实环境 E2E 视觉验收 (`6fe7774`)
+### Task 128: 试验田 (Lab) 生产环境部署、双远端同步与线上真实环境 E2E 视觉验收 (`6fe7774`, `cacc4bc`)
 - [x] **生产合并与双远端同步 (`Level 3 / Level 4 授权落地`)**：
   1. 快进合并 `review/lab-ui-redesign-v2` 至 `main` 分支 (`6fe7774`)；
   2. 独立单步推送 `main` 与 `review/lab-ui-redesign-v2` 至 `origin` (`astro-theme-shijianus`)；
@@ -6870,12 +6870,26 @@
 - [x] **Cloudflare Pages 生产部署上线**：
   1. 通过 Wrangler 部署静态资产与 Cloudflare Functions 生产运行时至 `shijianus-blog`；
   2. 生成生产部署快照（`https://44dd0943.shijianus-blog.pages.dev`）。
-- [x] **线上生产域名全链路实机验证 (`scripts/verify-production-lab-live.mjs`)**：
+- [x] **线上生产域名全链路实机验证 (`scripts/verify-production-lab-live.mjs`, `cacc4bc`)**：
   1. 线上边缘 API `GET https://blog.epocanvas.com/api/lab` 返回 200 OK，官方实验数由 6 项扩充至 8 项，元数据完整；
   2. 线上主仪表盘 `/lab/` 实机渲染 4 项 Hero 统计指标卡片与 8 大实验卡片，卡片预览框高度达到 338px（告别扁平挤压）；
   3. 线上实验 7 (`/lab/interactive-svg-morph/`) 工作台高度 720px，预览视口 480px，支持三档分屏（均衡/大预览/大代码），控制台手风琴折叠至 37px，视口瞬时扩展至 591px；
   4. 线上实验 8 (`/lab/svg-generative-fractal/`) 几何动力学与 SVG 导出功能全量在线生效；
   5. 线上移动端 (`390×844`) 零横向溢出（`overflow = 0px`），实机视觉截图全量落盘。
+
+### Task 129: 试验田加载过场收敛优化与音频加载错误提示会话级控制 (`f2cf813`)
+- [x] **试验田加载过场收敛与顺畅体验优化 (`f2cf813`)**：
+  1. 严格收敛加载过场范围：在 `BlogLayout.astro` 中限定仅在两大核心大界面（首页 `/` 与试验田主广场 `/lab/`）渲染 `<LoadingScreen />`，所有分界面（`/lab/:slug`、`/lab/playground/`、文章页等）HTML 零注入；
+  2. 同一 `/lab/` 下杜绝重复加载：在 `<head>` 中注入即时检测脚本，若处于分界面或当前会话已见证过场，立即注入 `theme-ready` 类，杜绝白屏与透明度闪烁；
+  3. `LoadingScreen.astro` 顺畅体验打磨：若当前会话已载入过场（`hasSeenLoader()` 为 true）即刻就地销毁并退出（耗时 0ms），初次载入缩短至 520ms~680ms 黄金区间，且平滑匹配 350ms 淡出动画，任何用户交互（点击、触控、按键）即时平滑跳过。
+- [x] **音频加载错误提示严格限制于根目录且会话级单次弹出 (`f2cf813`)**：
+  1. 限制弹出路径：在 `MusicPocket.tsx` 的 `onError` 处理器中强校验 `window.location.pathname === '/' || window.location.pathname === ''`，非根目录（如 `/lab`、`/posts/*` 等）一律静默拦截；
+  2. 会话级仅展示一次：引入 `sessionStorage` 锁机制（`shijianus_audio_error_toast_shown`），在同一次进站浏览过程中（即使用户在站内随意跳转或重新触发错误），至多仅展示一次提示；只有关闭标签页重新进站（`sessionStorage` 清空）才会重新激活；
+  3. 暂停态下惰性音频加载：取消未播放状态下的主动 `audio.load()` 预取，杜绝后台无谓触发媒体错误。
+- [x] **编写并执行全流程自动化端到端测试套件 (`scripts/verify-lab-loader-and-audio-fix.mjs`)**：
+  1. 产物 HTML 静态审计通过（只有 `/` 与 `/lab/` 包含 `#loading-box`，分界面 0 注入）；
+  2. 首次进入 `/lab/` 过场顺畅，跳转详情页与返回 `/lab/` 零二次过场，无缝秒开；
+  3. `/lab` 下触发音频错误 0 弹窗，`/` 根目录下首次触发锁定并弹窗 1 次，二次触发 100% 拦截，测试全绿通过。
 
 
 
