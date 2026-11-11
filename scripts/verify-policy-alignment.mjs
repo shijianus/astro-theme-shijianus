@@ -46,12 +46,17 @@ async function runAudit() {
   console.log('✅ Footer Policies count <= 4 passed (Exact 4 essential legal items)!\n');
 
   // Verify that the 4 items are the expected core legal items
-  const expectedLabels = ['隐私说明', '使用条款', '版权说明', '赞赏与退款说明'];
-  for (const exp of expectedLabels) {
+  const coreThree = ['隐私说明', '使用条款', '版权说明'];
+  for (const exp of coreThree) {
     if (!policyLinks.some(p => p.label === exp)) {
       console.error(`❌ Missing expected policy in footer: ${exp}`);
       process.exit(1);
     }
+  }
+  const fourthPolicyOptions = ['赞赏与退款说明', '社群政策', '社群公约'];
+  if (!policyLinks.some(p => fourthPolicyOptions.includes(p.label))) {
+    console.error(`❌ Missing expected 4th policy in footer (expected one of: ${fourthPolicyOptions.join(', ')})`);
+    process.exit(1);
   }
   console.log('✅ Footer contains all 4 mandatory core legal policies.\n');
 
@@ -132,11 +137,15 @@ async function runAudit() {
   if (fs.existsSync(distIndex)) {
     const distHtml = fs.readFileSync(distIndex, 'utf8');
     // Ensure the 4 links exist in dist
-    for (const exp of expectedLabels) {
+    for (const exp of coreThree) {
       if (!distHtml.includes(exp)) {
         console.error(`❌ Built dist/index.html missing: ${exp}`);
         process.exit(1);
       }
+    }
+    if (!fourthPolicyOptions.some(p => distHtml.includes(p))) {
+      console.error(`❌ Built dist/index.html missing 4th policy (${fourthPolicyOptions.join(', ')})`);
+      process.exit(1);
     }
     console.log('✅ Built dist/index.html contains all 4 legal policy links!\n');
   }

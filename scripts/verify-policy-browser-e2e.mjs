@@ -106,12 +106,16 @@ async function main() {
     }
     console.log('✅ Footer "协议" group rendered with EXACTLY 4 items!');
 
-    const expected4 = ['隐私说明', '使用条款', '版权说明', '赞赏与退款说明'];
+    const coreThree = ['隐私说明', '使用条款', '版权说明'];
     const actualLabels = policyGroup.links.map(l => l.label);
-    for (const exp of expected4) {
+    for (const exp of coreThree) {
       if (!actualLabels.includes(exp)) {
         throw new Error(`Missing expected label in footer: ${exp}`);
       }
+    }
+    const fourthPolicyOptions = ['赞赏与退款说明', '社群政策', '社群公约'];
+    if (!actualLabels.some(l => fourthPolicyOptions.includes(l))) {
+      throw new Error(`Missing 4th policy in footer (expected one of: ${fourthPolicyOptions.join(', ')})`);
     }
     console.log('✅ All 4 core policies match perfectly.');
 

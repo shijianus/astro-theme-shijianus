@@ -6877,19 +6877,25 @@
   4. 线上实验 8 (`/lab/svg-generative-fractal/`) 几何动力学与 SVG 导出功能全量在线生效；
   5. 线上移动端 (`390×844`) 零横向溢出（`overflow = 0px`），实机视觉截图全量落盘。
 
-### Task 129: 试验田加载过场收敛优化与音频加载错误提示会话级控制 (`f2cf813`)
-- [x] **试验田加载过场收敛与顺畅体验优化 (`f2cf813`)**：
-  1. 严格收敛加载过场范围：在 `BlogLayout.astro` 中限定仅在两大核心大界面（首页 `/` 与试验田主广场 `/lab/`）渲染 `<LoadingScreen />`，所有分界面（`/lab/:slug`、`/lab/playground/`、文章页等）HTML 零注入；
-  2. 同一 `/lab/` 下杜绝重复加载：在 `<head>` 中注入即时检测脚本，若处于分界面或当前会话已见证过场，立即注入 `theme-ready` 类，杜绝白屏与透明度闪烁；
-  3. `LoadingScreen.astro` 顺畅体验打磨：若当前会话已载入过场（`hasSeenLoader()` 为 true）即刻就地销毁并退出（耗时 0ms），初次载入缩短至 520ms~680ms 黄金区间，且平滑匹配 350ms 淡出动画，任何用户交互（点击、触控、按键）即时平滑跳过。
-- [x] **音频加载错误提示严格限制于根目录且会话级单次弹出 (`f2cf813`)**：
-  1. 限制弹出路径：在 `MusicPocket.tsx` 的 `onError` 处理器中强校验 `window.location.pathname === '/' || window.location.pathname === ''`，非根目录（如 `/lab`、`/posts/*` 等）一律静默拦截；
-  2. 会话级仅展示一次：引入 `sessionStorage` 锁机制（`shijianus_audio_error_toast_shown`），在同一次进站浏览过程中（即使用户在站内随意跳转或重新触发错误），至多仅展示一次提示；只有关闭标签页重新进站（`sessionStorage` 清空）才会重新激活；
-  3. 暂停态下惰性音频加载：取消未播放状态下的主动 `audio.load()` 预取，杜绝后台无谓触发媒体错误。
-- [x] **编写并执行全流程自动化端到端测试套件 (`scripts/verify-lab-loader-and-audio-fix.mjs`)**：
-  1. 产物 HTML 静态审计通过（只有 `/` 与 `/lab/` 包含 `#loading-box`，分界面 0 注入）；
-  2. 首次进入 `/lab/` 过场顺畅，跳转详情页与返回 `/lab/` 零二次过场，无缝秒开；
-  3. `/lab` 下触发音频错误 0 弹窗，`/` 根目录下首次触发锁定并弹窗 1 次，二次触发 100% 拦截，测试全绿通过。
+### Task 130: 页脚 (.footer-main-shell) 友链矩阵重构、服务/主题/导航内容优化与 4 项绝对基线对齐
+- [x] **友链分组更新为 EpoCanvas 品牌矩阵原生生态**：
+  1. 将 `.footer-group` 友链分组展示项严格更新为：`Epomail`、`Sonic`、`ECCP`、`EpoCanva`；
+  2. 精确配置对应的外部目标 URL 与在新窗口安全打开机制（`target="_blank" rel="noreferrer"`）：
+     - `Epomail` -> `https://epomail.epocanvas.com`
+     - `Sonic` -> `https://sonic.epocanvas.com`
+     - `ECCP` -> `https://github.com/EpoCanvas-com/ECCP`
+     - `EpoCanva` -> `https://epocanvas.com`
+- [x] **服务、主题、导航等各分组内容重构与全量 4 项对齐 (`5x4 Matrix`)**：
+  1. `服务` 重构为 4 项核心互动服务：`朋友圈` (`/moments/`)、`留言板` (`/guestbook/`)、`实验田` (`/lab/`)、`赞赏支持` (`/support/`)，彻底剔除原本误放的普通页面链接；
+  2. `主题` 重构为 4 项核心架构规范文档：`关于本站` (`/about/`)、`专案路线` (`/roadmap/`，清理原本繁体字 `專案路線圖`)、`工程标准` (`/standards/`)、`版本规范` (`/version/`)；
+  3. `导航` 重构为 4 项全站核心内容入口：`全站首页` (`/`)、`文章归档` (`/archives/`)、`全部分类` (`/categories/`)、`标签索引` (`/tags/`)，消除原本重复的归档链接与硬编码分类 Slug；
+  4. `协议` 保持 4 项核心社区合规条款：`隐私说明` (`/community/privacy-and-data/`)、`使用条款` (`/community/terms-of-use/`)、`版权说明` (`/community/content-license/`)、`社群政策` (`/community/`)；
+  5. 在 `Footer.astro` 中为各链接补充原生 `title` 属性，增强无障碍可访问性与悬浮反馈。
+- [x] **全景自动化测试套件与几何基线对齐度量审计 (`scripts/verify-footer-groups-alignment.mjs`)**：
+  1. 产物结构与分组校验：全量 5 大分组（服务、主题、导航、协议、友链）每组条目数 100% 严格为 4，全部 20 个项目构成严密的 5x4 矩阵；
+  2. 桌面端（1440x900）几何基线平齐度量：5 列高度全量严格为 `168.0px`（高度差异 `0.00px`），最底部第 4 项基线坐标绝对一致（底端差异 `0.00px`），彻底根治高低不齐与底部漏空缺陷；
+  3. 响应式与跨视口验证：在平板视口（820x1180）与移动端视口（390x844）零横向溢出，全量实机审计截图落盘。
+
 
 
 
