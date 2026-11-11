@@ -42,11 +42,21 @@ const { brandName, avatar } = Astro.props;
         sessionStorage.setItem(sessionKey, 'true');
       } catch {}
     };
-    const firstVisit = !hasSeenLoader();
+
+    // 若当前会话已完成过加载过场，或在同站点内流转，坚决不二次弹出遮挡，即时清理
+    if (hasSeenLoader()) {
+      loadingBox.style.setProperty('display', 'none', 'important');
+      loadingBox.style.setProperty('pointer-events', 'none', 'important');
+      root.classList.add('theme-ready');
+      loadingBox.remove();
+      return;
+    }
+
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const compactViewport = window.innerWidth < 540;
-    const minimumDuration = prefersReducedMotion ? 0 : firstVisit ? (compactViewport ? 920 : 1280) : 180;
-    const removeDelay = firstVisit ? 260 : 140;
+    // 首次进站顺畅体验：桌面约 680ms，移动端约 520ms，平滑自然过渡
+    const minimumDuration = prefersReducedMotion ? 0 : (compactViewport ? 520 : 680);
+    const removeDelay = 380;
 
     const preloadVisuals = () => {
       const candidates = Array.from(
@@ -67,7 +77,7 @@ const { brandName, avatar } = Astro.props;
       });
     };
 
-    loadingBox.classList.toggle('is-first-visit', firstVisit);
+    loadingBox.classList.add('is-first-visit');
 
     const endLoading = () => {
       if (ended) return;
@@ -104,13 +114,13 @@ const { brandName, avatar } = Astro.props;
     preloadVisuals();
     loadingBox.addEventListener('click', dismissImmediately, { once: true });
     loadingBox.addEventListener('touchstart', dismissImmediately, { once: true, passive: true });
-    window.addEventListener('touchstart', dismissImmediately, { once: true, passive: true });
+    window.addEventListener('keydown', dismissImmediately, { once: true });
 
     if (document.readyState === 'complete') {
       endLoading();
     } else {
       window.addEventListener('load', endLoading, { once: true });
-      window.setTimeout(endLoading, 5000);
+      window.setTimeout(endLoading, 3000);
     }
   })();
 </script>

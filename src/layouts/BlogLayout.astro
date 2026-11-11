@@ -172,6 +172,9 @@ const paypalUkMeUrl =
   'https://www.paypal.com/paypalme/shijianus';
 
 const isHomePage = pageType === 'home' || Astro.url.pathname === '/' || /^\/(?:page\/\d+)$/.test(Astro.url.pathname);
+const isLabRoot = Astro.url.pathname === '/lab' || Astro.url.pathname === '/lab/';
+const isMajorInterface = isHomePage || isLabRoot;
+const enableLoadingScreen = siteConfig.theme.features.loadingScreen && isMajorInterface;
 const snowConfig = (siteConfig.theme.background.snow || { enableMantle: false, homeOnly: false }) as any;
 const isMantleActiveOnThisPage = Boolean(
   (snowConfig.enableMantle ?? snowConfig.enableAccumulation ?? false) &&
@@ -202,6 +205,21 @@ const isMantleActiveOnThisPage = Boolean(
     <title>{title} | {siteConfig.site.title}</title>
     <link rel="stylesheet" href="/fonts/anzhiyu/anzhiyu-iconfont.css" />
     <slot name="head" />
+    <script is:inline>
+      (() => {
+        try {
+          const sessionKey = 'shijianus-loader-seen';
+          const hasSeen = sessionStorage.getItem(sessionKey) === 'true';
+          const path = window.location.pathname;
+          const isMajor = path === '/' || path === '' || path === '/lab' || path === '/lab/';
+          if (hasSeen || !isMajor) {
+            document.documentElement.classList.add('theme-ready');
+          }
+        } catch (_) {
+          document.documentElement.classList.add('theme-ready');
+        }
+      })();
+    </script>
     <script is:inline>
       (() => {
         try {
@@ -328,7 +346,7 @@ const isMantleActiveOnThisPage = Boolean(
     </script>
   </head>
   <body class:list={bodyClasses} data-type={pageType}>
-    {siteConfig.theme.features.loadingScreen && (
+    {enableLoadingScreen && (
       <LoadingScreen brandName={siteConfig.site.name} avatar={siteConfig.site.author.avatar} />
     )}
 

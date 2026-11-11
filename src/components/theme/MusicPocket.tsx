@@ -1370,7 +1370,26 @@ export function MusicPocket({ apiBase }: Props) {
     const onError = () => {
       setIsPlaying(false);
       console.warn('Audio playback error on track:', currentTrack?.name, audio.error);
-      showToast(t('音频加载遇到问题，请重试'));
+
+      // 严格控制音频加载失败提示：
+      // 1. 限定仅在 '/' 根目录下弹出，分界面如 /lab 等严禁弹出
+      // 2. 一次进站（本会话）全局仅展示 1 次，通过 sessionStorage 锁定；
+      //    普通页面跳转绝不重复提示，只有关闭标签页重新进站才重新激活
+      if (typeof window !== 'undefined') {
+        const isRoot = window.location.pathname === '/' || window.location.pathname === '';
+        if (isRoot) {
+          const SESSION_AUDIO_ERROR_KEY = 'shijianus_audio_error_toast_shown';
+          try {
+            const alreadyShown = window.sessionStorage.getItem(SESSION_AUDIO_ERROR_KEY) === 'true';
+            if (!alreadyShown) {
+              window.sessionStorage.setItem(SESSION_AUDIO_ERROR_KEY, 'true');
+              showToast(t('音频加载遇到问题，请重试'));
+            }
+          } catch {
+            // sessionStorage 不可用时不弹窗打扰
+          }
+        }
+      }
     };
 
     const onGlobalSeek = (e: Event) => {
@@ -1441,7 +1460,9 @@ export function MusicPocket({ apiBase }: Props) {
 
     if (!isSameSrc) {
       audio.src = targetSrc;
-      audio.load();
+      if (isPlaying) {
+        audio.load();
+      }
     }
 
     if (isPlaying) {
@@ -1972,7 +1993,9 @@ export function MusicPocket({ apiBase }: Props) {
 
     if (!isSameSrc) {
       audio.src = targetSrc;
-      audio.load();
+      if (isPlaying) {
+        audio.load();
+      }
     }
 
     audio.play().catch((err) => {
