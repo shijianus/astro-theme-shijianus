@@ -77,7 +77,7 @@ const DOCK_TRANSLATIONS: Record<
     toggleBg: '切换背景',
     hideDock: '隐藏选单',
     backToTop: '返回顶部',
-    toggleMusicPocket: '随身音乐口袋 (默认隐藏)',
+    toggleMusicPocket: '随身音乐口袋',
     musicPocketActive: '隐藏音乐口袋',
   },
   'zh-Hant': {
@@ -97,7 +97,7 @@ const DOCK_TRANSLATIONS: Record<
     toggleBg: '切換背景',
     hideDock: '隱藏選單',
     backToTop: '返回頂部',
-    toggleMusicPocket: '隨身音樂口袋 (預設隱藏)',
+    toggleMusicPocket: '隨身音樂口袋',
     musicPocketActive: '隱藏音樂口袋',
   },
   en: {
@@ -117,7 +117,7 @@ const DOCK_TRANSLATIONS: Record<
     toggleBg: 'Toggle Background',
     hideDock: 'Hide Quick Menu',
     backToTop: 'Back to Top',
-    toggleMusicPocket: 'Music Pocket (Hidden by default)',
+    toggleMusicPocket: 'Music Pocket',
     musicPocketActive: 'Hide Music Pocket',
   },
   fr: {
@@ -137,7 +137,7 @@ const DOCK_TRANSLATIONS: Record<
     toggleBg: 'Changer le fond',
     hideDock: 'Masquer le menu',
     backToTop: 'Retour en haut',
-    toggleMusicPocket: 'Lecteur de musique (Masqué par défaut)',
+    toggleMusicPocket: 'Lecteur de musique',
     musicPocketActive: 'Masquer le lecteur de musique',
   },
   es: {
@@ -157,7 +157,7 @@ const DOCK_TRANSLATIONS: Record<
     toggleBg: 'Cambiar fondo',
     hideDock: 'Ocultar menú rápido',
     backToTop: 'Volver arriba',
-    toggleMusicPocket: 'Reproductor de música (Oculto por defecto)',
+    toggleMusicPocket: 'Reproductor de música',
     musicPocketActive: 'Ocultar reproductor de música',
   },
   de: {
@@ -177,7 +177,7 @@ const DOCK_TRANSLATIONS: Record<
     toggleBg: 'Hintergrund wechseln',
     hideDock: 'Menü ausblenden',
     backToTop: 'Nach oben scrollen',
-    toggleMusicPocket: 'Musik-Player (Standardmäßig ausgeblendet)',
+    toggleMusicPocket: 'Musik-Player',
     musicPocketActive: 'Musik-Player ausblenden',
   },
 };
@@ -196,7 +196,7 @@ export function ThemeDock(_props: ThemeDockProps) {
   // Locale state: initialize consistently to 'zh-CN' to prevent SSR hydration mismatch #418; useEffect syncs stored locale
   const [locale, setLocale] = useState<LocaleVariant>('zh-CN');
   const [tocDepth, setTocDepth] = useState('all');
-  const [musicPocketVisible, setMusicPocketVisible] = useState(false);
+  const [musicPocketVisible, setMusicPocketVisible] = useState(true);
 
   const isPost = _props.pageType === 'post';
   const isDoc = _props.pageType === 'doc' || _props.pageType === 'standards';
@@ -227,7 +227,9 @@ export function ThemeDock(_props: ThemeDockProps) {
   useEffect(() => {
     try {
       const saved = window.localStorage.getItem('shijianus-music-pocket-visible');
-      if (saved === 'true') {
+      if (saved === 'false') {
+        setMusicPocketVisible(false);
+      } else {
         setMusicPocketVisible(true);
       }
     } catch {}

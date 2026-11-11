@@ -29,28 +29,35 @@ const { brandName, avatar } = Astro.props;
 
     let ended = false;
     const startedAt = performance.now();
-    const sessionKey = 'shijianus-loader-seen';
-    const hasSeenLoader = () => {
+    const path = window.location.pathname;
+    const isHome = path === '/' || path === '' || /^\/(?:page\/\d+)$/.test(path);
+    const isLabRoot = path === '/lab' || path === '/lab/';
+    const prevPath = (() => {
       try {
-        return sessionStorage.getItem(sessionKey) === 'true';
+        return sessionStorage.getItem('shijianus-last-path') || '';
       } catch {
-        return false;
+        return '';
       }
-    };
-    const markSeen = () => {
-      try {
-        sessionStorage.setItem(sessionKey, 'true');
-      } catch {}
-    };
+    })();
 
-    // 若当前会话已完成过加载过场，或在同站点内流转，坚决不二次弹出遮挡，即时清理
-    if (hasSeenLoader()) {
+    // 判定是否跳过过场：同一个 /lab 下不重复加载，首页翻页不重复加载
+    const shouldSkip =
+      (isLabRoot && prevPath.startsWith('/lab')) ||
+      (isHome && (prevPath === '/' || /^\/(?:page\/\d+)$/.test(prevPath)));
+
+    if (shouldSkip) {
       loadingBox.style.setProperty('display', 'none', 'important');
       loadingBox.style.setProperty('pointer-events', 'none', 'important');
       root.classList.add('theme-ready');
       loadingBox.remove();
       return;
     }
+
+    const markSeen = () => {
+      try {
+        sessionStorage.setItem('shijianus-last-path', path);
+      } catch {}
+    };
 
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const compactViewport = window.innerWidth < 540;

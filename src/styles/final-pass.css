@@ -1226,13 +1226,17 @@ body[data-type='post'] #post .shijianus-ai-summary__action:disabled {
   font-size: 13px;
 }
 
-#page-header.nav-fixed {
-  position: fixed;
-  top: 0;
-  background: color-mix(in srgb, var(--card-bg) 88%, transparent);
-  /* [PERF] backdrop-filter: saturate(180%) blur(20px); */
-  border-bottom: var(--style-border-always);
-  box-shadow: var(--shadow-nav);
+#page-header.nav-fixed,
+#page-header.not-top-img,
+.site-header.not-top-img {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  z-index: 90 !important;
+  background: transparent !important;
+  border-bottom: none !important;
+  box-shadow: none !important;
   transform: translateY(0) !important;
   opacity: 1 !important;
 }
@@ -6986,10 +6990,14 @@ body[data-type='post'] :is(#post-toc-aside .sticky_layout, #post-secondary-aside
   }
 }
 
-#page-header.nav-fixed #nav {
-  background: var(--anzhiyu-maskbgdeep) !important;
-  backdrop-filter: saturate(180%) blur(20px) !important;
+#page-header.nav-fixed #nav,
+#page-header.not-top-img #nav,
+.site-header.not-top-img #nav {
+  background: var(--maskbgdeep, rgba(255, 255, 255, 0.85)) !important;
   -webkit-backdrop-filter: saturate(180%) blur(20px) !important;
+  backdrop-filter: saturate(180%) blur(20px) !important;
+  border-bottom: var(--style-border-always) !important;
+  box-shadow: var(--shadow-nav) !important;
 }
 
 body[data-type='home'] #recent-posts > .recent-post-item,
@@ -7060,14 +7068,19 @@ body[data-type='post'] #card-toc .toc-item > .toc-link.active {
 /* End of Console Layout Refactor Step 1 */
 
 #page-header {
-  position: relative;
+  position: sticky;
+  top: 0;
+  z-index: 90;
 }
 
-[data-theme='dark'] #page-header.nav-fixed #nav {
-  background: var(--anzhiyu-maskbgdeep) !important;
-  backdrop-filter: saturate(180%) blur(20px) !important;
+[data-theme='dark'] #page-header.nav-fixed #nav,
+[data-theme='dark'] #page-header.not-top-img #nav,
+[data-theme='dark'] .site-header.not-top-img #nav {
+  background: var(--maskbgdeep, rgba(18, 20, 24, 0.88)) !important;
   -webkit-backdrop-filter: saturate(180%) blur(20px) !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: saturate(180%) blur(20px) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.6) !important;
 }
 
 #menus {

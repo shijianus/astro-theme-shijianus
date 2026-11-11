@@ -52,6 +52,8 @@ body, html, #content-inner {
   --black-op: rgba(0, 0, 0, 0.2);
   --maskbg: rgba(255, 255, 255, 0.6);
   --maskbgdeep: rgba(255, 255, 255, 0.85);
+  --anzhiyu-maskbg: var(--maskbg);
+  --anzhiyu-maskbgdeep: var(--maskbgdeep);
   --scrollbar-color: rgba(60, 60, 67, 0.4);
   --radius-xs: 4px;
   --radius-sm: 6px;
@@ -122,6 +124,8 @@ html[data-theme='dark'],
   --line-strong: #363645;
   --maskbg: rgba(0, 0, 0, 0.75);
   --maskbgdeep: rgba(0, 0, 0, 0.92);
+  --anzhiyu-maskbg: var(--maskbg);
+  --anzhiyu-maskbgdeep: var(--maskbgdeep);
   --scrollbar-color: rgba(200, 200, 223, 0.2);
   --shadow-nav: 0 5px 20px rgba(0, 0, 0, 0.6);
   --shadow-card: 0 3px 8px 6px rgba(0, 0, 0, 0.2);

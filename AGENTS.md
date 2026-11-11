@@ -6906,6 +6906,28 @@
   2. 桌面端 5 列（服务、主题、导航、协议、友链）继续保持每组 4 项、列高 `168.0px`（误差 `0.00px`）的绝对基线对齐；
   3. 桌面、平板、移动端跨视口审计 100% 通过。
 
+### Task 133: 修复导航栏磨砂非透明底色、恢复随身听默认集成开启与实现根目录至实验田精准域转场
+- [x] **导航栏底色透明严重缺陷根治 (`src/styles/global.css` & `src/styles/final-pass.css`)**:
+  1. 在 `global.css` 根变量中补齐 `--anzhiyu-maskbg: var(--maskbg);` 与 `--anzhiyu-maskbgdeep: var(--maskbgdeep);`；
+  2. 在 `final-pass.css` 中重构 `#page-header.nav-fixed #nav, #page-header.not-top-img #nav, .site-header.not-top-img #nav`：外层容器透明并固定定位，内层 `#nav` 显式绑定 `--maskbgdeep`（浅色 `#ffffffd9` / 深色 `#121418e0`）磨砂底色；
+  3. 规范 `-webkit-backdrop-filter` 与标准 `backdrop-filter: saturate(180%) blur(20px)` 声明顺序，杜绝构建层剥离，确保 Chrome/Safari 全环境呈现安知鱼标志性毛玻璃质感与底部细边框。
+- [x] **随身音乐口袋默认开启与音轨加载机制恢复 (`src/components/theme/MusicPocket.tsx` & `src/components/ThemeDock.tsx`)**:
+  1. 恢复首次进站默认可见状态（`visible = true`），仅在用户显式存入 `'false'` 时隐藏，严禁默认关闭；
+  2. 恢复换曲与初始化 `audio.load()` 正常音轨载入逻辑；
+  3. 严格限定音频加载失败提示：仅在 `/` 根目录下且当前会话首次出错时弹出，子界面（如 `/lab/` 等）绝不重复提示；
+  4. 清除工具坞多语言文案中误加的 `(默认隐藏)` / `(Hidden by default)`。
+- [x] **根目录至实验田精准域转场生命周期控制 (`src/layouts/BlogLayout.astro` & `src/components/LoadingScreen.astro`)**:
+  1. 摒弃单一粗暴的全站布尔锁，重构基于当前路径与前置路径（`sessionStorage.getItem('shijianus-last-path')`）的智能域识别体系；
+  2. `/` 根目录至 `/lab/` 分根目录（或 `/lab/` 返回 `/` 根目录）：跨大界面流转，顺畅执行 520ms~680ms 仪式感平滑转场；
+  3. `/lab/` 分根目录至分界面（如 `/lab/playground/`、`/lab/:slug`）：0ms 秒开无缝进入，零转场延迟；
+  4. 同一个 `/lab/` 生态内流转（如从 `/lab/playground/` 返回 `/lab/` 广场）：严禁重复多加载；
+  5. 首页内部分页流转（如 `/` 到 `/page/2/`）：零重复加载。
+- [x] **全景端到端自动化测试套件构建与全量验收 (`scripts/verify-nav-music-transition.mjs`)**:
+  1. Step 1: 验证浅色与深色模式下导航栏 `fixed` 定位、`rgba(255, 255, 255, 0.85)` / `rgba(18, 20, 24, 0.88)` 实体磨砂底色与 `saturate(1.8) blur(20px)` 滤镜；
+  2. Step 2: 验证 `.shijianus-music-pocket` 容器默认挂载且 `display !== 'none'`，HTML5 `<audio>` 音频源正常载入；
+  3. Step 3: 全链路模拟用户浏览：`/` 初次转场 -> `/lab/` 跨域转场 -> `/lab/playground/` 0ms 秒开 -> 返回 `/lab/` 绝无重复转场 -> 返回 `/` 转场完成，全部断言 100% 绿灯通过。
+
+
 
 
 

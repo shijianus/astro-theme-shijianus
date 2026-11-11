@@ -532,13 +532,15 @@ export function MusicPocket({ apiBase }: Props) {
 
   const t = useCallback((text: string) => convertText(text, localeVariant), [localeVariant]);
 
-  // 1. 显隐控制 (默认隐藏，仅受右侧边栏管理按键控制)
-  const [visible, setVisible] = useState(false);
+  // 1. 显隐控制 (默认显示，受右侧边栏管理按键控制隐藏)
+  const [visible, setVisible] = useState(true);
 
   useEffect(() => {
     try {
       const saved = window.localStorage.getItem(VISIBLE_STORAGE_KEY);
-      if (saved === 'true') {
+      if (saved === 'false') {
+        setVisible(false);
+      } else {
         setVisible(true);
       }
     } catch {}
@@ -1460,9 +1462,7 @@ export function MusicPocket({ apiBase }: Props) {
 
     if (!isSameSrc) {
       audio.src = targetSrc;
-      if (isPlaying) {
-        audio.load();
-      }
+      audio.load();
     }
 
     if (isPlaying) {
@@ -1993,9 +1993,7 @@ export function MusicPocket({ apiBase }: Props) {
 
     if (!isSameSrc) {
       audio.src = targetSrc;
-      if (isPlaying) {
-        audio.load();
-      }
+      audio.load();
     }
 
     audio.play().catch((err) => {

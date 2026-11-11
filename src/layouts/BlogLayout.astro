@@ -208,17 +208,43 @@ const isMantleActiveOnThisPage = Boolean(
     <script is:inline>
       (() => {
         try {
-          const sessionKey = 'shijianus-loader-seen';
-          const hasSeen = sessionStorage.getItem(sessionKey) === 'true';
           const path = window.location.pathname;
-          const isMajor = path === '/' || path === '' || path === '/lab' || path === '/lab/';
-          if (hasSeen || !isMajor) {
+          const isHome = path === '/' || path === '' || /^\/(?:page\/\d+)$/.test(path);
+          const isLabRoot = path === '/lab' || path === '/lab/';
+          const isMajor = isHome || isLabRoot;
+
+          // 1. 非两大主界面（如 /lab/playground/, /posts/* 等分界面）直接设为 ready，绝不加载转场
+          if (!isMajor) {
             document.documentElement.classList.add('theme-ready');
+            return;
           }
+
+          const prevPath = sessionStorage.getItem('shijianus-last-path') || '';
+
+          // 2. 同一个 /lab 域内流转（例如从 /lab/playground/ 返回 /lab/ 广场）：不重复转场，秒开进入
+          if (isLabRoot && prevPath.startsWith('/lab')) {
+            document.documentElement.classList.add('theme-ready');
+            return;
+          }
+
+          // 3. 首页内部分页流转（如 / 到 /page/2/）：不重复转场
+          if (isHome && (prevPath === '/' || /^\/(?:page\/\d+)$/.test(prevPath))) {
+            document.documentElement.classList.add('theme-ready');
+            return;
+          }
+
+          // 4. 从 / 根目录到 /lab 分根目录，或从 /lab 到 /，或初次进站：由 LoadingScreen 执行平滑转场
         } catch (_) {
           document.documentElement.classList.add('theme-ready');
         }
       })();
+
+      // 实时记录前置路径供后续转场判定
+      window.addEventListener('beforeunload', () => {
+        try {
+          sessionStorage.setItem('shijianus-last-path', window.location.pathname);
+        } catch {}
+      });
     </script>
     <script is:inline>
       (() => {
