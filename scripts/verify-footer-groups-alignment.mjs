@@ -81,15 +81,15 @@ async function run() {
     });
 
     console.log(`🌐 [Step 1] 打开页面 ${BASE_URL}/ 并等待页脚加载...`);
-    await page.goto(`${BASE_URL}/`, { waitUntil: 'networkidle', timeout: 30000 });
+    await page.goto(`${BASE_URL}/`, { waitUntil: 'domcontentloaded', timeout: 30000 });
 
-    const footerShell = await page.$('.footer-main-shell');
+    const footerShell = await page.waitForSelector('.footer-main-shell', { timeout: 15000 });
     assert.ok(footerShell, '必须存在 .footer-main-shell 容器');
 
-    const footerGrid = await page.$('#site-footer-grid');
+    const footerGrid = await page.waitForSelector('#site-footer-grid', { timeout: 15000 });
     assert.ok(footerGrid, '必须存在 #site-footer-grid 栅格容器');
 
-    const customTextEl = await page.$('.footer_custom_text');
+    const customTextEl = await page.waitForSelector('.footer_custom_text', { timeout: 15000 });
     assert.ok(customTextEl, '必须存在 .footer_custom_text 宣言说明');
     const customTextContent = (await customTextEl.textContent())?.trim();
     console.log(`💬 [Step 1.5] 提取到页脚创新宣言文本: "${customTextContent}"`);
