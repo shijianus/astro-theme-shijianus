@@ -6927,7 +6927,7 @@
   2. Step 2: 验证 `.shijianus-music-pocket` 容器默认挂载且 `display !== 'none'`，HTML5 `<audio>` 音频源正常载入；
   3. Step 3: 全链路模拟用户浏览：`/` 初次转场 -> `/lab/` 跨域转场 -> `/lab/playground/` 0ms 秒开 -> 返回 `/lab/` 绝无重复转场 -> 返回 `/` 转场完成，全部断言 100% 绿灯通过。
 
-### Task 134: Cloudflare Pages 生产部署上线、双远端同步与线上真实环境全链路严密核验
+### Task 134: Cloudflare Pages 生产部署上线、双远端同步与线上真实环境全链路严密核验 (`fa51276`)
 - [x] **双远端分支无损同步 (Level 3 授权落地)**：
   1. 单步推送 `main` 分支至 `origin` (`astro-theme-shijianus`)，经校验与本地 `0a67ec4` 100% 一致；
   2. 单步推送 `main` 分支至 `cf` (`shijianus.github.io`)，经校验与本地 `0a67ec4` 100% 一致。
