@@ -217,7 +217,7 @@ export const LabPlaygroundShell: React.FC<LabPlaygroundShellProps> = ({
       )}
 
       {/* 2. 双栏核心工作区：左侧代码编辑器 + 右侧沙盒预览 */}
-      <div className="lab-pg-workspace">
+      <div className={`lab-pg-workspace ${layoutMode}`} data-layout={layoutMode}>
         <LabEditorPanel {...editorProps} />
         <LabPreviewPanel {...previewProps} />
       </div>
