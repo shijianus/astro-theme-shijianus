@@ -6896,15 +6896,16 @@
   2. 桌面端（1440x900）几何基线平齐度量：5 列高度全量严格为 `168.0px`（高度差异 `0.00px`），最底部第 4 项基线坐标绝对一致（底端差异 `0.00px`），彻底根治高低不齐与底部漏空缺陷；
   3. 响应式与跨视口验证：在平板视口（820x1180）与移动端视口（390x844）零横向溢出，全量实机审计截图落盘。
 
-### Task 131: 页脚宣言说明 (.footer_custom_text) 深度创新与品牌哲学升级 (`f517bfe`)
-- [x] **告别教条化模板语，升级为极客哲学与品牌原生宣言**：
-  1. 将原本教条化的排版需求说明（`保持高密度信息、明确反馈和稳定排版，把博客做成真正可生长的内容系统。`）全面升级为具有自主创新性、深度哲学内涵与 EpoCanvas 品牌灵魂的全新宣言：
-     > 「以时代为画布，深潜细脉，广构通衢。在算法与速朽的喧嚣之外，把每一次构建都沉淀为自由生长的思想秩序。」
-  2. 完美贯通 EpoCanvas（时代画布）、博主座右铭（“厚土潜藏细脉，大荒广构通衢”）与长期主义数字工坊内核；
-  3. 同步重写 `src/lib/client-locale.ts` 中的多语言（en/fr/es/de）字典条目，保证全球读者浏览时获得自洽的本地化体验。
-- [x] **自动化测试断言全量覆盖与实机渲染通过 (`scripts/verify-footer-groups-alignment.mjs`)**：
-  1. 静态产物与浏览器 DOM 中 `.footer_custom_text` 精准挂载并提取验证通过；
-  2. 桌面、平板、移动端跨视口审计全绿，视觉截图全量更新。
+### Task 132: 纠正 Epomail 官方网址为 mail.epocanvas.com 与友邻生态配置全链路同步 (`88a76fa`)
+- [x] **纠正 Epomail 线上域名配置**：
+  1. 将页脚友链（`src/config/site.ts`）中 `Epomail` 的链接由 `https://epomail.epocanvas.com` 修正为官方正统地址 `https://mail.epocanvas.com`；
+  2. 同步纠正友链配置（`src/config/friends.ts`）与朋友圈动态抓取脚本（`scripts/sync-friends-moments.mjs`）中的 `EpoMail` 入口地址为 `https://mail.epocanvas.com`；
+  3. 执行 `node scripts/sync-friends-moments.mjs`，重新生成并固化 `public/data/friends-moments.json` 与 `public/shijianus-moments.json` 朋友圈生态元数据。
+- [x] **自动化对齐与回归测试审计全绿 (`scripts/verify-footer-groups-alignment.mjs`)**：
+  1. 自动化测试套件精准断言 `Epomail` 链接为 `https://mail.epocanvas.com`，且 `target="_blank"` 与 `rel="noreferrer"` 完整完备；
+  2. 桌面端 5 列（服务、主题、导航、协议、友链）继续保持每组 4 项、列高 `168.0px`（误差 `0.00px`）的绝对基线对齐；
+  3. 桌面、平板、移动端跨视口审计 100% 通过。
+
 
 
 
