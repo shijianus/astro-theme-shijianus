@@ -6877,7 +6877,7 @@
   4. 线上实验 8 (`/lab/svg-generative-fractal/`) 几何动力学与 SVG 导出功能全量在线生效；
   5. 线上移动端 (`390×844`) 零横向溢出（`overflow = 0px`），实机视觉截图全量落盘。
 
-### Task 130: 页脚 (.footer-main-shell) 友链矩阵重构、服务/主题/导航内容优化与 4 项绝对基线对齐
+### Task 130: 页脚 (.footer-main-shell) 友链矩阵重构、服务/主题/导航内容优化与 4 项绝对基线对齐 (`89199be`, `164f42d`)
 - [x] **友链分组更新为 EpoCanvas 品牌矩阵原生生态**：
   1. 将 `.footer-group` 友链分组展示项严格更新为：`Epomail`、`Sonic`、`ECCP`、`EpoCanva`；
   2. 精确配置对应的外部目标 URL 与在新窗口安全打开机制（`target="_blank" rel="noreferrer"`）：
