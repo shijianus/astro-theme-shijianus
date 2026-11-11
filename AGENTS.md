@@ -6861,6 +6861,23 @@
   4. Playwright Chromium + Firefox + WebKit 三核跨浏览器 E2E 测试全部 100% 通过；
   5. 专用 Playwright 真实视觉与尺寸度量审计套件（`scripts/verify-lab-visual-audit.mjs`）100% 通过，落盘 6 份高精度实机全景与移动端屏幕截图。
 
+### Task 128: 试验田 (Lab) 生产环境部署、双远端同步与线上真实环境 E2E 视觉验收 (`6fe7774`)
+- [x] **生产合并与双远端同步 (`Level 3 / Level 4 授权落地`)**：
+  1. 快进合并 `review/lab-ui-redesign-v2` 至 `main` 分支 (`6fe7774`)；
+  2. 独立单步推送 `main` 与 `review/lab-ui-redesign-v2` 至 `origin` (`astro-theme-shijianus`)；
+  3. 独立单步推送 `main` 与 `review/lab-ui-redesign-v2` 至 `cf` (`shijianus.github.io`)；
+  4. 经 `git ls-remote` 严格核验双远端 HEAD 与本地 `6fe7774` 100% 一致。
+- [x] **Cloudflare Pages 生产部署上线**：
+  1. 通过 Wrangler 部署静态资产与 Cloudflare Functions 生产运行时至 `shijianus-blog`；
+  2. 生成生产部署快照（`https://44dd0943.shijianus-blog.pages.dev`）。
+- [x] **线上生产域名全链路实机验证 (`scripts/verify-production-lab-live.mjs`)**：
+  1. 线上边缘 API `GET https://blog.epocanvas.com/api/lab` 返回 200 OK，官方实验数由 6 项扩充至 8 项，元数据完整；
+  2. 线上主仪表盘 `/lab/` 实机渲染 4 项 Hero 统计指标卡片与 8 大实验卡片，卡片预览框高度达到 338px（告别扁平挤压）；
+  3. 线上实验 7 (`/lab/interactive-svg-morph/`) 工作台高度 720px，预览视口 480px，支持三档分屏（均衡/大预览/大代码），控制台手风琴折叠至 37px，视口瞬时扩展至 591px；
+  4. 线上实验 8 (`/lab/svg-generative-fractal/`) 几何动力学与 SVG 导出功能全量在线生效；
+  5. 线上移动端 (`390×844`) 零横向溢出（`overflow = 0px`），实机视觉截图全量落盘。
+
+
 
 
 
