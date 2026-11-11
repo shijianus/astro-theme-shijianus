@@ -6927,6 +6927,18 @@
   2. Step 2: 验证 `.shijianus-music-pocket` 容器默认挂载且 `display !== 'none'`，HTML5 `<audio>` 音频源正常载入；
   3. Step 3: 全链路模拟用户浏览：`/` 初次转场 -> `/lab/` 跨域转场 -> `/lab/playground/` 0ms 秒开 -> 返回 `/lab/` 绝无重复转场 -> 返回 `/` 转场完成，全部断言 100% 绿灯通过。
 
+### Task 134: Cloudflare Pages 生产部署上线、双远端同步与线上真实环境全链路严密核验
+- [x] **双远端分支无损同步 (Level 3 授权落地)**：
+  1. 单步推送 `main` 分支至 `origin` (`astro-theme-shijianus`)，经校验与本地 `0a67ec4` 100% 一致；
+  2. 单步推送 `main` 分支至 `cf` (`shijianus.github.io`)，经校验与本地 `0a67ec4` 100% 一致。
+- [x] **Cloudflare Pages 双生产项目全量边缘部署 (Level 4 授权落地)**：
+  1. 通过 Wrangler 部署完整生产制品至 `shijianus-blog`（绑定自定义主域名 `https://blog.epocanvas.com`，部署快照 `https://9833f3ee.shijianus-blog.pages.dev`）；
+  2. 通过 Wrangler 部署完整生产制品至 `shijianus-github-io`（部署快照 `https://18363fc5.shijianus-github-io.pages.dev`）。
+- [x] **线上生产域名全链路实机严密核验 (`scripts/verify-production-cf-live.mjs`)**：
+  1. **生产导航栏底色核验**：`class="site-header not-top-img nav-fixed nav-visible"` 固定定位，浅色磨砂底色 `rgba(255, 255, 255, 0.85)` / 深色 `rgba(18, 20, 24, 0.88)`，毛玻璃 `saturate(1.8) blur(20px)`，彻底告别完全透明；
+  2. **生产随身音乐口袋核验**：容器 `.shijianus-music-pocket` 默认挂载且 `display !== 'none'`，HTML5 `<audio>` 音频源正常加载，音频失败提示严格限定 `/` 根目录单会话至多 1 次；
+  3. **生产精准跨域转场核验**：`/` 首次进站平滑转场 -> `/` 到 `/lab/` 跨域转场平滑执行 -> `/lab/playground/` 0ms 瞬间秒开 -> 返回 `/lab/` 绝无重复转场 -> 返回 `/` 根目录平滑转场，三大 Check 全部 100% 绿灯通过。
+
 
 
 
