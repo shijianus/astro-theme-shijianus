@@ -678,25 +678,28 @@ export const siteConfig = {
       {
         title: '服务',
         links: [
-          { label: '首页', href: '/' },
-          { label: '归档', href: '/archives/' },
-          { label: '分类', href: '/categories/' },
+          { label: '朋友圈', href: '/moments/' },
+          { label: '留言板', href: '/guestbook/' },
+          { label: '实验田', href: '/lab/' },
+          { label: '赞赏支持', href: '/support/' },
         ] satisfies SiteNavItem[],
       },
       {
         title: '主题',
         links: [
-          { label: '设计对齐', href: '/about/' },
-          { label: '專案路線圖', href: '/roadmap/' },
+          { label: '关于本站', href: '/about/' },
+          { label: '专案路线', href: '/roadmap/' },
           { label: '工程标准', href: '/standards/' },
+          { label: '版本规范', href: '/version/' },
         ] satisfies SiteNavItem[],
       },
       {
         title: '导航',
         links: [
-          { label: '最新文章', href: '/archives/' },
-          { label: '系统设计', href: '/categories/系统设计/' },
-          { label: '前端工程', href: '/categories/前端工程/' },
+          { label: '全站首页', href: '/' },
+          { label: '文章归档', href: '/archives/' },
+          { label: '全部分类', href: '/categories/' },
+          { label: '标签索引', href: '/tags/' },
         ] satisfies SiteNavItem[],
       },
       {
@@ -711,10 +714,10 @@ export const siteConfig = {
       {
         title: '友链',
         links: [
-          { label: 'Astro', href: 'https://astro.build/', external: true },
-          { label: 'Tailwind', href: 'https://tailwindcss.com/', external: true },
-          { label: 'React', href: 'https://react.dev/', external: true },
-          { label: 'MDN', href: 'https://developer.mozilla.org/', external: true },
+          { label: 'Epomail', href: 'https://epomail.epocanvas.com', external: true },
+          { label: 'Sonic', href: 'https://sonic.epocanvas.com', external: true },
+          { label: 'ECCP', href: 'https://github.com/EpoCanvas-com/ECCP', external: true },
+          { label: 'EpoCanva', href: 'https://epocanvas.com', external: true },
         ] satisfies SiteNavItem[],
       },
     ],
