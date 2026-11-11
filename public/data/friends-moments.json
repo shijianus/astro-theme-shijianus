@@ -1,7 +1,7 @@
 {
   "ok": true,
   "engine": "EpoCanvas Moments Federation Pipeline v3.0",
-  "syncedAt": "2026-11-11T04:07:08.454Z",
+  "syncedAt": "2026-11-11T04:27:18.856Z",
   "total": 6,
   "masterCount": 3,
   "friendCount": 3,
@@ -106,7 +106,7 @@
     {
       "id": "brand_epomail_01",
       "author": "EpoMail",
-      "authorUrl": "https://epomail.epocanvas.com",
+      "authorUrl": "https://mail.epocanvas.com",
       "avatar": "https://blog.epocanvas.com/media/shijianus/avatar.jpg",
       "badge": "🌐 友邻·EpoMail",
       "isOwner": false,
@@ -129,8 +129,8 @@
       ],
       "likes": 0,
       "commentCount": 0,
-      "origin": "https://epomail.epocanvas.com",
-      "originUrl": "https://epomail.epocanvas.com",
+      "origin": "https://mail.epocanvas.com",
+      "originUrl": "https://mail.epocanvas.com",
       "originApi": "https://blog.epocanvas.com/api/comments",
       "liveSynced": true
     },

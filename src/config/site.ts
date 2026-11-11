@@ -714,7 +714,7 @@ export const siteConfig = {
       {
         title: '友链',
         links: [
-          { label: 'Epomail', href: 'https://epomail.epocanvas.com', external: true },
+          { label: 'Epomail', href: 'https://mail.epocanvas.com', external: true },
           { label: 'Sonic', href: 'https://sonic.epocanvas.com', external: true },
           { label: 'ECCP', href: 'https://github.com/EpoCanvas-com/ECCP', external: true },
           { label: 'EpoCanva', href: 'https://epocanvas.com', external: true },

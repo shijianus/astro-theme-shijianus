@@ -127,7 +127,7 @@ export const friendsConfig: {
       items: [
         {
           name: 'EpoMail',
-          url: 'https://epomail.epocanvas.com',
+          url: 'https://mail.epocanvas.com',
           avatar: '/media/shijianus/avatar.jpg',
           desc: '极简无干扰的端到端加密极客邮箱服务。',
           tag: '品牌矩阵',

@@ -168,7 +168,7 @@ async function run() {
 
     // 检查友链的 external 属性和外链配置
     const epomailItem = friendGroup.items.find((i) => i.label === 'Epomail');
-    assert.ok(epomailItem.href.includes('epomail.epocanvas.com'), 'Epomail URL 正确');
+    assert.strictEqual(epomailItem.href, 'https://mail.epocanvas.com', 'Epomail URL 正确指向 https://mail.epocanvas.com');
     assert.strictEqual(epomailItem.target, '_blank', 'Epomail 具有 target="_blank"');
     assert.strictEqual(epomailItem.rel, 'noreferrer', 'Epomail 具有 rel="noreferrer"');
 

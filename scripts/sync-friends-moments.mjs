@@ -41,7 +41,7 @@ const SITE_INFO = {
 const TARGET_FRIENDS = [
   {
     name: 'EpoMail',
-    url: 'https://epomail.epocanvas.com',
+    url: 'https://mail.epocanvas.com',
     avatar: 'https://blog.epocanvas.com/media/shijianus/avatar.jpg',
     category: 'tech',
     mood: '📫 极简',
