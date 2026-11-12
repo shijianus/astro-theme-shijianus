@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120" fill="none">
+  <defs>
+    <linearGradient id="brand-default-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e1b4b" />
+      <stop offset="50%" stop-color="#312e81" />
+      <stop offset="100%" stop-color="#4338ca" />
+    </linearGradient>
+    <linearGradient id="brand-globe-stroke" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#a5b4fc" />
+      <stop offset="100%" stop-color="#6366f1" />
+    </linearGradient>
+    <filter id="brand-default-shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="6" stdDeviation="6" flood-color="#4338ca" flood-opacity="0.35" />
+    </filter>
+  </defs>
+
+  <!-- Squircle Base -->
+  <rect x="6" y="6" width="108" height="108" rx="28" fill="url(#brand-default-bg)" />
+  <rect x="6" y="6" width="108" height="108" rx="28" stroke="rgba(255, 255, 255, 0.16)" stroke-width="1.5" />
+
+  <!-- Outer Orbit Rings -->
+  <circle cx="60" cy="60" r="42" stroke="rgba(165, 180, 252, 0.15)" stroke-width="1.2" stroke-dasharray="4 4" />
+  <circle cx="60" cy="60" r="32" stroke="rgba(165, 180, 252, 0.22)" stroke-width="1" />
+
+  <!-- Central Crest: Connected Node Globe / Interlink Icon -->
+  <g filter="url(#brand-default-shadow)">
+    <!-- Globe Circle -->
+    <circle cx="60" cy="60" r="24" stroke="url(#brand-globe-stroke)" stroke-width="3" fill="rgba(67, 56, 202, 0.4)" />
+    
+    <!-- Latitude / Longitude lines -->
+    <ellipse cx="60" cy="60" rx="12" ry="24" stroke="#c7d2fe" stroke-width="2" fill="none" opacity="0.8" />
+    <line x1="36" y1="60" x2="84" y2="60" stroke="#c7d2fe" stroke-width="2" stroke-linecap="round" opacity="0.8" />
+    <line x1="42" y1="46" x2="78" y2="46" stroke="#a5b4fc" stroke-width="1.5" stroke-linecap="round" opacity="0.6" />
+    <line x1="42" y1="74" x2="78" y2="74" stroke="#a5b4fc" stroke-width="1.5" stroke-linecap="round" opacity="0.6" />
+
+    <!-- Corner Satellites -->
+    <circle cx="36" cy="36" r="4" fill="#818cf8" />
+    <circle cx="84" cy="36" r="3" fill="#a5b4fc" />
+    <circle cx="84" cy="84" r="4" fill="#6366f1" />
+    <circle cx="36" cy="84" r="3" fill="#818cf8" />
+
+    <!-- Connection Link Beam -->
+    <path d="M38 38 L50 50 M82 82 L70 70" stroke="rgba(255, 255, 255, 0.6)" stroke-width="1.5" stroke-linecap="round" />
+  </g>
+</svg>
