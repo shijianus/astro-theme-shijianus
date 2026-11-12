@@ -30,10 +30,10 @@
     "updatedDate": "2026-10-21"
   },
   "docs/standards/status.md": {
-    "contentHash": "f2c1641159166f67c9441bfa2e5eca0878edb8d12753d7d1dd125c69cf3f0727",
-    "version": "v1.0.1",
+    "contentHash": "231ce1e88a8ef07ccb4a3721a8c67924eed26d1a0e3c4e6982688da7af03b81c",
+    "version": "v2.0.0",
     "pubDate": "2026-10-17",
-    "updatedDate": "2026-10-18"
+    "updatedDate": "2026-11-11"
   },
   "docs/standards/version.md": {
     "contentHash": "076b82b2fbc3a5495f80aa0fe7ca307a6cb835624f74358f10638a4d194a2321",
@@ -78,40 +78,40 @@
     "updatedDate": "2026-04-25"
   },
   "src/content/posts/anzhiyu-markdown-showcase-de.md": {
-    "contentHash": "cb5a95e20e896e71201ace596059a5ef585434712faa263a2de235a3e18c0f03",
-    "version": "v0.0.1",
+    "contentHash": "865a6cec328ec84ba76dd1063bbb22c1db036aa53547574b8de7711ddffce5f4",
+    "version": "v0.0.2",
     "pubDate": "2026-04-24",
-    "updatedDate": "2026-04-24"
+    "updatedDate": "2026-11-11"
   },
   "src/content/posts/anzhiyu-markdown-showcase-en.md": {
-    "contentHash": "7c761ad893774e69f48f63051813a49ea8417780379f36716b2eecd7f9cb346d",
-    "version": "v0.0.1",
+    "contentHash": "af6de9da5140dc00e2a778b5fd8379a992cc253c92283de5c71e1d3d5cd4c9fe",
+    "version": "v0.0.2",
     "pubDate": "2026-04-24",
-    "updatedDate": "2026-04-24"
+    "updatedDate": "2026-11-11"
   },
   "src/content/posts/anzhiyu-markdown-showcase-es.md": {
-    "contentHash": "dbe97734a1218555c163e6a57c9d31e06867f2fce38754e0fc1f5770cef95e32",
-    "version": "v0.0.1",
+    "contentHash": "9df6a9f53793b4715b0c98716306d05435aed1f2e6e3048dd4041a0f7522ea9a",
+    "version": "v0.0.2",
     "pubDate": "2026-04-24",
-    "updatedDate": "2026-04-24"
+    "updatedDate": "2026-11-11"
   },
   "src/content/posts/anzhiyu-markdown-showcase-fr.md": {
-    "contentHash": "d0a283c7ffe3da9a3456ceb23cea6f2664de5a188322ec5027e4b37c9a59aa77",
-    "version": "v0.0.1",
+    "contentHash": "e43af431cda9fb29ad0b3887c70950113ca9cbb11935fee0054f72000c43a5ae",
+    "version": "v0.0.2",
     "pubDate": "2026-04-24",
-    "updatedDate": "2026-04-24"
+    "updatedDate": "2026-11-11"
   },
   "src/content/posts/anzhiyu-markdown-showcase-zh-Hant.md": {
-    "contentHash": "b4fe7a8922bdcbc9c5865f8581e809966b43da3807d3da8e19f53e70bb69ec86",
-    "version": "v0.0.1",
+    "contentHash": "8de3e674f19384d115a2d569bc3f9794496e589d19a0035e869d7183d1c2456f",
+    "version": "v0.0.2",
     "pubDate": "2026-04-24",
-    "updatedDate": "2026-04-24"
+    "updatedDate": "2026-11-11"
   },
   "src/content/posts/anzhiyu-markdown-showcase.md": {
-    "contentHash": "1890c453cf382ce7cc04ab477d8a9014d472d9a7d5cabcd2078f15eb27b9c83f",
-    "version": "v0.0.1",
+    "contentHash": "68b38ec1c17539c500300ff2f1a104a29de5fcfa9d7a36421cfe2039c7f63e78",
+    "version": "v0.0.2",
     "pubDate": "2026-04-24",
-    "updatedDate": "2026-04-24"
+    "updatedDate": "2026-11-11"
   },
   "src/content/posts/api-ready-theme-contracts-de.md": {
     "contentHash": "43e46c3a3f9502c95c749056e243899eb99988e5f9564f58cf3123fb02fa04a2",
@@ -762,40 +762,40 @@
     "updatedDate": "2026-04-24"
   },
   "src/content/posts/markdown-syntax-mastery-de.md": {
-    "contentHash": "887aa72dc2005f86f35e8a4a58503a6f6c6deaa26de4acdaa72647158bf5283c",
-    "version": "v0.0.1",
+    "contentHash": "0595326f58e18c990e87d350c5277bb321dbe22074f30365f3d52eb411111bd7",
+    "version": "v0.0.2",
     "pubDate": "2026-08-27",
-    "updatedDate": "2026-08-27"
+    "updatedDate": "2026-11-11"
   },
   "src/content/posts/markdown-syntax-mastery-en.md": {
-    "contentHash": "477feaf83802653506dc4d76b261ea0cd560b72733713d4ed416196d8b26d105",
-    "version": "v0.0.1",
+    "contentHash": "e5505950ea804447d41c785ca5298186c0c4e06d83b3e107602ef1ee39b1fd9f",
+    "version": "v0.0.2",
     "pubDate": "2026-08-27",
-    "updatedDate": "2026-08-27"
+    "updatedDate": "2026-11-11"
   },
   "src/content/posts/markdown-syntax-mastery-es.md": {
-    "contentHash": "d3128d3517d2c75521231dc67084e1dfc1fcd4af0cb2a51ce966e81ecedb3303",
-    "version": "v0.0.1",
+    "contentHash": "4e9290027c8d683549ee3a4d90e7f7cf3aae5b0da636e7fadcd1c37e68eaf48f",
+    "version": "v0.0.2",
     "pubDate": "2026-08-27",
-    "updatedDate": "2026-08-27"
+    "updatedDate": "2026-11-11"
   },
   "src/content/posts/markdown-syntax-mastery-fr.md": {
-    "contentHash": "47d2b4d3162b56c85486689bb5fdd3661ec89213b324b2f38cc3afea89daba49",
-    "version": "v0.0.1",
+    "contentHash": "209f25b89ccc6fefe657197dcb7193ffc2a5627ee4761577b09b421f3503272d",
+    "version": "v0.0.2",
     "pubDate": "2026-08-27",
-    "updatedDate": "2026-08-27"
+    "updatedDate": "2026-11-11"
   },
   "src/content/posts/markdown-syntax-mastery-zh-Hant.md": {
-    "contentHash": "e7631bb9707abd5b1bfd6f7be8f980d3f510f1e4b47fd89c20ed3c374009bcad",
-    "version": "v0.0.1",
+    "contentHash": "d7d1ec0f8108f1280e62e988101942058b0b0ca3ffdcc8affd95ec29d979f890",
+    "version": "v0.0.2",
     "pubDate": "2026-08-27",
-    "updatedDate": "2026-08-27"
+    "updatedDate": "2026-11-11"
   },
   "src/content/posts/markdown-syntax-mastery.md": {
-    "contentHash": "6bd8bc90e644c5b1bd36a14aa87c516cc38a34a5e2ab457978094802810fea57",
-    "version": "v0.0.1",
+    "contentHash": "ff1ff2cf0fbeda28e588364af8418bad32922bf78ceb857dc34940b14d27e96c",
+    "version": "v0.0.2",
     "pubDate": "2026-08-27",
-    "updatedDate": "2026-08-27"
+    "updatedDate": "2026-11-11"
   },
   "src/content/posts/media-capability-lab-de.md": {
     "contentHash": "be5811c1110645240226c211da253bbd9b099cead5adac713660a4eec16a2815",

@@ -1,7 +1,7 @@
 ---
 title: "Guía panorámica de la sintaxis completa y funciones especiales de Markdown: Fórmulas matemáticas, gráficos, cuadros de alerta, cifrado y descifrado, desenfoque y mosaico, y tipografía moderna"
 pubDate: 2026-08-28
-updatedDate: 2026-08-27
+updatedDate: 2026-11-11
 description: "Manual de referencia definitivo de Markdown y artículo de demostración de prueba de estrés panorámica, hecho a medida para este blog. Cubre todas las funciones, incluyendo tipografía básica, fórmulas matemáticas KaTeX, diagramas Mermaid, cuadros de notificación Anzhiyu, resaltado y plegado de código con Diff, ventanas emergentes de cifrado de contraseña, desenfoque gaussiano y mosaico."
 author: "shijianus"
 category: "Ingeniería Frontend"
@@ -14,7 +14,7 @@ tags: ["Astro", "Markdown", "Refactorización de Tema", "UI", "Katex", "Mermaid"
 i18nKey: "markdown-syntax-mastery"
 lang: "es"
 aiTranslatedFrom: "zh-CN"
-version: "v0.0.1"
+version: "v0.0.2"
 ---
 # Bienvenido al sistema de renderizado Markdown todo en uno y funciones especiales
 

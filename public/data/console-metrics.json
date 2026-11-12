@@ -1,12 +1,12 @@
 {
   "ok": true,
-  "generatedAt": "2026-11-11T06:31:26.624Z",
+  "generatedAt": "2026-11-12T05:16:07.002Z",
   "stats": {
     "posts": 30,
-    "totalWords": 100922,
-    "readingMinutes": 461,
-    "avgWordsPerPost": 3364,
-    "uptimeDays": 1045,
+    "totalWords": 101796,
+    "readingMinutes": 465,
+    "avgWordsPerPost": 3393,
+    "uptimeDays": 1046,
     "recentPostCount30d": 0,
     "activeStatus": "Status 0",
     "activeLevel": "Lv.0",
@@ -1348,14 +1348,8 @@
     {
       "date": "2026-04-24",
       "displayDate": "2026/4/24",
-      "level": 2,
+      "level": 1,
       "posts": [
-        {
-          "title": "安知鱼式 Markdown 能力总检：目录、格式、隐藏内容、媒体与内容块 (更新)",
-          "href": "/posts/anzhiyu-markdown-showcase/",
-          "type": "update",
-          "date": "2026-04-24"
-        },
         {
           "title": "Markdown 扫描与展示能力全量示例 (更新)",
           "href": "/posts/markdown-scan-showcase/",
@@ -2347,12 +2341,6 @@
           "href": "/posts/example-tabs/",
           "type": "update",
           "date": "2026-08-27"
-        },
-        {
-          "title": "Markdown 全语法与特异功能全景指南：数学公式、图表、告警框、加密解密、模糊马赛克与现代排版 (更新)",
-          "href": "/posts/markdown-syntax-mastery/",
-          "type": "update",
-          "date": "2026-08-27"
         }
       ],
       "isFuture": false
@@ -3066,9 +3054,22 @@
     {
       "date": "2026-11-11",
       "displayDate": "2026/11/11",
-      "level": 0,
-      "posts": [],
-      "isFuture": true
+      "level": 2,
+      "posts": [
+        {
+          "title": "Markdown 全语法与特异功能全景指南：数学公式、图表、告警框、加密解密、模糊马赛克与现代排版 (更新)",
+          "href": "/posts/markdown-syntax-mastery/",
+          "type": "update",
+          "date": "2026-11-11"
+        },
+        {
+          "title": "安知鱼式 Markdown 能力总检：目录、格式、隐藏内容、媒体与内容块 (更新)",
+          "href": "/posts/anzhiyu-markdown-showcase/",
+          "type": "update",
+          "date": "2026-11-11"
+        }
+      ],
+      "isFuture": false
     },
     {
       "date": "2026-11-12",
@@ -3237,7 +3238,7 @@
       "title": "Markdown 全语法与特异功能全景指南：数学公式、图表、告警框、加密解密、模糊马赛克与现代排版",
       "href": "/posts/markdown-syntax-mastery/",
       "pubDate": "2026-08-28",
-      "updatedDate": "2026-08-27",
+      "updatedDate": "2026-11-11",
       "category": "前端工程"
     },
     {
@@ -3258,7 +3259,7 @@
       "title": "安知鱼式 Markdown 能力总检：目录、格式、隐藏内容、媒体与内容块",
       "href": "/posts/anzhiyu-markdown-showcase/",
       "pubDate": "2026-04-25",
-      "updatedDate": "2026-04-24",
+      "updatedDate": "2026-11-11",
       "category": "前端工程"
     },
     {
