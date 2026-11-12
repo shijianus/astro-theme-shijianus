@@ -3578,6 +3578,22 @@ export function ThemeOverlays({
                 {theme === 'dark' ? <SunMedium aria-hidden="true" /> : <MoonStar aria-hidden="true" />}
                 <span>{theme === 'dark' ? t('menu.lightMode', '浅色模式') : t('menu.darkMode', '深色模式')}</span>
               </button>
+              <button
+                type="button"
+                className="rightMenu-item menu-commentBarrage"
+                onClick={() => {
+                  const anzhiyu = (window as any).anzhiyu;
+                  if (anzhiyu && typeof anzhiyu.switchCommentBarrage === 'function') {
+                    const next = anzhiyu.switchCommentBarrage();
+                    emitActivity(next ? '已开启热评弹幕' : '已关闭热评弹幕');
+                  } else {
+                    window.dispatchEvent(new CustomEvent('shijianus:toggle-barrage'));
+                  }
+                }}
+              >
+                <MessageSquare aria-hidden="true" />
+                <span className="menu-commentBarrage-text">{convertText('关闭热评', localeVariant)}</span>
+              </button>
             </div>
 
             <div className="rightMenu-group rightMenu-line">

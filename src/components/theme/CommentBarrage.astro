@@ -1,0 +1,264 @@
+---
+interface Props {
+  slug: string;
+}
+
+const { slug } = Astro.props;
+---
+
+<div
+  id="comment-barrage"
+  class="comment-barrage"
+  data-slug={slug}
+  data-barrage-enabled="true"
+  aria-live="polite"
+></div>
+
+<script is:inline>
+  (() => {
+    const dom = document.getElementById('comment-barrage');
+    if (!(dom instanceof HTMLElement)) return;
+
+    const slug = dom.getAttribute('data-slug') || '';
+    const maxBarrage = 1;
+    const barrageTime = 4500;
+    let barrageList = [];
+    let barrageTimer = [];
+    let barrageIndex = 0;
+    let commentInterval = null;
+    let hoverOnBarrage = false;
+
+    const escapeHtml = (str = '') =>
+      String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+
+    const sanitizeBarrageText = (raw = '') => {
+      return String(raw)
+        .replace(/```[\s\S]*?```/g, '【代码】')
+        .replace(/!\[[^\]]*\]\([^)]+\)/g, '【图片】')
+        .replace(/<pre[\s\S]*?<\/pre>/gi, '【代码】')
+        .replace(/<img[^>]*>/gi, '【图片】')
+        .replace(/<[^>]+>/g, '')
+        .replace(/[#>*_`~]/g, '')
+        .trim();
+    };
+
+    const isBarrageEnabled = () => {
+      try {
+        return window.localStorage.getItem('commentBarrageSwitch') !== 'false';
+      } catch (_) {
+        return true;
+      }
+    };
+
+    const syncMenuText = (enabled) => {
+      document.querySelectorAll('.menu-commentBarrage-text').forEach((el) => {
+        el.textContent = enabled ? '关闭热评' : '显示热评';
+      });
+    };
+
+    const applyEnabledState = (enabled) => {
+      dom.setAttribute('data-barrage-enabled', enabled ? 'true' : 'false');
+      dom.style.display = enabled ? 'flex' : 'none';
+      syncMenuText(enabled);
+    };
+
+    const removeCommentBarrage = (barrageEl) => {
+      if (!(barrageEl instanceof HTMLElement)) return;
+      barrageEl.classList.add('out');
+      window.setTimeout(() => {
+        if (dom.contains(barrageEl)) {
+          dom.removeChild(barrageEl);
+        }
+      }, 450);
+    };
+
+    const popCommentBarrage = (item) => {
+      if (!item || !isBarrageEnabled()) return;
+      const nick = item.author || item.author_name || item.nick || '访客';
+      const avatar = item.avatar || item.author_avatar || '/media/shijianus/default.png';
+      const isBlogger =
+        item.role === 'admin' ||
+        item.role === 'blogger' ||
+        item.isWebmaster === true ||
+        String(nick).toLowerCase().includes('shijianus');
+      const rawMessage = item.message || item.content || item.comment || '';
+      const cleanText = sanitizeBarrageText(rawMessage) || '发表了一条评论';
+      const commentId = item.id ? `comment-${item.id}` : 'post-comment';
+
+      const barrage = document.createElement('div');
+      barrage.className = 'comment-barrage-item';
+      barrage.innerHTML = `
+        <div class="barrageHead">
+          <a class="barrageTitle ${isBlogger ? 'barrageBloggerTitle' : ''}" href="#post-comment">
+            ${isBlogger ? '博主' : '热评'}
+          </a>
+          <div class="barrageNick">${escapeHtml(nick)}</div>
+          <img class="nolazyload barrageAvatar no-lightbox" src="${escapeHtml(avatar)}" alt="" onerror="this.src='/media/shijianus/default.png'" />
+          <button type="button" class="comment-barrage-close" aria-label="关闭热评弹幕" title="关闭热评弹幕">
+            <i class="anzhiyufont anzhiyu-icon-xmark">×</i>
+          </button>
+        </div>
+        <a class="barrageContent" href="#${escapeHtml(commentId)}">
+          ${escapeHtml(cleanText)}
+        </a>
+      `;
+
+      const closeBtn = barrage.querySelector('.comment-barrage-close');
+      closeBtn?.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (window.anzhiyu && typeof window.anzhiyu.switchCommentBarrage === 'function') {
+          window.anzhiyu.switchCommentBarrage(false);
+        }
+      });
+
+      barrageTimer.push(barrage);
+      dom.appendChild(barrage);
+
+      while (barrageTimer.length > maxBarrage) {
+        const oldest = barrageTimer.shift();
+        if (oldest) removeCommentBarrage(oldest);
+      }
+    };
+
+    const flattenComments = (items = []) => {
+      const result = [];
+      const walk = (arr) => {
+        if (!Array.isArray(arr)) return;
+        for (const c of arr) {
+          if (!c) continue;
+          result.push(c);
+          if (Array.isArray(c.replies) && c.replies.length > 0) {
+            walk(c.replies);
+          }
+        }
+      };
+      walk(items);
+      return result;
+    };
+
+    const startBarrageLoop = () => {
+      if (commentInterval) {
+        window.clearInterval(commentInterval);
+        commentInterval = null;
+      }
+      if (!barrageList.length) return;
+
+      // Immediately pop the first comment if enabled and container is empty
+      if (isBarrageEnabled() && dom.children.length === 0) {
+        popCommentBarrage(barrageList[0]);
+        barrageIndex = 1 % barrageList.length;
+      }
+
+      commentInterval = window.setInterval(() => {
+        if (!isBarrageEnabled() || hoverOnBarrage || !barrageList.length) return;
+        if (
+          dom.getAttribute('data-comment-intersecting') === 'true' ||
+          dom.getAttribute('data-pagination-visible') === 'true' ||
+          document.body.classList.contains('theme-overlay-open')
+        ) {
+          return;
+        }
+        popCommentBarrage(barrageList[barrageIndex]);
+        barrageIndex = (barrageIndex + 1) % barrageList.length;
+      }, barrageTime);
+    };
+
+    const setCommentBarrageList = (items = []) => {
+      const flat = flattenComments(items);
+      barrageList = flat;
+      barrageIndex = 0;
+      dom.setAttribute('data-barrage-count', String(flat.length));
+      if (flat.length > 0) {
+        startBarrageLoop();
+      } else {
+        dom.innerHTML = '';
+        barrageTimer = [];
+      }
+    };
+
+    const switchCommentBarrage = (forceState) => {
+      const current = isBarrageEnabled();
+      const next = typeof forceState === 'boolean' ? forceState : !current;
+      try {
+        window.localStorage.setItem('commentBarrageSwitch', next ? 'true' : 'false');
+      } catch (_) {}
+      applyEnabledState(next);
+      if (next && barrageList.length > 0 && dom.children.length === 0) {
+        popCommentBarrage(barrageList[barrageIndex % barrageList.length]);
+      }
+      window.dispatchEvent(new CustomEvent('shijianus:barrage-change', { detail: { enabled: next } }));
+      return next;
+    };
+
+    window.anzhiyu = window.anzhiyu || {};
+    window.anzhiyu.switchCommentBarrage = switchCommentBarrage;
+    window.anzhiyu.setCommentBarrageList = setCommentBarrageList;
+    window.anzhiyu.popCommentBarrage = popCommentBarrage;
+
+    dom.addEventListener('mouseenter', () => {
+      hoverOnBarrage = true;
+    });
+    dom.addEventListener('mouseleave', () => {
+      hoverOnBarrage = false;
+    });
+
+    applyEnabledState(isBarrageEnabled());
+
+    // Listen to live comments from PostComments.tsx
+    window.addEventListener('shijianus:comments-sync', (e) => {
+      const detail = e?.detail;
+      if (detail && Array.isArray(detail.comments)) {
+        setCommentBarrageList(detail.comments);
+      }
+    });
+
+    window.addEventListener('shijianus:toggle-barrage', (e) => {
+      const force = typeof e?.detail?.enabled === 'boolean' ? e.detail.enabled : undefined;
+      switchCommentBarrage(force);
+    });
+
+    // Also fetch real comments from API on initialization
+    if (slug) {
+      fetch(`/api/comments?slug=${encodeURIComponent(slug)}&sort=hot`)
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data) => {
+          const list = Array.isArray(data?.comments) ? data.comments : Array.isArray(data?.data) ? data.data : [];
+          if (list.length > 0 && barrageList.length === 0) {
+            setCommentBarrageList(list);
+          }
+        })
+        .catch(() => {});
+    }
+
+    // 1. Auto-hide when #post-comment enters viewport
+    const postCommentTarget = document.getElementById('post-comment');
+    if (postCommentTarget && 'IntersectionObserver' in window) {
+      const io = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            dom.setAttribute('data-comment-intersecting', entry.isIntersecting ? 'true' : 'false');
+          });
+        },
+        { root: null, rootMargin: '0px', threshold: 0.05 }
+      );
+      io.observe(postCommentTarget);
+    }
+
+    // 2. Auto-hide when #pagination.pagination-post becomes visible so they never overlap
+    const paginationEl = document.getElementById('pagination');
+    if (paginationEl && 'MutationObserver' in window) {
+      const syncPaginationState = () => {
+        const isVis = paginationEl.classList.contains('is-visible');
+        dom.setAttribute('data-pagination-visible', isVis ? 'true' : 'false');
+      };
+      syncPaginationState();
+      const mo = new MutationObserver(syncPaginationState);
+      mo.observe(paginationEl, { attributes: true, attributeFilter: ['class'] });
+    }
+  })();
+</script>

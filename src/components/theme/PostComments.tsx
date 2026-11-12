@@ -1290,6 +1290,12 @@ export function PostComments({
   commentsRef.current = comments;
   const lastFocusRefreshRef = useRef<number>(0);
 
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('shijianus:comments-sync', { detail: { slug, comments } }));
+    }
+  }, [slug, comments]);
+
   // Fetch real comments with silent refresh capability ensuring zero UI flashing
   const loadComments = useCallback(
     async (sort = sortOrder, isSilent = false) => {

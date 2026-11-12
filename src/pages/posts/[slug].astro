@@ -7,6 +7,7 @@ import PostHero from '../../components/theme/PostHero.astro';
 import PostCopyright from '../../components/theme/PostCopyright.astro';
 import RelatedPosts from '../../components/theme/RelatedPosts.astro';
 import PostEndRecommendation from '../../components/theme/PostEndRecommendation.astro';
+import CommentBarrage from '../../components/theme/CommentBarrage.astro';
 import PostOutdateNotice from '../../components/theme/PostOutdateNotice.astro';
 import { PostComments } from '../../components/theme/PostComments';
 import { siteConfig } from '../../config/site';
@@ -799,6 +800,8 @@ const heroSummary = isUnlocked
       )}
 
       {isUnlocked && <PostEndRecommendation nextPost={nextPost} />}
+
+      {isUnlocked && commentsEnabled && <CommentBarrage slug={canonicalSlug} />}
 
       {commentsEnabled && <hr class="custom-hr" />}
 
