@@ -6939,41 +6939,19 @@
   2. **生产随身音乐口袋核验**：容器 `.shijianus-music-pocket` 默认挂载且 `display !== 'none'`，HTML5 `<audio>` 音频源正常加载，音频失败提示严格限定 `/` 根目录单会话至多 1 次；
   3. **生产精准跨域转场核验**：`/` 首次进站平滑转场 -> `/` 到 `/lab/` 跨域转场平滑执行 -> `/lab/playground/` 0ms 瞬间秒开 -> 返回 `/lab/` 绝无重复转场 -> 返回 `/` 根目录平滑转场，三大 Check 全部 100% 绿灯通过。
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+### Task 135: Hexo-Theme-Anzhiyu 全量功能与 22+ 原生标签插件 100% 完善、二次审计与真实浏览器 E2E 验收 (`de6692a`, `bc71388`, `7d8d5e9`, `ebfe75f`)
+- [x] **Hexo-Theme-Anzhiyu 22+ 原生短代码标签直通 AST 编译器与交互增强 (`de6692a`)**：
+  1. 新增 `src/lib/remark-hexo-tags.mjs` 构建期 Remark AST 插件并挂载至 `astro.config.mjs`，在 AST 层面精准避开 `code` 与 `inlineCode`，实现 `{% note %}`, `{% subnote %}`, `{% folding %}`, `{% hideBlock %}`, `{% hideToggle %}`, `{% hideInline %}`, `{% tip %}`, `{% btns %}`, `{% tabs %}`, `{% timeline %}`, `{% gallery %}`, `{% sitegroup %}`, `{% site %}`, `{% link %}`, `{% flink %}`, `{% label %}`, `{% u %}`, `{% emp %}`, `{% wavy %}`, `{% del %}`, `{% kbd %}`, `{% psw %}`, `{% span %}`, `{% p %}`, `{% iconfont %}`, `{% inlineImg %}`, `{% image %}`, `{% btn %}`, `{% cell %}`, `{% checkbox %}`, `{% radio %}`, `{% bilibili %}`, `{% dogeplayer %}`, `{% audio %}`, `{% video %}`, `{% videos %}`, `{% mermaid %}`, `{% intCard %}` 全量直通编译；
+  2. 在 `src/components/ContentFeatureEnhancer.astro` 與 `src/styles/markdown-enhancements.css` 中打通 `.hide-inline .hide-button`、`.hide-block .hide-button`、`psw` 黑幕剧透以及 `.tabs .tab` 面板切换；
+  3. 同步更新 `src/content/posts/anzhiyu-markdown-showcase*.md` 与 `src/content/posts/markdown-syntax-mastery*.md` 全语种变体的任务列表勾选状态（`- [x]`）与原生标签演示块。
+- [x] **文章封面主色调动态提取 (Cover Dominant Color) 与 `mainColor` 自适应渲染 (`bc71388`)**：
+  1. 在 `src/content.config.ts` 與 `src/pages/posts/[slug].astro` 中支持 `mainColor` / `main_color` Frontmatter 显式指定；
+  2. 在 `src/components/theme/PostHero.astro` 中注入基于 24×24 离屏 `<canvas>` 的图片主色调高饱和加权采样算法（自动过滤极端黑白与透明像素，并通过 YIQ 亮度公式保障白色文字对比度），实时同步 `data-dominant-color`、`--post-hero-dominant-color`、`--post-hero-dominant-rgb`、`--anzhiyu-bar-background` 及 `<meta name="theme-color">`；
+  3. 在 `src/styles/final-pass.css` 中为有封面的 `.post-hero[data-dominant-color]:not(.is-pure-color)` 注入主色调氛围混色，同时保持纯色无封面文章的标志性安知鱼蓝（`#425aef`）。
+- [x] **文章页热评悬浮弹幕 (`CommentBarrage.astro`) 与右键菜单开关及自动避让机制 (`7d8d5e9`, `ebfe75f`)**：
+  1. 新增 `src/components/theme/CommentBarrage.astro` 并在 `src/pages/posts/[slug].astro` 挂载 `#comment-barrage.comment-barrage`，通过 `shijianus:comments-sync` 与 `/api/comments?slug=...&sort=hot` 实时同步真实热评（遵循零虚假数据铁律），支持 `博主` / `热评` 徽标与代码块/图片净化；
+  2. 在 `src/components/ThemeOverlays.tsx` 右键菜单 `#rightMenu` 中新增 `.menu-commentBarrage`（`关闭热评` / `显示热评`），与 `window.anzhiyu.switchCommentBarrage` 及 `localStorage.getItem('commentBarrageSwitch')` 双向持久化联动；
+  3. 实装 `IntersectionObserver` + `scroll` 双重视口检测与 `MutationObserver`，当滚动至 `#post-comment` 评论区、触发底部 `.pagination-post.is-visible` 下一篇推荐或开启顶层中控台/弹窗时自动平滑隐去（`opacity: 0; visibility: hidden`）。
+- [x] **二次审计与真实浏览器端到端验证 (`scripts/verify-hexo-parity-and-audit.mjs` & `scripts/verify-post-hero-anzhiyu.mjs`, `ebfe75f`)**：
+  1. 全量静态构建（330 页，Exit Code `0`）通过；
+  2. Playwright 真实无头浏览器 4 大测试场景（原生短代码渲染与点击展开交互、封面主色调提取 `#34352d`、热评弹幕渲染/右键开关/评论区自动隐去、纯色 Hero `#425aef` + KaTeX 27 处 + Admonition 110 处 + Mermaid 30 处 + Markmap 5 处 + 全任务列表 0 未勾选项）全部断言 100% 绿灯通过（Exit Code `0`）。
