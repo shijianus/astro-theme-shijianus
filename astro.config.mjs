@@ -550,6 +550,83 @@ function authDevIntegration() {
   };
 }
 
+function formsAndFriendsDevIntegration() {
+  return {
+    name: 'forms-friends-dev-middleware',
+    hooks: {
+      'astro:server:setup': ({ server }) => {
+        server.middlewares.use(async (req, res, next) => {
+          const rawUrl = req.url || '';
+          if (
+            rawUrl === '/api/friends/apply' ||
+            rawUrl.startsWith('/api/friends/apply?') ||
+            rawUrl === '/api/forms/submit' ||
+            rawUrl.startsWith('/api/forms/submit?')
+          ) {
+            try {
+              const protocol = req.socket?.encrypted ? 'https' : 'http';
+              const host = req.headers.host || 'localhost:4321';
+              const fullUrl = new URL(rawUrl, `${protocol}://${host}`);
+
+              const chunks = [];
+              for await (const chunk of req) {
+                chunks.push(chunk);
+              }
+              const bodyBuffer = Buffer.concat(chunks);
+              const hasBody = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method || '') && bodyBuffer.length > 0;
+
+              const webHeaders = new Headers();
+              for (const [key, value] of Object.entries(req.headers)) {
+                if (Array.isArray(value)) {
+                  for (const v of value) webHeaders.append(key, v);
+                } else if (value !== undefined) {
+                  webHeaders.set(key, value);
+                }
+              }
+
+              const webReq = new Request(fullUrl.toString(), {
+                method: req.method,
+                headers: webHeaders,
+                body: hasBody ? bodyBuffer : undefined,
+              });
+
+              const isFriendsApply = rawUrl.includes('/friends/apply');
+              const handlerModule = isFriendsApply
+                ? await import('./functions/api/friends/apply.ts')
+                : await import('./functions/api/forms/submit.ts');
+
+              const webRes = await handlerModule.onRequest({
+                request: webReq,
+                env: {
+                  ...process.env,
+                  IS_DEV: 'true',
+                  TELEGRAM_BOT_TOKEN: getEnvVar('TELEGRAM_BOT_TOKEN'),
+                  TELEGRAM_CHAT_ID: getEnvVar('TELEGRAM_CHAT_ID'),
+                },
+              });
+
+              res.statusCode = webRes.status;
+              webRes.headers.forEach((val, key) => {
+                res.setHeader(key, val);
+              });
+              const resBody = await webRes.text();
+              res.end(resBody);
+              return;
+            } catch (err) {
+              console.error('[Dev Forms Middleware Error]:', err);
+              res.setHeader('Content-Type', 'application/json; charset=utf-8');
+              res.statusCode = 500;
+              res.end(JSON.stringify({ ok: false, error: err?.message || 'Dev forms middleware error' }));
+              return;
+            }
+          }
+          next();
+        });
+      },
+    },
+  };
+}
+
 function imageUploadDevIntegration() {
   return {
     name: 'image-upload-dev-middleware',
@@ -684,6 +761,13 @@ const mindmapLang = {
   patterns: [{ include: 'source.gfm' }],
 };
 
+const formLang = {
+  name: 'form',
+  scopeName: 'source.form',
+  displayName: 'Form',
+  patterns: [{ include: 'source.yaml' }],
+};
+
 const markmapLang = {
   name: 'markmap',
   scopeName: 'source.markmap',
@@ -719,6 +803,7 @@ export default defineConfig({
     chronralAiDevIntegration(),
     stripeAndGeoDevIntegration(),
     commentsDevIntegration(),
+    formsAndFriendsDevIntegration(),
     authDevIntegration(),
     imageUploadDevIntegration(),
     secureProtectedPostsIntegration(),
@@ -733,7 +818,7 @@ export default defineConfig({
         light: 'github-light',
         dark: 'github-dark-dimmed',
       },
-      langs: [mindmapLang, markmapLang],
+      langs: [mindmapLang, markmapLang, formLang],
       transformers: [
         {
           pre(node) {
@@ -741,6 +826,9 @@ export default defineConfig({
             if (lang === 'mindmap' || lang === 'markmap') {
               node.properties['data-language'] = lang;
               node.properties['class'] = ((node.properties['class'] || '') + ` language-${lang} mindmap-block`).trim();
+            } else if (lang === 'form' || lang === 'yaml:form') {
+              node.properties['data-language'] = 'form';
+              node.properties['class'] = ((node.properties['class'] || '') + ` language-form form-block`).trim();
             }
           },
         },

@@ -452,11 +452,11 @@
 
       document.querySelectorAll('.article-body pre').forEach((pre) => {
         if (!(pre instanceof HTMLElement)) return;
-        if (pre.closest('.mermaid-diagram-wrap, .mindmap-wrapper, .mindmap-container, .katex-display')) return;
+        if (pre.closest('.mermaid-diagram-wrap, .mindmap-wrapper, .mindmap-container, .katex-display, .md-interactive-form-wrapper')) return;
 
         const code = pre.querySelector('code');
         const langStr = getLanguage(pre, code);
-        if (langStr === 'MERMAID' || langStr === 'MINDMAP' || langStr === 'MARKMAP') return;
+        if (langStr === 'MERMAID' || langStr === 'MINDMAP' || langStr === 'MARKMAP' || langStr === 'FORM' || langStr === 'YAML:FORM' || langStr === 'MARKDOWN-FORM') return;
 
         // 1. Client Syntax Highlighting for code blocks without Shiki spans
         if (code && !code.querySelector('.line, .tok-keyword, .tok-cmd, .token')) {

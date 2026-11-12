@@ -3067,6 +3067,250 @@ const tExtGate = EXT_GATE_I18N[lang] || EXT_GATE_I18N['zh-CN'];
 
 <script>
   import mermaid from 'mermaid';
+  import { load as yamlLoad } from 'js-yaml';
+
+  function escapeHtml(str = ''): string {
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function escapeAttr(str = ''): string {
+    return String(str)
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+  }
+
+  const renderMarkdownFormBlocks = () => {
+    const articles = document.querySelectorAll('[data-content-features], .article-body, .post-content, #article-container, main');
+    if (!articles.length) return;
+
+    for (const article of articles) {
+      const formPreBlocks = Array.from(article.querySelectorAll<HTMLElement>(
+        'pre[data-language="form"], pre:has(code.language-form), pre:has(code[data-language="form"]), pre.language-form, pre.markdown-form, pre.form-block, pre[data-language="yaml:form"]'
+      ));
+
+      // Also check any pre block whose raw content has YAML form structure
+      const allPres = article.querySelectorAll<HTMLElement>('pre');
+      for (const pre of allPres) {
+        if (!formPreBlocks.includes(pre)) {
+          const text = (pre.textContent || '').trim();
+          if ((text.startsWith('id:') || text.startsWith('formId:')) && text.includes('fields:')) {
+            formPreBlocks.push(pre);
+          }
+        }
+      }
+
+      if (!formPreBlocks.length) continue;
+
+      for (const block of formPreBlocks) {
+        const pre = block.tagName === 'PRE' ? block : block.closest('pre');
+        if (!pre || (pre as HTMLElement).dataset.formRendered === 'true') continue;
+        (pre as HTMLElement).dataset.formRendered = 'true';
+
+        const shell = pre.closest('.code-block-shell');
+        const rawCode = (pre.querySelector('code')?.textContent || pre.textContent || '').trim();
+        if (!rawCode) continue;
+
+        let formConfig: any;
+        try {
+          formConfig = yamlLoad(rawCode);
+        } catch {
+          try {
+            formConfig = JSON.parse(rawCode);
+          } catch (err) {
+            console.warn('[MarkdownForm] Parse error:', err);
+            continue;
+          }
+        }
+
+        if (!formConfig || typeof formConfig !== 'object' || !Array.isArray(formConfig.fields)) {
+          continue;
+        }
+
+        const formWrap = document.createElement('div');
+        formWrap.className = 'md-interactive-form-wrapper';
+
+        const formId = formConfig.id || 'custom-form';
+        const formTitle = formConfig.title || '交互式表单';
+        const formDesc = formConfig.description || '';
+        const badgeText = formConfig.badge || '交互式表单 · Google Manuals 规范';
+        const targetUrl = formConfig.target || '/api/forms/submit';
+        const submitText = formConfig.submitText || '🚀 提交表单';
+        const successTitle = formConfig.successTitle || '提交成功！';
+        const successMsg = formConfig.successMessage || '数据已成功保存并实时送达管理员。';
+
+        // Render fields HTML
+        let fieldsHtml = '';
+        for (const field of formConfig.fields) {
+          const fieldId = field.id || field.name || 'field';
+          const label = field.label || fieldId;
+          const isReq = Boolean(field.required);
+          const reqStar = isReq ? '<span class="required-star">*</span>' : '';
+          const placeholder = field.placeholder || '';
+          const type = (field.type || 'text').toLowerCase();
+
+          if (type === 'select' && Array.isArray(field.options)) {
+            const optHtml = field.options.map((opt: any) => {
+              const val = typeof opt === 'object' ? (opt.value || opt.label) : opt;
+              const text = typeof opt === 'object' ? (opt.label || opt.value) : opt;
+              return `<option value="${escapeAttr(String(val))}">${escapeHtml(String(text))}</option>`;
+            }).join('');
+            fieldsHtml += `
+              <div class="md-form-field">
+                <label for="mff-${formId}-${fieldId}">${escapeHtml(label)} ${reqStar}</label>
+                <select id="mff-${formId}-${fieldId}" name="${escapeAttr(fieldId)}" ${isReq ? 'required' : ''}>
+                  ${optHtml}
+                </select>
+              </div>
+            `;
+          } else if (type === 'textarea') {
+            fieldsHtml += `
+              <div class="md-form-field">
+                <label for="mff-${formId}-${fieldId}">${escapeHtml(label)} ${reqStar}</label>
+                <textarea id="mff-${formId}-${fieldId}" name="${escapeAttr(fieldId)}" placeholder="${escapeAttr(placeholder)}" rows="3" ${isReq ? 'required' : ''}></textarea>
+              </div>
+            `;
+          } else {
+            fieldsHtml += `
+              <div class="md-form-field">
+                <label for="mff-${formId}-${fieldId}">${escapeHtml(label)} ${reqStar}</label>
+                <input id="mff-${formId}-${fieldId}" type="${escapeAttr(type)}" name="${escapeAttr(fieldId)}" placeholder="${escapeAttr(placeholder)}" ${isReq ? 'required' : ''} />
+              </div>
+            `;
+          }
+        }
+
+        formWrap.innerHTML = `
+          <div class="md-interactive-form theme-card" data-form-id="${escapeAttr(formId)}">
+            <div class="md-form__header">
+              <div class="md-form__badge">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                <span>${escapeHtml(badgeText)}</span>
+              </div>
+              <h3 class="md-form__title">${escapeHtml(formTitle)}</h3>
+              ${formDesc ? `<p class="md-form__desc">${escapeHtml(formDesc)}</p>` : ''}
+            </div>
+
+            <form class="md-form__body" novalidate>
+              ${fieldsHtml}
+              <div class="md-form__alert" style="display: none;"></div>
+              <div class="md-form__actions">
+                <button type="submit" class="theme-button theme-button--primary md-form__submit-btn">
+                  <span class="btn-text">${escapeHtml(submitText)}</span>
+                </button>
+              </div>
+            </form>
+
+            <div class="md-form__success" style="display: none;">
+              <div class="success-icon-wrap">
+                <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
+              </div>
+              <h4>${escapeHtml(successTitle)}</h4>
+              <p>${escapeHtml(successMsg)}</p>
+              <button type="button" class="theme-button md-form__reset-btn">再次填写 / 提交另一条记录</button>
+            </div>
+          </div>
+        `;
+
+        // Wire form submission
+        const formEl = formWrap.querySelector<HTMLFormElement>('form.md-form__body');
+        const alertEl = formWrap.querySelector<HTMLElement>('.md-form__alert');
+        const successEl = formWrap.querySelector<HTMLElement>('.md-form__success');
+        const submitBtn = formWrap.querySelector<HTMLButtonElement>('.md-form__submit-btn');
+        const btnText = formWrap.querySelector<HTMLElement>('.btn-text');
+        const resetBtn = formWrap.querySelector<HTMLButtonElement>('.md-form__reset-btn');
+
+        resetBtn?.addEventListener('click', () => {
+          if (formEl) {
+            formEl.reset();
+            formEl.style.display = 'flex';
+          }
+          if (successEl) successEl.style.display = 'none';
+          if (alertEl) {
+            alertEl.style.display = 'none';
+            alertEl.textContent = '';
+          }
+        });
+
+        formEl?.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          if (!submitBtn || !btnText) return;
+
+          // Check required fields
+          let hasMissing = false;
+          const payload: Record<string, any> = {
+            formId,
+            title: formTitle,
+            source: 'markdown_embedded_form',
+            fields: {},
+          };
+
+          for (const field of formConfig.fields) {
+            const fieldId = field.id || field.name;
+            const input = formEl.querySelector<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>(`[name="${fieldId}"]`);
+            const val = (input?.value || '').trim();
+            if (field.required && !val) {
+              hasMissing = true;
+              input?.focus();
+              break;
+            }
+            payload[fieldId] = val;
+            payload.fields[fieldId] = val;
+          }
+
+          if (hasMissing) {
+            if (alertEl) {
+              alertEl.style.display = 'block';
+              alertEl.className = 'md-form__alert is-error';
+              alertEl.textContent = '请完整填写所有必填字段后再提交！';
+            }
+            return;
+          }
+
+          submitBtn.disabled = true;
+          const origText = btnText.textContent || submitText;
+          btnText.textContent = '正在提交并通知站长...';
+          if (alertEl) alertEl.style.display = 'none';
+
+          try {
+            const res = await fetch(targetUrl, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(payload),
+            });
+            const data = await res.json().catch(() => ({}));
+            if (res.ok && data.ok) {
+              formEl.style.display = 'none';
+              if (successEl) successEl.style.display = 'flex';
+            } else {
+              throw new Error(data.error || '提交遇到问题，请稍后重试');
+            }
+          } catch (err: any) {
+            if (alertEl) {
+              alertEl.style.display = 'block';
+              alertEl.className = 'md-form__alert is-error';
+              alertEl.textContent = err?.message || '网络连接异常，请重试';
+            }
+          } finally {
+            submitBtn.disabled = false;
+            btnText.textContent = origText;
+          }
+        });
+
+        if (shell) {
+          shell.parentNode?.replaceChild(formWrap, shell);
+        } else {
+          pre.parentNode?.replaceChild(formWrap, pre);
+        }
+      }
+    }
+  };
 
   const renderMermaidBlocks = async () => {
     const articles = document.querySelectorAll('[data-content-features], .article-body, .post-content');
@@ -3199,9 +3443,16 @@ const tExtGate = EXT_GATE_I18N[lang] || EXT_GATE_I18N['zh-CN'];
   themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme', 'class'] });
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', renderMermaidBlocks, { once: true });
+    document.addEventListener('DOMContentLoaded', () => {
+      renderMermaidBlocks();
+      renderMarkdownFormBlocks();
+    }, { once: true });
   } else {
     renderMermaidBlocks();
+    renderMarkdownFormBlocks();
   }
-  document.addEventListener('astro:page-load', renderMermaidBlocks);
+  document.addEventListener('astro:page-load', () => {
+    renderMermaidBlocks();
+    renderMarkdownFormBlocks();
+  });
 </script>

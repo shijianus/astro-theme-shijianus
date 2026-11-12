@@ -1,0 +1,122 @@
+---
+export interface FormField {
+  id: string;
+  label?: string;
+  type?: 'text' | 'url' | 'email' | 'number' | 'select' | 'textarea';
+  placeholder?: string;
+  required?: boolean;
+  options?: string[] | { label: string; value: string }[];
+}
+
+export interface MarkdownFormProps {
+  id?: string;
+  title?: string;
+  description?: string;
+  badge?: string;
+  target?: string;
+  submitText?: string;
+  successTitle?: string;
+  successMessage?: string;
+  fields?: FormField[];
+}
+
+const {
+  id = 'custom-form',
+  title = '在线申请表单',
+  description = '',
+  badge = '交互式表单 · Google Manuals 规范',
+  target = '/api/forms/submit',
+  submitText = '🚀 提交表单',
+  successTitle = '提交成功！',
+  successMessage = '数据已成功保存并实时送达管理员。',
+  fields = [],
+} = Astro.props as MarkdownFormProps;
+---
+
+<div class="md-interactive-form-wrapper" data-component="markdown-form">
+  <div class="md-interactive-form theme-card" data-form-id={id}>
+    <div class="md-form__header">
+      <div class="md-form__badge">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+        <span>{badge}</span>
+      </div>
+      <h3 class="md-form__title">{title}</h3>
+      {description && <p class="md-form__desc">{description}</p>}
+    </div>
+
+    <form class="md-form__body" data-target={target} novalidate>
+      {fields.map((field) => {
+        const fieldId = field.id;
+        const label = field.label || fieldId;
+        const isReq = Boolean(field.required);
+        const type = (field.type || 'text').toLowerCase();
+
+        if (type === 'select' && Array.isArray(field.options)) {
+          return (
+            <div class="md-form-field">
+              <label for={`mff-${id}-${fieldId}`}>
+                {label} {isReq && <span class="required-star">*</span>}
+              </label>
+              <select id={`mff-${id}-${fieldId}`} name={fieldId} required={isReq}>
+                {field.options.map((opt) => {
+                  const val = typeof opt === 'object' ? (opt.value || opt.label) : opt;
+                  const text = typeof opt === 'object' ? (opt.label || opt.value) : opt;
+                  return <option value={val}>{text}</option>;
+                })}
+              </select>
+            </div>
+          );
+        }
+
+        if (type === 'textarea') {
+          return (
+            <div class="md-form-field">
+              <label for={`mff-${id}-${fieldId}`}>
+                {label} {isReq && <span class="required-star">*</span>}
+              </label>
+              <textarea
+                id={`mff-${id}-${fieldId}`}
+                name={fieldId}
+                placeholder={field.placeholder || ''}
+                rows={3}
+                required={isReq}
+              ></textarea>
+            </div>
+          );
+        }
+
+        return (
+          <div class="md-form-field">
+            <label for={`mff-${id}-${fieldId}`}>
+              {label} {isReq && <span class="required-star">*</span>}
+            </label>
+            <input
+              id={`mff-${id}-${fieldId}`}
+              type={type}
+              name={fieldId}
+              placeholder={field.placeholder || ''}
+              required={isReq}
+            />
+          </div>
+        );
+      })}
+
+      <div class="md-form__alert" style="display: none;"></div>
+
+      <div class="md-form__actions">
+        <button type="submit" class="theme-button theme-button--primary md-form__submit-btn">
+          <span class="btn-text">{submitText}</span>
+        </button>
+      </div>
+    </form>
+
+    <div class="md-form__success" style="display: none;">
+      <div class="success-icon-wrap">
+        <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
+      </div>
+      <h4>{successTitle}</h4>
+      <p>{successMessage}</p>
+      <button type="button" class="theme-button md-form__reset-btn">再次填写 / 提交另一条记录</button>
+    </div>
+  </div>
+</div>
