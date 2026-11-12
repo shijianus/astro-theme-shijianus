@@ -8276,12 +8276,19 @@ body[data-type='home'] .page-shell__hero {
   opacity: 0.52;
 }
 
+.post-hero[data-dominant-color]:not(.is-pure-color) {
+  background:
+    radial-gradient(circle at 80% 20%, rgba(var(--post-hero-dominant-rgb, 66, 90, 239), 0.34) 0%, transparent 55%),
+    radial-gradient(circle at 20% 80%, rgba(var(--post-hero-dominant-rgb, 52, 109, 199), 0.24) 0%, transparent 45%),
+    linear-gradient(135deg, rgba(var(--post-hero-dominant-rgb, 24, 29, 39), 0.92) 0%, #0f131a 100%);
+}
+
 .post-hero__cover::after {
   background:
     linear-gradient(90deg,
-      rgba(8, 12, 22, 0.97) 0%,
-      rgba(8, 12, 22, 0.80) 30%,
-      rgba(8, 12, 22, 0.34) 65%,
+      rgba(var(--post-hero-dominant-rgb, 8, 12, 22), 0.95) 0%,
+      rgba(var(--post-hero-dominant-rgb, 8, 12, 22), 0.78) 32%,
+      rgba(8, 12, 22, 0.36) 65%,
       rgba(8, 12, 22, 0.08) 100%);
 }
 

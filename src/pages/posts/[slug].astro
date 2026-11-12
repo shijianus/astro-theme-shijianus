@@ -617,6 +617,7 @@ const heroSummary = isUnlocked
         imageAlt={heroImageAlt}
         video={postEntry.data.coverVideo}
         videoPoster={postEntry.data.coverVideoPoster ?? heroImage}
+        mainColor={postEntry.data.mainColor || postEntry.data.main_color}
         fallbackImage={siteConfig.post.hero.fallbackImage}
         remoteFallbackImage={siteConfig.post.hero.remoteFallbackImage}
         badges={badges}

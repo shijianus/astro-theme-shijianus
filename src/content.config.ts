@@ -103,6 +103,8 @@ const postsCollection = defineCollection({
     coverAlt: z.string().optional(),
     coverVideo: z.string().optional(),
     coverVideoPoster: z.string().optional(),
+    mainColor: z.string().optional(),
+    main_color: z.string().optional(),
     postFormat: z.enum(['standard', 'aside', 'status', 'quote', 'gallery', 'video', 'audio', 'link', 'chat', 'image']).default('standard').optional(),
     markup: z.string().optional(),
     toc: z.boolean().default(true).optional(),

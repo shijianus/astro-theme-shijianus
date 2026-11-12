@@ -17,6 +17,7 @@ interface Props {
   imageAlt?: string;
   video?: string;
   videoPoster?: string;
+  mainColor?: string;
   fallbackImage?: string;
   remoteFallbackImage?: string;
   badges?: string[];
@@ -58,6 +59,7 @@ const {
   imageAlt = '',
   video = '',
   videoPoster = image,
+  mainColor = '',
   fallbackImage = '/media/shijianus/default.png',
   remoteFallbackImage = 'https://drawing.shijian.qzz.io/file/AgACAgEAAyEGAAS6jkJbAAMUapQaP6X-fJmi1j0qYD5NgooECLwAAlEMaxuQM6BEoSo1dHbP8ioBAAMCAAN3AAM9BA.png',
   badges = [],
@@ -119,11 +121,12 @@ const hasMedia = Boolean(image || video);
   data-post-hero
   data-hero-type="post"
   data-post-slug={slug}
+  data-main-color={mainColor || undefined}
   data-runtime-metrics={runtimeMetrics ? 'true' : 'false'}
   data-hero-i18n-mode={heroI18n.mode}
   data-hero-align={effectiveContentAlign}
   data-hero-smooth-transition={heroI18n.smoothTransition ? 'true' : 'false'}
-  style={`--hero-uniform-height-desktop: ${resolvedDesktopHeight}; --hero-uniform-height-mobile: ${resolvedMobileHeight}; --hero-content-align: ${effectiveContentAlign}; --hero-title-max-lines: ${heroI18n.maxLines?.title ?? 2}; --hero-lede-max-lines: ${heroI18n.maxLines?.lede ?? 2}; --hero-title-size: ${effectiveTitleSize}; ${frontmatterHero.paddingBottom ? `--hero-custom-padding-bottom: ${frontmatterHero.paddingBottom};` : ''} ${frontmatterHero.paddingTop ? `--hero-custom-padding-top: ${frontmatterHero.paddingTop};` : ''}`}
+  style={`--hero-uniform-height-desktop: ${resolvedDesktopHeight}; --hero-uniform-height-mobile: ${resolvedMobileHeight}; --hero-content-align: ${effectiveContentAlign}; --hero-title-max-lines: ${heroI18n.maxLines?.title ?? 2}; --hero-lede-max-lines: ${heroI18n.maxLines?.lede ?? 2}; --hero-title-size: ${effectiveTitleSize}; ${mainColor ? `--post-hero-dominant-color: ${mainColor};` : ''} ${frontmatterHero.paddingBottom ? `--hero-custom-padding-bottom: ${frontmatterHero.paddingBottom};` : ''} ${frontmatterHero.paddingTop ? `--hero-custom-padding-top: ${frontmatterHero.paddingTop};` : ''}`}
 >
   {hasMedia && (
     <div class="post-hero__cover">
@@ -144,6 +147,7 @@ const hasMedia = Boolean(image || video);
         </video>
       ) : (
         <img
+          id="post-top-bg"
           src={image}
           alt={imageAlt}
           class="post-hero__image"
@@ -272,6 +276,113 @@ const hasMedia = Boolean(image || video);
           nextImage.setAttribute('data-remote-fallback', videoRemoteFallback);
           video.replaceWith(nextImage);
         }, { once: true });
+      }
+
+      // 0. Anzhiyu Cover Dominant Color Extraction & Theme Meta Synchronization
+      const toHex = (n) => Math.max(0, Math.min(255, Math.round(n))).toString(16).padStart(2, '0');
+      const parseHexToRgb = (hexStr) => {
+        const clean = String(hexStr || '').trim().replace(/^#/, '');
+        if (/^[0-9a-fA-F]{6}$/.test(clean)) {
+          return [
+            parseInt(clean.slice(0, 2), 16),
+            parseInt(clean.slice(2, 4), 16),
+            parseInt(clean.slice(4, 6), 16),
+          ];
+        }
+        return null;
+      };
+
+      const applyDominantColor = (r, g, b) => {
+        // YIQ luminance contrast check (Anzhiyu standard): darken overly bright tones so hero text remains 100% legible
+        const yiq = (r * 299 + g * 587 + b * 114) / 1000;
+        let adjR = r;
+        let adjG = g;
+        let adjB = b;
+        if (yiq >= 145) {
+          adjR = Math.round(r * 0.58);
+          adjG = Math.round(g * 0.58);
+          adjB = Math.round(b * 0.58);
+        } else if (yiq < 28) {
+          adjR = Math.min(255, Math.round(r * 1.35 + 18));
+          adjG = Math.min(255, Math.round(g * 1.35 + 22));
+          adjB = Math.min(255, Math.round(b * 1.35 + 38));
+        }
+        const hex = `#${toHex(adjR)}${toHex(adjG)}${toHex(adjB)}`;
+        root.setAttribute('data-dominant-color', hex);
+        root.style.setProperty('--post-hero-dominant-color', hex);
+        root.style.setProperty('--post-hero-dominant-rgb', `${adjR}, ${adjG}, ${adjB}`);
+        document.documentElement.style.setProperty('--anzhiyu-bar-background', hex);
+
+        let metaTheme = document.querySelector('meta[name="theme-color"]');
+        if (!metaTheme) {
+          metaTheme = document.createElement('meta');
+          metaTheme.setAttribute('name', 'theme-color');
+          document.head.appendChild(metaTheme);
+        }
+        metaTheme.setAttribute('content', hex);
+      };
+
+      const extractColorFromImg = (imgEl) => {
+        try {
+          const canvas = document.createElement('canvas');
+          const size = 24;
+          canvas.width = size;
+          canvas.height = size;
+          const ctx = canvas.getContext('2d', { willReadFrequently: true });
+          if (!ctx) return false;
+          ctx.drawImage(imgEl, 0, 0, size, size);
+          const { data } = ctx.getImageData(0, 0, size, size);
+          let totalWeight = 0;
+          let sumR = 0;
+          let sumG = 0;
+          let sumB = 0;
+          for (let i = 0; i < data.length; i += 4) {
+            const a = data[i + 3];
+            if (a < 128) continue;
+            const pr = data[i];
+            const pg = data[i + 1];
+            const pb = data[i + 2];
+            const brightness = pr + pg + pb;
+            if (brightness < 40 || brightness > 710) continue;
+            const sat = Math.max(pr, pg, pb) - Math.min(pr, pg, pb);
+            const weight = sat + 12;
+            sumR += pr * weight;
+            sumG += pg * weight;
+            sumB += pb * weight;
+            totalWeight += weight;
+          }
+          if (totalWeight > 0) {
+            applyDominantColor(
+              Math.round(sumR / totalWeight),
+              Math.round(sumG / totalWeight),
+              Math.round(sumB / totalWeight)
+            );
+            return true;
+          }
+        } catch (_) {}
+        return false;
+      };
+
+      const explicitMainColor = root.getAttribute('data-main-color');
+      const explicitRgb = explicitMainColor ? parseHexToRgb(explicitMainColor) : null;
+      if (explicitRgb) {
+        applyDominantColor(explicitRgb[0], explicitRgb[1], explicitRgb[2]);
+      } else if (image instanceof HTMLImageElement) {
+        const handleImgColor = () => {
+          if (!extractColorFromImg(image)) {
+            applyDominantColor(66, 90, 239);
+          }
+        };
+        if (image.complete && image.naturalWidth > 0) {
+          handleImgColor();
+        } else {
+          image.addEventListener('load', handleImgColor, { once: true });
+          // Immediate fallback until load completes
+          applyDominantColor(66, 90, 239);
+        }
+      } else {
+        // Pure color mode (Anzhiyu signature blue #425aef)
+        applyDominantColor(66, 90, 239);
       }
 
       // 1. Tag space-based truncation prevention & horizontal limit
