@@ -128,7 +128,7 @@ export const friendsConfig: {
         {
           name: 'EpoMail',
           url: 'https://mail.epocanvas.com',
-          avatar: '/media/shijianus/avatar.jpg',
+          avatar: '/media/brands/epomail.svg',
           desc: '极简无干扰的端到端加密极客邮箱服务。',
           tag: '品牌矩阵',
           tagColor: 'blue',
@@ -139,7 +139,7 @@ export const friendsConfig: {
         {
           name: 'EpoCanvas',
           url: 'https://epocanvas.com',
-          avatar: '/media/shijianus/avatar.jpg',
+          avatar: '/media/brands/epocanvas.svg',
           desc: '時代画布：面向现代独立构建者的数字创作工坊与设计系统。',
           tag: '品牌工坊',
           tagColor: 'purple',
@@ -150,7 +150,7 @@ export const friendsConfig: {
         {
           name: 'Sonic',
           url: 'https://sonic.epocanvas.com',
-          avatar: '/media/shijianus/avatar.jpg',
+          avatar: '/media/brands/sonic.svg',
           desc: '极客音频工作站：双耳节拍与 Lo-Fi 沉浸心流白噪音引擎。',
           tag: '流媒体音频',
           tagColor: 'green',
