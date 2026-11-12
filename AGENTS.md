@@ -7006,3 +7006,26 @@
   3. **Cloudflare D1 生产数据库实时入库证据审查**：
      - 通过 Wrangler 远程直接执行 SQL 查询 `form_submissions` 表；
      - 成功捕获刚刚线上提交的实时记录：`apply_1794463038629_nhat1j`，`form_id: friend-link-apply`，真实记录了客户端 IP、提交时间与完整 payload，全流程无缝闭环！
+
+### Task 138: 友邻严格固化为 3 个品牌矩阵、/status/ 重构为 Office 协同收集表 (支持 []() 外联) 与生产全量部署 (`d8cc63a`)
+- [x] **友邻名单严格固化：仅收录 3 个官方品牌矩阵友邻 (零编造、零幻觉) (`d8cc63a`)**：
+  1. 彻底清除 `src/config/friends.ts` 中历史遗留的分类与外部博友数据，严格仅保留 3 个真实且自主构建的品牌友邻：
+     - **EpoMail** (`https://mail.epocanvas.com`, `/media/brands/epomail.svg`, 极简无干扰的端到端加密极客邮箱服务)；
+     - **EpoCanvas** (`https://epocanvas.com`, `/media/brands/epocanvas.svg`, 時代画布：面向现代独立构建者的数字创作工坊与设计系统)；
+     - **Sonic** (`https://sonic.epocanvas.com`, `/media/brands/sonic.svg`, 极客音频工作站：双耳节拍与 Lo-Fi 沉浸心流白噪音引擎)；
+  2. 友邻卡片总数严格固化为 3 位，杜绝任何历史残留或幻觉生成；各品牌图标均绑定独立矢量 SVG，弹窗回退统一使用中立品牌图标 `default-brand.svg`。
+- [x] **深入学习 Google 声明规范与 Office 收集表标准：重构为真实数据表格 (Spreadsheet Table) (`d8cc63a`)**：
+  1. 彻底革新传统的纵向堆叠卡片模式，在 `src/components/ContentFeatureEnhancer.astro` 与 `src/styles/markdown-enhancements.css` 中构建标准的 **Office 协同收集表 (Spreadsheet / Collection Table)**；
+  2. 表格遵循现代 Office 365 / Google Sheets 协同设计语言，包含标题顶栏、状态徽标（`📊 Office 收集表 · Google 声明规范`、`🔗 支持 [名称](链接) 外联语法`、`⚡ 实时协同 · D1 持久化 & TG 秒级推送`）、固定列头（序号、站点名称与外链、品牌图标、站点定位与简介、联络方式、状态）；
+  3. 初始数据行严格预置 3 个品牌友邻，将 Markdown `[EpoMail](https://mail.epocanvas.com)` 格式就地编译为带外部跳转箭头的真实超链接标签 `<a href="..." target="_blank">`。
+- [x] **支持 `()[]` 式原生 Markdown 外联输入与就地实时解析插入 (`d8cc63a`)**：
+  1. 在收集表底部内嵌协同“填表”录入行，第一列明确支持 `[站点名称](https://链接)` 外联语法；
+  2. 注入实时外联解析器（`parseMarkdownLink`），当用户键入 `[我的博客](https://url)` 时，就地展示即时外联识别徽标与解析链接预览；
+  3. 点击“📥 登记入表”时，前端校验通过后发起异步请求，并将新数据即时渲染并追加插入到表格最后一行（第 04 行），同时展示带高亮动效的外链、品牌图标与待审核状态标签；
+  4. 提交数据无缝落盘至 Cloudflare D1 边缘数据库，并由 Telegram Bot 异步秒级直推富文本审批消息。
+- [x] **本地双重自动化审计与真实无头浏览器 Playwright E2E 验证 (`scripts/verify-friends-enhancements.mjs` & `scripts/verify-friends-e2e.mjs`)**：
+  1. 静态断言覆盖 4 款品牌 SVG 存在性、friends.ts 严格 3 个品牌友邻断言（无安知鱼/小康等）、FriendsDashboard 回退脱敏、`status.md` 嵌入代码块及 D1/TG 结构检查，全部 100% 通过；
+  2. Playwright 真实浏览器端到端测试覆盖：
+     - Scenario 1：`/friends/` 品牌专属 SVG 加载、卡片总数严格为 3 位、无“复制本站互链信息”、点击“申请互链”弹出模态弹窗及 Escape 关闭；
+     - Scenario 2：`/status/` 规范指南结构、Office 收集表格渲染、初始 3 行 `[name](url)` 外链解析、录入行输入 `[星际漫游者测试站](https://explorer.example.com)` 触发实时外联识别、点击提交后表格行即时追加为 4 行并展示带外部跳转的外链、成功横幅展示与输入框重置，全部 100% 绿灯通过。
+
