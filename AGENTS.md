@@ -6955,3 +6955,28 @@
 - [x] **二次审计与真实浏览器端到端验证 (`scripts/verify-hexo-parity-and-audit.mjs` & `scripts/verify-post-hero-anzhiyu.mjs`, `ebfe75f`)**：
   1. 全量静态构建（330 页，Exit Code `0`）通过；
   2. Playwright 真实无头浏览器 4 大测试场景（原生短代码渲染与点击展开交互、封面主色调提取 `#34352d`、热评弹幕渲染/右键开关/评论区自动隐去、纯色 Hero `#425aef` + KaTeX 27 处 + Admonition 110 处 + Mermaid 30 处 + Markmap 5 处 + 全任务列表 0 未勾选项）全部断言 100% 绿灯通过（Exit Code `0`）。
+
+### Task 136: /friends/ 友邻生态品牌图标区分、模态弹窗化交互、/status/ 完整说明重构与 Markdown 嵌入式表单功能 (`966e6a4`, `7519fbd`, `8bce652`)
+- [x] **品牌专属 SVG 与中立默认回退保障 (消除与站长头像同质化) (`966e6a4`)**：
+  1. 为 EpoCanvas 品牌矩阵下的所有子品牌配置独立专属的矢量 SVG 图标：`public/media/brands/epomail.svg`（极客邮箱）、`public/media/brands/epocanvas.svg`（時代画布）、`public/media/brands/sonic.svg`（极客音频）；
+  2. 新增中立现代风格的品牌专属回退图标 `public/media/brands/default-brand.svg`（深邃科技质感网络罗盘），并在 `src/components/theme/FriendsDashboard.astro` 与 `functions/api/friends/apply.ts` 中彻底替换原有的 `this.src='/media/shijianus/avatar.jpg'`，杜绝任何友邻加载失败时同质化为站长个人照片；
+  3. 扩充 `src/config/friends.ts`，涵盖 `品牌矩阵 · 原生生态`、`核心友邻 · 技术先锋`、`灵感花园 · 宝藏博客`，确保所有博友名片均具备独立鲜明的品牌或个性头像。
+- [x] **"申请互链" 模态弹窗化交互重构与页面去臃肿化 (`966e6a4`)**：
+  1. 将原本堆叠在 `/friends/` 最末尾的巨大申请表单与规则解耦，重构为顶部 Hero 专属唤起按钮 `#btn-open-apply-modal`；
+  2. 独立构建高质感玻璃拟态弹窗 `#friend-apply-modal.friend-modal`，包含精致遮罩、关闭按键 (×)、Escape 按键监听、背景点击关闭、必填校验、加载态 Spinner 以及提交成功反馈卡；
+  3. 彻底删除 `/friends/` 原有且繁琐的 "复制本站互链信息" 按钮及底部说明区域，替换为前往 `/status/` 的直达指南入口，大幅缩减页面冗余，增强纯粹的博友名片墙浏览交互感。
+- [x] **学习 Google 手册风格：Markdown 原生嵌入式表单功能与 D1/TG 回报中枢 (`7519fbd`)**：
+  1. 在 `astro.config.mjs` 中注册 Shiki 自定义 `form` 语法高亮与 AST 属性转换器，配合 `src/components/ContentFeatureEnhancer.astro`，支持在任何 Markdown 文章中通过 ````form ... ```` 代码块嵌入可交互式表单；
+  2. 针对嵌入式表单设计 Google Manuals / 现代 SaaS 设计系统卡片规范（`.md-interactive-form`），包含专属徽标（`交互式表单 · Google Manuals 规范`）、主标题、说明、多类型字段网格（文本、URL、邮箱、单选下拉、多行文本）、必填星号与校验提示、提交按钮加载动画、成功后就地切换卡片以及 "再次填写" 一键重置；
+  3. 后端新增 `/api/friends/apply` 与通用 `/api/forms/submit` 接口，支持双模回报处理：
+     - 若绑定 Cloudflare D1 数据库，数据实时结构化持久化落盘至 `form_submissions` 表；
+     - 同步调用 `functions/_lib/form-notify.ts`，经由 Telegram Bot API 实时向站长推送富文本 HTML 通知（包含太平洋时间 PST、来源 IP、地理信息及全部表单字段），实现极速无感审批。
+- [x] **`/status/` 友邻生态公约与系统状态完整指南重构 (`8bce652`)**：
+  1. 将原有的工程性文档全面升级为符合用户定位的《EpoCanvas 友邻生态公约与系统状态指南》（`docs/standards/status.md`）；
+  2. 详尽介绍本站运行状态与定位（Astro 7 + Cloudflare Pages 边缘计算 + D1 数据库 + Anycast 全球分发）；
+  3. 详尽解释友邻系统的运行机理（去中心化博友连接哲学、`/moments/` 朋友圈动态雷达的 RSS/Atom 自动聚合逻辑、友链巡检哨兵机制与健康状态标签）；
+  4. 完整罗列本站互链标准配置元信息，并提供 YAML、JSON、HTML、Markdown 多格式带高亮配置代码块，方便博友一键复制并添加到各自博客；
+  5. 明确互链交换公约（原创优先、稳定可达、体验良善、先友后链），并在文末无缝嵌入 Google 手册风格的 ````form ... ```` 交互式互链申请表单，使读者阅读文档时可就地填写申请，实现沉浸式体验。
+- [x] **全流程自动化脚本与真实浏览器 Playwright E2E 交互审计**：
+  1. 静态与代码逻辑断言套件（`scripts/verify-friends-enhancements.mjs`）通过，覆盖 4 款品牌 SVG 存在性、头像区分性、FriendsDashboard 站长头像脱敏、弹窗 ID 结构、`/status/` 文档多格式配置代码及 API/TG/D1 结构验证；
+  2. Playwright 真实浏览器端到端交互审计（`scripts/verify-friends-e2e.mjs`：Scenario 1 友邻主页头像区分、弹窗唤起、Escape 关闭；Scenario 2 `/status/` 文档结构、Markdown 表单就地渲染为 HTML5 控件、表单填写并提交、即时切换成功卡片与重置）全部断言 100% 绿灯通过。
