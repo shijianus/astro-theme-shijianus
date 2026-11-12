@@ -3088,11 +3088,12 @@ const tExtGate = EXT_GATE_I18N[lang] || EXT_GATE_I18N['zh-CN'];
 
   function parseMarkdownLink(text = ''): { name: string; url: string } {
     const trimmed = String(text || '').trim();
-    const matchStd = trimmed.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
+    // Support nested brackets or standard [name](url)
+    const matchStd = trimmed.match(/^\[(.+)\]\((https?:\/\/[^\s)]+)\)$/i) || trimmed.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
     if (matchStd) return { name: matchStd[1].trim(), url: matchStd[2].trim() };
-    const matchRev = trimmed.match(/^\(([^)]+)\)\[([^\]]+)\]$/);
+    const matchRev = trimmed.match(/^\((https?:\/\/[^\s)]+)\)\[(.+)\]$/i) || trimmed.match(/^\(([^)]+)\)\[([^\]]+)\]$/);
     if (matchRev) return { name: matchRev[2].trim(), url: matchRev[1].trim() };
-    const matchInline = trimmed.match(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/);
+    const matchInline = trimmed.match(/\[(.+)\]\((https?:\/\/[^\s)]+)\)/i);
     if (matchInline) return { name: matchInline[1].trim(), url: matchInline[2].trim() };
     if (/^https?:\/\//i.test(trimmed)) {
       return { name: trimmed.replace(/^https?:\/\//, '').replace(/\/$/, ''), url: trimmed };

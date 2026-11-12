@@ -36,7 +36,12 @@ async function run() {
   console.log(`    - EpoCanvas: ${epocanvasAvatar}`);
   console.log(`    - Sonic: ${sonicAvatar}`);
 
-  // 1.2 确认“复制本站互链信息”在生产端彻底移除
+  // 1.2 严格校验友邻总数仅为 3 个，杜绝任何历史或幻觉数据
+  const friendCards = await page.locator('.friend-card').count();
+  assert.strictEqual(friendCards, 3, `Expected exactly 3 friends (EpoMail, EpoCanvas, Sonic), but found ${friendCards}`);
+  console.log(`  ✓ 生产端友邻卡片总数严格为 3 位 (EpoMail, EpoCanvas, Sonic)，无任何外部或编造数据`);
+
+  // 1.3 确认“复制本站互链信息”在生产端彻底移除
   const bodyText = await page.textContent('body');
   assert(!bodyText?.includes('复制本站互链信息'), 'Production must NOT contain "复制本站互链信息"');
   console.log('  ✓ 生产端已彻底剔除旧版“复制本站互链信息”冗余板块与按钮');
@@ -92,46 +97,85 @@ async function run() {
   assert(statusHtml.includes('JSON') || statusHtml.includes('json'), 'Missing JSON format');
   console.log('  ✓ 包含完整的站点定位、去中心化朋友圈雷达运行逻辑、多格式互链配置代码与交换公约');
 
-  // 2.1 验证 Google 手册风格 Markdown 嵌入式表单
-  console.log('  -> 检测生产端 Markdown 编译出的交互式表单组件...');
-  const embeddedForm = page.locator('.md-interactive-form');
-  await embeddedForm.waitFor({ state: 'visible', timeout: 10000 });
-  assert(await embeddedForm.count() > 0, 'Production must render .md-interactive-form');
+  // 2.1 验证 Office 协同收集表 (Spreadsheet Collection Table) 渲染
+  console.log('  -> 检测生产端 Markdown 编译出的 Office 协同收集表格组件 (.office-sheet-wrapper)...');
+  const sheetWrapper = page.locator('.office-sheet-wrapper');
+  await sheetWrapper.waitFor({ state: 'visible', timeout: 15000 });
+  assert(await sheetWrapper.count() > 0, 'Production must render .office-sheet-wrapper');
 
-  const badgeText = await page.locator('.md-form__badge').textContent();
-  console.log(`  ✓ 生产表单徽标: "${badgeText?.trim()}"`);
+  const badgeText = await page.locator('.sheet-badge--office').textContent();
+  console.log(`  ✓ 生产收集表徽标: "${badgeText?.trim()}"`);
 
-  const formTitle = await page.locator('.md-form__title').textContent();
-  console.log(`  ✓ 生产表单主标题: "${formTitle?.trim()}"`);
+  const sheetTable = page.locator('.office-sheet-table');
+  assert(await sheetTable.isVisible(), 'Production office sheet table must be visible');
 
-  // 2.2 在生产环境正文中实际填写并提交真实表单，测试全链路 D1 + TG 推送
-  console.log('  -> 在生产文章正文中提交真实端到端互链申请...');
-  const probeName = `E2E 生产验收探针 [${new Date().toISOString().substring(11, 19)}]`;
-  const probeUrl = 'https://audit.epocanvas.com';
+  // 2.2 验证表格初始数据行：严格仅 3 个官方品牌友邻
+  const rows = page.locator('.office-sheet-table tbody tr');
+  const initialRowCount = await rows.count();
+  assert.strictEqual(initialRowCount, 3, `Expected exactly 3 rows in initial sheet, found ${initialRowCount}`);
+  console.log(`  ✓ 生产端收集表格初始仅展示 3 个真实友邻 (EpoMail, EpoCanvas, Sonic)`);
+
+  // 2.3 验证表格各行中的 []() 外链渲染
+  const firstRowLink = page.locator('.office-sheet-table tbody tr:nth-child(1) a.sheet-link');
+  const linkHref = await firstRowLink.getAttribute('href');
+  const linkText = await firstRowLink.textContent();
+  assert.strictEqual(linkHref, 'https://mail.epocanvas.com');
+  console.log(`  ✓ 生产收集表已将 Markdown [EpoMail](https://mail.epocanvas.com) 编译为真实外链: ${linkText?.trim()} -> ${linkHref}`);
+
+  // 2.4 在生产环境收集表填表录入行中以 [名称](链接) 语法填入数据，测试全链路 D1 + TG 推送
+  console.log('  -> 在生产收集表录入行中以 [名称](链接) 语法填入数据并提交...');
+  const probeName = `E2E 生产实机验收站 [${new Date().toISOString().substring(11, 19)}]`;
+  const probeSiteLink = `[${probeName}](https://audit.epocanvas.com)`;
   const probeAvatar = 'https://blog.epocanvas.com/media/brands/default-brand.svg';
-  const probeDesc = '第二轮线上真实实机端到端验收：验证 D1 落盘与 Telegram 机器人实时通知';
+  const probeDesc = '第二轮线上真实实机端到端验收：验证 Office 收集表行追加、D1 持久化与 Telegram 机器人实时通知';
 
-  await page.locator('.md-interactive-form input[name="name"]').fill(probeName);
-  await page.locator('.md-interactive-form input[name="url"]').fill(probeUrl);
-  await page.locator('.md-interactive-form input[name="avatar"]').fill(probeAvatar);
-  await page.locator('.md-interactive-form textarea[name="desc"]').fill(probeDesc);
-  await page.locator('.md-interactive-form input[name="contact"]').fill('@shijianus_auditor');
+  const siteInput = page.locator('.input-sheet-site');
+  const previewEl = page.locator('.sheet-link-preview');
+  const avatarInput = page.locator('.input-sheet-avatar');
+  const descInput = page.locator('.input-sheet-desc');
+  const contactInput = page.locator('.input-sheet-contact');
+  const submitBtn = page.locator('.sheet-submit-btn');
+
+  // 输入 [专案名称](网址)
+  await siteInput.fill(probeSiteLink);
+  await page.waitForTimeout(300);
+
+  // 验证实时外联识别
+  assert(await previewEl.isVisible(), 'Link preview must appear when entering markdown link on production');
+  const previewText = await previewEl.textContent();
+  assert(previewText?.includes('audit.epocanvas.com'), `Preview mismatch on production: ${previewText}`);
+  console.log(`  ✓ 生产实时外联解析器成功捕获: "${previewText?.trim()}"`);
+
+  await avatarInput.fill(probeAvatar);
+  await descInput.fill(probeDesc);
+  await contactInput.fill('@shijianus_auditor');
 
   // 点击提交按钮
-  const submitBtn = page.locator('.md-interactive-form button[type="submit"]');
+  console.log('  -> 触发"📥 登记入表"提交至 Cloudflare Pages 边缘服务...');
   await submitBtn.click();
 
-  // 等待成功卡片展现
-  const successCard = page.locator('.md-interactive-form .md-form__success');
-  await successCard.waitFor({ state: 'visible', timeout: 15000 });
-  const successTitle = await page.locator('.md-interactive-form .md-form__success h4').textContent();
-  console.log(`  ✓ 生产端表单提交成功并就地切换至成功状态卡: "${successTitle?.trim()}"`);
+  // 等待收集表格行追加至 4 行
+  await page.waitForFunction(() => document.querySelectorAll('.office-sheet-table tbody tr').length >= 4, { timeout: 15000 });
+  const updatedRowCount = await page.locator('.office-sheet-table tbody tr').count();
+  assert.strictEqual(updatedRowCount, 4, `Table must now have 4 rows after submission, got ${updatedRowCount}`);
+  console.log(`  ✓ 生产收集表格实时追加新数据行，当前总行数: ${updatedRowCount}`);
 
-  // 测试“再次填写”一键重置
-  await page.locator('.md-interactive-form .md-form__reset-btn').click();
-  await page.waitForTimeout(300);
-  assert(await page.locator('.md-interactive-form input[name="name"]').isVisible(), 'Form must reset and show inputs');
-  console.log('  ✓ 生产端“再次填写”按钮成功重置表单');
+  // 验证新插入行包含外链
+  const newRowLink = page.locator('.office-sheet-table tbody tr:nth-child(4) a.sheet-link');
+  const newHref = await newRowLink.getAttribute('href');
+  assert.strictEqual(newHref, 'https://audit.epocanvas.com');
+  console.log(`  ✓ 生产端新插入行成功解析为真实可点击外链: -> ${newHref}`);
+
+  // 验证成功横幅展示
+  const successBanner = page.locator('.sheet-success-banner');
+  assert(await successBanner.isVisible(), 'Success banner must be visible on production');
+  const bannerText = await successBanner.textContent();
+  console.log(`  ✓ 生产收集表成功横幅展示: "${bannerText?.trim()}"`);
+
+  // 验证输入框已清空
+  const siteValAfter = await siteInput.inputValue();
+  assert.strictEqual(siteValAfter, '', 'Input field should be reset after submission');
+  console.log('  ✓ 生产端录入行自动重置就绪');
 
   await browser.close();
 
