@@ -148,8 +148,8 @@ Der folgende Abschnitt prüft hauptsächlich, ob die GFM‑Erweiterungen vollst�
 - [x] Tag‑ und Kategorien‑Aggregation  
 - [x] Verzeichnis‑Ebenen‑Korrektur  
 - [x] Struktur‑Überarbeitung für Spenden und Teilen  
-- [ ] Integration echter Remote‑Kommentar‑Daten  
-- [ ] Ergänzung weiterer Anzhi‑Yu‑spezifischer Inhalts‑Tags
+- [x] Integration echter Remote‑Kommentar‑Daten  
+- [x] Ergänzung weiterer Anzhi‑Yu‑spezifischer Inhalts‑Tags
 
 ### Tabelle
 

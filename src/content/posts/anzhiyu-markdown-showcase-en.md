@@ -149,8 +149,8 @@ The following set of content primarily verifies whether GFM extensions have been
 - [x] Tag and category aggregation
 - [x] Table of Contents hierarchy correction
 - [x] Tipping and sharing structure overhaul
-- [ ] Integrate real remote comment data
-- [ ] Supplement more Anzhiyu-style content tags
+- [x] Integrate real remote comment data
+- [x] Supplement more Anzhiyu-style content tags
 
 ### Table
 

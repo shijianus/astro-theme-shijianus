@@ -280,7 +280,7 @@ export default defineConfig({
 - [x] Inject Anzhiyu's 9 styles of Alert notification cards
 - [x] Implement frosted glass password modal unlock for partially encrypted content
 - [x] Add Gaussian blur and mosaic masks for text and images
-- [ ] Support more third-party embedded components (continuously iterating)
+- [x] Support more third-party embedded components (continuously iterating)
 
 ### 2. Enhanced Adaptive Tables (Fixed Table Layout)
 

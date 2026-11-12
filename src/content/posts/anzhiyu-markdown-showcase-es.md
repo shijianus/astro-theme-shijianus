@@ -148,8 +148,8 @@ El siguiente conjunto de contenido verifica principalmente si la extensión GFM 
 - [x] Agregación de etiquetas y categorías
 - [x] Corrección de la jerarquía de la tabla de contenidos
 - [x] Reestructuración de la estructura de propinas y compartir
-- [ ] Integración de datos de comentarios remotos reales
-- [ ] Complementar con más etiquetas de contenido estilo Anzhiyu
+- [x] Integración de datos de comentarios remotos reales
+- [x] Complementar con más etiquetas de contenido estilo Anzhiyu
 
 ### Tabla
 

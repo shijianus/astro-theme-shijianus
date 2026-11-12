@@ -235,30 +235,49 @@ const { slug } = Astro.props;
         .catch(() => {});
     }
 
-    // 1. Auto-hide when #post-comment enters viewport
-    const postCommentTarget = document.getElementById('post-comment');
-    if (postCommentTarget && 'IntersectionObserver' in window) {
-      const io = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((entry) => {
-            dom.setAttribute('data-comment-intersecting', entry.isIntersecting ? 'true' : 'false');
-          });
-        },
-        { root: null, rootMargin: '0px', threshold: 0.05 }
-      );
-      io.observe(postCommentTarget);
-    }
+    const bindViewportAvoidance = () => {
+      // 1. Auto-hide when #post-comment enters viewport
+      const postCommentTarget = document.getElementById('post-comment');
+      if (postCommentTarget) {
+        const checkCommentInViewport = () => {
+          const rect = postCommentTarget.getBoundingClientRect();
+          const inView = rect.top < window.innerHeight && rect.bottom > 0;
+          dom.setAttribute('data-comment-intersecting', inView ? 'true' : 'false');
+        };
+        checkCommentInViewport();
+        window.addEventListener('scroll', checkCommentInViewport, { passive: true });
+        window.addEventListener('resize', checkCommentInViewport, { passive: true });
 
-    // 2. Auto-hide when #pagination.pagination-post becomes visible so they never overlap
-    const paginationEl = document.getElementById('pagination');
-    if (paginationEl && 'MutationObserver' in window) {
-      const syncPaginationState = () => {
-        const isVis = paginationEl.classList.contains('is-visible');
-        dom.setAttribute('data-pagination-visible', isVis ? 'true' : 'false');
-      };
-      syncPaginationState();
-      const mo = new MutationObserver(syncPaginationState);
-      mo.observe(paginationEl, { attributes: true, attributeFilter: ['class'] });
+        if ('IntersectionObserver' in window) {
+          const io = new IntersectionObserver(
+            (entries) => {
+              entries.forEach((entry) => {
+                dom.setAttribute('data-comment-intersecting', entry.isIntersecting ? 'true' : 'false');
+              });
+            },
+            { root: null, rootMargin: '0px', threshold: 0.01 }
+          );
+          io.observe(postCommentTarget);
+        }
+      }
+
+      // 2. Auto-hide when #pagination.pagination-post becomes visible so they never overlap
+      const paginationEl = document.getElementById('pagination');
+      if (paginationEl && 'MutationObserver' in window) {
+        const syncPaginationState = () => {
+          const isVis = paginationEl.classList.contains('is-visible');
+          dom.setAttribute('data-pagination-visible', isVis ? 'true' : 'false');
+        };
+        syncPaginationState();
+        const mo = new MutationObserver(syncPaginationState);
+        mo.observe(paginationEl, { attributes: true, attributeFilter: ['class'] });
+      }
+    };
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', bindViewportAvoidance, { once: true });
+    } else {
+      bindViewportAvoidance();
     }
   })();
 </script>

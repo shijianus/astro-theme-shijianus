@@ -280,7 +280,7 @@ export default defineConfig({
 - [x] Inyección de 9 estilos de tarjetas de notificación de alerta An Zhi Yu
 - [x] Implementación de desbloqueo de contenido cifrado parcial con ventana emergente de contraseña de efecto cristal esmerilado
 - [x] Adición de desenfoque gaussiano y máscara de mosaico para texto e imágenes
-- [ ] Soporte para más componentes incrustados de terceros (en iteración continua)
+- [x] Soporte para más componentes incrustados de terceros (en iteración continua)
 
 ### 2. Tablas Adaptativas Mejoradas (Fixed Table Layout)
 

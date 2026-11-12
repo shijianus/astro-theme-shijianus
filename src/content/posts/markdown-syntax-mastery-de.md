@@ -280,7 +280,7 @@ export default defineConfig({
 - [x] Integration von 9 Anzhiyu-Stil-Alert-Benachrichtigungskarten
 - [x] Implementierung der Entsperrung von lokal verschlüsselten Inhalten über ein Milchglas-Passwort-Popup
 - [x] Hinzufügen von Gaußschem Weichzeichner und Mosaikmasken für Text und Bilder
-- [ ] Unterstützung weiterer Drittanbieter-Einbettungskomponenten (in kontinuierlicher Iteration)
+- [x] Unterstützung weiterer Drittanbieter-Einbettungskomponenten (in kontinuierlicher Iteration)
 
 ### 2. Verbesserte adaptive Tabellen (Fixed Table Layout)
 

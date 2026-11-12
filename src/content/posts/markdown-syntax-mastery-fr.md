@@ -280,7 +280,7 @@ export default defineConfig({
 - [x] Injection de 9 styles de cartes d'alerte An Zhiyu
 - [x] Implémentation du déverrouillage par fenêtre modale de mot de passe en verre dépoli pour le contenu chiffré local
 - [x] Ajout de flou gaussien et de masques mosaïques pour le texte et les images
-- [ ] Prise en charge de plus de composants intégrés tiers (en itération continue)
+- [x] Prise en charge de plus de composants intégrés tiers (en iteración continue)
 
 ### 2. Tableaux adaptatifs améliorés (Fixed Table Layout)
 

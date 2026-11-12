@@ -298,7 +298,7 @@ npm run preview -- --host 0.0.0.0
   </div>
 </div>
 
-### Hexo 安知鱼原生短代码标签直通兼容压测
+**Hexo 安知鱼原生短代码标签直通兼容压测**
 
 除了标准 GFM 与语义化 HTML，本引擎还通过 AST 编译插件实现了对 **Hexo-Theme-Anzhiyu 原生 `{% tag %}` 短代码语法** 的 100% 向下兼容直通渲染：
 

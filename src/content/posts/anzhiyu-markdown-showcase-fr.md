@@ -148,8 +148,8 @@ Le groupe suivant vérifie principalement que les extensions GFM sont entièreme
 - [x] Agrégation des tags et des catégories
 - [x] Correction des niveaux de la table des matières
 - [x] Réorganisation des structures de dons et de partage
-- [ ] Intégration de données de commentaires distants réelles
-- [ ] Ajout de davantage de balises de contenu à la manière d’AnZhiYu
+- [x] Intégration de données de commentaires distants réelles
+- [x] Ajout de davantage de balises de contenu à la manière d’AnZhiYu
 
 ### Tableau
 
