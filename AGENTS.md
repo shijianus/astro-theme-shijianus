@@ -7028,4 +7028,13 @@
   2. Playwright 真实浏览器端到端测试覆盖：
      - Scenario 1：`/friends/` 品牌专属 SVG 加载、卡片总数严格为 3 位、无“复制本站互链信息”、点击“申请互链”弹出模态弹窗及 Escape 关闭；
      - Scenario 2：`/status/` 规范指南结构、Office 收集表格渲染、初始 3 行 `[name](url)` 外链解析、录入行输入 `[星际漫游者测试站](https://explorer.example.com)` 触发实时外联识别、点击提交后表格行即时追加为 4 行并展示带外部跳转的外链、成功横幅展示与输入框重置，全部 100% 绿灯通过。
+- [x] **Cloudflare Pages 全量边缘部署与第二轮线上真实实机 E2E 闭环验收 (`scripts/verify-production-friends-live.mjs`, `78a295c`, `ea9f822`)**：
+  1. 成功向 `shijianus-blog`（`https://blog.epocanvas.com`）与 `shijianus-github-io`（镜像端）发布最新构建制品并同步至 GitHub 双远端；
+  2. 真实无头浏览器对生产域名进行第二轮端到端验收：
+     - 生产 `/friends/` HTTP 200 OK，卡片严格为 3 位（EpoMail、EpoCanvas、Sonic），各持独立 SVG；弹窗开闭顺畅；
+     - 生产 `/status/` HTTP 200 OK，成功渲染 Office 协同收集表格，初始 3 行外链全部解析就绪；
+     - 在生产收集表录入行中填入 `[E2E 生产实机验收站 [06:50:16]](https://audit.epocanvas.com)`，实时外联识别成功捕获并就地解析预览；
+     - 点击“📥 登记入表”成功向生产 Cloudflare Pages Functions 发起提交，表格实时追加第 04 行并完成外链与成功横幅渲染；
+     - 审查 Cloudflare D1 生产数据库 `DB` (`a18b4c38-5da0-415e-a7de-ee3aee0b856f`)，成功检索出刚落盘的持久化记录并完成闭环验证。
+
 
