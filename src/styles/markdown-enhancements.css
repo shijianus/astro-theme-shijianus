@@ -5754,4 +5754,320 @@ psw.is-visible {
   margin-top: 0.5rem;
 }
 
+/* ==========================================================================
+   Office 收集表 · Google 声明规范与协同表格样式
+   ========================================================================== */
+.office-sheet-wrapper {
+  margin: 2.2rem 0;
+  border-radius: 10px;
+  border: 1px solid var(--border-color, rgba(66, 90, 239, 0.18));
+  background: var(--card-bg, #ffffff);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+:root[data-theme='dark'] .office-sheet-wrapper {
+  background: rgba(22, 24, 30, 0.95);
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.35);
+}
+
+.sheet-header-ribbon {
+  padding: 1.25rem 1.5rem 1rem;
+  background: linear-gradient(135deg, rgba(66, 90, 239, 0.05) 0%, rgba(16, 185, 129, 0.04) 100%);
+  border-bottom: 1px solid var(--border-color, rgba(66, 90, 239, 0.12));
+}
+
+:root[data-theme='dark'] .sheet-header-ribbon {
+  background: linear-gradient(135deg, rgba(66, 90, 239, 0.12) 0%, rgba(16, 185, 129, 0.08) 100%);
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+
+.sheet-badge-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.6rem;
+}
+
+.sheet-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.2rem 0.65rem;
+  border-radius: 4px;
+}
+
+.sheet-badge--office {
+  background: rgba(16, 185, 129, 0.12);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
+.sheet-badge--link {
+  background: rgba(66, 90, 239, 0.1);
+  color: var(--theme-main, #425aef);
+  border: 1px solid rgba(66, 90, 239, 0.25);
+}
+
+.sheet-badge--live {
+  background: rgba(245, 158, 11, 0.12);
+  color: #d97706;
+  border: 1px solid rgba(245, 158, 11, 0.25);
+}
+
+.sheet-title {
+  margin: 0 0 0.35rem 0;
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--font-color);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sheet-desc {
+  margin: 0;
+  font-size: 0.88rem;
+  line-height: 1.55;
+  color: var(--text-secondary, #64748b);
+}
+
+.sheet-table-scroll {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.office-sheet-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.88rem;
+  margin: 0 !important;
+}
+
+.office-sheet-table th {
+  background: rgba(66, 90, 239, 0.04);
+  color: var(--font-color);
+  font-weight: 750;
+  padding: 0.75rem 1rem;
+  border-bottom: 2px solid var(--border-color, rgba(66, 90, 239, 0.15));
+  border-right: 1px solid var(--border-color, rgba(66, 90, 239, 0.08));
+  white-space: nowrap;
+}
+
+:root[data-theme='dark'] .office-sheet-table th {
+  background: rgba(255, 255, 255, 0.03);
+  border-bottom-color: rgba(255, 255, 255, 0.12);
+  border-right-color: rgba(255, 255, 255, 0.06);
+}
+
+.office-sheet-table td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border-color, rgba(66, 90, 239, 0.08));
+  border-right: 1px solid var(--border-color, rgba(66, 90, 239, 0.06));
+  vertical-align: middle;
+  color: var(--font-color);
+}
+
+:root[data-theme='dark'] .office-sheet-table td {
+  border-bottom-color: rgba(255, 255, 255, 0.06);
+  border-right-color: rgba(255, 255, 255, 0.04);
+}
+
+.office-sheet-table tbody tr:hover {
+  background: rgba(66, 90, 239, 0.03);
+}
+
+:root[data-theme='dark'] .office-sheet-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.sheet-col-no {
+  font-family: var(--font-mono, monospace);
+  font-weight: 700;
+  color: var(--text-secondary, #64748b);
+  text-align: center;
+  width: 50px;
+}
+
+.sheet-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--theme-main, #425aef);
+  font-weight: 700;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.sheet-link:hover {
+  text-decoration: underline;
+  transform: translateX(1px);
+}
+
+.sheet-link svg {
+  width: 12px;
+  height: 12px;
+  opacity: 0.8;
+}
+
+.sheet-avatar-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sheet-avatar-img {
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  object-fit: contain;
+  background: rgba(66, 90, 239, 0.05);
+  padding: 2px;
+  border: 1px solid rgba(66, 90, 239, 0.15);
+}
+
+.office-sheet-table code {
+  font-size: 0.78rem;
+  padding: 0.15rem 0.35rem;
+  border-radius: 3px;
+  background: rgba(66, 90, 239, 0.08);
+  color: var(--font-color);
+}
+
+/* 收集表协同录入行 (Inline Entry Row) */
+.office-sheet-table tfoot {
+  background: linear-gradient(90deg, rgba(66, 90, 239, 0.03), rgba(16, 185, 129, 0.03));
+  border-top: 2px solid var(--border-color, rgba(66, 90, 239, 0.2));
+}
+
+:root[data-theme='dark'] .office-sheet-table tfoot {
+  background: rgba(255, 255, 255, 0.02);
+  border-top-color: rgba(255, 255, 255, 0.12);
+}
+
+.sheet-entry-tag {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 750;
+  padding: 3px 6px;
+  border-radius: 4px;
+  background: var(--theme-main, #425aef);
+  color: #fff;
+  white-space: nowrap;
+}
+
+.sheet-cell-input {
+  width: 100%;
+  min-width: 140px;
+  padding: 0.45rem 0.65rem;
+  border-radius: 5px;
+  border: 1px solid var(--border-color, rgba(66, 90, 239, 0.25));
+  background: #ffffff;
+  color: var(--font-color);
+  font-size: 0.85rem;
+  font-family: inherit;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+:root[data-theme='dark'] .sheet-cell-input {
+  background: rgba(16, 18, 24, 0.85);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.sheet-cell-input:focus {
+  border-color: var(--theme-main, #425aef);
+  box-shadow: 0 0 0 2px rgba(66, 90, 239, 0.2);
+}
+
+.sheet-link-preview {
+  margin-top: 4px;
+  font-size: 0.75rem;
+  color: #10b981;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.sheet-submit-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0.45rem 1rem;
+  height: 34px;
+  background: #10b981;
+  color: #ffffff;
+  font-size: 0.82rem;
+  font-weight: 750;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+  transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.sheet-submit-btn:hover {
+  background: #059669;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+}
+
+.sheet-submit-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.sheet-footer-feedback {
+  padding: 0.75rem 1.5rem;
+  border-top: 1px solid var(--border-color, rgba(66, 90, 239, 0.1));
+  background: rgba(66, 90, 239, 0.02);
+}
+
+.sheet-alert {
+  padding: 0.5rem 0.85rem;
+  border-radius: 5px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.sheet-alert.is-error {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.25);
+}
+
+.sheet-success-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0.6rem 0.9rem;
+  border-radius: 5px;
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  color: #10b981;
+  font-size: 0.84rem;
+  font-weight: 650;
+}
+
+@keyframes sheetRowHighlight {
+  0% { background: rgba(16, 185, 129, 0.25); }
+  100% { background: transparent; }
+}
+
+.office-sheet-table tr.is-highlight {
+  animation: sheetRowHighlight 2.5s ease-out forwards;
+}
+
 

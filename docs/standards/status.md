@@ -14,7 +14,7 @@ mindmap: false
 draft: false
 lang: "zh-Hant"
 i18nKey: "ees-status-topology"
-version: "v2.0.0"
+version: "v2.0.1"
 ---
 
 # EpoCanvas 友邻生态公约与系统状态指南
@@ -128,101 +128,75 @@ EpoCanvas 的友邻系统不仅仅是一份静态的超链接清单，而是一�
 
 ---
 
-## 4. 嵌入式交互表单：申请互链与登记
+## 4. 嵌入式协同收集表：友邻互链登记与申报 (Office 收集表 · 支持 ()[] 外联)
 
 > [!TIP]
-> **Google 手册风格的交互体验**：参考 Google Developer Manuals 与现代云端产品文档的沉浸式表单实践，您无需离开当前文档，即可直接在下方内嵌表单中完成互链申请。
+> **Office 收集表 · Google 声明规范**：参考 Google Developer Manuals 与现代云端 Office 365 协同收集表实践，友邻互链登记采用真实的**数据收集表格 (Spreadsheet Table)** 架构呈现，而非传统的纵向卡片弹窗。
 >
-> 提交的数据不仅会被校验，还将**持久化存入 Cloudflare D1 边缘数据库**，并通过 **Telegram Bot 即刻推送至站长移动端**，确保极速受理！
+> 读者可直接在下方表格底部的“填表”录入行中，以 `[站点名称](https://链接)` 的 Markdown 原生外链格式提交申报。提交后数据将**就地追加至表格行中**、**持久化存入 Cloudflare D1 边缘数据库**，并通过 **Telegram Bot 即刻推送至站长手机**！
 
-```form
-id: friend-link-apply
-title: 友邻互链申请与快速登记
-description: 请完整填写您的站点信息。提交后系统将通过边缘 D1 数据库记录并向站长 Telegram 发送实时审批通知。
+```sheet
+id: friend-link-collection-sheet
+type: sheet
+title: EpoCanvas 友邻互链协同收集表 (Office 收集表)
+badge: 📊 Office 风格协同收集表 · Google 声明规范
+description: 遵循 Google 手册声明规范与 Office 协同收集表标准。支持在录入行通过 [站点名称](链接) 语法快速申报，提交后实时插入下方数据表格，并持久化记录至 Cloudflare D1 边缘数据库与 Telegram 审批中枢。
 target: /api/friends/apply
-submitText: 🚀 提交互链申请并通知站长
-successTitle: 互链申请已送达！
-successMessage: 您的互链申请已成功入库并推送到站长 Telegram。审核通过后将即时完成双向添加，感谢您的连接！
-fields:
-  - id: name
-    label: 站点名称
-    type: text
-    placeholder: 例如：极客小窝 / 时代画布
-    required: true
-  - id: url
-    label: 站点链接
-    type: url
-    placeholder: https://example.com
-    required: true
-  - id: avatar
-    label: 头像 / 图标链接
-    type: url
-    placeholder: https://example.com/avatar.png
-    required: true
-  - id: category
-    label: 意向分类
-    type: select
-    options:
-      - 核心友邻 · 技术先锋
-      - 灵感花园 · 宝藏博客
-      - 漫游行者 · 生活思索
-      - 品牌矩阵 · 原生生态
-  - id: desc
-    label: 站点描述
-    type: textarea
-    placeholder: 一句话介绍您的站点定位与内容特色...
-    required: true
-  - id: contact
-    label: 联系方式 / 附言 (选填)
-    type: text
-    placeholder: 您的邮箱或 Telegram @handle，方便审核时与您取得联系
+initialRows:
+  - no: "01"
+    name: "[EpoMail](https://mail.epocanvas.com)"
+    avatar: "/media/brands/epomail.svg"
+    desc: "极简无干扰的端到端加密极客邮箱服务。"
+    contact: "@shijianus"
+    status: "🟢 官方生态"
+  - no: "02"
+    name: "[EpoCanvas](https://epocanvas.com)"
+    avatar: "/media/brands/epocanvas.svg"
+    desc: "時代画布：面向现代独立构建者的数字创作工坊与设计系统。"
+    contact: "@shijianus"
+    status: "🟢 官方生态"
+  - no: "03"
+    name: "[Sonic](https://sonic.epocanvas.com)"
+    avatar: "/media/brands/sonic.svg"
+    desc: "极客音频工作站：双耳节拍与 Lo-Fi 沉浸心流白噪音引擎。"
+    contact: "@shijianus"
+    status: "🟢 官方生态"
 ```
 
 ---
 
-## 5. 文档嵌入表单功能：自定义表单扩展指南
+## 5. 协同收集表与文档嵌入规范：Google 手册风格声明与 Office 收集表扩展指南
 
-传统技术博客与文档系统的痛点在于“单向传递”——读者只能阅读，无法反馈或回报结构化数据。EpoCanvas 正式引入了**Markdown 原生自定义表单功能**。
+传统技术博客与文档系统的痛点在于“单向传递”——读者只能阅读，无法反馈或回报结构化数据。EpoCanvas 正式引入了**原生协同收集表 (Office Collection Sheet) 与自定义表单引擎**。
 
-### 5.1 表单与普通文章的区别
-普通的 Markdown 代码块仅用于代码高亮展示，而 `form` 语法的代码块被系统赋予了生命力：
-1. **真实数据收集**：浏览器端将 YAML 配置就地编译为交互式 HTML5 表单，支持必填校验与类型检查；
-2. **持久化落盘**：表单回报通过 `/api/forms/submit` 或专有端点写入 Cloudflare D1 边缘数据库表 `form_submissions`，管理员可随时登入后台审查；
-3. **即时 Telegram 告警**：即使不配置复杂的数据库后台，表单系统也可以纯依赖 Telegram Bot 机器人，将用户填写的表单内容实时格式化为富文本 HTML 消息推送给站长，手机轻响即知新动态。
+### 5.1 协同收集表与普通文章/弹窗的区别
+1. **真实表格 (Table / Spreadsheet) 呈现**：区别于普通表单仅在纵向堆叠输入框，收集表采用现代 Office 365 / Google Sheets 风格的网格表格渲染，每一条申请即为表格中的一行数据；
+2. **深度支持 `()[]` 式 Markdown 外联语法**：表格输入行原生支持 `[博客名称](https://站点链接)` 语法，浏览器端实时编译并解析出名称与超链接，实现一目了然的可视化外链跳转；
+3. **边缘数据持久化落盘**：收集表回报通过 `/api/friends/apply` 或 `/api/forms/submit` 写入 Cloudflare D1 边缘数据库表 `form_submissions`，管理员可随时登入数据库后台检视与导出；
+4. **即时 Telegram 机器人审批**：即使在无后端数据库环境下，表单与收集表也深度集成了本地 Telegram Bot 机制，当访客提交互链或反馈后，机器人会在 1 秒内将带有格式化 HTML 的富文本通知推送到站长 Telegram，并标注太平洋时间 (PST) 与客户端归属地。
 
-### 5.2 如何在 Markdown 中编写自定义表单
-您只需在任何 `.md` 文章中使用 ````form ... ```` 代码块即可：
+### 5.2 如何在 Markdown 中声明自定义收集表与表单
+您只需在任何 `.md` 文章中使用 ````sheet ... ```` 或 ````form ... ```` 代码块即可：
 
 ````markdown
-```form
-id: feedback-form-2026
-title: 读者体验与功能反馈表单
-description: 告诉我们您对新功能的看法，我们将认真阅读每一条建议。
+```sheet
+id: custom-tech-radar-sheet
+type: sheet
+title: 开源技术雷达收录收集表
+badge: 📊 Office 风格收集表 · Google 声明规范
+description: 提交您推荐的开源技术专案，支持 [专案名称](Github链接) 外联语法。
 target: /api/forms/submit
-submitText: ✉️ 发送我的建议
-fields:
-  - id: name
-    label: 您的称呼
-    type: text
-    placeholder: 例如：张同学
-    required: true
-  - id: rating
-    label: 整体满意度
-    type: select
-    options:
-      - 🌟🌟🌟🌟🌟 非常满意
-      - 🌟🌟🌟🌟 比较满意
-      - 🌟🌟🌟 一般
-      - 🌟 需要改进
-  - id: message
-    label: 建议详情
-    type: textarea
-    placeholder: 写下您宝贵的建议或遇到的问题...
-    required: true
+initialRows:
+  - no: "01"
+    name: "[Astro](https://astro.build)"
+    avatar: "https://astro.build/favicon.svg"
+    desc: "专注于内容驱动型网站的新一代前端 Web 框架。"
+    contact: "@withastro"
+    status: "🟢 核心基座"
 ```
 ````
 
-该功能无需重复造轮子，无缝兼容标准 Markdown 语法，纯静态部署时平滑降级，启用 JS 时全量激活现代化 SaaS 级表单体验。
+该功能无需重复造轮子，无缝兼容标准 Markdown 语法，纯静态构建时平滑降级，启用 JS 时全量激活现代 Office 级实时协作收集体验。
 
 ---
 

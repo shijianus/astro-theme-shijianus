@@ -768,6 +768,20 @@ const formLang = {
   patterns: [{ include: 'source.yaml' }],
 };
 
+const sheetLang = {
+  name: 'sheet',
+  scopeName: 'source.sheet',
+  displayName: 'Sheet',
+  patterns: [{ include: 'source.yaml' }],
+};
+
+const collectionTableLang = {
+  name: 'collection-table',
+  scopeName: 'source.collection-table',
+  displayName: 'CollectionTable',
+  patterns: [{ include: 'source.yaml' }],
+};
+
 const markmapLang = {
   name: 'markmap',
   scopeName: 'source.markmap',
@@ -818,7 +832,7 @@ export default defineConfig({
         light: 'github-light',
         dark: 'github-dark-dimmed',
       },
-      langs: [mindmapLang, markmapLang, formLang],
+      langs: [mindmapLang, markmapLang, formLang, sheetLang, collectionTableLang],
       transformers: [
         {
           pre(node) {
@@ -826,9 +840,9 @@ export default defineConfig({
             if (lang === 'mindmap' || lang === 'markmap') {
               node.properties['data-language'] = lang;
               node.properties['class'] = ((node.properties['class'] || '') + ` language-${lang} mindmap-block`).trim();
-            } else if (lang === 'form' || lang === 'yaml:form') {
-              node.properties['data-language'] = 'form';
-              node.properties['class'] = ((node.properties['class'] || '') + ` language-form form-block`).trim();
+            } else if (lang === 'form' || lang === 'yaml:form' || lang === 'sheet' || lang === 'collection-table' || lang === 'collection-sheet') {
+              node.properties['data-language'] = lang;
+              node.properties['class'] = ((node.properties['class'] || '') + ` language-${lang} form-block sheet-block`).trim();
             }
           },
         },

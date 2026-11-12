@@ -41,9 +41,9 @@ async function run() {
     const page = await context.newPage();
 
     // ----------------------------------------------------
-    // Scenario 1: /friends/ 友邻主页审计
+    // Scenario 1: /friends/ 友邻主页审计 (严格仅 3 个友邻)
     // ----------------------------------------------------
-    console.log('▶ [Scenario 1] 审计 /friends/ 页面品牌头像区分与互链弹窗交互...');
+    console.log('▶ [Scenario 1] 审计 /friends/ 页面品牌头像区分、严格 3 个友邻与互链弹窗交互...');
     await page.goto(`${BASE_URL}/friends/`, { waitUntil: 'networkidle' });
 
     // 1.1 品牌头像校验
@@ -60,17 +60,22 @@ async function run() {
     console.log(`    - EpoCanvas: ${epocanvasAvatar}`);
     console.log(`    - Sonic: ${sonicAvatar}`);
 
-    // 1.2 "复制本站互链信息"已彻底删除
+    // 1.2 严格校验友邻总数仅为 3 个，杜绝任何历史或幻觉数据
+    const friendCards = await page.locator('.friend-card').count();
+    assert.strictEqual(friendCards, 3, `Expected exactly 3 friends (EpoMail, EpoCanvas, Sonic), but found ${friendCards}`);
+    console.log(`  ✓ 页面友邻卡片总数严格为 3 位 (EpoMail, EpoCanvas, Sonic)，无任何编造`);
+
+    // 1.3 "复制本站互链信息"已彻底删除
     const bodyText = await page.textContent('body');
     assert(!bodyText?.includes('复制本站互链信息'), 'Page must NOT contain "复制本站互链信息"');
     console.log('  ✓ 页面已彻底移除"复制本站互链信息"按钮及说明');
 
-    // 1.3 存在指向 /status/ 的互链规范与生态状态按钮
+    // 1.4 存在指向 /status/ 的互链规范与生态状态按钮
     const statusLink = page.locator('a[href="/status/"]').first();
     assert(await statusLink.count() > 0, 'Missing link to /status/');
     console.log('  ✓ 页面提供"互链规范与生态状态"直达按钮 (/status/)');
 
-    // 1.4 "申请互链" 弹窗化交互
+    // 1.5 "申请互链" 弹窗化交互
     const openModalBtn = page.locator('#btn-open-apply-modal');
     assert(await openModalBtn.isVisible(), '#btn-open-apply-modal must be visible');
     
@@ -87,7 +92,7 @@ async function run() {
     assert(hasIsOpen, 'Modal must have class is-open after click');
     console.log('  ✓ 弹窗成功弹出 (激活 .is-open 状态，无缝淡入居中展示)');
 
-    // 1.5 验证弹窗表单字段与交互
+    // 1.6 验证弹窗表单字段与交互
     const inputName = page.locator('#modal-apply-name');
     const inputUrl = page.locator('#modal-apply-url');
     const inputAvatar = page.locator('#modal-apply-avatar');
@@ -99,7 +104,7 @@ async function run() {
     assert(await inputDesc.isVisible(), 'Desc field missing in modal');
     console.log('  ✓ 弹窗表单包含完整必填项（站点名称、站点链接、头像、分类、简介、联系方式）');
 
-    // 1.6 测试 Escape 按键关闭弹窗
+    // 1.7 测试 Escape 按键关闭弹窗
     console.log('  -> 测试按下 Escape 键...');
     await page.keyboard.press('Escape');
     await page.waitForTimeout(300);
@@ -108,9 +113,9 @@ async function run() {
     console.log('  ✓ 按下 Escape 键成功关闭弹窗');
 
     // ----------------------------------------------------
-    // Scenario 2: /status/ 友邻生态公约与系统状态完整文档审计
+    // Scenario 2: /status/ 友邻生态指南与 Office 协同收集表 (支持 []() 外联)
     // ----------------------------------------------------
-    console.log('\n▶ [Scenario 2] 审计 /status/ 友邻生态指南与 Google 手册风格嵌入式表单...');
+    console.log('\n▶ [Scenario 2] 审计 /status/ 友邻生态指南与 Office 协同收集表 (支持 []() 外联)...');
     await page.goto(`${BASE_URL}/status/`, { waitUntil: 'networkidle' });
 
     const statusTitle = await page.locator('h1').first().textContent();
@@ -127,43 +132,60 @@ async function run() {
     assert(content.includes('互链交换公约') || content.includes('互鏈交換公約'), 'Missing guild rules');
     console.log('  ✓ 包含详尽的站点架构、朋友圈雷达机制、完整本站互链元信息（YAML/JSON/HTML/MD）与交换公约');
 
-    // 2.1 验证 Google 手册风格的嵌入式交互表单 (Markdown Embedded Form)
-    console.log('  -> 正在检测由 Markdown ```form 渲染出的可交互表单组件...');
-    const embeddedForm = page.locator('.md-interactive-form');
-    await embeddedForm.waitFor({ state: 'visible', timeout: 5000 });
-    assert(await embeddedForm.count() > 0, 'Embedded form (.md-interactive-form) must be rendered in DOM');
+    // 2.1 验证 Office 协同收集表 (Spreadsheet Collection Table)
+    console.log('  -> 正在检测由 Markdown 渲染出的 Office 收集表格组件 (.office-sheet-wrapper)...');
+    const sheetWrapper = page.locator('.office-sheet-wrapper');
+    await sheetWrapper.waitFor({ state: 'visible', timeout: 5000 });
+    assert(await sheetWrapper.count() > 0, 'Office sheet wrapper (.office-sheet-wrapper) must be rendered in DOM');
 
-    const badgeText = await page.locator('.md-form__badge').textContent();
-    assert(badgeText?.includes('Google Manuals') || badgeText?.includes('表单') || badgeText?.includes('表單'), `Badge unexpected: ${badgeText}`);
-    console.log(`  ✓ 交互表单徽标渲染成功: "${badgeText.trim()}"`);
+    const badgeText = await page.locator('.sheet-badge--office').textContent();
+    assert(badgeText?.includes('Office') || badgeText?.includes('Google'), `Badge unexpected: ${badgeText}`);
+    console.log(`  ✓ 收集表徽标渲染成功: "${badgeText.trim()}"`);
 
-    const formTitle = await page.locator('.md-form__title').textContent();
-    assert(formTitle?.includes('友邻互链') || formTitle?.includes('友鄰互鏈') || formTitle?.includes('申请') || formTitle?.includes('申請'), `Form title unexpected: ${formTitle}`);
-    console.log(`  ✓ 交互表单主标题渲染成功: "${formTitle.trim()}"`);
+    const sheetTable = page.locator('.office-sheet-table');
+    assert(await sheetTable.isVisible(), 'Office sheet table must be visible');
 
-    // 2.2 验证表单真实字段渲染
-    const formInputs = await page.locator('.md-interactive-form input, .md-interactive-form select, .md-interactive-form textarea').count();
-    assert(formInputs >= 5, `Expected at least 5 form fields, found: ${formInputs}`);
-    console.log(`  ✓ 成功将 YAML 表单配置转换为 ${formInputs} 个原生 HTML5 响应式字段`);
+    // 2.2 验证表格初始数据行：严格仅 3 个友邻
+    const rows = page.locator('.office-sheet-table tbody tr');
+    const initialRowCount = await rows.count();
+    assert.strictEqual(initialRowCount, 3, `Expected exactly 3 rows in initial sheet, found ${initialRowCount}`);
+    console.log(`  ✓ 收集表格初始仅展示 3 个真实友邻 (EpoMail, EpoCanvas, Sonic)`);
 
-    // 2.3 测试表单必填校验与提交交互
-    console.log('  -> 测试在文章正文中填写并提交表单...');
-    const nameField = page.locator('.md-interactive-form input[name="name"]');
-    const urlField = page.locator('.md-interactive-form input[name="url"]');
-    const avatarField = page.locator('.md-interactive-form input[name="avatar"]');
-    const descField = page.locator('.md-interactive-form textarea[name="desc"]');
-    const submitBtn = page.locator('.md-interactive-form button[type="submit"]');
+    // 2.3 验证表格各行中的 []() 外链渲染
+    const firstRowLink = page.locator('.office-sheet-table tbody tr:nth-child(1) a.sheet-link');
+    const linkHref = await firstRowLink.getAttribute('href');
+    const linkText = await firstRowLink.textContent();
+    assert.strictEqual(linkHref, 'https://mail.epocanvas.com');
+    assert(linkText?.includes('EpoMail'), `Link text should contain EpoMail: ${linkText}`);
+    console.log(`  ✓ 收集表已将 Markdown [EpoMail](https://mail.epocanvas.com) 编译为真实外链: ${linkText.trim()} -> ${linkHref}`);
 
-    await nameField.fill('星际漫游者测试站');
-    await urlField.fill('https://explorer.example.com');
-    await avatarField.fill('https://explorer.example.com/icon.png');
-    await descField.fill('记录深空探测与分布式边缘系统的技术极客小站');
+    // 2.4 测试输入行原生支持 []() 外联格式与实时外联识别
+    console.log('  -> 测试在收集表填表录入行中以 [名称](链接) 语法填入数据...');
+    const siteInput = page.locator('.input-sheet-site');
+    const previewEl = page.locator('.sheet-link-preview');
+    const avatarInput = page.locator('.input-sheet-avatar');
+    const descInput = page.locator('.input-sheet-desc');
+    const submitBtn = page.locator('.sheet-submit-btn');
 
-    // 模拟提交拦截（验证端到端派发与成功卡片展示）
+    // 输入 [专案名称](网址)
+    await siteInput.fill('[星际漫游者测试站](https://explorer.example.com)');
+    await page.waitForTimeout(200);
+
+    // 验证实时外联解析器
+    assert(await previewEl.isVisible(), 'Link preview must appear when entering markdown link');
+    const previewText = await previewEl.textContent();
+    assert(previewText?.includes('星际漫游者测试站') && previewText?.includes('explorer.example.com'), `Preview mismatch: ${previewText}`);
+    console.log(`  ✓ 实时外联解析器成功捕获: "${previewText.trim()}"`);
+
+    await avatarInput.fill('https://explorer.example.com/logo.svg');
+    await descInput.fill('记录深空探测与分布式边缘系统的技术极客小站');
+
+    // 模拟提交拦截
     await page.route('**/api/friends/apply', async (route) => {
       const postData = route.request().postDataJSON();
       assert.strictEqual(postData.name, '星际漫游者测试站');
       assert.strictEqual(postData.url, 'https://explorer.example.com');
+      assert.strictEqual(postData.source, 'office_collection_sheet');
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
@@ -171,20 +193,36 @@ async function run() {
       });
     });
 
+    // 2.5 提交并验证新行即时插入收集表格第 4 行
+    console.log('  -> 触发"📥 登记入表"提交...');
     await submitBtn.click();
-    await page.waitForTimeout(300);
+    await page.waitForTimeout(400);
 
-    const successCard = page.locator('.md-interactive-form .md-form__success');
-    await successCard.waitFor({ state: 'visible', timeout: 3000 });
-    const successTitle = await page.locator('.md-interactive-form .md-form__success h4').textContent();
-    console.log(`  ✓ 表单成功提交并即时在正文中切换至成功卡片: "${successTitle?.trim()}"`);
+    const updatedRowCount = await page.locator('.office-sheet-table tbody tr').count();
+    assert.strictEqual(updatedRowCount, 4, `Table must now have 4 rows after submission, got ${updatedRowCount}`);
+    console.log(`  ✓ 收集表格实时追加新数据行，当前总行数: ${updatedRowCount}`);
 
-    // 2.4 测试"再次填写"重置功能
-    const resetBtn = page.locator('.md-interactive-form .md-form__reset-btn');
-    await resetBtn.click();
-    await page.waitForTimeout(200);
-    assert(await nameField.isVisible(), 'Form body must re-appear after clicking reset');
-    console.log('  ✓ 点击"再次填写"重置表单并顺畅恢复交互');
+    // 验证新插入行的第 4 行外链已就地渲染
+    const newRowLink = page.locator('.office-sheet-table tbody tr:nth-child(4) a.sheet-link');
+    const newHref = await newRowLink.getAttribute('href');
+    const newName = await newRowLink.textContent();
+    assert.strictEqual(newHref, 'https://explorer.example.com');
+    assert(newName?.includes('星际漫游者测试站'), `New link text should be 星际漫游者测试站: ${newName}`);
+    console.log(`  ✓ 新插入行成功解析为外链: ${newName.trim()} -> ${newHref}`);
+
+    // 验证成功反馈条
+    const successBanner = page.locator('.sheet-success-banner');
+    assert(await successBanner.isVisible(), 'Success banner must be visible');
+    const bannerText = await successBanner.textContent();
+    console.log(`  ✓ 收集表成功横幅展示: "${bannerText.trim()}"`);
+
+    // 验证输入框已清空
+    const siteValAfter = await siteInput.inputValue();
+    assert.strictEqual(siteValAfter, '', 'Input field should be reset after submission');
+    console.log('  ✓ 录入行输入框自动重置就绪');
+
+    await browser.close();
+    console.log('\n🌟 全流程真实浏览器端 Playwright E2E 交互审计 100% 通过！\n');
 
     await browser.close();
     console.log('\n🌟 全流程真实浏览器端 Playwright E2E 交互审计 100% 通过！\n');

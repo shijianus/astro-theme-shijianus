@@ -3086,13 +3086,27 @@ const tExtGate = EXT_GATE_I18N[lang] || EXT_GATE_I18N['zh-CN'];
       .replace(/>/g, '&gt;');
   }
 
+  function parseMarkdownLink(text = ''): { name: string; url: string } {
+    const trimmed = String(text || '').trim();
+    const matchStd = trimmed.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
+    if (matchStd) return { name: matchStd[1].trim(), url: matchStd[2].trim() };
+    const matchRev = trimmed.match(/^\(([^)]+)\)\[([^\]]+)\]$/);
+    if (matchRev) return { name: matchRev[2].trim(), url: matchRev[1].trim() };
+    const matchInline = trimmed.match(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/);
+    if (matchInline) return { name: matchInline[1].trim(), url: matchInline[2].trim() };
+    if (/^https?:\/\//i.test(trimmed)) {
+      return { name: trimmed.replace(/^https?:\/\//, '').replace(/\/$/, ''), url: trimmed };
+    }
+    return { name: trimmed, url: '' };
+  }
+
   const renderMarkdownFormBlocks = () => {
     const articles = document.querySelectorAll('[data-content-features], .article-body, .post-content, #article-container, main');
     if (!articles.length) return;
 
     for (const article of articles) {
       const formPreBlocks = Array.from(article.querySelectorAll<HTMLElement>(
-        'pre[data-language="form"], pre:has(code.language-form), pre:has(code[data-language="form"]), pre.language-form, pre.markdown-form, pre.form-block, pre[data-language="yaml:form"]'
+        'pre[data-language="form"], pre[data-language="sheet"], pre[data-language="collection-table"], pre[data-language="collection-sheet"], pre:has(code.language-form), pre:has(code.language-sheet), pre:has(code.language-collection-table), pre:has(code.language-collection-sheet), pre.language-form, pre.language-sheet, pre.markdown-form, pre.form-block, pre.sheet-block, pre[data-language="yaml:form"]'
       ));
 
       // Also check any pre block whose raw content has YAML form structure
@@ -3100,7 +3114,11 @@ const tExtGate = EXT_GATE_I18N[lang] || EXT_GATE_I18N['zh-CN'];
       for (const pre of allPres) {
         if (!formPreBlocks.includes(pre)) {
           const text = (pre.textContent || '').trim();
-          if ((text.startsWith('id:') || text.startsWith('formId:')) && text.includes('fields:')) {
+          if (
+            ((text.startsWith('id:') || text.startsWith('formId:')) && (text.includes('fields:') || text.includes('initialRows:') || text.includes('type: sheet') || text.includes('columns:'))) ||
+            text.includes('initialRows:') ||
+            text.includes('type: sheet')
+          ) {
             formPreBlocks.push(pre);
           }
         }
@@ -3129,18 +3147,337 @@ const tExtGate = EXT_GATE_I18N[lang] || EXT_GATE_I18N['zh-CN'];
           }
         }
 
-        if (!formConfig || typeof formConfig !== 'object' || !Array.isArray(formConfig.fields)) {
+        if (!formConfig || typeof formConfig !== 'object') {
+          continue;
+        }
+
+        const preLang = (pre.getAttribute('data-language') || pre.className || '').toLowerCase();
+        const formId = String(formConfig.id || formConfig.formId || 'custom-form');
+        const formTitle = formConfig.title || '交互式表格';
+        const formDesc = formConfig.description || '';
+        const targetUrl = formConfig.target || '/api/friends/apply';
+
+        const isSheet =
+          formConfig.type === 'sheet' ||
+          formConfig.type === 'collection-sheet' ||
+          formConfig.type === 'collection-table' ||
+          Array.isArray(formConfig.initialRows) ||
+          preLang.includes('sheet') ||
+          preLang.includes('collection') ||
+          formId.includes('sheet') ||
+          formId.includes('collection') ||
+          formId === 'friend-link-apply';
+
+        if (isSheet) {
+          // --- RENDER OFFICE 收集表 (SPREADSHEET / COLLECTION TABLE) ---
+          const sheetWrap = document.createElement('div');
+          sheetWrap.className = 'office-sheet-wrapper theme-card';
+          sheetWrap.dataset.sheetId = formId;
+
+          const badgeOffice = formConfig.badge || '📊 Office 风格收集表 · Google 声明规范';
+          const initialRows = Array.isArray(formConfig.initialRows) && formConfig.initialRows.length
+            ? formConfig.initialRows
+            : [
+                {
+                  no: '01',
+                  name: '[EpoMail](https://mail.epocanvas.com)',
+                  avatar: '/media/brands/epomail.svg',
+                  desc: '极简无干扰的端到端加密极客邮箱服务。',
+                  contact: '@shijianus',
+                  status: '🟢 官方生态',
+                },
+                {
+                  no: '02',
+                  name: '[EpoCanvas](https://epocanvas.com)',
+                  avatar: '/media/brands/epocanvas.svg',
+                  desc: '時代画布：面向现代独立构建者的数字创作工坊与设计系统。',
+                  contact: '@shijianus',
+                  status: '🟢 官方生态',
+                },
+                {
+                  no: '03',
+                  name: '[Sonic](https://sonic.epocanvas.com)',
+                  avatar: '/media/brands/sonic.svg',
+                  desc: '极客音频工作站：双耳节拍与 Lo-Fi 沉浸心流白噪音引擎。',
+                  contact: '@shijianus',
+                  status: '🟢 官方生态',
+                },
+              ];
+
+          let rowsHtml = '';
+          for (let i = 0; i < initialRows.length; i++) {
+            const r = initialRows[i];
+            const rowNo = r.no || String(i + 1).padStart(2, '0');
+            const parsed = parseMarkdownLink(r.name || r.site || '');
+            const linkHtml = parsed.url
+              ? `<a href="${escapeAttr(parsed.url)}" target="_blank" rel="noopener" class="sheet-link">
+                  <span>${escapeHtml(parsed.name)}</span>
+                  <svg class="ext-icon" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                 </a>`
+              : `<span>${escapeHtml(parsed.name)}</span>`;
+            const avatarUrl = r.avatar || '/media/brands/default-brand.svg';
+            const descText = r.desc || r.description || '';
+            const contactText = r.contact || '@shijianus';
+            const statusBadge = r.status || '🟢 官方生态';
+
+            rowsHtml += `
+              <tr>
+                <td class="sheet-col-no">${escapeHtml(rowNo)}</td>
+                <td>${linkHtml}</td>
+                <td>
+                  <div class="sheet-avatar-cell">
+                    <img src="${escapeAttr(avatarUrl)}" class="sheet-avatar-img" onerror="this.src='/media/brands/default-brand.svg'" />
+                    <code>${escapeHtml(avatarUrl)}</code>
+                  </div>
+                </td>
+                <td>${escapeHtml(descText)}</td>
+                <td><code>${escapeHtml(contactText)}</code></td>
+                <td><span class="badge badge-success">${escapeHtml(statusBadge)}</span></td>
+              </tr>
+            `;
+          }
+
+          sheetWrap.innerHTML = `
+            <div class="sheet-header-ribbon">
+              <div class="sheet-badge-group">
+                <span class="sheet-badge sheet-badge--office">${escapeHtml(badgeOffice)}</span>
+                <span class="sheet-badge sheet-badge--link">🔗 支持 [名称](链接) 外联语法</span>
+                <span class="sheet-badge sheet-badge--live">⚡ 实时协同 · D1 持久化 & TG 秒级推送</span>
+              </div>
+              <h3 class="sheet-title">
+                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M3 14h18m-9-4v8m-7 4h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                <span>${escapeHtml(formTitle)}</span>
+              </h3>
+              ${formDesc ? `<p class="sheet-desc">${escapeHtml(formDesc)}</p>` : ''}
+            </div>
+
+            <div class="sheet-table-scroll">
+              <table class="office-sheet-table">
+                <thead>
+                  <tr>
+                    <th class="sheet-col-no" style="width: 50px;">序号</th>
+                    <th style="min-width: 220px;">站点名称与外链 [名称](链接)</th>
+                    <th style="min-width: 170px;">品牌图标 (Avatar URL)</th>
+                    <th style="min-width: 260px;">站点定位与简介</th>
+                    <th style="width: 130px;">联络方式</th>
+                    <th style="width: 110px;">状态</th>
+                  </tr>
+                </thead>
+                <tbody class="sheet-tbody">
+                  ${rowsHtml}
+                </tbody>
+                <tfoot>
+                  <tr class="sheet-entry-row">
+                    <td class="sheet-col-no"><span class="sheet-entry-tag">➕ 填表</span></td>
+                    <td>
+                      <input type="text" class="sheet-cell-input input-sheet-site" placeholder="[我的博客](https://example.com)" title="支持 [站点名称](链接) 外链语法" required />
+                      <div class="sheet-link-preview" style="display: none;"></div>
+                    </td>
+                    <td>
+                      <input type="url" class="sheet-cell-input input-sheet-avatar" placeholder="https://example.com/logo.svg" required />
+                    </td>
+                    <td>
+                      <input type="text" class="sheet-cell-input input-sheet-desc" placeholder="一句话介绍您的博客特色与原创内容..." required />
+                    </td>
+                    <td>
+                      <input type="text" class="sheet-cell-input input-sheet-contact" placeholder="@TG 或邮箱 (选填)" />
+                    </td>
+                    <td style="text-align: center;">
+                      <button type="button" class="sheet-submit-btn">
+                        <span class="btn-text">📥 登记入表</span>
+                      </button>
+                    </td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+
+            <div class="sheet-footer-feedback">
+              <div class="sheet-alert" style="display: none;"></div>
+              <div class="sheet-success-banner" style="display: none;">
+                <span class="success-icon">✅</span>
+                <span class="success-msg">已成功登记并写入收集表！数据已落盘至 Cloudflare D1 边缘数据库，Telegram 审批通知已即时送达站长。</span>
+              </div>
+            </div>
+          `;
+
+          // Wire events
+          const siteInput = sheetWrap.querySelector<HTMLInputElement>('.input-sheet-site');
+          const previewEl = sheetWrap.querySelector<HTMLElement>('.sheet-link-preview');
+          const avatarInput = sheetWrap.querySelector<HTMLInputElement>('.input-sheet-avatar');
+          const descInput = sheetWrap.querySelector<HTMLInputElement>('.input-sheet-desc');
+          const contactInput = sheetWrap.querySelector<HTMLInputElement>('.input-sheet-contact');
+          const submitBtn = sheetWrap.querySelector<HTMLButtonElement>('.sheet-submit-btn');
+          const btnText = sheetWrap.querySelector<HTMLElement>('.sheet-submit-btn .btn-text');
+          const alertEl = sheetWrap.querySelector<HTMLElement>('.sheet-alert');
+          const successBanner = sheetWrap.querySelector<HTMLElement>('.sheet-success-banner');
+          const successMsgEl = sheetWrap.querySelector<HTMLElement>('.sheet-success-banner .success-msg');
+          const tbody = sheetWrap.querySelector<HTMLTableSectionElement>('tbody.sheet-tbody');
+
+          // Live markdown link parsing preview
+          siteInput?.addEventListener('input', () => {
+            if (!previewEl) return;
+            const val = siteInput.value.trim();
+            const parsed = parseMarkdownLink(val);
+            if (parsed.url) {
+              previewEl.innerHTML = `
+                <span style="color:#10b981;font-weight:700;">🔗 识别外联：</span>
+                <strong style="color:var(--font-color);">${escapeHtml(parsed.name)}</strong>
+                <span style="opacity:0.6;">➔</span>
+                <a href="${escapeAttr(parsed.url)}" target="_blank" rel="noopener" style="color:var(--theme-main);text-decoration:underline;">${escapeHtml(parsed.url)}</a>
+              `;
+              previewEl.style.display = 'flex';
+            } else {
+              previewEl.style.display = 'none';
+              previewEl.innerHTML = '';
+            }
+          });
+
+          // Submit action
+          submitBtn?.addEventListener('click', async () => {
+            if (!siteInput || !avatarInput || !descInput || !submitBtn || !btnText || !tbody) return;
+            const rawSite = siteInput.value.trim();
+            const avatarVal = avatarInput.value.trim();
+            const descVal = descInput.value.trim();
+            const contactVal = contactInput ? contactInput.value.trim() : '';
+
+            if (alertEl) {
+              alertEl.style.display = 'none';
+              alertEl.textContent = '';
+            }
+            if (successBanner) successBanner.style.display = 'none';
+
+            // Parse link
+            const parsed = parseMarkdownLink(rawSite);
+            if (!parsed.url) {
+              if (/^https?:\/\//i.test(rawSite)) {
+                parsed.url = rawSite;
+                parsed.name = rawSite.replace(/^https?:\/\//, '').replace(/\/$/, '');
+              } else {
+                if (alertEl) {
+                  alertEl.style.display = 'block';
+                  alertEl.className = 'sheet-alert is-error';
+                  alertEl.textContent = '请在第一列输入合法的外联格式，支持 [博客名称](https://链接) 或直接输入网址！';
+                }
+                siteInput.focus();
+                return;
+              }
+            }
+
+            if (!avatarVal) {
+              if (alertEl) {
+                alertEl.style.display = 'block';
+                alertEl.className = 'sheet-alert is-error';
+                alertEl.textContent = '请填写图标 / 头像 URL！';
+              }
+              avatarInput.focus();
+              return;
+            }
+
+            if (!descVal) {
+              if (alertEl) {
+                alertEl.style.display = 'block';
+                alertEl.className = 'sheet-alert is-error';
+                alertEl.textContent = '请填写站点定位与简介！';
+              }
+              descInput.focus();
+              return;
+            }
+
+            submitBtn.disabled = true;
+            btnText.textContent = '⏳ 写入 D1 & TG...';
+
+            const payload = {
+              formId,
+              title: formTitle,
+              name: parsed.name,
+              url: parsed.url,
+              avatar: avatarVal,
+              desc: descVal,
+              contact: contactVal,
+              category: '核心友邻 · 独立博客',
+              source: 'office_collection_sheet',
+              markdown_link: rawSite,
+            };
+
+            try {
+              const res = await fetch(targetUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
+              });
+              const data = await res.json().catch(() => ({}));
+              if (res.ok && data.ok) {
+                // Insert new row into tbody
+                const currentRows = tbody.querySelectorAll('tr').length;
+                const nextNo = String(currentRows + 1).padStart(2, '0');
+                const newTr = document.createElement('tr');
+                newTr.className = 'is-highlight';
+                newTr.innerHTML = `
+                  <td class="sheet-col-no">${nextNo}</td>
+                  <td>
+                    <a href="${escapeAttr(parsed.url)}" target="_blank" rel="noopener" class="sheet-link">
+                      <span>${escapeHtml(parsed.name)}</span>
+                      <svg class="ext-icon" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                    </a>
+                  </td>
+                  <td>
+                    <div class="sheet-avatar-cell">
+                      <img src="${escapeAttr(avatarVal)}" class="sheet-avatar-img" onerror="this.src='/media/brands/default-brand.svg'" />
+                      <code>${escapeHtml(avatarVal)}</code>
+                    </div>
+                  </td>
+                  <td>${escapeHtml(descVal)}</td>
+                  <td><code>${escapeHtml(contactVal || '访客申报')}</code></td>
+                  <td><span class="badge badge-warning">⏳ 待审核</span></td>
+                `;
+                tbody.appendChild(newTr);
+
+                if (successBanner && successMsgEl) {
+                  successMsgEl.textContent = `已成功向收集表追加第 ${nextNo} 行！数据已落盘至 Cloudflare D1 边缘数据库，Telegram 审批通知已即时送达站长。`;
+                  successBanner.style.display = 'flex';
+                }
+
+                // Reset inputs
+                siteInput.value = '';
+                avatarInput.value = '';
+                descInput.value = '';
+                if (contactInput) contactInput.value = '';
+                if (previewEl) {
+                  previewEl.style.display = 'none';
+                  previewEl.innerHTML = '';
+                }
+              } else {
+                throw new Error(data.error || '提交遇到问题，请稍后重试');
+              }
+            } catch (err: any) {
+              if (alertEl) {
+                alertEl.style.display = 'block';
+                alertEl.className = 'sheet-alert is-error';
+                alertEl.textContent = err?.message || '网络连接异常，请重试';
+              }
+            } finally {
+              submitBtn.disabled = false;
+              btnText.textContent = '📥 登记入表';
+            }
+          });
+
+          if (shell) {
+            shell.parentNode?.replaceChild(sheetWrap, shell);
+          } else {
+            pre.parentNode?.replaceChild(sheetWrap, pre);
+          }
+          continue;
+        }
+
+        // --- RENDER STANDARD FORM (FALLBACK FOR OTHER GENERAL FORMS) ---
+        if (!Array.isArray(formConfig.fields)) {
           continue;
         }
 
         const formWrap = document.createElement('div');
         formWrap.className = 'md-interactive-form-wrapper';
-
-        const formId = formConfig.id || 'custom-form';
-        const formTitle = formConfig.title || '交互式表单';
-        const formDesc = formConfig.description || '';
         const badgeText = formConfig.badge || '交互式表单 · Google Manuals 规范';
-        const targetUrl = formConfig.target || '/api/forms/submit';
         const submitText = formConfig.submitText || '🚀 提交表单';
         const successTitle = formConfig.successTitle || '提交成功！';
         const successMsg = formConfig.successMessage || '数据已成功保存并实时送达管理员。';

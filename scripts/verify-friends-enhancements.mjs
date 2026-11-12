@@ -27,7 +27,12 @@ const friendsConfigContent = fs.readFileSync(path.join(ROOT, 'src/config/friends
 assert(friendsConfigContent.includes('/media/brands/epomail.svg'), 'EpoMail avatar missing');
 assert(friendsConfigContent.includes('/media/brands/epocanvas.svg'), 'EpoCanvas avatar missing');
 assert(friendsConfigContent.includes('/media/brands/sonic.svg'), 'Sonic avatar missing');
-console.log('  ✓ src/config/friends.ts 中品牌友邻均绑定了独立专属品牌 SVG 图标');
+// 严格断言：仅有 3 个朋友 (EpoMail, EpoCanvas, Sonic)，严禁幻觉编造其他友邻
+assert(!friendsConfigContent.includes('安知鱼'), 'Must not contain hallucinated friend 安知鱼');
+assert(!friendsConfigContent.includes('小康的个人博客'), 'Must not contain hallucinated friend 小康');
+assert(!friendsConfigContent.includes('Akilarの糖果屋'), 'Must not contain hallucinated friend Akilar');
+assert(!friendsConfigContent.includes('Leonus'), 'Must not contain hallucinated friend Leonus');
+console.log('  ✓ src/config/friends.ts 严格仅收录 3 个真实品牌友邻 (EpoMail, EpoCanvas, Sonic)，无任何编造');
 
 // 检查 FriendsDashboard.astro 里的 fallback 图标，严禁使用站长头像作为友邻 fallback
 const dashboardContent = fs.readFileSync(path.join(ROOT, 'src/components/theme/FriendsDashboard.astro'), 'utf-8');
@@ -73,25 +78,30 @@ assert(statusMdContent.includes('互链交换公约'), 'Missing guild rules in s
 
 console.log('  ✓ docs/standards/status.md 包含完整的站点定位、朋友圈雷达原理、多格式互链配置代码与交换公约');
 
-// Test 4: Google 手册风格内嵌表单 (Embedded Form) 语法与渲染引擎审计
-console.log('\n▶ [Test 4] Markdown 原生嵌入式表单渲染引擎审计...');
-assert(statusMdContent.includes('```form'), 'status.md must embed a ```form code block');
-assert(statusMdContent.includes('id: friend-link-apply'), 'Embedded form must have id: friend-link-apply');
+// Test 4: Google 声明规范与 Office 协同收集表 (Spreadsheet Collection Table) 语法与渲染引擎审计
+console.log('\n▶ [Test 4] Google 规范与 Office 收集表 (支持 []() 外联) 渲染引擎审计...');
+assert(statusMdContent.includes('```sheet'), 'status.md must embed a ```sheet code block');
+assert(statusMdContent.includes('id: friend-link-collection-sheet'), 'Embedded sheet must have id: friend-link-collection-sheet');
+assert(statusMdContent.includes('EpoCanvas 友邻互链协同收集表'), 'Embedded sheet title check');
 
-// 检查 ContentFeatureEnhancer.astro 中的表单渲染引擎
+// 检查 ContentFeatureEnhancer.astro 中的表单与收集表渲染引擎
 const enhancerContent = fs.readFileSync(path.join(ROOT, 'src/components/ContentFeatureEnhancer.astro'), 'utf-8');
 assert(enhancerContent.includes('renderMarkdownFormBlocks'), 'ContentFeatureEnhancer missing renderMarkdownFormBlocks function');
-assert(enhancerContent.includes('md-interactive-form'), 'ContentFeatureEnhancer missing md-interactive-form rendering');
-assert(enhancerContent.includes("import yaml from 'js-yaml'"), 'ContentFeatureEnhancer missing js-yaml import');
+assert(enhancerContent.includes('office-sheet-wrapper'), 'ContentFeatureEnhancer missing office-sheet-wrapper rendering');
+assert(enhancerContent.includes('office-sheet-table'), 'ContentFeatureEnhancer missing office-sheet-table rendering');
+assert(enhancerContent.includes('parseMarkdownLink'), 'ContentFeatureEnhancer missing parseMarkdownLink for []() external links');
+assert(enhancerContent.includes("import { load as yamlLoad } from 'js-yaml'"), 'ContentFeatureEnhancer missing js-yaml import');
 
 // 检查 CSS
 const cssContent = fs.readFileSync(path.join(ROOT, 'src/styles/markdown-enhancements.css'), 'utf-8');
-assert(cssContent.includes('.md-interactive-form'), 'CSS missing .md-interactive-form styles');
-assert(cssContent.includes('.md-form__badge'), 'CSS missing .md-form__badge styles');
-assert(cssContent.includes('.md-form__success'), 'CSS missing .md-form__success styles');
+assert(cssContent.includes('.office-sheet-wrapper'), 'CSS missing .office-sheet-wrapper styles');
+assert(cssContent.includes('.office-sheet-table'), 'CSS missing .office-sheet-table styles');
+assert(cssContent.includes('.sheet-badge--office'), 'CSS missing .sheet-badge--office styles');
+assert(cssContent.includes('.sheet-cell-input'), 'CSS missing .sheet-cell-input styles');
 
-console.log('  ✓ ContentFeatureEnhancer 具备标准 Markdown form 代码块解析与 Google Manuals 风格交互表单渲染能力');
-console.log('  ✓ markdown-enhancements.css 包含完整的表单网格、浮动标签、验证告警及成功反馈动效');
+console.log('  ✓ ContentFeatureEnhancer 具备标准 Markdown sheet/form 代码块解析与 Office 收集表 (表格) 渲染能力');
+console.log('  ✓ 收集表已原生支持 [名称](链接) / ()[] 式外联解析与实时外链跳转');
+console.log('  ✓ markdown-enhancements.css 包含完整的 Office 表格网格、录入行、外联解析预览及成功动效');
 
 // Test 5: API 端点与持久化 / TG 提醒逻辑审计
 console.log('\n▶ [Test 5] 表单提交 API 与 Telegram 提醒中枢审计...');
