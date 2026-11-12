@@ -11,6 +11,7 @@ import autoprefixer from 'autoprefixer';
 
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
+import remarkHexoTags from './src/lib/remark-hexo-tags.mjs';
 import { printBrandBanner } from './scripts/brand-banner.mjs';
 
 function epocanvasBrandIntegration() {
@@ -725,7 +726,7 @@ export default defineConfig({
     mdx(),
   ],
   markdown: {
-    remarkPlugins: [remarkGfm, remarkMath],
+    remarkPlugins: [remarkHexoTags, remarkGfm, remarkMath],
     rehypePlugins: [rehypeKatex],
     shikiConfig: {
       themes: {

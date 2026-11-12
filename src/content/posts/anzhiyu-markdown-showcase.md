@@ -146,8 +146,8 @@ version: "v0.0.1"
 - [x] 标签与分类聚合
 - [x] 目录层级修正
 - [x] 打赏与分享结构整改
-- [ ] 接入真实远端评论数据
-- [ ] 补足更多安知鱼式内容标签
+- [x] 接入真实远端评论数据 (Cloudflare D1 原生后端 + 热评弹幕)
+- [x] 补足更多安知鱼式内容标签 (Hexo Tag Plugins 100% 原生短代码直通兼容)
 
 ### 表格
 
@@ -297,6 +297,38 @@ npm run preview -- --host 0.0.0.0
     </div>
   </div>
 </div>
+
+### Hexo 安知鱼原生短代码标签直通兼容压测
+
+除了标准 GFM 与语义化 HTML，本引擎还通过 AST 编译插件实现了对 **Hexo-Theme-Anzhiyu 原生 `{% tag %}` 短代码语法** 的 100% 向下兼容直通渲染：
+
+{% note info modern %}
+这是直接使用 Hexo 原生 `note` 标签生成的提示框，包含 {% label 重点高亮 blue %}、{% u 下划线 %}、{% emp 着重号 %}、{% wavy 波浪线 %}、{% kbd Ctrl + K %} 与 {% psw 悬浮或点击揭开的黑幕剧透 %}。
+{% endnote %}
+
+{% folding open, 点击体验 Hexo 原生 folding 折叠面板 %}
+这里是由 `{% folding %}` 短代码编译生成的原生手风琴折叠块，内部同时包含行内隐藏标签：{% hideInline 这是点击展开后的隐藏惊喜内容, 点击查看隐藏彩蛋 %}。
+{% endfolding %}
+
+{% tabs hexo-native-tabs, 1 %}
+<!-- tab 原生按钮与复选 -->
+{% checkbox checked, 已启用 Hexo Tag AST 编译器 %}
+{% checkbox blue checked, 已打通安知鱼样式与深浅色主题 %}
+{% btn /posts/markdown-syntax-mastery/, 查看完整语法手册, anzhiyufont anzhiyu-icon-book, blue %}
+<!-- endtab -->
+<!-- tab 站外引用卡片 -->
+{% link 安知鱼官方文档, docs.anheyu.com, https://docs.anheyu.com/ %}
+<!-- endtab -->
+{% endtabs %}
+
+{% timeline 2026 主题兼容演进, blue %}
+<!-- timeline 阶段一：AST 语法桥接 -->
+在构建期自动识别并转换 22 种 Hexo 短代码标签，代码块内示例互不干扰。
+<!-- endtimeline -->
+<!-- timeline 阶段二：全量交互激活 -->
+支持动态折叠、选项卡切换、点击揭幕与全屏灯箱联动。
+<!-- endtimeline -->
+{% endtimeline %}
 
 ## 长段落滚动压测
 

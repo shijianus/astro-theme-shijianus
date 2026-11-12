@@ -1366,21 +1366,25 @@ const tExtGate = EXT_GATE_I18N[lang] || EXT_GATE_I18N['zh-CN'];
 
       // 4. Interactive Tabs
       const enhanceTabs = (article) => {
-        article.querySelectorAll('.article-tabs').forEach((tabs) => {
+        article.querySelectorAll('.article-tabs, .tabs').forEach((tabs) => {
           if (tabs.dataset.tabsBound === 'true') return;
           tabs.dataset.tabsBound = 'true';
 
-          const buttons = tabs.querySelectorAll('.article-tabs__button');
-          const panels = tabs.querySelectorAll('.article-tabs__panel');
+          const buttons = tabs.querySelectorAll('.article-tabs__button, .nav-tabs .tab');
+          const panels = tabs.querySelectorAll('.article-tabs__panel, .tab-contents .tab-item-content');
 
           buttons.forEach((button, index) => {
             button.addEventListener('click', () => {
-              buttons.forEach((btn) => btn.classList.remove('is-active'));
-              panels.forEach((pnl) => pnl.classList.remove('is-active'));
+              buttons.forEach((btn) => {
+                btn.classList.remove('is-active', 'active');
+              });
+              panels.forEach((pnl) => {
+                pnl.classList.remove('is-active', 'active');
+              });
 
-              button.classList.add('is-active');
+              button.classList.add('is-active', 'active');
               if (panels[index]) {
-                panels[index].classList.add('is-active');
+                panels[index].classList.add('is-active', 'active');
                 setTimeout(() => {
                   window.dispatchEvent(new Event('resize'));
                 }, 50);
@@ -2683,6 +2687,26 @@ const tExtGate = EXT_GATE_I18N[lang] || EXT_GATE_I18N['zh-CN'];
           const toggle = box.querySelector('.hidden-box__toggle');
           toggle?.addEventListener('click', () => {
             box.classList.toggle('is-open');
+          });
+        });
+
+        // Hexo Anzhiyu hideInline / hideBlock / psw tags
+        article.querySelectorAll('.hide-inline, .hide-block').forEach((wrap) => {
+          if (wrap.dataset.hexoHideBound === 'true') return;
+          wrap.dataset.hexoHideBound = 'true';
+          const btn = wrap.querySelector('.hide-button');
+          btn?.addEventListener('click', () => {
+            wrap.classList.add('open', 'is-open');
+            btn.classList.add('open');
+          });
+        });
+
+        article.querySelectorAll('psw').forEach((pswEl) => {
+          if (pswEl.dataset.pswBound === 'true') return;
+          pswEl.dataset.pswBound = 'true';
+          pswEl.addEventListener('click', () => {
+            pswEl.classList.toggle('is-visible');
+            pswEl.setAttribute('aria-pressed', pswEl.classList.contains('is-visible') ? 'true' : 'false');
           });
         });
       };
