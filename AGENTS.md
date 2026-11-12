@@ -6980,3 +6980,29 @@
 - [x] **全流程自动化脚本与真实浏览器 Playwright E2E 交互审计**：
   1. 静态与代码逻辑断言套件（`scripts/verify-friends-enhancements.mjs`）通过，覆盖 4 款品牌 SVG 存在性、头像区分性、FriendsDashboard 站长头像脱敏、弹窗 ID 结构、`/status/` 文档多格式配置代码及 API/TG/D1 结构验证；
   2. Playwright 真实浏览器端到端交互审计（`scripts/verify-friends-e2e.mjs`：Scenario 1 友邻主页头像区分、弹窗唤起、Escape 关闭；Scenario 2 `/status/` 文档结构、Markdown 表单就地渲染为 HTML5 控件、表单填写并提交、即时切换成功卡片与重置）全部断言 100% 绿灯通过。
+
+### Task 137: Cloudflare 生产环境部署上线、双远端同步与线上真实环境第二轮全链路严密核验
+- [x] **Cloudflare D1 远程生产数据库迁移**：
+  1. 成功将 `0008_forms.sql` 应用至生产分布式数据库 `DB` (`a18b4c38-5da0-415e-a7de-ee3aee0b856f`)；
+  2. 生产环境创建 `form_submissions` 持久化表及索引（`idx_form_submissions_form_id`, `idx_form_submissions_created_at`）。
+- [x] **双远端分支无损同步 (Level 3 授权落地)**：
+  1. 推送最新提交至 GitHub 官方仓库 `origin` (`astro-theme-shijianus`) `main` 分支；
+  2. 推送最新提交至 Cloudflare 镜像仓库 `cf` (`shijianus.github.io`) `main` 分支。
+- [x] **Cloudflare Pages 双生产项目全量边缘部署 (Level 4 授权落地)**：
+  1. 通过 Wrangler 部署完整生产制品至 `shijianus-blog`（绑定自定义主域名 `https://blog.epocanvas.com`，部署快照 `https://5710cbbd.shijianus-blog.pages.dev`）；
+  2. 通过 Wrangler 部署完整生产制品至 `shijianus-github-io`（部署快照 `https://6ebb0722.shijianus-github-io.pages.dev`）。
+- [x] **线上生产域名全链路实机第二轮严密核验 (`scripts/verify-production-friends-live.mjs`)**：
+  1. **生产友邻主页核验 (`https://blog.epocanvas.com/friends/`)**：
+     - HTTP 200 OK 正常响应；
+     - 品牌矩阵（EpoMail、EpoCanvas、Sonic）全部加载独立专属矢量 SVG（`/media/brands/epomail.svg`、`epocanvas.svg`、`sonic.svg`），彻底告别站长个人头像；
+     - 彻底清除“复制本站互链信息”按钮及过时说明，替换为“互链规范与生态状态”直达入口；
+     - 点击“申请互链”成功弹出居中磨砂拟态弹窗（`#friend-apply-modal`），表单字段完整并支持 Escape 键顺畅退出。
+  2. **生产生态指南与嵌入式表单核验 (`https://blog.epocanvas.com/status/`)**：
+     - HTTP 200 OK 正常响应，标题为《EpoCanvas 友鄰生態公約與系統狀態指南》；
+     - 完整呈现站点定位、去中心化朋友圈动态雷达运行逻辑、多格式配置代码（YAML/JSON/HTML/MD）与交换公约；
+     - Google 手册风格 Markdown 嵌入式表单（`.md-interactive-form`）在生产端真实由 ````form ```` 代码块自动编译为响应式交互控件；
+     - 在生产文章正文中提交真实端到端申请探针，成功收到 `200 OK` 响应并在正文中即时切换为成功状态卡；
+     - 点击“再次填写”按钮成功就地重置表单。
+  3. **Cloudflare D1 生产数据库实时入库证据审查**：
+     - 通过 Wrangler 远程直接执行 SQL 查询 `form_submissions` 表；
+     - 成功捕获刚刚线上提交的实时记录：`apply_1794463038629_nhat1j`，`form_id: friend-link-apply`，真实记录了客户端 IP、提交时间与完整 payload，全流程无缝闭环！
