@@ -712,7 +712,24 @@ a.doc-link--external:focus-visible .doc-ext-icon {
   line-height: 1.6;
 }
 
-/* When JS is active, show only active tabpanel; without JS, all 4 panels remain visible! */
+/* When JS is active, show tab bar & hide inactive tabpanel; without JS, all 4 panels remain visible! */
+html:not(.status-js-ready) .format-switcher__bar {
+  display: none;
+}
+
+html:not(.status-js-ready) .format-tabpanel[hidden] {
+  display: block !important;
+  border-top: 1px solid var(--status-accent-border);
+}
+
+html:not(.status-js-ready) .format-tabpanel[hidden] [data-copy-text] {
+  display: none;
+}
+
+html:not(.status-js-ready) [data-copy-text] {
+  display: none;
+}
+
 html.status-js-ready .format-tabpanel[hidden] {
   display: none;
 }

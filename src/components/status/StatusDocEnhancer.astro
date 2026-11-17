@@ -382,6 +382,9 @@
         });
       });
 
+      // Collapse non-active panels only once JS tab controls are ready (keeps all 4 panels readable without JS)
+      activateTab(tabs[0]?.dataset.formatTab || 'yaml');
+
       copyActiveBtn?.addEventListener('click', async () => {
         const activePanel = panels.find((p) => !p.hidden) || panels[0];
         const code = activePanel?.dataset.formatCode || '';

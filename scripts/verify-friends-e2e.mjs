@@ -113,116 +113,70 @@ async function run() {
     console.log('  ✓ 按下 Escape 键成功关闭弹窗');
 
     // ----------------------------------------------------
-    // Scenario 2: /status/ 友邻生态指南与 Office 协同收集表 (支持 []() 外联)
+    // Scenario 2: /status/ 站点状态与友邻指南、多格式配置与申请表单
     // ----------------------------------------------------
-    console.log('\n▶ [Scenario 2] 审计 /status/ 友邻生态指南与 Office 协同收集表 (支持 []() 外联)...');
+    console.log('\n▶ [Scenario 2] 审计 /status/ 站点状态与友邻指南及安全互链申请表单...');
     await page.goto(`${BASE_URL}/status/`, { waitUntil: 'networkidle' });
 
     const statusTitle = await page.locator('h1').first().textContent();
-    assert(statusTitle?.includes('EpoCanvas') && (statusTitle?.includes('友邻') || statusTitle?.includes('友鄰')), `Unexpected title: ${statusTitle}`);
+    assert(statusTitle?.includes('shijianus') && (statusTitle?.includes('友邻') || statusTitle?.includes('友鄰')), `Unexpected title: ${statusTitle}`);
     console.log(`  ✓ 页面标题正确: "${statusTitle.trim()}"`);
 
-    // 验证核心章节存在 (兼容 OpenCC 繁体化)
     const content = await page.content();
-    assert(content.includes('本站点定位与运行状态') || content.includes('本站定位與運行狀態') || content.includes('本站'), 'Missing site overview section');
-    assert(content.includes('友邻系统是如何运行的') || content.includes('友鄰系統是如何運行的'), 'Missing how friends works section');
-    assert(content.includes('朋友圈 (动态雷达)') || content.includes('朋友圈 (動態雷達)'), 'Missing moments radar section');
-    assert(content.includes('本站互链配置信息') || content.includes('本站互鏈配置資訊') || content.includes('本站互鏈配置'), 'Missing mutual link config section');
+    assert(content.includes('认识 shijianus'), 'Missing about shijianus section');
+    assert(content.includes('站点状态和运行边界'), 'Missing site status section');
+    assert(content.includes('友邻系统如何工作'), 'Missing how friends works section');
+    assert(content.includes('shijianus 官方友链信息'), 'Missing mutual link config section');
     assert(content.includes('https://blog.epocanvas.com/media/shijianus/avatar.jpg'), 'Missing site avatar config');
-    assert(content.includes('互链交换公约') || content.includes('互鏈交換公約'), 'Missing guild rules');
-    console.log('  ✓ 包含详尽的站点架构、朋友圈雷达机制、完整本站互链元信息（YAML/JSON/HTML/MD）与交换公约');
+    assert(content.includes('友邻交换与收录规则'), 'Missing guild rules');
+    console.log('  ✓ 包含详尽的站点边界、友邻运作说明、单源官方友链配置与交换规则');
 
-    // 2.1 验证 Office 协同收集表 (Spreadsheet Collection Table)
-    console.log('  -> 正在检测由 Markdown 渲染出的 Office 收集表格组件 (.office-sheet-wrapper)...');
-    const sheetWrapper = page.locator('.office-sheet-wrapper');
-    await sheetWrapper.waitFor({ state: 'visible', timeout: 5000 });
-    assert(await sheetWrapper.count() > 0, 'Office sheet wrapper (.office-sheet-wrapper) must be rendered in DOM');
+    const officialCard = page.locator('[data-official-friend-card]');
+    await officialCard.waitFor({ state: 'visible', timeout: 5000 });
+    assert(await page.locator('#tab-yaml').isVisible(), 'YAML tab missing');
+    assert(await page.locator('#tab-json').isVisible(), 'JSON tab missing');
+    assert(await page.locator('#tab-html').isVisible(), 'HTML tab missing');
+    assert(await page.locator('#tab-markdown').isVisible(), 'Markdown tab missing');
 
-    const badgeText = await page.locator('.sheet-badge--office').textContent();
-    assert(badgeText?.includes('Office') || badgeText?.includes('Google'), `Badge unexpected: ${badgeText}`);
-    console.log(`  ✓ 收集表徽标渲染成功: "${badgeText.trim()}"`);
+    const quickInput = page.locator('#status-apply-quicklink');
+    const previewEl = page.locator('#status-apply-quicklink-preview');
+    const avatarInput = page.locator('#status-apply-avatar');
+    const descInput = page.locator('#status-apply-desc');
+    const submitBtn = page.locator('#status-apply-submit');
 
-    const sheetTable = page.locator('.office-sheet-table');
-    assert(await sheetTable.isVisible(), 'Office sheet table must be visible');
-
-    // 2.2 验证表格初始数据行：严格仅 3 个友邻
-    const rows = page.locator('.office-sheet-table tbody tr');
-    const initialRowCount = await rows.count();
-    assert.strictEqual(initialRowCount, 3, `Expected exactly 3 rows in initial sheet, found ${initialRowCount}`);
-    console.log(`  ✓ 收集表格初始仅展示 3 个真实友邻 (EpoMail, EpoCanvas, Sonic)`);
-
-    // 2.3 验证表格各行中的 []() 外链渲染
-    const firstRowLink = page.locator('.office-sheet-table tbody tr:nth-child(1) a.sheet-link');
-    const linkHref = await firstRowLink.getAttribute('href');
-    const linkText = await firstRowLink.textContent();
-    assert.strictEqual(linkHref, 'https://mail.epocanvas.com');
-    assert(linkText?.includes('EpoMail'), `Link text should contain EpoMail: ${linkText}`);
-    console.log(`  ✓ 收集表已将 Markdown [EpoMail](https://mail.epocanvas.com) 编译为真实外链: ${linkText.trim()} -> ${linkHref}`);
-
-    // 2.4 测试输入行原生支持 []() 外联格式与实时外联识别
-    console.log('  -> 测试在收集表填表录入行中以 [名称](链接) 语法填入数据...');
-    const siteInput = page.locator('.input-sheet-site');
-    const previewEl = page.locator('.sheet-link-preview');
-    const avatarInput = page.locator('.input-sheet-avatar');
-    const descInput = page.locator('.input-sheet-desc');
-    const submitBtn = page.locator('.sheet-submit-btn');
-
-    // 输入 [专案名称](网址)
-    await siteInput.fill('[星际漫游者测试站](https://explorer.example.com)');
+    await quickInput.fill('[星际漫游者测试站](https://explorer.example.com)');
     await page.waitForTimeout(200);
-
-    // 验证实时外联解析器
     assert(await previewEl.isVisible(), 'Link preview must appear when entering markdown link');
     const previewText = await previewEl.textContent();
     assert(previewText?.includes('星际漫游者测试站') && previewText?.includes('explorer.example.com'), `Preview mismatch: ${previewText}`);
-    console.log(`  ✓ 实时外联解析器成功捕获: "${previewText.trim()}"`);
 
     await avatarInput.fill('https://explorer.example.com/logo.svg');
     await descInput.fill('记录深空探测与分布式边缘系统的技术极客小站');
 
-    // 模拟提交拦截
     await page.route('**/api/friends/apply', async (route) => {
       const postData = route.request().postDataJSON();
       assert.strictEqual(postData.name, '星际漫游者测试站');
-      assert.strictEqual(postData.url, 'https://explorer.example.com');
-      assert.strictEqual(postData.source, 'office_collection_sheet');
+      assert.strictEqual(postData.url, 'https://explorer.example.com/');
+      assert.strictEqual(postData.source, 'status_guide_form');
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
-        body: JSON.stringify({ ok: true, message: '申请成功' }),
+        body: JSON.stringify({
+          ok: true,
+          accepted: true,
+          persisted: true,
+          notified: true,
+          reviewStatus: 'pending_review',
+          submissionId: 'apply_e2e_1',
+        }),
       });
     });
 
-    // 2.5 提交并验证新行即时插入收集表格第 4 行
-    console.log('  -> 触发"📥 登记入表"提交...');
     await submitBtn.click();
-    await page.waitForTimeout(400);
-
-    const updatedRowCount = await page.locator('.office-sheet-table tbody tr').count();
-    assert.strictEqual(updatedRowCount, 4, `Table must now have 4 rows after submission, got ${updatedRowCount}`);
-    console.log(`  ✓ 收集表格实时追加新数据行，当前总行数: ${updatedRowCount}`);
-
-    // 验证新插入行的第 4 行外链已就地渲染
-    const newRowLink = page.locator('.office-sheet-table tbody tr:nth-child(4) a.sheet-link');
-    const newHref = await newRowLink.getAttribute('href');
-    const newName = await newRowLink.textContent();
-    assert.strictEqual(newHref, 'https://explorer.example.com');
-    assert(newName?.includes('星际漫游者测试站'), `New link text should be 星际漫游者测试站: ${newName}`);
-    console.log(`  ✓ 新插入行成功解析为外链: ${newName.trim()} -> ${newHref}`);
-
-    // 验证成功反馈条
-    const successBanner = page.locator('.sheet-success-banner');
-    assert(await successBanner.isVisible(), 'Success banner must be visible');
-    const bannerText = await successBanner.textContent();
-    console.log(`  ✓ 收集表成功横幅展示: "${bannerText.trim()}"`);
-
-    // 验证输入框已清空
-    const siteValAfter = await siteInput.inputValue();
-    assert.strictEqual(siteValAfter, '', 'Input field should be reset after submission');
-    console.log('  ✓ 录入行输入框自动重置就绪');
-
-    await browser.close();
-    console.log('\n🌟 全流程真实浏览器端 Playwright E2E 交互审计 100% 通过！\n');
+    await page.waitForTimeout(300);
+    const feedback = page.locator('#status-apply-feedback');
+    assert(await feedback.isVisible(), 'Feedback card must be visible');
+    assert.strictEqual(await feedback.getAttribute('data-kind'), 'full_success');
 
     await browser.close();
     console.log('\n🌟 全流程真实浏览器端 Playwright E2E 交互审计 100% 通过！\n');

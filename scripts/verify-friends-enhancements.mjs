@@ -57,39 +57,34 @@ console.log('  ✓ "申请互链" 成功重构为顶部/Hero唤起的独立模�
 console.log('  ✓ "复制本站互链信息" 已从 /friends/ 彻底删除，替换为指向 /status/ 的互链规范导航');
 
 // Test 3: /status/ 文章修改与互链完整说明审计
-console.log('\n▶ [Test 3] /status/ 友邻生态与系统状态完整文档审计...');
+console.log('\n▶ [Test 3] /status/ 站点状态与友邻指南完整文档审计...');
 const statusMdPath = path.join(ROOT, 'docs/standards/status.md');
 assert(fs.existsSync(statusMdPath), 'docs/standards/status.md not found');
 const statusMdContent = fs.readFileSync(statusMdPath, 'utf-8');
 
-assert(statusMdContent.includes('EpoCanvas 友邻生态公约与系统状态指南'), 'Status doc title must be updated');
-assert(statusMdContent.includes('本站点定位与运行状态'), 'Missing site status section');
-assert(statusMdContent.includes('友邻系统是如何运行的'), 'Missing how friends works section');
-assert(statusMdContent.includes('朋友圈 (动态雷达)'), 'Missing moments radar explanation');
-assert(statusMdContent.includes('本站互链配置信息与标准规范'), 'Missing mutual link configuration guide');
-assert(statusMdContent.includes('EpoCanvas (shijianus)'), 'Missing site name in status doc');
-assert(statusMdContent.includes('https://blog.epocanvas.com'), 'Missing site url in status doc');
-assert(statusMdContent.includes('https://blog.epocanvas.com/media/shijianus/avatar.jpg'), 'Missing avatar in status doc');
-assert(statusMdContent.includes('YAML 格式'), 'Missing YAML configuration format');
-assert(statusMdContent.includes('JSON 格式'), 'Missing JSON configuration format');
-assert(statusMdContent.includes('HTML 格式'), 'Missing HTML configuration format');
-assert(statusMdContent.includes('Markdown 格式'), 'Missing Markdown configuration format');
-assert(statusMdContent.includes('互链交换公约'), 'Missing guild rules in status doc');
+assert(statusMdContent.includes('shijianus 站点状态与友邻指南'), 'Status doc title must reflect shijianus brand');
+assert(statusMdContent.includes('认识 shijianus'), 'Missing about shijianus section');
+assert(statusMdContent.includes('站点状态和运行边界'), 'Missing site status section');
+assert(statusMdContent.includes('友邻系统如何工作'), 'Missing how friends works section');
+assert(statusMdContent.includes('朋友圈'), 'Missing moments explanation');
+assert(statusMdContent.includes('shijianus 官方友链信息'), 'Missing mutual link configuration guide');
+assert(statusMdContent.includes('友邻交换与收录规则'), 'Missing guild rules in status doc');
 
-console.log('  ✓ docs/standards/status.md 包含完整的站点定位、朋友圈雷达原理、多格式互链配置代码与交换公约');
-
-// Test 4: Google 声明规范与 Office 协同收集表 (Spreadsheet Collection Table) 语法与渲染引擎审计
-console.log('\n▶ [Test 4] Google 规范与 Office 收集表 (支持 []() 外联) 渲染引擎审计...');
-assert(statusMdContent.includes('```sheet'), 'status.md must embed a ```sheet code block');
-assert(statusMdContent.includes('id: friend-link-collection-sheet'), 'Embedded sheet must have id: friend-link-collection-sheet');
-assert(statusMdContent.includes('EpoCanvas 友邻互链协同收集表'), 'Embedded sheet title check');
+// Test 4: /status/ 语义化官方名片与申请表单组件 + ContentFeatureEnhancer 安全与降级审计
+console.log('\n▶ [Test 4] /status/ 官方友链名片、安全表单与 Markdown 表单增强引擎审计...');
+const officialCardContent = fs.readFileSync(path.join(ROOT, 'src/components/status/StatusOfficialCard.astro'), 'utf-8');
+const applySectionContent = fs.readFileSync(path.join(ROOT, 'src/components/status/StatusFriendApplySection.astro'), 'utf-8');
+const friendsConfig = fs.readFileSync(path.join(ROOT, 'src/config/friends.ts'), 'utf-8');
+assert(friendsConfig.includes("name: 'shijianus'"), 'friendsConfig.siteInfo.name must be shijianus');
+assert(officialCardContent.includes('buildOfficialFriendSnippets'), 'StatusOfficialCard must use single-source snippets');
+assert(applySectionContent.includes('status-friend-apply-form'), 'StatusFriendApplySection must render SSR form');
 
 // 检查 ContentFeatureEnhancer.astro 中的表单与收集表渲染引擎
 const enhancerContent = fs.readFileSync(path.join(ROOT, 'src/components/ContentFeatureEnhancer.astro'), 'utf-8');
 assert(enhancerContent.includes('renderMarkdownFormBlocks'), 'ContentFeatureEnhancer missing renderMarkdownFormBlocks function');
 assert(enhancerContent.includes('office-sheet-wrapper'), 'ContentFeatureEnhancer missing office-sheet-wrapper rendering');
 assert(enhancerContent.includes('office-sheet-table'), 'ContentFeatureEnhancer missing office-sheet-table rendering');
-assert(enhancerContent.includes('parseMarkdownLink'), 'ContentFeatureEnhancer missing parseMarkdownLink for []() external links');
+assert(enhancerContent.includes('parseSafeMarkdownLink'), 'ContentFeatureEnhancer missing parseSafeMarkdownLink');
 assert(enhancerContent.includes("import { load as yamlLoad } from 'js-yaml'"), 'ContentFeatureEnhancer missing js-yaml import');
 
 // 检查 CSS
