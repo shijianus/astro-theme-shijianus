@@ -31,7 +31,7 @@ if (!fs.existsSync(publicDataDir)) {
 
 // 站长主站信息
 const SITE_INFO = {
-  name: 'EpoCanvas (shijianus)',
+  name: 'shijianus',
   url: 'https://blog.epocanvas.com',
   avatar: '/media/shijianus/avatar.jpg',
   desc: '把研究、开发和生活折叠成可读的记录。在高信息密度里保留阅读秩序。',

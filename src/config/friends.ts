@@ -88,8 +88,14 @@ export const friendsConfig: {
   siteInfo: {
     name: string;
     url: string;
+    alternateUrls: string[];
+    canonicalConfiguredUrl: string;
     avatar: string;
+    cover: string;
     desc: string;
+    contact: string;
+    momentsFeed: string;
+    rssStatusNote: string;
   };
   momentsSettings: MomentsSettings;
   rules: string[];
@@ -97,10 +103,16 @@ export const friendsConfig: {
   moments: MomentItem[];
 } = {
   siteInfo: {
-    name: 'EpoCanvas (shijianus)',
+    name: 'shijianus',
     url: 'https://blog.epocanvas.com',
+    alternateUrls: ['https://shijianus.com', 'https://shijian.us'],
+    canonicalConfiguredUrl: 'https://shijian.us',
     avatar: '/media/shijianus/avatar.jpg',
+    cover: '/media/shijianus/geek-cover.jpg',
     desc: '把研究、开发和生活折叠成可读的记录。在高信息密度里保留阅读秩序。',
+    contact: 'shijianus@epocanvas.com',
+    momentsFeed: 'https://blog.epocanvas.com/shijianus-moments.json',
+    rssStatusNote: '/rss.xml 暂未部署（当前可先订阅 /shijianus-moments.json）',
   },
   momentsSettings: {
     coverBg: '/media/shijianus/geek-cover.jpg',
@@ -163,3 +175,85 @@ export const friendsConfig: {
   ],
   moments: [],
 };
+
+export interface OfficialFriendSnippets {
+  profile: {
+    name: string;
+    url: string;
+    avatar: string;
+    cover: string;
+    desc: string;
+    contact: string;
+    momentsFeed: string;
+    rssStatusNote: string;
+  };
+  yaml: string;
+  json: string;
+  html: string;
+  markdown: string;
+}
+
+function escapeHtmlAttr(value: string): string {
+  return value
+    .replaceAll('&', '&amp;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;');
+}
+
+/**
+ * Single source of truth for shijianus official friend-link metadata and copyable code formats.
+ */
+export function buildOfficialFriendSnippets(): OfficialFriendSnippets {
+  const base = friendsConfig.siteInfo.url.replace(/\/+$/, '');
+  const avatar = friendsConfig.siteInfo.avatar.startsWith('http')
+    ? friendsConfig.siteInfo.avatar
+    : `${base}${friendsConfig.siteInfo.avatar}`;
+  const cover = friendsConfig.siteInfo.cover.startsWith('http')
+    ? friendsConfig.siteInfo.cover
+    : `${base}${friendsConfig.siteInfo.cover}`;
+
+  const profile = {
+    name: friendsConfig.siteInfo.name,
+    url: base,
+    avatar,
+    cover,
+    desc: friendsConfig.siteInfo.desc,
+    contact: friendsConfig.siteInfo.contact,
+    momentsFeed: friendsConfig.siteInfo.momentsFeed,
+    rssStatusNote: friendsConfig.siteInfo.rssStatusNote,
+  };
+
+  const yaml = [
+    `- name: ${profile.name}`,
+    `  link: ${profile.url}`,
+    `  avatar: ${profile.avatar}`,
+    `  descr: ${profile.desc}`,
+    `  siteshot: ${profile.cover}`,
+  ].join('\n');
+
+  const json = JSON.stringify(
+    {
+      name: profile.name,
+      url: profile.url,
+      avatar: profile.avatar,
+      desc: profile.desc,
+      cover: profile.cover,
+      momentsFeed: profile.momentsFeed,
+    },
+    null,
+    2
+  );
+
+  const html = [
+    `<a href="${escapeHtmlAttr(profile.url)}" target="_blank" rel="noopener noreferrer" title="${escapeHtmlAttr(`${profile.name} - ${profile.desc}`)}">`,
+    `  <img src="${escapeHtmlAttr(profile.avatar)}" alt="${escapeHtmlAttr(profile.name)}" width="48" height="48" style="border-radius:50%;" />`,
+    `  <span>${escapeHtmlAttr(profile.name)}</span>`,
+    `</a>`,
+  ].join('\n');
+
+  const markdown = `[${profile.name}](${profile.url}) - ${profile.desc}`;
+
+  return { profile, yaml, json, html, markdown };
+}

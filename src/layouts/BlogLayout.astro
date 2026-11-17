@@ -37,6 +37,11 @@ interface Props {
   sidebarData?: SidebarData;
   pageType?: string;
   lang?: string;
+  canonicalUrl?: string;
+  ogType?: 'website' | 'article';
+  structuredData?: Record<string, unknown>;
+  enableTocDrawer?: boolean;
+  tocHeadings?: SidebarData['headings'];
 }
 
 const {
@@ -46,7 +51,17 @@ const {
   sidebarData,
   pageType = 'page',
   lang = siteConfig.site.locale,
+  canonicalUrl,
+  ogType = pageType === 'post' ? 'article' : 'website',
+  structuredData,
+  enableTocDrawer = false,
+  tocHeadings,
 } = Astro.props;
+
+const canonicalOrigin = Astro.site?.href || siteConfig.site.url;
+const resolvedCanonicalUrl = canonicalUrl || new URL(Astro.url.pathname, canonicalOrigin).href;
+const shouldEmitDefaultCanonical = Boolean(canonicalUrl) || pageType !== 'post';
+const drawerHeadings = tocHeadings && tocHeadings.length > 0 ? tocHeadings : (sidebarData?.headings || []);
 
 // Fetch global data for overlays to ensure they are populated on all routes
 const allPosts = await getCollection('posts');
@@ -200,6 +215,15 @@ const isMantleActiveOnThisPage = Boolean(
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content={description} />
     <meta name="generator" content={Astro.generator} />
+    {shouldEmitDefaultCanonical && <link rel="canonical" href={resolvedCanonicalUrl} />}
+    <meta property="og:site_name" content={siteConfig.site.name} />
+    <meta property="og:title" content={`${title} | ${siteConfig.site.title}`} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content={ogType} />
+    <meta property="og:url" content={resolvedCanonicalUrl} />
+    {structuredData && (
+      <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
+    )}
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
     <link rel="icon" type="image/png" href="/favicon.png" />
     <title>{title} | {siteConfig.site.title}</title>
@@ -492,8 +516,8 @@ const isMantleActiveOnThisPage = Boolean(
 
       <Footer stats={overlayStats} />
 
-      {pageType === 'post' && sidebarData?.headings && sidebarData.headings.length > 0 && (
-        <MobileTocDrawer headings={sidebarData.headings} />
+      {(pageType === 'post' || enableTocDrawer) && drawerHeadings.length > 0 && (
+        <MobileTocDrawer headings={drawerHeadings} />
       )}
 
       <ThemeDock
