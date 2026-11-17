@@ -1,0 +1,126 @@
+---
+import { buildOfficialFriendSnippets } from '../../config/friends';
+
+const { profile, yaml, json, html, markdown } = buildOfficialFriendSnippets();
+
+const fields = [
+  { key: 'name', label: '博客名称', value: profile.name },
+  { key: 'url', label: '推荐主网址（已实测）', value: profile.url },
+  { key: 'avatar', label: '头像图标', value: profile.avatar },
+  { key: 'desc', label: '博客简介', value: profile.desc },
+  { key: 'cover', label: '展示封面', value: profile.cover },
+  { key: 'momentsFeed', label: '朋友圈协议清单（JSON）', value: profile.momentsFeed },
+  { key: 'contact', label: '联系邮箱', value: profile.contact },
+];
+
+const formats = [
+  { id: 'yaml', label: 'YAML', langLabel: 'Hexo / Hugo / Jekyll', code: yaml },
+  { id: 'json', label: 'JSON', langLabel: '前端主题 / API', code: json },
+  { id: 'html', label: 'HTML', langLabel: '静态网页片段', code: html },
+  { id: 'markdown', label: 'Markdown', langLabel: '纯文本 / 文档', code: markdown },
+];
+---
+
+<section class="official-friend-card" aria-labelledby="official-friend-card-heading" data-official-friend-card>
+  <h3 id="official-friend-card-heading" class="sr-only">shijianus 官方友链名片与多格式配置</h3>
+
+  <div class="official-friend-card__preview">
+    <img
+      src="/media/shijianus/avatar.jpg"
+      alt="shijianus 站点头像"
+      class="official-friend-card__avatar"
+      width="56"
+      height="56"
+      loading="lazy"
+    />
+    <div class="official-friend-card__identity">
+      <p class="official-friend-card__name">{profile.name}</p>
+      <p class="official-friend-card__desc">{profile.desc}</p>
+    </div>
+    <a
+      href={profile.url}
+      class="status-btn status-btn--secondary status-btn--sm"
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      访问主站 ↗
+    </a>
+  </div>
+
+  <div class="official-friend-fields">
+    {fields.map((field) => (
+      <div class="official-field-item">
+        <div class="official-field-item__top">
+          <span class="official-field-item__label">{field.label}</span>
+          <button
+            type="button"
+            class="status-btn status-btn--secondary status-btn--sm"
+            data-copy-text={field.value}
+            data-copy-label={field.label}
+          >
+            复制
+          </button>
+        </div>
+        <code class="official-field-item__value">{field.value}</code>
+      </div>
+    ))}
+  </div>
+
+  <div class="format-switcher" data-format-switcher>
+    <div class="format-switcher__bar">
+      <div class="format-tablist" role="tablist" aria-label="选择友链配置代码格式">
+        {formats.map((fmt, index) => (
+          <button
+            type="button"
+            role="tab"
+            id={`tab-${fmt.id}`}
+            class="format-tab"
+            aria-selected={index === 0 ? 'true' : 'false'}
+            aria-controls={`panel-${fmt.id}`}
+            tabindex={index === 0 ? 0 : -1}
+            data-format-tab={fmt.id}
+          >
+            {fmt.label}
+          </button>
+        ))}
+      </div>
+
+      <button
+        type="button"
+        class="status-btn status-btn--primary status-btn--sm"
+        data-copy-active-format
+      >
+        复制当前配置 (YAML)
+      </button>
+    </div>
+
+    {formats.map((fmt, index) => (
+      <div
+        role="tabpanel"
+        id={`panel-${fmt.id}`}
+        aria-labelledby={`tab-${fmt.id}`}
+        class="format-tabpanel"
+        data-format-panel={fmt.id}
+        data-format-code={fmt.code}
+        hidden={index !== 0}
+      >
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:0.5rem;margin-bottom:0.35rem;">
+          <span style="font-size:0.82rem;font-weight:700;color:var(--status-text-muted);">
+            {fmt.label}（适用：{fmt.langLabel}）
+          </span>
+          <button
+            type="button"
+            class="status-btn status-btn--secondary status-btn--sm"
+            data-copy-text={fmt.code}
+            data-copy-label={`${fmt.label} 配置`}
+          >
+            复制 {fmt.label}
+          </button>
+        </div>
+        <pre><code class={`language-${fmt.id}`}>{fmt.code}</code></pre>
+      </div>
+    ))}
+  </div>
+
+  <div class="sr-only" aria-live="polite" data-copy-live-status></div>
+</section>

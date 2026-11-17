@@ -1,0 +1,649 @@
+<div class="sr-only" aria-live="polite" id="status-doc-live-region"></div>
+
+<script>
+  import {
+    validateFriendApplicationInput,
+    parseSafeMarkdownLink,
+    interpretApplyApiResponse,
+    type ApplyApiResponseShape,
+  } from '../../lib/friend-apply';
+
+  const copyToClipboard = async (text: string): Promise<boolean> => {
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(text);
+        return true;
+      }
+    } catch {
+      // Fallback below
+    }
+    try {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.setAttribute('readonly', '');
+      ta.style.position = 'fixed';
+      ta.style.left = '-9999px';
+      document.body.appendChild(ta);
+      ta.select();
+      const ok = document.execCommand('copy');
+      ta.remove();
+      return ok;
+    } catch {
+      return false;
+    }
+  };
+
+  const announce = (msg: string) => {
+    const region = document.getElementById('status-doc-live-region');
+    if (region) {
+      region.textContent = '';
+      window.setTimeout(() => {
+        region.textContent = msg;
+      }, 15);
+    }
+    if (typeof (window as any).snackbarShow === 'function') {
+      (window as any).snackbarShow(msg, false, 2000);
+    }
+  };
+
+  function initStatusDocumentSystem() {
+    const root = document.querySelector<HTMLElement>('.status-doc-root');
+    if (!root || root.dataset.enhanced === 'true') return;
+    root.dataset.enhanced = 'true';
+    document.documentElement.classList.add('status-js-ready');
+
+    const article = root.querySelector<HTMLElement>('.status-doc-article');
+
+    // -----------------------------------------------------------------------
+    // 1. Semantic External Link Enhancement (↗ icon + sr-only cue)
+    // -----------------------------------------------------------------------
+    if (article) {
+      article.querySelectorAll<HTMLAnchorElement>('a[href]').forEach((anchor) => {
+        if (
+          anchor.classList.contains('status-btn') ||
+          anchor.classList.contains('doc-term') ||
+          anchor.classList.contains('doc-heading-anchor') ||
+          anchor.classList.contains('status-outline-link') ||
+          anchor.classList.contains('status-outline-top')
+        ) {
+          return;
+        }
+        const rawHref = anchor.getAttribute('href') || '';
+        if (!/^https?:\/\//i.test(rawHref)) return;
+        try {
+          const parsed = new URL(rawHref);
+          if (parsed.origin === window.location.origin) return;
+        } catch {
+          return;
+        }
+
+        anchor.classList.add('doc-link--external');
+        if (!anchor.getAttribute('rel')) {
+          anchor.setAttribute('rel', 'noopener noreferrer');
+        }
+        if (!anchor.querySelector('.doc-ext-icon')) {
+          const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+          svg.setAttribute('class', 'doc-ext-icon');
+          svg.setAttribute('viewBox', '0 0 24 24');
+          svg.setAttribute('fill', 'none');
+          svg.setAttribute('stroke', 'currentColor');
+          svg.setAttribute('stroke-width', '2');
+          svg.setAttribute('stroke-linecap', 'round');
+          svg.setAttribute('stroke-linejoin', 'round');
+          svg.setAttribute('aria-hidden', 'true');
+          const p1 = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+          p1.setAttribute('d', 'M7 17 17 7');
+          const p2 = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+          p2.setAttribute('d', 'M7 7h10v10');
+          svg.append(p1, p2);
+          anchor.appendChild(svg);
+
+          const sr = document.createElement('span');
+          sr.className = 'sr-only';
+          sr.textContent = '（外部链接）';
+          anchor.appendChild(sr);
+        }
+      });
+
+      // ---------------------------------------------------------------------
+      // 2. Heading Anchor Deep-Links (#)
+      // ---------------------------------------------------------------------
+      article.querySelectorAll<HTMLElement>('h2[id], h3[id]').forEach((heading) => {
+        if (heading.querySelector('.doc-heading-anchor')) return;
+        const id = heading.id;
+        const headingText = (heading.textContent || '').trim();
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'doc-heading-anchor';
+        btn.setAttribute('aria-label', `复制「${headingText}」章节链接`);
+        btn.setAttribute('title', '复制本节深度链接');
+        btn.textContent = '#';
+        btn.addEventListener('click', async () => {
+          const url = `${window.location.origin}${window.location.pathname}#${encodeURIComponent(id)}`;
+          try {
+            window.history.replaceState(null, '', `#${encodeURIComponent(id)}`);
+          } catch {}
+          const ok = await copyToClipboard(url);
+          btn.textContent = ok ? '✓' : '#';
+          btn.classList.toggle('is-copied', ok);
+          announce(ok ? `已复制「${headingText}」章节链接` : '未能访问剪贴板，已更新地址栏锚点');
+          window.setTimeout(() => {
+            btn.textContent = '#';
+            btn.classList.remove('is-copied');
+          }, 1600);
+        });
+        heading.appendChild(btn);
+      });
+    }
+
+    // -----------------------------------------------------------------------
+    // 3. Google-Style Contextual Glossary Disclosure Popover
+    // -----------------------------------------------------------------------
+    let popoverEl = document.getElementById('doc-glossary-popover') as HTMLDivElement | null;
+    if (!popoverEl) {
+      popoverEl = document.createElement('div');
+      popoverEl.id = 'doc-glossary-popover';
+      popoverEl.className = 'doc-glossary-popover';
+      popoverEl.setAttribute('role', 'dialog');
+      popoverEl.setAttribute('aria-modal', 'false');
+      popoverEl.hidden = true;
+      document.body.appendChild(popoverEl);
+    }
+
+    let activeTrigger: HTMLAnchorElement | null = null;
+    let isPinned = false;
+    let hoverTimer: number | null = null;
+    let closeTimer: number | null = null;
+
+    const readTermEntry = (trigger: HTMLAnchorElement) => {
+      const termKey = trigger.dataset.term || trigger.getAttribute('href')?.replace(/^#glossary-/, '') || '';
+      const defEl = document.getElementById(`glossary-${termKey}-def`);
+      const titleEl = document.getElementById(`glossary-${termKey}`);
+      const title = titleEl?.textContent?.trim() || trigger.textContent?.trim() || termKey;
+      const body = defEl?.textContent?.trim() || trigger.dataset.summary || '请参见页尾术语表获取完整说明。';
+      const href = trigger.getAttribute('href') || `#glossary-${termKey}`;
+      return { termKey, title, body, href };
+    };
+
+    const positionPopover = (trigger: HTMLAnchorElement) => {
+      if (!popoverEl) return;
+      const rect = trigger.getBoundingClientRect();
+      const width = Math.min(360, window.innerWidth - 24);
+      popoverEl.style.width = `${width}px`;
+
+      // Measure height off-screen if needed
+      const popRect = popoverEl.getBoundingClientRect();
+      const popHeight = popRect.height || 160;
+      const spaceBelow = window.innerHeight - rect.bottom;
+      const top = spaceBelow >= popHeight + 14 || rect.top < popHeight + 14
+        ? Math.min(window.innerHeight - popHeight - 12, rect.bottom + 8)
+        : Math.max(12, rect.top - popHeight - 8);
+      const left = Math.max(12, Math.min(window.innerWidth - width - 12, rect.left));
+
+      popoverEl.style.top = `${Math.round(top)}px`;
+      popoverEl.style.left = `${Math.round(left)}px`;
+    };
+
+    const closePopover = (restoreFocus = false) => {
+      if (!popoverEl) return;
+      if (hoverTimer) window.clearTimeout(hoverTimer);
+      if (closeTimer) window.clearTimeout(closeTimer);
+      popoverEl.classList.remove('is-open');
+      popoverEl.hidden = true;
+      if (activeTrigger) {
+        activeTrigger.setAttribute('aria-expanded', 'false');
+        if (restoreFocus) {
+          activeTrigger.focus();
+        }
+      }
+      activeTrigger = null;
+      isPinned = false;
+    };
+
+    const openPopover = (trigger: HTMLAnchorElement, pin: boolean) => {
+      if (!popoverEl) return;
+      if (closeTimer) window.clearTimeout(closeTimer);
+
+      if (activeTrigger && activeTrigger !== trigger) {
+        activeTrigger.setAttribute('aria-expanded', 'false');
+      }
+
+      const { title, body, href } = readTermEntry(trigger);
+      popoverEl.replaceChildren();
+
+      const head = document.createElement('div');
+      head.className = 'doc-glossary-popover__head';
+
+      const heading = document.createElement('p');
+      heading.className = 'doc-glossary-popover__title';
+      heading.id = 'doc-glossary-popover-title';
+      heading.textContent = title;
+
+      const closeBtn = document.createElement('button');
+      closeBtn.type = 'button';
+      closeBtn.className = 'doc-glossary-popover__close';
+      closeBtn.setAttribute('aria-label', '关闭术语解释');
+      closeBtn.textContent = '×';
+      closeBtn.addEventListener('click', () => closePopover(true));
+
+      head.append(heading, closeBtn);
+
+      const bodyP = document.createElement('p');
+      bodyP.className = 'doc-glossary-popover__body';
+      bodyP.textContent = body;
+
+      const foot = document.createElement('div');
+      foot.className = 'doc-glossary-popover__foot';
+
+      const jumpLink = document.createElement('a');
+      jumpLink.href = href;
+      jumpLink.textContent = '跳转到术语表完整条目 ↓';
+      jumpLink.addEventListener('click', () => closePopover(false));
+
+      const escHint = document.createElement('span');
+      escHint.style.color = 'var(--status-text-muted)';
+      escHint.textContent = 'Esc 关闭';
+
+      foot.append(jumpLink, escHint);
+      popoverEl.append(head, bodyP, foot);
+      popoverEl.setAttribute('aria-labelledby', 'doc-glossary-popover-title');
+
+      popoverEl.hidden = false;
+      positionPopover(trigger);
+      window.requestAnimationFrame(() => {
+        popoverEl?.classList.add('is-open');
+      });
+
+      trigger.setAttribute('aria-expanded', 'true');
+      activeTrigger = trigger;
+      isPinned = pin;
+    };
+
+    root.querySelectorAll<HTMLAnchorElement>('.doc-term').forEach((termLink) => {
+      if (termLink.dataset.glossaryBound === 'true') return;
+      termLink.dataset.glossaryBound = 'true';
+
+      termLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (activeTrigger === termLink && isPinned) {
+          closePopover(false);
+        } else {
+          openPopover(termLink, true);
+        }
+      });
+
+      termLink.addEventListener('keydown', (e) => {
+        if (e.key === ' ') {
+          e.preventDefault();
+          if (activeTrigger === termLink && isPinned) {
+            closePopover(false);
+          } else {
+            openPopover(termLink, true);
+          }
+        }
+      });
+
+      termLink.addEventListener('mouseenter', () => {
+        if (closeTimer) window.clearTimeout(closeTimer);
+        if (isPinned) return;
+        hoverTimer = window.setTimeout(() => {
+          openPopover(termLink, false);
+        }, 160);
+      });
+
+      termLink.addEventListener('mouseleave', () => {
+        if (hoverTimer) window.clearTimeout(hoverTimer);
+        if (!isPinned) {
+          closeTimer = window.setTimeout(() => closePopover(false), 180);
+        }
+      });
+
+      termLink.addEventListener('focus', () => {
+        if (!isPinned) {
+          openPopover(termLink, false);
+        }
+      });
+    });
+
+    popoverEl.addEventListener('mouseenter', () => {
+      if (closeTimer) window.clearTimeout(closeTimer);
+    });
+    popoverEl.addEventListener('mouseleave', () => {
+      if (!isPinned) {
+        closeTimer = window.setTimeout(() => closePopover(false), 180);
+      }
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && popoverEl && !popoverEl.hidden) {
+        e.preventDefault();
+        closePopover(true);
+      }
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!popoverEl || popoverEl.hidden) return;
+      const target = e.target as Node | null;
+      if (!target) return;
+      if (popoverEl.contains(target)) return;
+      if (activeTrigger && activeTrigger.contains(target)) return;
+      closePopover(false);
+    });
+
+    document.addEventListener('focusin', (e) => {
+      if (!popoverEl || popoverEl.hidden || isPinned) return;
+      const target = e.target as Node | null;
+      if (!target) return;
+      if (popoverEl.contains(target) || (activeTrigger && activeTrigger.contains(target))) return;
+      closePopover(false);
+    });
+
+    // -----------------------------------------------------------------------
+    // 4. Official Friend Card Tabs & Copy Buttons
+    // -----------------------------------------------------------------------
+    const switcher = root.querySelector<HTMLElement>('[data-format-switcher]');
+    if (switcher) {
+      const tabs = Array.from(switcher.querySelectorAll<HTMLButtonElement>('[data-format-tab]'));
+      const panels = Array.from(switcher.querySelectorAll<HTMLElement>('[data-format-panel]'));
+      const copyActiveBtn = switcher.querySelector<HTMLButtonElement>('[data-copy-active-format]');
+
+      const activateTab = (fmtId: string, focusTab = false) => {
+        tabs.forEach((tab) => {
+          const active = tab.dataset.formatTab === fmtId;
+          tab.setAttribute('aria-selected', active ? 'true' : 'false');
+          tab.tabIndex = active ? 0 : -1;
+          if (active && focusTab) tab.focus();
+        });
+        panels.forEach((panel) => {
+          const active = panel.dataset.formatPanel === fmtId;
+          panel.hidden = !active;
+        });
+        if (copyActiveBtn) {
+          copyActiveBtn.textContent = `复制当前配置 (${fmtId.toUpperCase()})`;
+          copyActiveBtn.dataset.activeFormat = fmtId;
+        }
+      };
+
+      tabs.forEach((tab, idx) => {
+        tab.addEventListener('click', () => {
+          if (tab.dataset.formatTab) activateTab(tab.dataset.formatTab);
+        });
+        tab.addEventListener('keydown', (e) => {
+          let nextIdx = -1;
+          if (e.key === 'ArrowRight') nextIdx = (idx + 1) % tabs.length;
+          else if (e.key === 'ArrowLeft') nextIdx = (idx - 1 + tabs.length) % tabs.length;
+          else if (e.key === 'Home') nextIdx = 0;
+          else if (e.key === 'End') nextIdx = tabs.length - 1;
+          if (nextIdx >= 0) {
+            e.preventDefault();
+            const targetId = tabs[nextIdx]?.dataset.formatTab;
+            if (targetId) activateTab(targetId, true);
+          }
+        });
+      });
+
+      copyActiveBtn?.addEventListener('click', async () => {
+        const activePanel = panels.find((p) => !p.hidden) || panels[0];
+        const code = activePanel?.dataset.formatCode || '';
+        const fmt = activePanel?.dataset.formatPanel?.toUpperCase() || 'YAML';
+        if (!code) return;
+        const ok = await copyToClipboard(code);
+        const orig = copyActiveBtn.textContent || '';
+        copyActiveBtn.textContent = ok ? `已复制 ${fmt} ✓` : '复制失败，请手动选择';
+        announce(ok ? `已复制 ${fmt} 格式友链配置` : '剪贴板写入失败');
+        window.setTimeout(() => {
+          copyActiveBtn.textContent = orig;
+        }, 1600);
+      });
+    }
+
+    root.querySelectorAll<HTMLButtonElement>('[data-copy-text]').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        const text = btn.dataset.copyText || '';
+        const label = btn.dataset.copyLabel || '内容';
+        if (!text) return;
+        const ok = await copyToClipboard(text);
+        const orig = btn.textContent || '复制';
+        btn.textContent = ok ? '已复制 ✓' : '请手动复制';
+        const liveEl = root.querySelector('[data-copy-live-status]');
+        if (liveEl) liveEl.textContent = ok ? `已复制 ${label}` : `复制 ${label} 失败`;
+        announce(ok ? `已复制「${label}」到剪贴板` : `无法访问剪贴板，请手动复制 ${label}`);
+        window.setTimeout(() => {
+          btn.textContent = orig;
+        }, 1500);
+      });
+    });
+
+    // -----------------------------------------------------------------------
+    // 5. Outline Navigation Scroll-Spy & Mobile Drawer Auto-Close
+    // -----------------------------------------------------------------------
+    const outlineLinks = Array.from(root.querySelectorAll<HTMLAnchorElement>('[data-outline-link]'));
+    const progressEl = root.querySelector<HTMLElement>('[data-status-scroll-progress]');
+    const mobileToc = document.getElementById('status-mobile-toc') as HTMLDetailsElement | null;
+
+    outlineLinks.forEach((link) => {
+      link.addEventListener('click', () => {
+        if (mobileToc?.open) {
+          mobileToc.open = false;
+        }
+      });
+    });
+
+    const sectionIds = Array.from(new Set(outlineLinks.map((l) => l.dataset.outlineLink).filter(Boolean) as string[]));
+    const sectionEls = sectionIds
+      .map((id) => ({ id, el: document.getElementById(id) }))
+      .filter((item): item is { id: string; el: HTMLElement } => Boolean(item.el));
+
+    const updateOutlineState = () => {
+      if (sectionEls.length > 0) {
+        let currentId = sectionEls[0].id;
+        for (const item of sectionEls) {
+          const top = item.el.getBoundingClientRect().top;
+          if (top <= 130) {
+            currentId = item.id;
+          } else {
+            break;
+          }
+        }
+        outlineLinks.forEach((link) => {
+          const isCurrent = link.dataset.outlineLink === currentId;
+          link.classList.toggle('is-active', isCurrent);
+          if (isCurrent) {
+            link.setAttribute('aria-current', 'location');
+          } else {
+            link.removeAttribute('aria-current');
+          }
+        });
+      }
+
+      if (progressEl) {
+        const scrollable = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+        const pct = Math.min(100, Math.max(0, Math.round((window.scrollY / scrollable) * 100)));
+        progressEl.textContent = `${pct}%`;
+      }
+    };
+
+    let spyTicking = false;
+    window.addEventListener(
+      'scroll',
+      () => {
+        if (spyTicking) return;
+        spyTicking = true;
+        window.requestAnimationFrame(() => {
+          updateOutlineState();
+          spyTicking = false;
+        });
+      },
+      { passive: true }
+    );
+    updateOutlineState();
+
+    root.querySelector('[data-status-scroll-top]')?.addEventListener('click', (e) => {
+      e.preventDefault();
+      window.scrollTo({ top: 0, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+    });
+
+    // -----------------------------------------------------------------------
+    // 6. Truthful Friend-Link Application Form
+    // -----------------------------------------------------------------------
+    const form = document.getElementById('status-friend-apply-form') as HTMLFormElement | null;
+    const quickInput = document.getElementById('status-apply-quicklink') as HTMLInputElement | null;
+    const quickPreview = document.getElementById('status-apply-quicklink-preview') as HTMLDivElement | null;
+    const nameInput = document.getElementById('status-apply-name') as HTMLInputElement | null;
+    const urlInput = document.getElementById('status-apply-url') as HTMLInputElement | null;
+    const avatarInput = document.getElementById('status-apply-avatar') as HTMLInputElement | null;
+    const catSelect = document.getElementById('status-apply-category') as HTMLSelectElement | null;
+    const descInput = document.getElementById('status-apply-desc') as HTMLInputElement | null;
+    const contactInput = document.getElementById('status-apply-contact') as HTMLInputElement | null;
+    const submitBtn = document.getElementById('status-apply-submit') as HTMLButtonElement | null;
+    const feedbackBox = document.getElementById('status-apply-feedback') as HTMLDivElement | null;
+
+    const renderFeedbackCard = (
+      view: ReturnType<typeof interpretApplyApiResponse>,
+      extraMeta?: { submissionId?: string }
+    ) => {
+      if (!feedbackBox) return;
+      feedbackBox.hidden = false;
+      feedbackBox.dataset.kind = view.kind;
+      feedbackBox.replaceChildren();
+
+      const badge = document.createElement('div');
+      badge.style.fontSize = '0.78rem';
+      badge.style.fontWeight = '800';
+      badge.style.marginBottom = '0.25rem';
+      badge.textContent = view.badge;
+
+      const title = document.createElement('strong');
+      title.style.display = 'block';
+      title.style.fontSize = '0.98rem';
+      title.textContent = view.title;
+
+      const detail = document.createElement('p');
+      detail.style.margin = '0.4rem 0 0';
+      detail.style.fontSize = '0.88rem';
+      detail.style.lineHeight = '1.6';
+      detail.textContent = extraMeta?.submissionId
+        ? `${view.detail}（受理编号：${extraMeta.submissionId}）`
+        : view.detail;
+
+      const stepsUl = document.createElement('ul');
+      stepsUl.className = 'status-feedback-steps';
+      const stateIcon: Record<string, string> = {
+        done: '✓',
+        warn: '!',
+        fail: '✕',
+        pending: '⏳',
+      };
+      for (const step of view.steps) {
+        const li = document.createElement('li');
+        li.className = 'status-feedback-step';
+        li.dataset.state = step.state;
+        li.textContent = `${stateIcon[step.state] || '•'} ${step.label}`;
+        stepsUl.appendChild(li);
+      }
+
+      feedbackBox.append(badge, title, detail, stepsUl);
+    };
+
+    quickInput?.addEventListener('input', () => {
+      if (!quickPreview) return;
+      const val = quickInput.value.trim();
+      if (!val) {
+        quickPreview.hidden = true;
+        quickPreview.replaceChildren();
+        return;
+      }
+      const parsed = parseSafeMarkdownLink(val);
+      quickPreview.hidden = false;
+      quickPreview.classList.toggle('is-invalid', parsed.mode === 'invalid');
+      quickPreview.replaceChildren();
+
+      if (parsed.mode === 'invalid' || !parsed.url) {
+        quickPreview.textContent = '未识别到合法的 https:// 或 http:// 链接（仅支持标准 http/https 协议）。';
+      } else {
+        const label = document.createElement('span');
+        label.textContent = `已识别：${parsed.name} → ${parsed.url}`;
+        quickPreview.appendChild(label);
+        if (nameInput && parsed.name) nameInput.value = parsed.name;
+        if (urlInput && parsed.url) urlInput.value = parsed.url;
+      }
+    });
+
+    form?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!submitBtn) return;
+
+      const validation = validateFriendApplicationInput(
+        {
+          name: nameInput?.value || '',
+          url: urlInput?.value || '',
+          siteInput: quickInput?.value || '',
+          avatar: avatarInput?.value || '',
+          category: catSelect?.value || '',
+          desc: descInput?.value || '',
+          contact: contactInput?.value || '',
+          formId: 'friend-link-apply',
+          title: '友邻互链申请',
+          source: 'status_guide_form',
+        },
+        { requireAvatar: true, requireDesc: true, allowRelativeAvatar: false }
+      );
+
+      if (!validation.ok || !validation.data) {
+        renderFeedbackCard({
+          kind: 'error',
+          badge: '校验未通过',
+          title: '请先修正表单填写问题',
+          detail: validation.error || '请检查必填字段与网址协议（仅支持 https:// 或 http://）。',
+          steps: [
+            { label: '前端输入校验', state: 'fail' },
+            { label: '数据库持久化 (D1)', state: 'fail' },
+            { label: '站长通知 (TG)', state: 'fail' },
+            { label: '进入人工审核', state: 'fail' },
+          ],
+        });
+        const firstBadKey = Object.keys(validation.fieldErrors)[0];
+        if (firstBadKey === 'name') nameInput?.focus();
+        else if (firstBadKey === 'url') urlInput?.focus();
+        else if (firstBadKey === 'avatar') avatarInput?.focus();
+        else if (firstBadKey === 'desc') descInput?.focus();
+        return;
+      }
+
+      submitBtn.disabled = true;
+      const origLabel = submitBtn.textContent || '提交互链申请';
+      submitBtn.textContent = '正在提交并核验服务端状态...';
+
+      try {
+        const res = await fetch('/api/friends/apply', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(validation.data),
+        });
+        const data = (await res.json().catch(() => null)) as ApplyApiResponseShape | null;
+        const view = interpretApplyApiResponse(res.ok, res.status, data);
+        renderFeedbackCard(view, { submissionId: data?.submissionId });
+
+        if (res.ok && data?.ok === true) {
+          form.reset();
+          if (quickPreview) {
+            quickPreview.hidden = true;
+            quickPreview.replaceChildren();
+          }
+        }
+      } catch {
+        renderFeedbackCard(interpretApplyApiResponse(false, 0, null));
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = origLabel;
+      }
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initStatusDocumentSystem, { once: true });
+  } else {
+    initStatusDocumentSystem();
+  }
+  document.addEventListener('astro:page-load', initStatusDocumentSystem);
+</script>

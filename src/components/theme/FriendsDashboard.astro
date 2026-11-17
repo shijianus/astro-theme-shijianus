@@ -179,13 +179,13 @@ const totalFriends = friendsConfig.categories.reduce((acc, cat) => acc + cat.ite
           </div>
         </form>
 
-        <!-- 成功状态卡 -->
+        <!-- 状态反馈卡 -->
         <div id="modal-apply-success" class="modal-apply-success" style="display: none;">
           <div class="success-icon-wrap">
             <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
           </div>
-          <h4>申请提交成功！</h4>
-          <p>站长已在 Telegram 收到实时申请通知。审核通过后将即时完成互链双向添加。</p>
+          <h4 id="modal-apply-success-title">申请已受理</h4>
+          <p id="modal-apply-success-detail">请以服务端返回状态为准，审核通过后才会进入公开友邻列表。</p>
           <button id="modal-btn-done" class="theme-button" type="button">我知道了</button>
         </div>
       </div>
@@ -194,7 +194,13 @@ const totalFriends = friendsConfig.categories.reduce((acc, cat) => acc + cat.ite
 </section>
 
 <!-- 互动脚本：模态弹窗开闭与异步提交 -->
-<script is:inline>
+<script>
+  import {
+    validateFriendApplicationInput,
+    interpretApplyApiResponse,
+    type ApplyApiResponseShape,
+  } from '../../lib/friend-apply';
+
   (() => {
     const modal = document.getElementById('friend-apply-modal');
     const btnOpen = document.getElementById('btn-open-apply-modal');
@@ -202,9 +208,11 @@ const totalFriends = friendsConfig.categories.reduce((acc, cat) => acc + cat.ite
     const btnCancel = document.getElementById('modal-btn-cancel');
     const backdrop = document.getElementById('friend-modal-backdrop');
     const btnDone = document.getElementById('modal-btn-done');
-    const form = document.getElementById('modal-friend-apply-form');
+    const form = document.getElementById('modal-friend-apply-form') as HTMLFormElement | null;
     const successCard = document.getElementById('modal-apply-success');
-    const submitBtn = document.getElementById('modal-btn-submit');
+    const successTitleEl = document.getElementById('modal-apply-success-title');
+    const successDetailEl = document.getElementById('modal-apply-success-detail');
+    const submitBtn = document.getElementById('modal-btn-submit') as HTMLButtonElement | null;
     const submitBtnText = document.getElementById('modal-btn-submit-text');
     const formAlert = document.getElementById('modal-form-alert');
 
@@ -247,51 +255,64 @@ const totalFriends = friendsConfig.categories.reduce((acc, cat) => acc + cat.ite
       e.preventDefault();
       if (!submitBtn || !submitBtnText) return;
 
-      const name = (document.getElementById('modal-apply-name')?.value || '').trim();
-      const url = (document.getElementById('modal-apply-url')?.value || '').trim();
-      const avatar = (document.getElementById('modal-apply-avatar')?.value || '').trim();
-      const category = (document.getElementById('modal-apply-cat')?.value || '').trim();
-      const desc = (document.getElementById('modal-apply-desc')?.value || '').trim();
-      const contact = (document.getElementById('modal-apply-contact')?.value || '').trim();
+      const name = ((document.getElementById('modal-apply-name') as HTMLInputElement | null)?.value || '').trim();
+      const url = ((document.getElementById('modal-apply-url') as HTMLInputElement | null)?.value || '').trim();
+      const avatar = ((document.getElementById('modal-apply-avatar') as HTMLInputElement | null)?.value || '').trim();
+      const category = ((document.getElementById('modal-apply-cat') as HTMLSelectElement | null)?.value || '').trim();
+      const desc = ((document.getElementById('modal-apply-desc') as HTMLInputElement | null)?.value || '').trim();
+      const contact = ((document.getElementById('modal-apply-contact') as HTMLInputElement | null)?.value || '').trim();
 
-      if (!name || !url) {
+      const validation = validateFriendApplicationInput(
+        {
+          formId: 'friend-link-apply',
+          title: '友邻互链申请',
+          name,
+          url,
+          avatar,
+          category,
+          desc,
+          contact,
+          source: 'friends_modal',
+        },
+        { requireAvatar: true, requireDesc: true, allowRelativeAvatar: false }
+      );
+
+      if (!validation.ok || !validation.data) {
         if (formAlert) {
           formAlert.style.display = 'block';
           formAlert.className = 'modal-form-alert is-error';
-          formAlert.textContent = '请完整填写站点名称与站点链接！';
+          formAlert.textContent = validation.error || '请完整填写所有必填字段，并确保网址为合法的 https:// 或 http:// 地址。';
         }
         return;
       }
 
+      if (formAlert) {
+        formAlert.style.display = 'none';
+        formAlert.textContent = '';
+      }
+
       submitBtn.disabled = true;
-      submitBtnText.textContent = '正在提交并通知站长...';
+      submitBtnText.textContent = '正在提交并核验服务端状态...';
 
       try {
         const res = await fetch('/api/friends/apply', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            formId: 'friend-link-apply',
-            title: '友邻互链申请',
-            name,
-            url,
-            avatar,
-            category,
-            desc,
-            contact,
-            source: 'friends_modal',
-          }),
+          body: JSON.stringify(validation.data),
         });
 
-        const data = await res.json().catch(() => ({}));
-        if (res.ok && data.ok) {
+        const data = (await res.json().catch(() => null)) as ApplyApiResponseShape | null;
+        const feedback = interpretApplyApiResponse(res.ok, res.status, data);
+        if (res.ok && data?.ok === true) {
           if (form) form.style.display = 'none';
+          if (successTitleEl) successTitleEl.textContent = feedback.title;
+          if (successDetailEl) successDetailEl.textContent = feedback.detail;
           if (successCard) successCard.style.display = 'flex';
           form.reset();
         } else {
-          throw new Error(data.error || '提交失败，请稍后重试');
+          throw new Error(feedback.detail || '提交失败，请稍后重试');
         }
-      } catch (err) {
+      } catch (err: any) {
         if (formAlert) {
           formAlert.style.display = 'block';
           formAlert.className = 'modal-form-alert is-error';
