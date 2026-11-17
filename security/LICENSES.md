@@ -1,7 +1,7 @@
 # 开源依赖许可证合规报告 (Open Source License Inventory)
 
-> **生成时间**: 2026-11-10T15:56:15.896Z  
-> **包总数**: 836  
+> **生成时间**: 2026-11-17T05:47:15.143Z  
+> **包总数**: 838  
 > **强互惠 / 限制型许可证包数**: 15  
 
 ---
@@ -101,7 +101,9 @@
 | `@emmetio/scanner` | `1.0.4` | `MIT` | `dev` | - |
 | `@emmetio/stream-reader` | `2.2.0` | `MIT` | `dev` | - |
 | `@emmetio/stream-reader-utils` | `0.1.0` | `MIT` | `dev` | - |
+| `@emnapi/core` | `1.11.1` | `MIT` | `production` | - |
 | `@emnapi/core` | `1.11.3` | `MIT` | `production` | - |
+| `@emnapi/runtime` | `1.11.1` | `MIT` | `production` | - |
 | `@emnapi/runtime` | `1.11.3` | `MIT` | `production` | - |
 | `@emnapi/wasi-threads` | `1.2.2` | `MIT` | `production` | - |
 | `@emnapi/wasi-threads` | `1.2.3` | `MIT` | `production` | - |

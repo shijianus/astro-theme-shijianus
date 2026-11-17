@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-11-10T15:56:15.896Z",
-  "totalPackages": 836,
+  "generatedAt": "2026-11-17T05:47:15.143Z",
+  "totalPackages": 838,
   "copyleftRiskCount": 15,
   "copyleftPackages": [
     {
@@ -574,7 +574,21 @@
     },
     {
       "name": "@emnapi/core",
+      "version": "1.11.1",
+      "license": "MIT",
+      "scope": "production",
+      "isDirect": false
+    },
+    {
+      "name": "@emnapi/core",
       "version": "1.11.3",
+      "license": "MIT",
+      "scope": "production",
+      "isDirect": false
+    },
+    {
+      "name": "@emnapi/runtime",
+      "version": "1.11.1",
       "license": "MIT",
       "scope": "production",
       "isDirect": false
