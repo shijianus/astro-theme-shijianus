@@ -1,5 +1,6 @@
 import type { AppEnv } from './types';
-import { sanitizeHtml } from './telegram-config';
+import { sanitizeHtml } from './telegram-config.ts';
+import { sanitizeSafeHttpUrl } from '../../src/lib/friend-apply.ts';
 
 export interface FormSubmissionPayload {
   formId?: string;
@@ -61,8 +62,13 @@ export async function sendFormTelegramNotification(
     lines.push(`👤 <b>站点名称 / 申请人</b>: <b>${sanitizeHtml(payload.name)}</b>`);
   }
   if (payload.url) {
-    const safeUrl = sanitizeHtml(payload.url);
-    lines.push(`🔗 <b>站点地址</b>: <a href="${safeUrl}">${safeUrl}</a>`);
+    const validatedUrl = sanitizeSafeHttpUrl(payload.url);
+    if (validatedUrl) {
+      const safeUrl = sanitizeHtml(validatedUrl);
+      lines.push(`🔗 <b>站点地址</b>: <a href="${safeUrl}">${safeUrl}</a>`);
+    } else {
+      lines.push(`🔗 <b>站点地址</b>: <code>${sanitizeHtml(String(payload.url))}</code>`);
+    }
   }
   if (payload.avatar) {
     lines.push(`🖼 <b>头像图标</b>: <code>${sanitizeHtml(payload.avatar)}</code>`);
