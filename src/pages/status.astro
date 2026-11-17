@@ -3,14 +3,82 @@ import { getCollection } from 'astro:content';
 import BlogLayout from '../layouts/BlogLayout.astro';
 import ContentFeatureEnhancer from '../components/ContentFeatureEnhancer.astro';
 import StandardsHero from '../components/theme/StandardsHero.astro';
+import StatusOutlineNav, { type OutlineItem } from '../components/status/StatusOutlineNav.astro';
+import StatusOfficialCard from '../components/status/StatusOfficialCard.astro';
+import StatusFriendApplySection from '../components/status/StatusFriendApplySection.astro';
+import StatusDocEnhancer from '../components/status/StatusDocEnhancer.astro';
 import { createSidebarData } from '../lib/theme.ts';
+import { siteConfig } from '../config/site';
 import {
-  Content,
+  compiledContent,
   frontmatter,
 } from '../../docs/standards/status.md';
+import '../styles/status-docs.css';
 
 const allPosts = await getCollection('posts');
 const sidebarData = createSidebarData(allPosts);
+
+const pageLang = frontmatter.lang || 'zh-CN';
+const formatIso = (d?: Date | string) => {
+  if (!d) return '2026-11-16';
+  const parsed = d instanceof Date ? d : new Date(d);
+  return Number.isNaN(parsed.getTime()) ? String(d) : parsed.toISOString().slice(0, 10);
+};
+const pubIso = formatIso(frontmatter.pubDate);
+const updatedIso = formatIso(frontmatter.updatedDate);
+
+const canonicalBase = Astro.site?.href || siteConfig.site.url;
+const canonicalUrl = new URL('/status/', canonicalBase).href;
+
+const structuredData = {
+  '@context': 'https://schema.org',
+  '@type': 'WebPage',
+  name: frontmatter.title,
+  description: frontmatter.description,
+  url: canonicalUrl,
+  inLanguage: pageLang,
+  datePublished: pubIso,
+  dateModified: updatedIso,
+  version: frontmatter.version,
+  author: {
+    '@type': 'Person',
+    name: siteConfig.site.author.name,
+    url: canonicalBase,
+  },
+  publisher: {
+    '@type': 'Person',
+    name: siteConfig.site.name,
+    url: canonicalBase,
+  },
+};
+
+const outlineItems: OutlineItem[] = [
+  { id: 'guide-overview', label: '阅读本指南' },
+  { id: 'about-shijianus', label: '认识 shijianus' },
+  { id: 'site-status', label: '站点状态与运行边界' },
+  { id: 'friends-system', label: '友邻系统如何工作' },
+  { id: 'exchange-rules', label: '友邻交换与收录规则' },
+  { id: 'official-friend-info', label: 'shijianus 官方友链信息' },
+  { id: 'apply-friend-link', label: '互链申请' },
+  { id: 'privacy-and-data', label: '隐私与数据处理' },
+  { id: 'faq', label: '常见问题' },
+  { id: 'glossary', label: '术语表与版本反馈' },
+];
+
+const drawerHeadings = outlineItems.map((item) => ({
+  depth: 2,
+  slug: item.id,
+  text: item.label,
+}));
+
+const rawHtml = await compiledContent();
+const CARD_MARKER = '<div data-status-slot="official-friend-card"></div>';
+const APPLY_MARKER = '<div data-status-slot="friend-apply-section"></div>';
+const VERSION_MARKER = '<div data-status-slot="version-meta"></div>';
+
+const [beforeCard, afterCardRaw = ''] = rawHtml.split(CARD_MARKER);
+const [betweenCardAndApply, afterApplyRaw = ''] = afterCardRaw.split(APPLY_MARKER);
+const [betweenApplyAndVersion, afterVersion = ''] = afterApplyRaw.split(VERSION_MARKER);
 ---
 
 <BlogLayout
@@ -19,7 +87,12 @@ const sidebarData = createSidebarData(allPosts);
   showAside={false}
   pageType="standards"
   sidebarData={sidebarData}
-  lang="zh-Hant"
+  lang={pageLang}
+  canonicalUrl={canonicalUrl}
+  ogType="article"
+  structuredData={structuredData}
+  enableTocDrawer={true}
+  tocHeadings={drawerHeadings}
 >
   <StandardsHero
     slot="hero"
@@ -30,7 +103,39 @@ const sidebarData = createSidebarData(allPosts);
     updatedDate={frontmatter.updatedDate}
   />
 
-  <Content />
+  <div class="status-doc-root" id="top">
+    <StatusOutlineNav items={outlineItems} variant="mobile" />
 
-  <ContentFeatureEnhancer lang="zh-Hant" />
+    <div class="status-doc-layout">
+      <div class="status-doc-article">
+        <Fragment set:html={beforeCard} />
+
+        {afterCardRaw && <StatusOfficialCard />}
+
+        <Fragment set:html={betweenCardAndApply} />
+
+        {afterApplyRaw && <StatusFriendApplySection />}
+
+        <Fragment set:html={betweenApplyAndVersion} />
+
+        <section id="version-and-feedback" aria-labelledby="version-and-feedback-heading" style="margin-top:1.75rem;padding:1.15rem 1.25rem;border-radius:10px;border:1px solid var(--status-accent-border);background:var(--status-surface-muted);">
+          <h3 id="version-and-feedback-heading" style="margin:0 0 0.6rem;font-size:1rem;">版本记录与问题反馈</h3>
+          <ul style="margin:0;padding-left:1.2rem;display:grid;gap:0.35rem;font-size:0.9rem;">
+            <li><strong>文档版本：</strong><code>{frontmatter.version}</code>（与页首元数据单一来源同步）</li>
+            <li><strong>首次发布日期：</strong><time datetime={pubIso}>{pubIso}</time> · <strong>最后修订日期：</strong><time datetime={updatedIso}>{updatedIso}</time></li>
+            <li><strong>最近一次线上与源码核验时间：</strong><code>2026-11-16</code></li>
+            <li><strong>本次主要变更（{frontmatter.version}）：</strong>将博客主体统一修正为 <code>shijianus</code>；移除未经证实的 SLA、自动巡检与 Office 实时协作宣称；核实并如实披露 <code>/rss.xml</code>（404）与 <code>/shijianus-moments.json</code>（200）状态；补齐语义化链接与术语上下文解释；修复友链申请接口的 URL 安全校验与 D1/Telegram 真实状态拆分。</li>
+            <li><strong>问题反馈与申诉渠道：</strong>请发送邮件至 <a href="mailto:shijianus@epocanvas.com">shijianus@epocanvas.com</a> 或 <a href="mailto:contact@epocanvas.com">contact@epocanvas.com</a>，也可参阅 <a href="/community/reporting-and-appeals/">举报与申诉说明</a> 或在 <a href="/guestbook/">留言板</a> 反馈文档错漏。</li>
+          </ul>
+        </section>
+
+        <Fragment set:html={afterVersion} />
+      </div>
+
+      <StatusOutlineNav items={outlineItems} variant="desktop" />
+    </div>
+  </div>
+
+  <StatusDocEnhancer />
+  <ContentFeatureEnhancer lang={pageLang} />
 </BlogLayout>
