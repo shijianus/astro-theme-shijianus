@@ -49,9 +49,9 @@ const {
         const fieldId = field.id;
         const label = field.label || fieldId;
         const isReq = Boolean(field.required);
-        const type = (field.type || 'text').toLowerCase();
+        const rawType = (field.type || 'text').toLowerCase();
 
-        if (type === 'select' && Array.isArray(field.options)) {
+        if (rawType === 'select' && Array.isArray(field.options)) {
           return (
             <div class="md-form-field">
               <label for={`mff-${id}-${fieldId}`}>
@@ -68,7 +68,7 @@ const {
           );
         }
 
-        if (type === 'textarea') {
+        if (rawType === 'textarea') {
           return (
             <div class="md-form-field">
               <label for={`mff-${id}-${fieldId}`}>
@@ -85,6 +85,9 @@ const {
           );
         }
 
+        const inputType =
+          rawType === 'url' || rawType === 'email' || rawType === 'number' ? rawType : 'text';
+
         return (
           <div class="md-form-field">
             <label for={`mff-${id}-${fieldId}`}>
@@ -92,7 +95,7 @@ const {
             </label>
             <input
               id={`mff-${id}-${fieldId}`}
-              type={type}
+              type={inputType}
               name={fieldId}
               placeholder={field.placeholder || ''}
               required={isReq}
