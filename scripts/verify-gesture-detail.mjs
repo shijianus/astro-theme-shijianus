@@ -1,12 +1,24 @@
 import { chromium } from 'playwright';
 import { spawn } from 'child_process';
 import fs from 'fs';
+import net from 'net';
 import path from 'path';
 
-const PORT = 4331;
-const BASE_URL = `http://localhost:${PORT}`;
 const COMMENTS_DEV_PATH = path.resolve(process.cwd(), '.comments-dev.json');
 const BOOSTS_DEV_PATH = path.resolve(process.cwd(), '.boosts-dev.json');
+
+function getFreePort() {
+  return new Promise((resolve, reject) => {
+    const srv = net.createServer();
+    srv.unref();
+    srv.on('error', reject);
+    srv.listen(0, '127.0.0.1', () => {
+      const addr = srv.address();
+      const port = typeof addr === 'object' && addr ? addr.port : 4339;
+      srv.close(() => resolve(port));
+    });
+  });
+}
 
 async function waitForServer(url, timeoutMs = 45000) {
   const start = Date.now();
@@ -25,6 +37,8 @@ function assert(cond, msg) {
 }
 
 async function run() {
+  const PORT = await getFreePort();
+  const BASE_URL = `http://localhost:${PORT}`;
   const hadComments = fs.existsSync(COMMENTS_DEV_PATH);
   const origComments = hadComments ? fs.readFileSync(COMMENTS_DEV_PATH, 'utf8') : null;
   const hadBoosts = fs.existsSync(BOOSTS_DEV_PATH);
@@ -293,10 +307,11 @@ async function run() {
   } finally {
     if (browser) await browser.close();
     try {
-      if (devProc.pid) process.kill(-devProc.pid, 'SIGTERM');
+      if (devProc.pid) process.kill(-devProc.pid, 'SIGKILL');
     } catch {
-      devProc.kill('SIGTERM');
+      try { devProc.kill('SIGKILL'); } catch {}
     }
+    await new Promise((r) => setTimeout(r, 200));
     if (hadComments && origComments !== null) fs.writeFileSync(COMMENTS_DEV_PATH, origComments, 'utf8');
     else if (fs.existsSync(COMMENTS_DEV_PATH)) fs.unlinkSync(COMMENTS_DEV_PATH);
     if (hadBoosts && origBoosts !== null) fs.writeFileSync(BOOSTS_DEV_PATH, origBoosts, 'utf8');
