@@ -1,3 +1,4 @@
+import { GesturePopover } from './GesturePopover';
 import React, { useRef, useState } from 'react';
 import {
   Bold,
@@ -51,6 +52,7 @@ export function GestureInlineReplyComposer({
   const [previewTab, setPreviewTab] = useState<'write' | 'preview'>('write');
   const [showEmoji, setShowEmoji] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const emojiButton = useRef<HTMLButtonElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const insertMarkdown = (prefix: string, suffix = '') => {
@@ -164,7 +166,7 @@ export function GestureInlineReplyComposer({
 
           <span className="gd-toolbar-sep" />
 
-          <button type="button" title="表情" onClick={() => setShowEmoji((p) => !p)}>
+          <button ref={emojiButton} aria-expanded={showEmoji} type="button" title="表情" onClick={() => setShowEmoji((p) => !p)}>
             <Smile className="w-3.5 h-3.5" />
           </button>
           <button
@@ -202,7 +204,7 @@ export function GestureInlineReplyComposer({
         </div>
 
         {showEmoji && (
-          <div className="gd-emoji-grid">
+          <GesturePopover anchor={emojiButton} label="回复表情" onClose={() => setShowEmoji(false)}><div className="gd-emoji-grid">
             {COMPACT_EMOJI_LIST.map((em) => (
               <button
                 key={em}
@@ -216,7 +218,7 @@ export function GestureInlineReplyComposer({
                 {em}
               </button>
             ))}
-          </div>
+          </div></GesturePopover>
         )}
 
         {previewTab === 'write' ? (
