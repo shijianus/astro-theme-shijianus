@@ -166,28 +166,16 @@ export function GestureFloorCard({
       data-floor-index={floorIndex}
       className={`gd-floor-article gb-floor-target ${isOp ? 'is-op-floor' : 'is-sub-floor'} ${isHighlighted ? 'is-jump-highlighted' : ''}`}
     >
-      {/* ZONE 2: Two-column Sticky Avatar + Content Body (Ends strictly BEFORE Boost & Action Bar) */}
-      <div className="gd-floor-split">
-        {/* Left Fixed Rail (42px): Transparent background, NO vertical line in normal state */}
-        <div className="gd-avatar-rail">
-          <div className="gd-sticky-avatar-wrap">
-            <GestureAvatar
-              name={node.authorName}
-              avatar={node.authorAvatar}
-              size={isOp ? 42 : 36}
-              isOwner={badges.isOwner}
-            />
-          </div>
-        </div>
-
-        {/* Right Adaptive Content Column */}
-        <div className="gd-content-col">
+      <div className="gd-avatar-rail">
+        <GestureAvatar name={node.authorName} avatar={node.authorAvatar} size={isOp ? 40 : 34} isOwner={badges.isOwner} />
+      </div>
+      <div className="gd-content-col">
           {/* Author Bar (First Line) - NO IP location, NO #1 楼主 badge */}
           <div className="gd-author-bar">
             <div className="gd-author-badges">
               <span className="gd-author-name">{node.authorName || '访客'}</span>
               {badges.roleLabel && <span className="gd-role-badge">{badges.roleLabel}</span>}
-              <span className="gd-level-badge">{badges.levelLabel}</span>
+              {badges.levelLabel && <span className="gd-level-badge">{badges.levelLabel}</span>}
             </div>
 
             <div className="gd-author-meta-right">
@@ -293,8 +281,6 @@ export function GestureFloorCard({
               }}
             />
           )}
-        </div>
-      </div>
 
       {/* ZONE 4: Pure-Icon Action Bar + Top-4 Aggregated Emoji Pill + Direct Replies Trigger */}
       <div className="gd-zone4-action-bar">
@@ -324,18 +310,7 @@ export function GestureFloorCard({
           )}
         </div>
 
-        {isOp ? (
-          /* OP Full Action Bar: [♡] [⚡] [❞] [🔗] [••• (animated slide-out)] [↩] */
-          <div className="gd-zone4-right is-op">
-            <EmojiReactionCluster
-              summary={{}}
-              totalLikes={0}
-              userReaction={currentUserReaction}
-              onReact={(emoji) => onReact(node.id, emoji)}
-              showHeartTrigger={true}
-              hideSummaryPill={true}
-            />
-
+          <div className="gd-zone4-right">
             <button
               type="button"
               className={`gd-icon-btn ${boostComposerOpen ? 'is-active' : ''}`}
@@ -350,8 +325,8 @@ export function GestureFloorCard({
               type="button"
               className="gd-icon-btn"
               onClick={() => onQuoteFloor(node)}
-              title="引用主贴片段"
-              aria-label="引用主贴片段"
+              title="引用楼层"
+              aria-label="引用楼层"
             >
               <QuoteIcon className="w-4 h-4" />
             </button>
@@ -368,7 +343,7 @@ export function GestureFloorCard({
 
             {/* Animated [•••] Slide-Out Drawer */}
             <div className={`gd-more-drawer ${moreMenuOpen ? 'is-open' : ''}`}>
-              <div className="gd-more-drawer__items" aria-hidden={!moreMenuOpen}>
+              {moreMenuOpen && <div className="gd-more-drawer__items">
                 <button
                   type="button"
                   className="gd-icon-btn"
@@ -423,7 +398,7 @@ export function GestureFloorCard({
                     </button>
                   </>
                 )}
-              </div>
+              </div>}
 
               <button
                 type="button"
@@ -441,56 +416,12 @@ export function GestureFloorCard({
               type="button"
               className="gd-icon-btn is-reply-primary"
               onClick={() => onReplyFloor(node)}
-              title="回复主贴"
-              aria-label="回复主贴"
+              title={isOp ? "回复主贴" : "回复该楼层"}
+              aria-label={isOp ? "回复主贴" : "回复该楼层"}
             >
               <Reply className="w-4 h-4" />
             </button>
           </div>
-        ) : (
-          /* SubGesture Simplified Action Bar: [⚡] [🔗] [↩] (NO [•••] menu) */
-          <div className="gd-zone4-right is-sub">
-            <button
-              type="button"
-              className={`gd-icon-btn ${boostComposerOpen ? 'is-active' : ''}`}
-              onClick={() => setBoostComposerOpen((prev) => !prev)}
-              title="发送 Boost 短评"
-              aria-label="发送 Boost 短评"
-            >
-              <Zap className="w-4 h-4" />
-            </button>
-
-            <button
-              type="button"
-              className="gd-icon-btn"
-              onClick={() => onQuoteFloor(node)}
-              title="引用该楼层片段"
-              aria-label="引用该楼层片段"
-            >
-              <QuoteIcon className="w-4 h-4" />
-            </button>
-
-            <button
-              type="button"
-              className={`gd-icon-btn ${copiedJustNow ? 'is-success' : ''}`}
-              onClick={handleCopyFloorLink}
-              title="复制楼层直达链接"
-              aria-label="复制楼层直达链接"
-            >
-              {copiedJustNow ? <Check className="w-4 h-4" /> : <Link2 className="w-4 h-4" />}
-            </button>
-
-            <button
-              type="button"
-              className="gd-icon-btn is-reply-primary"
-              onClick={() => onReplyFloor(node)}
-              title="回复该楼层"
-              aria-label="回复该楼层"
-            >
-              <Reply className="w-4 h-4" />
-            </button>
-          </div>
-        )}
       </div>
 
       {/* ZONE 3: Scoped Boost Pills Column (Placed below ZONE 4 Action Bar) */}
@@ -512,6 +443,7 @@ export function GestureFloorCard({
           onJumpToFloor={onJumpToFloor}
         />
       )}
+      </div>
     </article>
   );
 }

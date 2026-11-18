@@ -1,5 +1,4 @@
 import { readCommentIdentity, type CommentIdentity } from './comment-client';
-import { computeUserLevel } from './user-level';
 
 export interface ReactionDetailItem {
   emoji: string;
@@ -338,45 +337,27 @@ export function formatMetricCount(num: number): string {
   return String(num);
 }
 
-export function resolveAuthorBadges(node: Pick<GestureNode, 'authorId' | 'authorName' | 'authorRole' | 'likesCount' | 'createdAt'>) {
-  const isOwner = node.authorRole === 'admin' || node.authorId === 'admin';
-  const levelInfo = computeUserLevel(
-    {
-      hasAccount: node.authorRole !== 'visitor',
-      hasReadAny: true,
-      readingMinutes: isOwner ? 1200 : 10,
-      commentCount: isOwner ? 150 : node.authorRole === 'reader' ? 5 : 0,
-      reactionsReceived: node.likesCount || 0,
-      activeDays: isOwner ? 365 : 1,
-      activeDates: [],
-      firstSeenAt: node.createdAt || new Date().toISOString(),
-      isWebmaster: isOwner,
-    },
-    node.authorRole
-  );
-  return {
-    isOwner,
-    roleLabel: isOwner ? '站长' : null,
-    levelLabel: isOwner ? 'LV.4' : `LV.${levelInfo.level}·${levelInfo.title}`,
-  };
+export function resolveAuthorBadges(node: { authorRole: string; levelLabel?: string }) {
+  const isOwner = node.authorRole === 'admin';
+  return { isOwner, roleLabel: isOwner ? '站长' : null, levelLabel: node.levelLabel || '' };
 }
 
 export function extractOpTitle(gesture: GestureNode): { title: string; bodyWithoutLeadingHeading: string } {
   const raw = gesture.message || '';
   if (gesture.title && gesture.title.trim()) {
-    const stripped = raw.replace(/^#{1,3}\s+.*\n+/, '').trim();
+    const stripped = raw.replace(/^#{1,6}[^\S\r\n]+([^\n]+)(?:\n+|$)/, (heading, title) => title.trim() === gesture.title?.trim() ? '' : heading).trim();
     return {
       title: gesture.title.trim(),
-      bodyWithoutLeadingHeading: stripped || raw,
+      bodyWithoutLeadingHeading: stripped,
     };
   }
-  const headingMatch = raw.match(/^#{1,3}\s+(.*)$/m);
+  const headingMatch = raw.match(/^#{1,6}[^\S\r\n]+([^\n]+)/);
   if (headingMatch) {
     const title = headingMatch[1].trim();
-    const stripped = raw.replace(/^#{1,3}\s+.*\n*/, '').trim();
+    const stripped = raw.slice(headingMatch[0].length).trim();
     return {
       title,
-      bodyWithoutLeadingHeading: stripped || raw,
+      bodyWithoutLeadingHeading: stripped,
     };
   }
   const plain = raw.replace(/[#*`_>]/g, '').trim();

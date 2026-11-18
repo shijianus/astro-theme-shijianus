@@ -2,10 +2,10 @@ import React from 'react';
 import { getCommentInitials } from '../../../lib/comment-client';
 
 const MATTE_MORANDI_PALETTE = [
-  '#334155',
-  '#3b4252',
-  '#2d3748',
-  '#374151',
+  '#53655e',
+  '#725d5a',
+  '#546571',
+  '#6a6255',
   '#3f3f46',
   '#313d4f',
 ];
@@ -22,7 +22,7 @@ function resolveMorandiBg(name: string): string {
 interface GestureAvatarProps {
   name: string;
   avatar?: string;
-  size?: 42 | 40 | 36 | 32 | 26 | 24 | 20 | 18;
+  size?: 42 | 40 | 36 | 34 | 32 | 26 | 24 | 20 | 18;
   isOwner?: boolean;
   className?: string;
 }
