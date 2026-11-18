@@ -21,37 +21,37 @@ function RelatedLink({ link }: { link: GestureRelatedLink }) {
 }
 
 export function GestureRelatedAndTopicMap({ relatedLinks, topicMap, gesture, subGestures }: Props) {
-  const [resolved, setResolved] = useState<GestureRelatedLink[]>([]);
+  const [all, setAll] = useState(false);
+  const [titles, setTitles] = useState<Record<string, string>>({});
+  const visible = useMemo(() => all ? relatedLinks : relatedLinks.slice(0, 5), [all, relatedLinks]);
   useEffect(() => {
     const controller = new AbortController();
-    const found = new Map<GestureRelatedLink, string>();
+    const documents = visible.filter(link => link.type !== 'gesture');
     let index = 0;
     async function resolveTitles() {
-      while (index < relatedLinks.length && !controller.signal.aborted) {
-        const link = relatedLinks[index++];
+      while (index < documents.length && !controller.signal.aborted) {
+        const link = documents[index++];
         const title = await readCitationTitle(link, controller.signal);
-        if (controller.signal.aborted) return;
-        if (title) found.set(link, title);
-        setResolved(relatedLinks.flatMap(l => found.has(l) ? [{ ...l, title: found.get(l)! }] : []));
+        if (title && !controller.signal.aborted) {
+          setTitles(previous => previous[link.url] === title ? previous : { ...previous, [link.url]: title });
+        }
       }
     }
-    setResolved([]);
-    void Promise.all(Array.from({length: Math.min(4, relatedLinks.length)}, resolveTitles));
+    void Promise.all(Array.from({ length: Math.min(4, documents.length) }, resolveTitles));
     return () => controller.abort();
-  }, [relatedLinks]);
-  const [all, setAll] = useState(false);
+  }, [visible]);
   const [summary, setSummary] = useState(false);
   const hot = subGestures.length >= 15 && topicMap.viewsCount >= 500;
   const highlights = useMemo(() => summary ? [...subGestures].sort((a,b) => b.likesCount - a.likesCount).slice(0,3) : [], [summary, subGestures]);
   return <div className="gd-topic-info">
-    {resolved.length > 0 && <section className="gd-zone5-links" aria-label="关联链接">
+    {relatedLinks.length > 0 && <section className="gd-zone5-links" aria-label="关联链接">
       <h2><Link2 size={14} />关联链接</h2>
-      {(all ? resolved : resolved.slice(0,5)).map(link => <RelatedLink key={link.url} link={link} />)}
-      {resolved.length > 5 && <button type="button" onClick={() => setAll(!all)}>{all ? '收起' : '查看全部 ' + resolved.length + ' 个链接'}</button>}
+      {visible.map(link => <RelatedLink key={link.url} link={titles[link.url] ? { ...link, title: titles[link.url] } : link} />)}
+      {relatedLinks.length > 5 && <button type="button" aria-expanded={all} onClick={() => setAll(!all)}>{all ? '收起' : '查看全部 ' + relatedLinks.length + ' 个链接'}</button>}
     </section>}
     <section className="gd-zone6-topic-map" aria-label="讨论概览">
       <span><strong>{topicMap.viewsCount.toLocaleString()}</strong> 观看</span>
-      {hot && <><span>{topicMap.likesCount} 次表态</span><span>{resolved.length} 个链接</span><span>{topicMap.usersCount} 位参与者</span><span>约 {topicMap.estimatedReadMinutes} 分钟阅读</span></>}
+      {hot && <><span>{topicMap.likesCount} 次表态</span><span>{relatedLinks.length} 个链接</span><span>{topicMap.usersCount} 位参与者</span><span>约 {topicMap.estimatedReadMinutes} 分钟阅读</span></>}
       <span className="gd-tm-avatars">{topicMap.participants.slice(0,5).map(p => <GestureAvatar key={p.authorId || p.authorName} name={p.authorName} avatar={p.authorAvatar} size={26} />)}</span>
       <button type="button" className="gd-summary-toggle" aria-expanded={summary} onClick={() => setSummary(!summary)}><Sparkles size={14} />总结</button>
     </section>
