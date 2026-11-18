@@ -1,584 +1,124 @@
-import { chromium } from 'playwright';
-import http from 'http';
-import fs from 'fs';
-import path from 'path';
+import assert from 'node:assert/strict';
+import { expect } from '@playwright/test';
+import { sizes, withGuestbook } from './guestbook-test-server.mjs';
 
-const PORT = 4329;
-const DIST_DIR = path.resolve(process.cwd(), 'dist');
-
-const MIME_TYPES = {
-  '.html': 'text/html; charset=utf-8',
-  '.css': 'text/css; charset=utf-8',
-  '.js': 'application/javascript; charset=utf-8',
-  '.mjs': 'application/javascript; charset=utf-8',
-  '.json': 'application/json; charset=utf-8',
-  '.png': 'image/png',
-  '.jpg': 'image/jpeg',
-  '.jpeg': 'image/jpeg',
-  '.gif': 'image/gif',
-  '.svg': 'image/svg+xml',
-  '.webp': 'image/webp',
-  '.woff2': 'font/woff2',
-  '.woff': 'font/woff',
-  '.ttf': 'font/ttf',
-  '.ico': 'image/x-icon',
-};
-
-// In-memory test comments store for verification
-const testDb = new Map();
-
-function createServer() {
-  return new Promise((resolve) => {
-    const server = http.createServer((req, res) => {
-      const parsedUrl = new URL(req.url, `http://localhost:${PORT}`);
-      let reqPath = decodeURIComponent(parsedUrl.pathname);
-
-      // API: /api/comments
-      if (reqPath === '/api/comments') {
-        res.setHeader('Access-Control-Allow-Origin', '*');
-        res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
-        res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-Comment-Session-Token, X-Admin-Token');
-
-        if (req.method === 'OPTIONS') {
-          res.writeHead(204);
-          res.end();
-          return;
-        }
-
-        if (req.method === 'GET') {
-          const slug = parsedUrl.searchParams.get('slug') || '';
-          let list = Array.from(testDb.values()).filter((c) => c.postSlug === slug && c.status !== 'deleted');
-          list.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-
-          res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
-          res.end(JSON.stringify({ ok: true, comments: list }));
-          return;
-        }
-
-        if (req.method === 'POST') {
-          let body = '';
-          req.on('data', (chunk) => { body += chunk; });
-          req.on('end', () => {
-            try {
-              const payload = JSON.parse(body || '{}');
-              const action = payload.action || 'create';
-
-              if (action === 'create') {
-                const rawMessage = (payload.message || '').trim();
-                const postType = payload.postType || 'gesture';
-                const tag = payload.tag || 'tech';
-                const parentId = payload.parentId || null;
-
-                // Validation rules:
-                if (postType === 'boost' && rawMessage.length > 30) {
-                  res.writeHead(400, { 'Content-Type': 'application/json; charset=utf-8' });
-                  res.end(JSON.stringify({ ok: false, error: 'Boost 不能超过 30 个字' }));
-                  return;
-                }
-                if (postType === 'gesture' && rawMessage.length < 8 && !parentId) {
-                  res.writeHead(400, { 'Content-Type': 'application/json; charset=utf-8' });
-                  res.end(JSON.stringify({ ok: false, error: 'Gesture 讨论内容至少需要 8 个字' }));
-                  return;
-                }
-
-                // Boost reply check
-                if (parentId) {
-                  const parentComment = testDb.get(parentId);
-                  if (parentComment && parentComment.postType === 'boost') {
-                    res.writeHead(400, { 'Content-Type': 'application/json; charset=utf-8' });
-                    res.end(JSON.stringify({ ok: false, error: 'Boost 属于瞬时微语，默认不支持跟帖回复' }));
-                    return;
-                  }
-                }
-
-                const newComment = {
-                  id: 'cmt_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
-                  postSlug: payload.postSlug || 'guestbook',
-                  parentId: parentId,
-                  message: rawMessage,
-                  postType: postType,
-                  tag: tag,
-                  authorId: payload.authorId || 'tester',
-                  authorName: payload.authorName || '自动化测试员',
-                  authorRole: 'member',
-                  authorWebsite: payload.authorWebsite || null,
-                  authorAvatar: null,
-                  likesCount: 0,
-                  reactions: { summary: {}, users: {} },
-                  status: 'approved',
-                  createdAt: new Date().toISOString(),
-                  showLocation: true,
-                  ipCountryFlag: '🇨🇳',
-                  ipCountryName: '中国',
-                  ipLocation: '测试中心',
-                };
-
-                testDb.set(newComment.id, newComment);
-                res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
-                res.end(JSON.stringify({ ok: true, comment: newComment }));
-                return;
-              }
-
-              if (action === 'like') {
-                const commentId = payload.commentId;
-                const emoji = payload.emoji || '👍';
-                const comment = testDb.get(commentId);
-                if (comment) {
-                  if (!comment.reactions) comment.reactions = { summary: {}, users: {} };
-                  const current = comment.reactions.summary[emoji] || 0;
-                  comment.reactions.summary[emoji] = current + 1;
-                  comment.likesCount = (comment.likesCount || 0) + 1;
-                  res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
-                  res.end(JSON.stringify({ ok: true, comment }));
-                  return;
-                }
-              }
-            } catch (err) {
-              res.writeHead(500, { 'Content-Type': 'application/json; charset=utf-8' });
-              res.end(JSON.stringify({ ok: false, error: String(err) }));
-              return;
-            }
-          });
-          return;
-        }
-      }
-
-      // Static files
-      let filePath = path.join(DIST_DIR, reqPath);
-      if (fs.existsSync(filePath) && fs.statSync(filePath).isDirectory()) {
-        filePath = path.join(filePath, 'index.html');
-      }
-
-      if (!fs.existsSync(filePath)) {
-        res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
-        res.end('Not Found');
-        return;
-      }
-
-      const ext = path.extname(filePath).toLowerCase();
-      const contentType = MIME_TYPES[ext] || 'application/octet-stream';
-      res.writeHead(200, { 'Content-Type': contentType });
-      fs.createReadStream(filePath).pipe(res);
+await withGuestbook(async ({ page, base, add, errors }) => {
+  await page.goto(base + '/guestbook/');
+  await expect(page.getByText('暂无留言', { exact: true })).toBeVisible();
+  await expect(page.locator('.gb-board-boosts,.gb-gesture-row')).toHaveCount(0);
+  for (let i = 0; i < 23; i++)
+    await add('entry_' + i, '留下阅读时想继续讨论的一段文字。', {
+      title: '讨论 ' + i,
+      tag: i % 2 ? 'ideas' : 'tech',
+      status: i === 1 ? 'pinned' : 'published',
     });
-
-    server.listen(PORT, () => {
-      console.log(`[Verify] Static test server running on http://localhost:${PORT}`);
-      resolve(server);
-    });
-  });
-}
-
-async function runVerification() {
-  const server = await createServer();
-  const browser = await chromium.launch({ headless: true });
-  const page = await browser.newPage({ viewport: { width: 1440, height: 950 } });
-
-  try {
-    console.log('[Verify] 1. Navigating to /guestbook/...');
-    await page.goto(`http://localhost:${PORT}/guestbook/`, { waitUntil: 'domcontentloaded' });
-    await page.waitForSelector('.guestbook-board-container', { timeout: 15000 });
-
-    // Assert Page Title
-    const title = await page.title();
-    console.log(`[Verify] Page title: "${title}"`);
-    if (!title.includes('留言板')) {
-      throw new Error(`Expected title to include "留言板", got "${title}"`);
-    }
-
-    // Assert that .gb-hero is REMOVED as requested
-    const heroExists = await page.$('.gb-hero');
-    if (heroExists) {
-      throw new Error('Expected class="gb-hero" to be REMOVED from the guestbook page');
-    }
-    console.log('[Verify] ✓ Verified class="gb-hero" is completely removed');
-
-    // 2. Test Top Boost Stream (楼上 Boost 实时观点流 - 3排自适应流速)
-    console.log('[Verify] 2. Testing Top Boost Stream...');
-    const boostWall = await page.$('.gb-boost-wall-card');
-    if (!boostWall) throw new Error('Top Boost wall card (.gb-boost-wall-card) not found');
-
-    const boostBadgeText = await page.textContent('.gb-boost-badge');
-    console.log(`[Verify] Boost Badge text: "${boostBadgeText?.trim()}"`);
-    if (!boostBadgeText?.includes('Boost')) {
-      throw new Error('Boost badge missing');
-    }
-
-    // Verify Count Status text (Clean number of Boosts)
-    const statusCountText = await page.textContent('.gb-boost-status-count');
-    console.log(`[Verify] Boost Status Count text: "${statusCountText?.trim()}"`);
-    if (!statusCountText || isNaN(Number(statusCountText.trim()))) {
-      throw new Error(`Expected status count to be a clean numeric count, got "${statusCountText}"`);
-    }
-
-    // Verify separate Boost launch button is REMOVED as requested
-    const launchBoostBtn = await page.$('.gb-launch-boost-btn');
-    if (launchBoostBtn) {
-      throw new Error('Separate Launch Boost button (.gb-launch-boost-btn) should be REMOVED from Boost header');
-    }
-    console.log('[Verify] ✓ Confirmed separate Boost launch button is removed; only single publish entry retained');
-
-    // Verify Boost spec badge is completely REMOVED as requested (Minimum Information Density)
-    const specBadge = await page.$('.gb-boost-spec-badge');
-    if (specBadge) {
-      throw new Error('.gb-boost-spec-badge should be completely removed (Minimum Information Density)');
-    }
-    console.log('[Verify] ✓ Confirmed spec badge (.gb-boost-spec-badge) is cleanly omitted');
-
-    // Verify 3 rows container and all 3 tracks
-    const marqueeContainer = await page.$('.gb-boost-marquee-container.is-three-rows');
-    if (!marqueeContainer) throw new Error('Boost container missing .is-three-rows class');
-
-    const track1 = await page.$('.gb-track-1');
-    const track2 = await page.$('.gb-track-2');
-    const track3 = await page.$('.gb-track-3');
-    if (!track1 || !track2 || !track3) {
-      throw new Error('Expected all 3 tracks (.gb-track-1, .gb-track-2, .gb-track-3) to be rendered');
-    }
-    console.log('[Verify] ✓ Verified all 3 Boost tracks are actively rendered');
-
-    // Verify dynamic speed duration attribute on track
-    const track1Duration = await page.getAttribute('.gb-track-1', 'style');
-    console.log(`[Verify] Track 1 style duration: "${track1Duration}"`);
-    if (!track1Duration?.includes('animation-duration')) {
-      throw new Error('Expected dynamic animation-duration style set on track');
-    }
-
-    // Check viewpoint cards count
-    const marqueeCardsCount = await page.$$eval('.gb-boost-pill-card', (els) => els.length);
-    console.log(`[Verify] Boost viewpoint cards count across 3 rows: ${marqueeCardsCount}`);
-    if (marqueeCardsCount < 6) {
-      throw new Error('Boost stream should have diverse viewpoint cards across 3 rows');
-    }
-
-    // 3. Test Navigation Bar: "维度" First (4-Item Scrollable Dropdown) + Horizontal Category Tabs
-    console.log('[Verify] 3. Testing Navigation Bar: "维度" First + Horizontal Tabs...');
-    // 3.1 Verify Dimension Dropdown is the first element
-    const firstNavEl = await page.$('.gb-nav-bar__categories > *:first-child');
-    const isFirstDim = await firstNavEl?.$('.gb-dim-dropdown-btn');
-    if (!isFirstDim) throw new Error('Expected "维度" dropdown to be in the first position of the navigation bar');
-    console.log('[Verify] ✓ Confirmed "维度" dropdown is placed at the first position');
-
-    // Test clicking Dimension dropdown
-    await isFirstDim.click();
-    await page.waitForTimeout(300);
-
-    const dimDropdownMenu = await page.$('.gb-scrollable-dropdown.is-four-items-max');
-    if (!dimDropdownMenu) throw new Error('Dimension scrollable dropdown failed to open');
-
-    const dimItemsCount = await page.$$eval('.gb-scrollable-dropdown.is-four-items-max .gb-scrollable-dropdown__item', (els) => els.length);
-    console.log(`[Verify] Dimension dropdown total items: ${dimItemsCount}`);
-    if (dimItemsCount < 6) {
-      throw new Error('Dimension dropdown should list all 6 channels');
-    }
-
-    // Select "技术探讨"
-    const techOption = await page.$('.gb-scrollable-dropdown__item:has-text("技术探讨")');
-    if (techOption) await techOption.click();
-    await page.waitForTimeout(300);
-    console.log('[Verify] ✓ Selected "技术探讨" dimension');
-
-    // 3.2 Verify Horizontal Tabs are lined up in order: 最新, 近期, 热门, 精选, 我的贴文, 已读, 书签
-    const horizontalTabs = await page.$$eval('.gb-cat-tab-btn', (els) => els.map((el) => el.textContent?.trim()));
-    console.log(`[Verify] Horizontal tabs rendered: ${JSON.stringify(horizontalTabs)}`);
-    const expectedOrder = ['最新', '近期', '热门', '精选', '我的贴文', '已读', '书签'];
-    for (const exp of expectedOrder) {
-      if (!horizontalTabs.some((t) => t.includes(exp))) {
-        throw new Error(`Expected horizontal tab "${exp}" to be rendered`);
-      }
-    }
-    console.log('[Verify] ✓ All horizontal category tabs rendered in order after "维度"');
-
-    // Test clicking "热门" tab
-    const hotTab = await page.$('.gb-cat-tab-btn:has-text("热门")');
-    if (hotTab) await hotTab.click();
-    await page.waitForTimeout(300);
-    const isHotActive = await hotTab?.evaluate((el) => el.classList.contains('is-active'));
-    if (!isHotActive) throw new Error('Expected "热门" tab to be active after clicking');
-    console.log('[Verify] ✓ Successfully switched to "热门" tab');
-
-    // Switch back to "最新" tab
-    const latestTab = await page.$('.gb-cat-tab-btn:has-text("最新")');
-    if (latestTab) await latestTab.click();
-    await page.waitForTimeout(300);
-    console.log('[Verify] ✓ Successfully switched back to "最新" tab');
-
-    // Reset dimension to all
-    const dimResetBtn = await page.$('.gb-active-dim-reset');
-    if (dimResetBtn) {
-      await dimResetBtn.click();
-      await page.waitForTimeout(300);
-      console.log('[Verify] ✓ Reset dimension to all');
-    }
-
-    // 4. Test Official Pinned Rule Threads in Gesture Feed
-    console.log('[Verify] 4. Testing Official Pinned Rule Threads...');
-    await page.waitForSelector('.gb-gesture-row', { timeout: 10000 });
-
-    const pinnedRowsCount = await page.$$eval('.gb-gesture-row.is-pinned-row', (els) => els.length);
-    console.log(`[Verify] Pinned rule threads count: ${pinnedRowsCount}`);
-    if (pinnedRowsCount < 1) {
-      throw new Error(`Expected at least 1 pinned welcome thread, got ${pinnedRowsCount}`);
-    }
-
-    // Verify pinned topic titles
-    const feedText = await page.textContent('.gb-gesture-table');
-    if (!feedText?.includes('欢迎来到读者留言与交流广场')) {
-      throw new Error('Official pinned welcome topic missing');
-    }
-    console.log('[Verify] ✓ Official pinned welcome thread verified at top of feed');
-
-    // 5. Test Floating Composer with Dedicated Drag Button, Partition Guidance & Result-Oriented Word Count
-    console.log('[Verify] 5. Testing Composer (Drag Handle, Partition Guidance, Result Word Count)...');
-    const newGestureBtn = await page.$('.gb-new-gesture-btn');
-    if (!newGestureBtn) throw new Error('Single publish button (.gb-new-gesture-btn) not found');
-    await newGestureBtn.click();
-    await page.waitForTimeout(300);
-
-    const gComposer = await page.$('.gb-floating-composer');
-    if (!gComposer) throw new Error('Floating composer failed to open');
-
-    // 5.1 Verify that composer is 100% solid opaque (NOT transparent in light mode)
-    const composerBg = await page.$eval('.gb-floating-composer', (el) => window.getComputedStyle(el).backgroundColor);
-    console.log(`[Verify] Floating composer background: "${composerBg}"`);
-    if (composerBg.includes('rgba') && !composerBg.includes('rgba(255, 255, 255, 1)')) {
-      throw new Error(`Composer should have solid opaque background, got translucent: "${composerBg}"`);
-    }
-    console.log('[Verify] ✓ Confirmed floating composer has solid opaque background');
-
-    // 5.2 Verify dedicated drag handle button is present without static text explanation
-    const dragBtn = await page.$('.gb-drag-handle-btn');
-    if (!dragBtn) throw new Error('Dedicated drag handle button (.gb-drag-handle-btn) missing');
-    const dragTipCount = await page.$$eval('.gb-drag-tip', (els) => els.length);
-    if (dragTipCount > 0) {
-      throw new Error('Drag handle button should not display static Chinese text, only hover explanation');
-    }
-    const dragTitle = await dragBtn.getAttribute('title');
-    if (!dragTitle?.includes('拖拽')) {
-      throw new Error(`Expected drag handle button to have tooltip title, got "${dragTitle}"`);
-    }
-    console.log('[Verify] ✓ Confirmed dedicated drag handle button is icon-only with hover tooltip');
-
-    // 5.3 Verify that lecturing banners (.gb-smart-type-badge and .gb-composer-smart-hint) are completely removed
-    const smartBadgeCount = await page.$$eval('.gb-smart-type-badge', (els) => els.length);
-    const smartHintCount = await page.$$eval('.gb-composer-smart-hint', (els) => els.length);
-    if (smartBadgeCount > 0 || smartHintCount > 0) {
-      throw new Error('Lecturing smart badge / hint banners should be completely removed from composer');
-    }
-    console.log('[Verify] ✓ Confirmed smart badge & lecturing hint banners are completely eliminated');
-
-    // 5.4 Verify initial result-oriented word count and submit button
-    let wordCountText = await page.textContent('.gb-word-count');
-    let submitBtnText = await page.textContent('.gb-modal-foot .gb-submit-btn');
-    console.log(`[Verify] Initial Word Result: "${wordCountText?.trim()}", Button: "${submitBtnText?.trim()}"`);
-    if (submitBtnText?.trim() !== '发布') {
-      throw new Error(`Expected submit button to say "发布", got "${submitBtnText}"`);
-    }
-
-    // 5.5 Test Partition selection (Compact trigger, max 1 partition, fine purpose descriptions in menu)
-    const channelTrigger = await page.$('.gb-composer-channel-trigger');
-    if (!channelTrigger) throw new Error('Partition dropdown trigger (.gb-composer-channel-trigger) missing');
-    const triggerBox = await channelTrigger.boundingBox();
-    console.log(`[Verify] Partition trigger width: ${Math.round(triggerBox?.width || 0)}px`);
-    if ((triggerBox?.width || 0) > 200) {
-      throw new Error(`Partition trigger should be compact and not take excessive room, got width ${triggerBox?.width}`);
-    }
-
-    await channelTrigger.click();
-    await page.waitForTimeout(200);
-
-    const channelMenu = await page.$('.gb-composer-channel-dropdown-menu');
-    if (!channelMenu) throw new Error('Partition dropdown menu failed to open');
-
-    const descCount = await page.$$eval('.gb-ch-opt-desc', (els) => els.length);
-    console.log(`[Verify] Partition scope descriptions count in menu: ${descCount}`);
-    if (descCount < 5) {
-      throw new Error('Expected partition options in menu to show purpose descriptions');
-    }
-
-    // Select "技术探讨"
-    const techOpt = await page.$('.gb-composer-channel-option:has-text("技术探讨")');
-    if (techOpt) await techOpt.click();
-    await page.waitForTimeout(200);
-    console.log('[Verify] ✓ Selected partition "技术探讨" in composer');
-
-    wordCountText = await page.textContent('.gb-word-count');
-    submitBtnText = await page.textContent('.gb-modal-foot .gb-submit-btn');
-    console.log(`[Verify] After selecting partition: Word Result: "${wordCountText?.trim()}", Button: "${submitBtnText?.trim()}"`);
-    if (submitBtnText?.trim() !== '发布') {
-      throw new Error(`Expected submit button to remain stable "发布", got "${submitBtnText}"`);
-    }
-
-    // 5.6 Type text into textarea -> word count updates to result
-    const textarea = await page.$('.gb-textarea.is-modal-textarea');
-    if (!textarea) throw new Error('Composer textarea not found');
-    await textarea.fill('边缘计算架构毫秒级落盘体验丝滑');
-    await page.waitForTimeout(200);
-
-    wordCountText = await page.textContent('.gb-word-count');
-    console.log(`[Verify] After typing content: Word Result: "${wordCountText?.trim()}"`);
-    if (!wordCountText?.includes('15 字')) {
-      throw new Error(`Expected result word count to display clean entered count "15 字", got "${wordCountText}"`);
-    }
-
-    // 5.7 Test Multi-Tag input (Up to 5 tags, chip tags + removal)
-    const tagInput = await page.$('.gb-composer-tag-input');
-    if (!tagInput) throw new Error('Multi-tag input (.gb-composer-tag-input) not found');
-    await tagInput.fill('边缘计算');
-    await page.keyboard.press('Enter');
-    await page.waitForTimeout(100);
-
-    await tagInput.fill('前端开发');
-    await page.keyboard.press('Enter');
-    await page.waitForTimeout(100);
-
-    let tagChipsCount = await page.$$eval('.gb-composer-tag-chip', (els) => els.length);
-    console.log(`[Verify] Tag chips added count: ${tagChipsCount}`);
-    if (tagChipsCount !== 2) {
-      throw new Error(`Expected 2 tag chips, got ${tagChipsCount}`);
-    }
-
-    // Remove one tag
-    const firstTagRemoveBtn = await page.$('.gb-composer-tag-chip .gb-tag-chip-remove');
-    if (firstTagRemoveBtn) await firstTagRemoveBtn.click();
-    await page.waitForTimeout(100);
-
-    tagChipsCount = await page.$$eval('.gb-composer-tag-chip', (els) => els.length);
-    console.log(`[Verify] Tag chips after removal: ${tagChipsCount}`);
-    if (tagChipsCount !== 1) {
-      throw new Error(`Expected 1 tag chip after removal, got ${tagChipsCount}`);
-    }
-    console.log('[Verify] ✓ Multi-tag input and chip deletion verified');
-
-    // 5.8 Test Window Dragging via Dedicated Button
-    const initialBox = await gComposer.boundingBox();
-    if (initialBox) {
-      const dragBox = await dragBtn.boundingBox();
-      if (dragBox) {
-        // Drag using mouse moves
-        await page.mouse.move(dragBox.x + dragBox.width / 2, dragBox.y + dragBox.height / 2);
-        await page.mouse.down();
-        await page.mouse.move(dragBox.x - 80, dragBox.y - 60, { steps: 5 });
-        await page.mouse.up();
-        await page.waitForTimeout(200);
-
-        const newBox = await gComposer.boundingBox();
-        console.log(`[Verify] Drag moved composer from (left: ${Math.round(initialBox.x)}, top: ${Math.round(initialBox.y)}) to (left: ${Math.round(newBox?.x || 0)}, top: ${Math.round(newBox?.y || 0)})`);
-      }
-    }
-    console.log('[Verify] ✓ Confirmed dedicated dragging functionality');
-
-    // 5.8 Test Minimize to Bottom Dock Pill
-    const minimizeBtn = await page.$('.gb-window-tool-btn[title="最小化"]');
-    if (minimizeBtn) {
-      await minimizeBtn.click();
-      await page.waitForTimeout(300);
-      const minimizedPill = await page.$('.gb-composer-minimized-pill');
-      if (!minimizedPill) throw new Error('Minimized dock pill not found');
-
-      const pillBadge = await page.textContent('.gb-minimized-badge');
-      console.log(`[Verify] Minimized Dock Pill Badge: "${pillBadge?.trim()}"`);
-      if (!pillBadge?.includes('草稿')) {
-        throw new Error('Expected minimized pill to display 草稿 badge');
-      }
-
-      // Re-expand
-      await minimizedPill.click();
-      await page.waitForTimeout(300);
-      console.log('[Verify] ✓ Re-expanded composer from dock pill');
-    }
-
-    // Close composer cleanly
-    const closeBtn = await page.$('.gb-window-tool-btn.is-close');
-    if (closeBtn) await closeBtn.click();
-    await page.waitForTimeout(300);
-    console.log('[Verify] ✓ Verified Dynamic Composer with clean results and non-blocking window controls');
-
-    // Verify Bookmark Toggle on Row
-    const bookmarkBtn = await page.$('.gb-bookmark-toggle');
-    if (bookmarkBtn) {
-      await bookmarkBtn.click();
-      await page.waitForTimeout(200);
-      const hasBookmarked = await page.$('.gb-bookmark-toggle.is-bookmarked');
-      console.log(`[Verify] Bookmark toggle active: ${Boolean(hasBookmarked)}`);
-    }
-
-    // 6. Test Click to Enter Gesture Detail View & Floor Timeline Scroller
-    console.log('[Verify] 6. Clicking Gesture row to enter Detail View...');
-    const welcomeRow = await page.$('.gb-gesture-row:has-text("欢迎来到读者留言")');
-    if (welcomeRow) {
-      await welcomeRow.click();
-    } else {
-      const firstRow = await page.$('.gb-gesture-row');
-      await firstRow.click();
-    }
-    await page.waitForTimeout(600);
-
-    // Verify Detail View active
-    const detailView = await page.$('.gb-gesture-detail-view');
-    if (!detailView) throw new Error('Detail view (.gb-gesture-detail-view) failed to open');
-    console.log('[Verify] ✓ Successfully entered Gesture Detail View');
-
-    // Verify 1 楼 (楼主 OP) with implicit floor_index (no explicit #1 楼主 badge)
-    const opFloor = await page.$('#floor-1.is-op-floor');
-    if (!opFloor) throw new Error('1 楼 (OP Floor) not rendered');
-    const implicitFloor = await opFloor.getAttribute('data-floor-index');
-    if (implicitFloor !== '1') throw new Error(`Expected implicit data-floor-index="1", got "${implicitFloor}"`);
-    const floorNumberCount = await page.$$eval('#floor-1 .gb-floor-number', (els) => els.length);
-    if (floorNumberCount !== 0) throw new Error('Expected explicit #1 楼主 label to be omitted');
-    console.log(`[Verify] OP Floor implicit data-floor-index: "${implicitFloor}"`);
-
-    // Verify Right-side Floor Timeline Scroller Widget
-    const scrollerCard = await page.$('.gb-floor-scroller-card');
-    if (!scrollerCard) throw new Error('Right-side floor scroller widget (.gb-floor-scroller-card) missing');
-    const floorLabel = await page.textContent('.gb-scroller-floor-label');
-    console.log(`[Verify] Floor Scroller Widget: "${floorLabel?.trim()}"`);
-
-    // Test Pure 1px Timeline Rail (strictly zero dots/notches)
-    const notchesCount = await page.$$eval('.gb-scroller-notch', (els) => els.length);
-    if (notchesCount !== 0) {
-      throw new Error(`Expected zero dots/notches on timeline rail, got ${notchesCount}`);
-    }
-    const railBox = await page.locator('.gd-tl-rail').boundingBox();
-    if (railBox) {
-      await page.mouse.click(railBox.x + railBox.width / 2, railBox.y + railBox.height * 0.5);
-      await page.waitForTimeout(300);
-      console.log('[Verify] ✓ Clicked pure 1px timeline rail to jump between floors');
-    }
-
-    // 6. Test In-place Detail Reply
-    console.log('[Verify] 6. Testing Reply submission in Detail View...');
-    const replyTextarea = await page.$('.gb-textarea.is-reply-box');
-    if (replyTextarea) {
-      await replyTextarea.fill('自动测试跟帖：赞同楼主对架构与界面的分析，楼层进度条非常顺滑！');
-      const submitReplyBtn = await page.$('.gb-detail-reply-footer .gb-submit-btn');
-      if (submitReplyBtn) {
-        await submitReplyBtn.click();
-        await page.waitForTimeout(800);
-        console.log('[Verify] ✓ Reply submitted and rendered into discussion floor');
-      }
-    }
-
-    // 7. Test Return to Gesture List
-    console.log('[Verify] 7. Testing Back to List navigation...');
-    const backBtn = await page.$('.gb-back-btn');
-    if (backBtn) {
-      await backBtn.click();
-      await page.waitForTimeout(400);
-      const isListView = await page.$('.gb-gesture-table');
-      if (!isListView) throw new Error('Failed to return to Gesture list view');
-      console.log('[Verify] ✓ Successfully returned to Gesture topic list');
-    }
-
-    console.log('\n======================================================');
-    console.log('🎉 ALL GUESTBOOK BOARD TESTS PASSED 100%!');
-    console.log('======================================================\n');
-  } finally {
-    await browser.close();
-    server.close();
+  await add('old_reply', '针对这条讨论的回复。', { parent_id: 'entry_1' });
+  await page.reload();
+  const rows = page.locator('.gb-gesture-row');
+  await expect(rows).toHaveCount(20);
+  await page.getByRole('button', { name: /查看更多留言/ }).click();
+  await expect(rows).toHaveCount(23);
+  await expect(rows.first()).toContainText('讨论 1');
+  await expect(rows.first().getByTitle('回复数')).toHaveText('1');
+  await rows.first().getByLabel('书签').click();
+  await page.locator('[data-cat-id="bookmarked"]').click();
+  await expect(rows).toHaveCount(1);
+  await page.reload();
+  await page.locator('[data-cat-id="bookmarked"]').click();
+  await expect(rows).toHaveCount(1);
+  await page.locator('[data-cat-id="my"]').click();
+  await expect(rows).toHaveCount(0);
+  await page.locator('[data-cat-id="featured"]').click();
+  await expect(rows).toHaveCount(1);
+  await page.locator('[data-cat-id="recent"]').click();
+  await expect(rows).toContainText(['讨论 1']);
+  await page.locator('[data-cat-id="hot"]').click();
+  await expect(rows.first()).toContainText('讨论 1');
+  await page.locator('[data-cat-id="latest"]').click();
+  await page.locator('.gb-dim-dropdown-btn').click();
+  await page.getByRole('option', { name: /技术探讨/ }).click();
+  await expect(rows).toHaveCount(12);
+  await page.locator('.gb-dim-dropdown-btn').click();
+  await page.getByRole('option', { name: /全部维度/ }).click();
+  await page.getByLabel('搜索留言').fill('讨论 12');
+  await expect(rows).toHaveCount(1);
+  await rows.getByRole('link').click();
+  await expect(page.locator('#floor-1')).toContainText('阅读时');
+  await page.getByRole('button', { name: '留言广场', exact: true }).click();
+  await page.getByLabel('搜索留言').fill('');
+  await page.locator('[data-cat-id="read"]').click();
+  await expect(rows).toHaveCount(1);
+  await page.locator('[data-cat-id="latest"]').click();
+  for (const [width, height] of sizes) {
+    await page.setViewportSize({ width, height });
+    await page.evaluate(() => scrollTo({ top: 0, behavior: 'instant' }));
+    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth), 0);
+    const header = await page.locator('#nav').boundingBox(),
+      title = await page.locator('.gb-board-header h1').boundingBox();
+    assert.ok(title.y >= header.y + header.height, 'site header covers list heading at ' + width);
+    const brand = await page.locator('#site-name').boundingBox(),
+      tools = await page.locator('#nav-right').boundingBox();
+    assert.ok(brand.x + brand.width <= tools.x, 'site header controls cover brand at ' + width);
+    await expect(page.getByLabel('搜索留言')).toBeVisible();
+    await expect(page.locator('.gb-board-header button')).toBeVisible();
+    await page.locator('.gb-dim-dropdown-btn').click();
+    const box = await page.getByRole('listbox').boundingBox();
+    assert.ok(box.x >= 0 && box.x + box.width <= width);
+    await page.locator('.gb-dim-dropdown-btn').click();
+    console.log(width + '×' + height + ' board, search, dimension menu within viewport');
   }
-}
-
-runVerification().catch((err) => {
-  console.error('[Verify] Verification failed:', err);
-  process.exit(1);
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.locator('.gb-board-header button').click();
+  const draft = page.locator('.gb-floating-composer');
+  const drag = draft.locator('.gb-drag-handle-btn');
+  const box = await drag.boundingBox();
+  await page.mouse.move(box.x + 5, box.y + 5);
+  await page.mouse.down();
+  await page.mouse.move(box.x + 55, box.y + 15);
+  await page.mouse.up();
+  await expect(draft).toHaveClass(/is-dragged/);
+  await draft.getByTitle('最小化').click();
+  await page.getByTitle('展开', { exact: true }).click();
+  await expect(draft).toBeVisible();
+  await draft.getByRole('button', { name: 'Boost 短评' }).click();
+  await draft.getByLabel('广场 Boost').fill('🥝'.repeat(17));
+  await expect(draft.getByRole('button', { name: '发布', exact: true })).toBeDisabled();
+  await draft.getByLabel('广场 Boost').fill('阅读留痕');
+  await draft.getByRole('button', { name: '发布', exact: true }).click();
+  await expect(page.locator('.gb-board-boosts')).toContainText('阅读留痕');
+  await page.locator('.gb-board-header button').click();
+  await draft.getByRole('button', { name: 'Gesture 讨论' }).click();
+  await draft.getByPlaceholder('标题（可选）').fill('读者新主题');
+  await draft.getByPlaceholder('说点什么...').fill('这里是新发表的主题正文。');
+  await draft.locator('.gb-composer-channel-trigger').click();
+  await draft.getByRole('option', { name: /灵感交流/ }).click();
+  await draft.locator('.gb-composer-tag-input').fill('摘记');
+  await draft.locator('.gb-composer-tag-input').press('Enter');
+  await draft.getByTitle('插入表情').click();
+  await page
+    .getByRole('dialog', { name: '贴文表情' })
+    .getByRole('button', { name: '👍', exact: true })
+    .click();
+  await draft.getByRole('button', { name: '实时预览' }).click();
+  await expect(draft.locator('.gb-preview-box')).toContainText('新发表的主题正文');
+  await draft.getByRole('button', { name: '发布', exact: true }).click();
+  await expect(page.locator('.gd-zone1-title')).toHaveText('读者新主题');
+  await expect(page.locator('.gd-zone1-tags')).toContainText('摘记');
+  await expect(page.locator('.gd-zone1-tags')).toContainText('灵感交流');
+  await page.getByLabel('订阅通知').click();
+  await expect(page.getByLabel('订阅通知')).toHaveAttribute('aria-pressed', 'true');
+  const op = page.locator('#floor-1');
+  await op.getByLabel('更多操作').click();
+  await op.getByLabel('编辑贴文').click();
+  await op.locator('.gd-inline-edit-title').fill('修改后的主题');
+  await op.getByRole('button', { name: '保存修改' }).click();
+  await expect(page.locator('.gd-zone1-title')).toHaveText('修改后的主题');
+  await op.getByLabel('更多操作').click();
+  page.once('dialog', (d) => d.accept());
+  await op.getByLabel('删除贴文').click();
+  await expect(page.locator('.gb-board-header')).toBeVisible();
+  console.log(
+    'real D1: empty board, all seven tabs, search, pagination, bookmarks, dimensions, floating draft, Boost and Gesture CRUD',
+  );
+  assert.deepEqual(errors, []);
 });
