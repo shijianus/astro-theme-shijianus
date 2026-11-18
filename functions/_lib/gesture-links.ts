@@ -1,9 +1,10 @@
-import { fromMarkdown } from 'mdast-util-from-markdown';
-import type { RootContent, PhrasingContent } from 'mdast';
+import MarkdownIt from 'markdown-it';
 import { parseGestureHash } from '../../src/lib/gesture-text.ts';
 import type { RawCommentRow } from './gesture-shared.ts';
 
 interface Citation { url: string; label: string; internal: boolean; id?: string; floor?: number }
+const markdown = new MarkdownIt({ linkify: true });
+markdown.linkify.set({ fuzzyLink: false, fuzzyEmail: false });
 const canonicalOrigin = 'https://blog.epocanvas.com';
 
 function normalizeEscapes(value: string) {
@@ -41,29 +42,24 @@ export function collectGestureLinks(rows: RawCommentRow[], origin: string) {
     }
     found.set(key, { url: href, label, internal, id: target?.id, floor: target?.floor });
   }
-  type Node = RootContent | PhrasingContent;
-  const labelOf = (node: Node): string => 'children' in node ? node.children.map(labelOf).join('') : 'value' in node ? node.value : '';
   for (const row of rows) {
     if (!/https?:\/\/|]\(|\/guestbook\/|]:/i.test(row.message)) continue;
-    const tree = fromMarkdown(row.message);
-    const definitions = new Map<string, string>();
-    function define(node: Node) {
-      if (node.type === 'definition') definitions.set(node.identifier, node.url);
-      else if ('children' in node) node.children.forEach(define);
-    }
-    function visit(node: Node) {
-      if (node.type === 'link') add(node.url, labelOf(node) === node.url ? '' : labelOf(node));
-      else if (node.type === 'linkReference') add(definitions.get(node.identifier) || '', labelOf(node));
-      else if (node.type === 'text') {
-        for (const match of node.value.matchAll(/https?:\/\/[^\s<>「」【】。，；！？]+|\/guestbook\/#gesture-[\w-]+/gi)) {
-          let value = match[0].replace(/[.,;:!?]+$/, '');
-          while (value.endsWith(')') && value.split(')').length > value.split('(').length) value = value.slice(0, -1);
-          add(value);
+    for (const block of markdown.parse(row.message, {})) {
+      let href = '';
+      let label = '';
+      for (const token of block.children || []) {
+        if (token.type === 'link_open') {
+          href = token.attrGet('href') || '';
+          label = '';
+        } else if (token.type === 'link_close') {
+          add(href, label === href ? '' : label);
+          href = '';
+        } else if (href) label += token.content;
+        else if (token.type === 'text') {
+          for (const match of token.content.matchAll(/\/guestbook\/#gesture-[\w-]+/g)) add(match[0]);
         }
-      } else if ('children' in node) node.children.forEach(visit);
+      }
     }
-    tree.children.forEach(define);
-    tree.children.forEach(visit);
   }
   return [...found.values()];
 }
