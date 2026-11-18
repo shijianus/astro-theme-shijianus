@@ -1,4 +1,4 @@
-import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import {
   Bookmark,
   Check,
@@ -90,6 +90,7 @@ export function GestureFloorCard({
   const replyBodyAnchorRef = useRef<HTMLDivElement | null>(null);
   const pendingBeforeTopRef = useRef<number | null>(null);
 
+  const renderedBody = useMemo(() => renderGestureMarkdown(bodyMarkdown), [bodyMarkdown]);
   const badges = resolveAuthorBadges(node);
   const editCount = Number(node.editCount || 0);
 
@@ -259,7 +260,7 @@ export function GestureFloorCard({
               className="gd-markdown-body gd-floor-markdown"
               onClick={handleBodyClick}
               dangerouslySetInnerHTML={{
-                __html: renderGestureMarkdown(bodyMarkdown),
+                __html: renderedBody,
               }}
             />
           )}

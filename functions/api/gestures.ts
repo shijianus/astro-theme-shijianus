@@ -1,5 +1,5 @@
 import { sha256Hex } from '../_lib/hash.ts';
-import { batchFetchBoostsByGestureIds, welcomeReplyCount, welcomeId, welcomeContent, welcomeReplies, isStarterBoost } from '../_lib/gesture-history.ts';
+import { fetchThreadBoosts, welcomeReplyCount, welcomeId, welcomeContent, welcomeReplies, isStarterBoost } from '../_lib/gesture-history.ts';
 import { collectGestureLinks, resolveGestureLinks } from '../_lib/gesture-links.ts';
 import { gestureTimestamp, validBoost } from '../../src/lib/gesture-text.ts';
 import type { AppEnv } from '../_lib/types';
@@ -121,7 +121,7 @@ export async function onRequest(context: {
       }
     }
 
-    const boostsGrouped = await batchFetchBoostsByGestureIds(env.DB, [opRow.id, ...replyRows.map(r => r.id)]);
+    const boostsGrouped = await fetchThreadBoosts(env.DB, rootId);
     const oldFloors = replyRows;
     if (opRow.id === welcomeId) {
       opRow = welcomeContent(opRow);
@@ -197,7 +197,7 @@ export async function onRequest(context: {
         : [...memoryFallbackStore.values()].filter(r => r.parent_id === t.id && r.post_type !== 'boost' && ['published','pinned'].includes(r.status))
           .sort((a,b) => Date.parse(gestureTimestamp(a.created_at))-Date.parse(gestureTimestamp(b.created_at)) || a.id.localeCompare(b.id));
       const visible = t.id === rootId ? replyRows : t.id === welcomeId
-        ? welcomeReplies(original, await batchFetchBoostsByGestureIds(env.DB, original.map(r => r.id))) : original;
+        ? welcomeReplies(original, await fetchThreadBoosts(env.DB, t.id)) : original;
       floorIds.set(t.id, [t.id, ...visible.map(r => r.id)]);
       t.reply_count = visible.length;
       if (visible.length !== original.length) oldIds.set(t.id, [t.id, ...original.map(r => r.id)]);

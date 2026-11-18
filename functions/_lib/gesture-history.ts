@@ -63,42 +63,21 @@ export function welcomeReplies(rows: RawCommentRow[], boosts: Record<string, Raw
   return rows.filter(row => keep.has(row.id)).map(row => originalReplies.has(row.id) ? stripStarterVotes(row) : row);
 }
 
-export async function batchFetchBoostsByGestureIds(
-  db: AppEnv['DB'] | undefined,
-  gestureIds: string[]
-): Promise<Record<string, RawBoostRow[]>> {
+export async function fetchThreadBoosts(db: AppEnv['DB'] | undefined, rootId: string) {
+  const rows = db
+    ? (await db.prepare(`
+        SELECT * FROM boosts WHERE gesture_id = ? OR gesture_id IN (
+          SELECT id FROM comments WHERE parent_id = ? AND status IN ('published', 'pinned') AND post_type != 'boost'
+        ) ORDER BY julianday(created_at), id
+      `).bind(rootId, rootId).all<RawBoostRow>()).results || []
+    : [...memoryBoostsStore.values()].filter(boost => {
+        if (boost.gesture_id === rootId) return true;
+        const post = boost.gesture_id && memoryFallbackStore.get(boost.gesture_id);
+        return post && post.parent_id === rootId && post.post_type !== 'boost' && ['published', 'pinned'].includes(post.status);
+      }).sort((a, b) => Date.parse(gestureTimestamp(a.created_at)) - Date.parse(gestureTimestamp(b.created_at)) || a.id.localeCompare(b.id));
   const grouped: Record<string, RawBoostRow[]> = {};
-  if (!gestureIds.length) return grouped;
-
-  if (db) {
-    const uniqueIds = Array.from(new Set(gestureIds));
-    // SQLite bind limit safety: chunk by 80
-    for (let i = 0; i < uniqueIds.length; i += 80) {
-      const chunk = uniqueIds.slice(i, i + 80);
-      const placeholders = chunk.map(() => '?').join(', ');
-      const res = await db
-        .prepare(`SELECT id, gesture_id, user_id, author_name, author_avatar, content, created_at FROM boosts WHERE gesture_id IN (${placeholders}) ORDER BY created_at ASC`)
-        .bind(...chunk)
-        .all<RawBoostRow>();
-
-      for (const row of res.results || []) {
-        if (!row.gesture_id) continue;
-        if (!grouped[row.gesture_id]) grouped[row.gesture_id] = [];
-        grouped[row.gesture_id].push(row);
-      }
-    }
-    return grouped;
-  }
-
-  const idSet = new Set(gestureIds);
-  const rows = Array.from(memoryBoostsStore.values())
-    .filter((b) => b.gesture_id && idSet.has(b.gesture_id))
-    .sort((a, b) => Date.parse(gestureTimestamp(a.created_at)) - Date.parse(gestureTimestamp(b.created_at)) || a.id.localeCompare(b.id));
-
   for (const row of rows) {
-    if (!row.gesture_id) continue;
-    if (!grouped[row.gesture_id]) grouped[row.gesture_id] = [];
-    grouped[row.gesture_id].push(row);
+    if (row.gesture_id) (grouped[row.gesture_id] ||= []).push(row);
   }
   return grouped;
 }
@@ -106,7 +85,7 @@ export async function batchFetchBoostsByGestureIds(
 export async function welcomeReplyCount(db?: AppEnv['DB']) {
   const rows = db ? (await db.prepare("SELECT * FROM comments WHERE parent_id=? AND post_type!='boost' AND status IN ('published','pinned')").bind(welcomeId).all<RawCommentRow>()).results || []
     : [...memoryFallbackStore.values()].filter(r => r.parent_id === welcomeId && r.post_type !== 'boost' && ['published','pinned'].includes(r.status));
-  const boosts = await batchFetchBoostsByGestureIds(db, rows.filter(r => r.id.startsWith('reply_floor_')).map(r => r.id));
+  const boosts = await fetchThreadBoosts(db, welcomeId);
   return welcomeReplies(rows, boosts).length;
 }
 
