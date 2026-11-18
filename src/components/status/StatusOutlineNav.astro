@@ -15,7 +15,7 @@ const { items, variant } = Astro.props;
 {variant === 'mobile' ? (
   <details class="status-mobile-toc" id="status-mobile-toc">
     <summary class="status-mobile-toc__summary">
-      <span>文档目录 · 快速跳转（{items.length} 节）</span>
+      <span>本页目录 · 快速跳转（{items.length} 节）</span>
       <span aria-hidden="true">▾</span>
     </summary>
     <ol class="status-mobile-toc__list">
@@ -30,10 +30,10 @@ const { items, variant } = Astro.props;
   </details>
 ) : (
   <aside class="status-doc-rail" aria-label="文档章节目录">
-    <nav class="status-outline-card" aria-label="本页目录">
-      <div class="status-outline-card__header">
-        <span class="status-outline-card__title">本页目录</span>
-        <span class="status-outline-card__progress" data-status-scroll-progress>0%</span>
+    <nav class="status-outline-nav" aria-label="本页目录">
+      <div class="status-outline-nav__header">
+        <span class="status-outline-nav__title">本页目录</span>
+        <span class="status-outline-nav__progress" data-status-scroll-progress>0%</span>
       </div>
       <ol class="status-outline-list" data-status-outline-list>
         {items.map((item, idx) => (
@@ -49,11 +49,11 @@ const { items, variant } = Astro.props;
           </li>
         ))}
       </ol>
-      <div class="status-outline-card__actions">
-        <a href="#apply-friend-link" class="status-btn status-btn--primary status-btn--sm">
-          前往互链申请
+      <div class="status-outline-nav__footer">
+        <a href="#apply-friend-link" class="status-outline-util status-outline-util--accent">
+          申请友情链接 →
         </a>
-        <a href="#top" class="status-outline-top" data-status-scroll-top>
+        <a href="#top" class="status-outline-util" data-status-scroll-top>
           ↑ 返回页面顶部
         </a>
       </div>

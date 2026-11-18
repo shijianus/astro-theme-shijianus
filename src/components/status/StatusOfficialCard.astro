@@ -5,11 +5,11 @@ const { profile, yaml, json, html, markdown } = buildOfficialFriendSnippets();
 
 const fields = [
   { key: 'name', label: '博客名称', value: profile.name },
-  { key: 'url', label: '推荐主网址（已实测）', value: profile.url },
+  { key: 'url', label: '推荐主网址', value: profile.url },
   { key: 'avatar', label: '头像图标', value: profile.avatar },
   { key: 'desc', label: '博客简介', value: profile.desc },
   { key: 'cover', label: '展示封面', value: profile.cover },
-  { key: 'momentsFeed', label: '朋友圈协议清单（JSON）', value: profile.momentsFeed },
+  { key: 'momentsFeed', label: '朋友圈清单', value: profile.momentsFeed },
   { key: 'contact', label: '联系邮箱', value: profile.contact },
 ];
 
@@ -21,16 +21,14 @@ const formats = [
 ];
 ---
 
-<section class="official-friend-card" aria-labelledby="official-friend-card-heading" data-official-friend-card>
-  <h3 id="official-friend-card-heading" class="sr-only">shijianus 官方友链名片与多格式配置</h3>
-
+<section class="official-friend-card" aria-label="shijianus 官方友链名片与多格式配置" data-official-friend-card>
   <div class="official-friend-card__preview">
     <img
       src="/media/shijianus/avatar.jpg"
       alt="shijianus 站点头像"
       class="official-friend-card__avatar"
-      width="56"
-      height="56"
+      width="44"
+      height="44"
       loading="lazy"
     />
     <div class="official-friend-card__identity">
@@ -47,24 +45,26 @@ const formats = [
     </a>
   </div>
 
-  <div class="official-friend-fields">
+  <dl class="official-friend-rows">
     {fields.map((field) => (
-      <div class="official-field-item">
-        <div class="official-field-item__top">
-          <span class="official-field-item__label">{field.label}</span>
+      <div class="official-friend-row">
+        <dt class="official-friend-row__label">{field.label}</dt>
+        <dd class="official-friend-row__value">
+          <code>{field.value}</code>
+        </dd>
+        <dd class="official-friend-row__action">
           <button
             type="button"
-            class="status-btn status-btn--secondary status-btn--sm"
+            class="status-copy-chip"
             data-copy-text={field.value}
             data-copy-label={field.label}
           >
             复制
           </button>
-        </div>
-        <code class="official-field-item__value">{field.value}</code>
+        </dd>
       </div>
     ))}
-  </div>
+  </dl>
 
   <div class="format-switcher" data-format-switcher>
     <div class="format-switcher__bar">
@@ -94,7 +94,7 @@ const formats = [
       </button>
     </div>
 
-    {formats.map((fmt, index) => (
+    {formats.map((fmt) => (
       <div
         role="tabpanel"
         id={`panel-${fmt.id}`}
@@ -103,18 +103,8 @@ const formats = [
         data-format-panel={fmt.id}
         data-format-code={fmt.code}
       >
-        <div style="display:flex;align-items:center;justify-content:space-between;gap:0.5rem;margin-bottom:0.35rem;">
-          <span style="font-size:0.82rem;font-weight:700;color:var(--status-text-muted);">
-            {fmt.label}（适用：{fmt.langLabel}）
-          </span>
-          <button
-            type="button"
-            class="status-btn status-btn--secondary status-btn--sm"
-            data-copy-text={fmt.code}
-            data-copy-label={`${fmt.label} 配置`}
-          >
-            复制 {fmt.label}
-          </button>
+        <div class="format-tabpanel__meta">
+          <span>{fmt.label} · 适用：{fmt.langLabel}</span>
         </div>
         <pre><code class={`language-${fmt.id}`}>{fmt.code}</code></pre>
       </div>

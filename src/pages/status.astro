@@ -107,6 +107,8 @@ const [betweenApplyAndVersion, afterVersion = ''] = afterApplyRaw.split(VERSION_
     <StatusOutlineNav items={outlineItems} variant="mobile" />
 
     <div class="status-doc-layout">
+      <StatusOutlineNav items={outlineItems} variant="desktop" />
+
       <div class="status-doc-article">
         <Fragment set:html={beforeCard} />
 
@@ -118,21 +120,18 @@ const [betweenApplyAndVersion, afterVersion = ''] = afterApplyRaw.split(VERSION_
 
         <Fragment set:html={betweenApplyAndVersion} />
 
-        <section id="version-and-feedback" aria-labelledby="version-and-feedback-heading" style="margin-top:1.75rem;padding:1.15rem 1.25rem;border-radius:10px;border:1px solid var(--status-accent-border);background:var(--status-surface-muted);">
-          <h3 id="version-and-feedback-heading" style="margin:0 0 0.6rem;font-size:1rem;">版本记录与问题反馈</h3>
-          <ul style="margin:0;padding-left:1.2rem;display:grid;gap:0.35rem;font-size:0.9rem;">
+        <section id="version-and-feedback" class="status-version-footer" aria-labelledby="version-and-feedback-heading">
+          <h3 id="version-and-feedback-heading">版本记录与问题反馈</h3>
+          <ul>
             <li><strong>文档版本：</strong><code>{frontmatter.version}</code>（与页首元数据单一来源同步）</li>
-            <li><strong>首次发布日期：</strong><time datetime={pubIso}>{pubIso}</time> · <strong>最后修订日期：</strong><time datetime={updatedIso}>{updatedIso}</time></li>
-            <li><strong>最近一次线上与源码核验时间：</strong><code>2026-11-16</code></li>
-            <li><strong>本次主要变更（{frontmatter.version}）：</strong>将博客主体统一修正为 <code>shijianus</code>；移除未经证实的 SLA、自动巡检与 Office 实时协作宣称；核实并如实披露 <code>/rss.xml</code>（404）与 <code>/shijianus-moments.json</code>（200）状态；补齐语义化链接与术语上下文解释；修复友链申请接口的 URL 安全校验与 D1/Telegram 真实状态拆分。</li>
-            <li><strong>问题反馈与申诉渠道：</strong>请发送邮件至 <a href="mailto:shijianus@epocanvas.com">shijianus@epocanvas.com</a> 或 <a href="mailto:contact@epocanvas.com">contact@epocanvas.com</a>，也可参阅 <a href="/community/reporting-and-appeals/">举报与申诉说明</a> 或在 <a href="/guestbook/">留言板</a> 反馈文档错漏。</li>
+            <li><strong>首次发布：</strong><time datetime={pubIso}>{pubIso}</time> · <strong>最后修订：</strong><time datetime={updatedIso}>{updatedIso}</time> · <strong>最近核验：</strong><code>2026-11-16</code></li>
+            <li><strong>主要修订（{frontmatter.version}）：</strong>确立 <code>shijianus</code> 博客主体；移除未获实证的 SLA 与实时协同表述；如实披露 <code>/rss.xml</code>（404）与 <code>/shijianus-moments.json</code>（200）；补齐语义链接、术语解释与 URL 安全校验；修复 D1/Telegram 真实状态拆分与文档排版一致性。</li>
+            <li><strong>反馈与申诉：</strong>致信 <a href="mailto:shijianus@epocanvas.com">shijianus@epocanvas.com</a> / <a href="mailto:contact@epocanvas.com">contact@epocanvas.com</a>，或查看 <a href="/community/reporting-and-appeals/">举报与申诉说明</a>、<a href="/guestbook/">留言板</a>。</li>
           </ul>
         </section>
 
         <Fragment set:html={afterVersion} />
       </div>
-
-      <StatusOutlineNav items={outlineItems} variant="desktop" />
     </div>
   </div>
 

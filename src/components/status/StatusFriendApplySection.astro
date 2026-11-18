@@ -11,30 +11,28 @@ const officialRows = friendsConfig.categories.flatMap((cat) =>
 ---
 
 <section class="status-apply-section" aria-label="公开生态友邻与互链申请">
-  <details class="status-details" open>
+  <details class="status-details">
     <summary>
-      <span>当前已收录的关联生态与友邻名录（静态公开数据，共 {officialRows.length} 项）</span>
+      <span>查看当前已收录的关联生态与友邻名录（共 {officialRows.length} 项）</span>
       <span class="status-details__chevron" aria-hidden="true">▸</span>
     </summary>
     <div class="status-details__body">
-      <p style="margin:0.75rem 0;">
-        以下记录来自站点仓库配置文件 <code>src/config/friends.ts</code>（当前处于审核前的公开基线数据；新提交的申请需由站长人工审核并更新配置后才会出现在此名录及 <a href="/friends/">友人帐</a> 中）。
+      <p style="margin:0.65rem 0;">
+        以下条目源自站点配置 <code>src/config/friends.ts</code>（当前公开基线；新申请须经站长人工核验并合入配置后才会出现在此处及 <a href="/friends/">友人帐</a>）。
       </p>
-      <div class="article-table-wrap">
-        <table>
+      <div class="status-table-wrap">
+        <table class="status-data-table">
           <thead>
             <tr>
-              <th>序号</th>
               <th>站点名称</th>
               <th>定位与简介</th>
-              <th>分类标签</th>
-              <th>维护状态</th>
+              <th>分类</th>
+              <th>状态</th>
             </tr>
           </thead>
           <tbody>
-            {officialRows.map((row, idx) => (
+            {officialRows.map((row) => (
               <tr>
-                <td>{String(idx + 1).padStart(2, '0')}</td>
                 <td>
                   <a href={row.url} target="_blank" rel="noopener noreferrer" class="doc-link--external">
                     {row.name}
@@ -42,7 +40,7 @@ const officialRows = friendsConfig.categories.flatMap((cat) =>
                 </td>
                 <td>{row.desc}</td>
                 <td>{row.tag || '生态'}</td>
-                <td><code>已收录（静态配置）</code></td>
+                <td><span class="ev-badge ev-badge--source">静态收录</span></td>
               </tr>
             ))}
           </tbody>
@@ -52,10 +50,12 @@ const officialRows = friendsConfig.categories.flatMap((cat) =>
   </details>
 
   <div class="status-apply-panel" id="status-friend-apply-panel">
-    <h3 style="margin:0 0 0.4rem;">提交友邻互链申请</h3>
-    <p style="margin:0 0 1rem;font-size:0.9rem;color:var(--status-text-muted);">
-      提交将发送至 <code>POST /api/friends/apply</code>，服务端会严格校验网址协议与字段长度，并在响应中分别返回数据库（D1）持久化结果与站长通知（Telegram）发送结果。
-    </p>
+    <div class="status-apply-panel__head">
+      <h3>提交友邻互链申请</h3>
+      <p>
+        提交至 <code>POST /api/friends/apply</code>，服务端会检验网址协议与长度，并在返回中如实拆分 D1 存储与 Telegram 通知状态。
+      </p>
+    </div>
 
     <form id="status-friend-apply-form" novalidate>
       <div class="status-apply-grid">
