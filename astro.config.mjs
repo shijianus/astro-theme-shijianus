@@ -786,6 +786,14 @@ const collectionTableLang = {
   patterns: [{ include: 'source.yaml' }],
 };
 
+const msformLang = {
+  name: 'msform',
+  aliases: ['microsoft-forms'],
+  scopeName: 'source.msform',
+  displayName: 'MicrosoftForms',
+  patterns: [{ include: 'source.yaml' }],
+};
+
 const markmapLang = {
   name: 'markmap',
   scopeName: 'source.markmap',
@@ -836,7 +844,7 @@ export default defineConfig({
         light: 'github-light',
         dark: 'github-dark-dimmed',
       },
-      langs: [mindmapLang, markmapLang, formLang, sheetLang, collectionTableLang],
+      langs: [mindmapLang, markmapLang, formLang, sheetLang, collectionTableLang, msformLang],
       transformers: [
         {
           pre(node) {
@@ -844,7 +852,7 @@ export default defineConfig({
             if (lang === 'mindmap' || lang === 'markmap') {
               node.properties['data-language'] = lang;
               node.properties['class'] = ((node.properties['class'] || '') + ` language-${lang} mindmap-block`).trim();
-            } else if (lang === 'form' || lang === 'yaml:form' || lang === 'sheet' || lang === 'collection-table' || lang === 'collection-sheet') {
+            } else if (lang === 'form' || lang === 'yaml:form' || lang === 'sheet' || lang === 'collection-table' || lang === 'collection-sheet' || lang === 'msform' || lang === 'microsoft-forms') {
               node.properties['data-language'] = lang;
               node.properties['class'] = ((node.properties['class'] || '') + ` language-${lang} form-block sheet-block`).trim();
             }

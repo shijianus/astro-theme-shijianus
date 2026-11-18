@@ -1218,7 +1218,7 @@ const tExtGate = EXT_GATE_I18N[lang] || EXT_GATE_I18N['zh-CN'];
 
         nodes.forEach((node) => {
           const value = node.nodeValue || '';
-          const pattern = /(\|\|([^|]+)\|\|)|%%([^%]+)%%|==(?:(yellow|green|blue|pink|purple|orange|red|cyan):)?([^=]+)==/g;
+          const pattern = /(\|\|([^|]+)\|\|)|%%([^%]+)%%|==(?:(yellow|amber|green|blue|pink|purple|orange|red|cyan)\s*:\s*)?([^=]+)==/g;
           const fragment = document.createDocumentFragment();
           let lastIndex = 0;
           let match;
@@ -3105,7 +3105,7 @@ const tExtGate = EXT_GATE_I18N[lang] || EXT_GATE_I18N['zh-CN'];
 
     for (const article of articles) {
       const formPreBlocks = Array.from(article.querySelectorAll<HTMLElement>(
-        'pre[data-language="form"], pre[data-language="sheet"], pre[data-language="collection-table"], pre[data-language="collection-sheet"], pre:has(code.language-form), pre:has(code.language-sheet), pre:has(code.language-collection-table), pre:has(code.language-collection-sheet), pre.language-form, pre.language-sheet, pre.markdown-form, pre.form-block, pre.sheet-block, pre[data-language="yaml:form"]'
+        'pre[data-language="form"], pre[data-language="msform"], pre[data-language="microsoft-forms"], pre[data-language="sheet"], pre[data-language="collection-table"], pre[data-language="collection-sheet"], pre:has(code.language-form), pre:has(code.language-msform), pre:has(code.language-microsoft-forms), pre:has(code.language-sheet), pre:has(code.language-collection-table), pre:has(code.language-collection-sheet), pre.language-form, pre.language-msform, pre.language-microsoft-forms, pre.language-sheet, pre.markdown-form, pre.form-block, pre.sheet-block, pre[data-language="yaml:form"]'
       ));
 
       // Also check any pre block whose raw content has YAML form structure
@@ -3114,7 +3114,7 @@ const tExtGate = EXT_GATE_I18N[lang] || EXT_GATE_I18N['zh-CN'];
         if (!formPreBlocks.includes(pre)) {
           const text = (pre.textContent || '').trim();
           if (
-            ((text.startsWith('id:') || text.startsWith('formId:')) && (text.includes('fields:') || text.includes('initialRows:') || text.includes('type: sheet') || text.includes('columns:'))) ||
+            ((text.startsWith('id:') || text.startsWith('formId:')) && (text.includes('fields:') || text.includes('initialRows:') || text.includes('type: sheet') || text.includes('type: microsoft-forms') || text.includes('style: microsoft-forms') || text.includes('columns:'))) ||
             text.includes('initialRows:') ||
             text.includes('type: sheet')
           ) {
@@ -3156,6 +3156,434 @@ const tExtGate = EXT_GATE_I18N[lang] || EXT_GATE_I18N['zh-CN'];
         const formDesc = formConfig.description || '';
         const targetUrl = formConfig.target || '/api/friends/apply';
 
+        const isMicrosoftForms =
+          preLang.includes('msform') ||
+          preLang.includes('microsoft-forms') ||
+          formConfig.type === 'microsoft-forms' ||
+          formConfig.style === 'microsoft-forms' ||
+          formConfig.theme === 'microsoft-forms';
+
+        if (isMicrosoftForms && Array.isArray(formConfig.fields)) {
+          const msShell = document.createElement('section');
+          msShell.className = 'ms-forms-shell';
+          msShell.dataset.formId = formId;
+          msShell.dataset.msForms = 'true';
+          msShell.setAttribute('aria-label', String(formTitle));
+
+          const safeExternalEntry = sanitizeSafeHttpUrl(String(formConfig.externalUrl || '')) || (typeof formConfig.externalUrl === 'string' && formConfig.externalUrl.startsWith('mailto:') ? formConfig.externalUrl : '');
+          const externalEntryLabel = String(formConfig.externalLabel || '邮件备用通道');
+          const msBadge = String(formConfig.badge || 'Microsoft Forms · Markdown 扫描表单');
+          const submitLabel = String(formConfig.submitText || '提交申请');
+
+          const headerEl = document.createElement('div');
+          headerEl.className = 'ms-forms-header';
+          headerEl.innerHTML = `
+            <svg class="ms-forms-header__pattern" viewBox="0 0 600 180" preserveAspectRatio="none" aria-hidden="true">
+              <circle cx="520" cy="36" r="95" fill="white" fill-opacity="0.22"></circle>
+              <circle cx="430" cy="145" r="72" fill="white" fill-opacity="0.14"></circle>
+              <path d="M0 155 Q 150 95, 320 140 T 600 110 L 600 180 L 0 180 Z" fill="white" fill-opacity="0.16"></path>
+            </svg>
+            <div class="ms-forms-header__content">
+              <div class="ms-forms-header__top">
+                <span class="ms-forms-badge">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3"></rect><path d="M8 8h8M8 12h8M8 16h5"></path></svg>
+                  <span>${escapeHtml(msBadge)}</span>
+                </span>
+                ${safeExternalEntry ? `<a href="${escapeAttr(safeExternalEntry)}" class="ms-forms-ext-entry"${safeExternalEntry.startsWith('http') ? ' target="_blank" rel="noopener noreferrer"' : ''}><span>${escapeHtml(externalEntryLabel)} ↗</span></a>` : ''}
+              </div>
+              <h3 class="ms-forms-title">${escapeHtml(String(formTitle))}</h3>
+              ${formDesc ? `<p class="ms-forms-desc">${escapeHtml(String(formDesc))}</p>` : ''}
+              <div class="ms-forms-meta-bar">
+                <span>带 <strong style="color:#fecaca">*</strong> 为必填题 · 原生支持 <code>[站点名称](https://链接)</code> 外链自动识别</span>
+                <div class="ms-forms-progress">
+                  <span data-msf-progress-text>必填进度 0 / 0</span>
+                  <span class="ms-forms-progress__track"><span class="ms-forms-progress__fill" data-msf-progress-bar></span></span>
+                </div>
+              </div>
+            </div>
+          `;
+
+          const formBody = document.createElement('form');
+          formBody.className = 'ms-forms-body';
+          formBody.noValidate = true;
+
+          const requiredFieldNames: string[] = [];
+
+          formConfig.fields.forEach((field: any, qIndex: number) => {
+            const fieldId = String(field.id || field.name || `q${qIndex + 1}`);
+            const domId = `msf-${formId}-${fieldId}`;
+            const labelText = String(field.label || fieldId);
+            const isReq = Boolean(field.required);
+            const fieldType = String(field.type || 'text').toLowerCase();
+            const placeholder = String(field.placeholder || '');
+            const hintText = String(field.hint || field.description || '');
+            const maxLen = typeof field.maxLength === 'number' ? field.maxLength : (fieldType === 'textarea' ? 300 : 500);
+            if (isReq) requiredFieldNames.push(fieldId);
+
+            const card = document.createElement('div');
+            card.className = 'ms-forms-card';
+            card.dataset.fieldId = fieldId;
+
+            const qhead = document.createElement('div');
+            qhead.className = 'ms-forms-qhead';
+            const qnum = document.createElement('span');
+            qnum.className = 'ms-forms-qnum';
+            qnum.textContent = String(qIndex + 1);
+
+            const qtitle = document.createElement('label');
+            qtitle.className = 'ms-forms-qtitle';
+            if (fieldType !== 'radio') qtitle.setAttribute('for', domId);
+            qtitle.textContent = labelText;
+            if (isReq) {
+              const star = document.createElement('span');
+              star.className = 'ms-forms-req';
+              star.setAttribute('aria-hidden', 'true');
+              star.textContent = '*';
+              qtitle.appendChild(star);
+            }
+            qhead.append(qnum, qtitle);
+            card.appendChild(qhead);
+
+            if (hintText) {
+              const hp = document.createElement('p');
+              hp.className = 'ms-forms-qhint';
+              hp.textContent = hintText;
+              card.appendChild(hp);
+            }
+
+            const ctrlWrap = document.createElement('div');
+            ctrlWrap.className = 'ms-forms-control-wrap';
+
+            if (fieldType === 'radio' && Array.isArray(field.options)) {
+              const rg = document.createElement('div');
+              rg.className = 'ms-forms-radio-grid';
+              rg.setAttribute('role', 'radiogroup');
+              rg.setAttribute('aria-label', labelText);
+              field.options.forEach((opt: any, oIdx: number) => {
+                const val = typeof opt === 'object' ? String(opt.value || opt.label) : String(opt);
+                const text = typeof opt === 'object' ? String(opt.label || opt.value) : String(opt);
+                const lbl = document.createElement('label');
+                lbl.className = 'ms-forms-radio-item';
+                const radio = document.createElement('input');
+                radio.type = 'radio';
+                radio.name = fieldId;
+                radio.value = val;
+                if (oIdx === 0) radio.checked = true;
+                const span = document.createElement('span');
+                span.textContent = text;
+                lbl.append(radio, span);
+                rg.appendChild(lbl);
+              });
+              ctrlWrap.appendChild(rg);
+            } else if (fieldType === 'select' && Array.isArray(field.options)) {
+              const sel = document.createElement('select');
+              sel.className = 'ms-forms-select';
+              sel.id = domId;
+              sel.name = fieldId;
+              sel.required = isReq;
+              field.options.forEach((opt: any) => {
+                const val = typeof opt === 'object' ? String(opt.value || opt.label) : String(opt);
+                const text = typeof opt === 'object' ? String(opt.label || opt.value) : String(opt);
+                const oEl = document.createElement('option');
+                oEl.value = val;
+                oEl.textContent = text;
+                sel.appendChild(oEl);
+              });
+              ctrlWrap.appendChild(sel);
+            } else if (fieldType === 'textarea') {
+              const ta = document.createElement('textarea');
+              ta.className = 'ms-forms-textarea';
+              ta.id = domId;
+              ta.name = fieldId;
+              ta.placeholder = placeholder;
+              ta.maxLength = maxLen;
+              ta.required = isReq;
+              const counter = document.createElement('div');
+              counter.className = 'ms-forms-charcount';
+              counter.textContent = `0 / ${maxLen}`;
+              ta.addEventListener('input', () => {
+                counter.textContent = `${ta.value.length} / ${maxLen}`;
+              });
+              ctrlWrap.append(ta, counter);
+            } else {
+              const inp = document.createElement('input');
+              inp.className = 'ms-forms-input';
+              inp.id = domId;
+              inp.name = fieldId;
+              inp.type = fieldType === 'url' || fieldType === 'email' ? fieldType : 'text';
+              inp.placeholder = placeholder;
+              inp.maxLength = maxLen;
+              inp.required = isReq;
+              ctrlWrap.appendChild(inp);
+
+              if (fieldType === 'external-link' || fieldType === 'markdown-link' || fieldId === 'siteInput' || fieldId === 'url') {
+                const extPreview = document.createElement('div');
+                extPreview.className = 'ms-forms-ext-preview';
+                extPreview.hidden = true;
+                ctrlWrap.appendChild(extPreview);
+
+                inp.addEventListener('input', () => {
+                  const raw = inp.value.trim();
+                  extPreview.replaceChildren();
+                  if (!raw) {
+                    extPreview.hidden = true;
+                    extPreview.classList.remove('is-error');
+                    return;
+                  }
+                  const parsed = parseSafeMarkdownLink(raw);
+                  extPreview.hidden = false;
+                  if (parsed.url) {
+                    extPreview.classList.remove('is-error');
+                    const tag = document.createElement('span');
+                    tag.style.fontWeight = '700';
+                    tag.textContent = '外链校验通过：';
+                    const nameChip = parsed.name ? document.createElement('strong') : null;
+                    if (nameChip) {
+                      nameChip.textContent = parsed.name;
+                    }
+                    const anchor = document.createElement('a');
+                    anchor.className = 'ms-forms-ext-preview__anchor';
+                    anchor.href = parsed.url;
+                    anchor.target = '_blank';
+                    anchor.rel = 'noopener noreferrer';
+                    anchor.textContent = `${parsed.url} ↗`;
+                    if (nameChip) extPreview.append(tag, nameChip, document.createTextNode(' → '), anchor);
+                    else extPreview.append(tag, anchor);
+
+                    // Auto-sync sibling "name" field when [name](url) syntax is entered
+                    if (parsed.name && fieldId !== 'name') {
+                      const siblingName = formBody.querySelector<HTMLInputElement>('input[name="name"]');
+                      if (siblingName && !siblingName.value.trim()) {
+                        siblingName.value = parsed.name;
+                      }
+                    }
+                  } else {
+                    extPreview.classList.add('is-error');
+                    extPreview.textContent = '未识别到合法外链，请使用 https:// 网址或 [站点名称](https://example.com) 格式（已拒绝不安全协议）。';
+                  }
+                });
+              }
+
+              if (fieldType === 'avatar' || fieldId === 'avatar') {
+                const avPreview = document.createElement('div');
+                avPreview.className = 'ms-forms-avatar-preview';
+                avPreview.hidden = true;
+                ctrlWrap.appendChild(avPreview);
+
+                inp.addEventListener('input', () => {
+                  const raw = inp.value.trim();
+                  avPreview.replaceChildren();
+                  if (!raw) {
+                    avPreview.hidden = true;
+                    return;
+                  }
+                  const safeImg = sanitizeSafeHttpUrl(raw);
+                  if (safeImg) {
+                    avPreview.hidden = false;
+                    const img = document.createElement('img');
+                    img.src = safeImg;
+                    img.alt = '头像预览';
+                    img.addEventListener('error', () => { img.src = DEFAULT_FRIEND_AVATAR_PATH; });
+                    const txt = document.createElement('span');
+                    txt.textContent = '头像直链有效（若远程图床防盗链将回退默认品牌图标）';
+                    avPreview.append(img, txt);
+                  } else {
+                    avPreview.hidden = true;
+                  }
+                });
+              }
+            }
+
+            card.appendChild(ctrlWrap);
+            formBody.appendChild(card);
+          });
+
+          const receiptEl = document.createElement('div');
+          receiptEl.className = 'ms-forms-receipt';
+          receiptEl.hidden = true;
+          receiptEl.setAttribute('aria-live', 'polite');
+
+          const actionsDiv = document.createElement('div');
+          actionsDiv.className = 'ms-forms-actions';
+
+          const leftBtns = document.createElement('div');
+          leftBtns.style.display = 'flex';
+          leftBtns.style.flexWrap = 'wrap';
+          leftBtns.style.gap = '0.6rem';
+
+          const submitBtn = document.createElement('button');
+          submitBtn.type = 'submit';
+          submitBtn.className = 'ms-forms-submit';
+          submitBtn.id = 'status-apply-submit';
+          submitBtn.textContent = submitLabel;
+
+          const resetBtn = document.createElement('button');
+          resetBtn.type = 'button';
+          resetBtn.className = 'ms-forms-reset';
+          resetBtn.textContent = '清除填表';
+          resetBtn.addEventListener('click', () => {
+            formBody.reset();
+            formBody.querySelectorAll<HTMLElement>('.ms-forms-ext-preview, .ms-forms-avatar-preview').forEach((el) => {
+              el.hidden = true;
+              el.replaceChildren();
+            });
+            formBody.querySelectorAll<HTMLElement>('.ms-forms-charcount').forEach((el) => {
+              el.textContent = '0 / 300';
+            });
+            receiptEl.hidden = true;
+            syncProgress();
+          });
+
+          leftBtns.append(submitBtn, resetBtn);
+
+          const footNote = document.createElement('span');
+          footNote.style.fontSize = '0.78rem';
+          footNote.style.color = 'var(--msf-muted)';
+          footNote.textContent = '不虚构提交结果 · 严格区分入库与通知状态';
+
+          actionsDiv.append(leftBtns, footNote);
+          formBody.append(receiptEl, actionsDiv);
+
+          const progressText = headerEl.querySelector<HTMLElement>('[data-msf-progress-text]');
+          const progressBar = headerEl.querySelector<HTMLElement>('[data-msf-progress-bar]');
+          const syncProgress = () => {
+            if (!requiredFieldNames.length) return;
+            let done = 0;
+            for (const fname of requiredFieldNames) {
+              const checkedRadio = formBody.querySelector<HTMLInputElement>(`input[type="radio"][name="${fname}"]:checked`);
+              if (checkedRadio?.value) {
+                done += 1;
+                continue;
+              }
+              const el = formBody.querySelector<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>(`[name="${fname}"]`);
+              if (el && el.value.trim()) done += 1;
+            }
+            if (progressText) progressText.textContent = `必填进度 ${done} / ${requiredFieldNames.length}`;
+            if (progressBar) progressBar.style.width = `${Math.round((done / requiredFieldNames.length) * 100)}%`;
+          };
+
+          formBody.addEventListener('input', syncProgress);
+          formBody.addEventListener('change', syncProgress);
+          syncProgress();
+
+          const renderMsReceipt = (
+            kind: 'error' | 'full_success' | 'degraded_saved' | 'degraded_notified',
+            title: string,
+            detail: string,
+            steps: { label: string; state: 'done' | 'warn' | 'fail' | 'pending' }[]
+          ) => {
+            receiptEl.hidden = false;
+            receiptEl.dataset.kind = kind;
+            receiptEl.replaceChildren();
+
+            const h4 = document.createElement('h4');
+            h4.className = 'ms-forms-receipt__title';
+            h4.textContent = title;
+
+            const p = document.createElement('p');
+            p.className = 'ms-forms-receipt__detail';
+            p.textContent = detail;
+
+            const ul = document.createElement('ul');
+            ul.className = 'ms-forms-receipt__steps';
+            for (const step of steps) {
+              const li = document.createElement('li');
+              li.className = 'ms-forms-receipt__step';
+              li.dataset.state = step.state;
+              const mark = step.state === 'done' ? '✓' : step.state === 'warn' ? '!' : step.state === 'fail' ? '✕' : '•';
+              li.textContent = `${mark} ${step.label}`;
+              ul.appendChild(li);
+            }
+
+            receiptEl.append(h4, p, ul);
+          };
+
+          formBody.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const fd = new FormData(formBody);
+            const rawSiteInput = String(fd.get('siteInput') || '').trim();
+            const rawUrl = String(fd.get('url') || '').trim();
+            const rawName = String(fd.get('name') || '').trim();
+            const avatar = String(fd.get('avatar') || '').trim();
+            const desc = String(fd.get('desc') || '').trim();
+            const category = String(fd.get('category') || '核心友邻 · 独立博客').trim();
+            const contact = String(fd.get('contact') || '').trim();
+
+            const validation = validateFriendApplicationInput(
+              {
+                name: rawName,
+                url: rawUrl,
+                siteInput: rawSiteInput || (rawName && rawUrl ? `[${rawName}](${rawUrl})` : rawUrl),
+                avatar,
+                desc,
+                category,
+                contact,
+                formId,
+                title: String(formTitle),
+                source: 'status_msforms_markdown',
+              },
+              { requireAvatar: true, requireDesc: true, allowRelativeAvatar: false }
+            );
+
+            if (!validation.ok || !validation.data) {
+              renderMsReceipt('error', '请检查填表内容', validation.error || '请填写必填字段并使用安全的 https:// 或 http:// 外链。', [
+                { label: '格式校验未通过', state: 'fail' },
+                { label: '未发送网络请求', state: 'pending' },
+              ]);
+              return;
+            }
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = '正在校验并提交...';
+
+            try {
+              const res = await fetch(targetUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(validation.data),
+              });
+              const data = (await res.json().catch(() => null)) as ApplyApiResponseShape | null;
+              const fb = interpretApplyApiResponse(res.ok, res.status, data);
+              const subSuffix = data?.submissionId ? `（受理编号：${data.submissionId}）` : '';
+
+              renderMsReceipt(
+                fb.kind,
+                fb.title,
+                `${fb.detail}${subSuffix}`,
+                fb.steps
+              );
+
+              if (res.ok && data?.ok === true) {
+                formBody.reset();
+                formBody.querySelectorAll<HTMLElement>('.ms-forms-ext-preview, .ms-forms-avatar-preview').forEach((el) => {
+                  el.hidden = true;
+                  el.replaceChildren();
+                });
+                formBody.querySelectorAll<HTMLElement>('.ms-forms-charcount').forEach((el) => {
+                  el.textContent = '0 / 300';
+                });
+                syncProgress();
+              }
+            } catch {
+              renderMsReceipt('error', '网络连接异常，提交未送达', '当前环境无法访问申请接口，请稍后重试或通过上方邮箱外链渠道联系。', [
+                { label: '网络请求失败', state: 'fail' },
+                { label: 'D1 存档：未知', state: 'warn' },
+              ]);
+            } finally {
+              submitBtn.disabled = false;
+              submitBtn.textContent = submitLabel;
+            }
+          });
+
+          msShell.append(headerEl, formBody);
+          if (shell) {
+            shell.parentNode?.replaceChild(msShell, shell);
+          } else {
+            pre.parentNode?.replaceChild(msShell, pre);
+          }
+          continue;
+        }
+
         const isSheet =
           formConfig.type === 'sheet' ||
           formConfig.type === 'collection-sheet' ||
@@ -3164,8 +3592,7 @@ const tExtGate = EXT_GATE_I18N[lang] || EXT_GATE_I18N['zh-CN'];
           preLang.includes('sheet') ||
           preLang.includes('collection') ||
           formId.includes('sheet') ||
-          formId.includes('collection') ||
-          formId === 'friend-link-apply';
+          formId.includes('collection');
 
         if (isSheet) {
           // --- RENDER OFFICE 收集表 (SPREADSHEET / COLLECTION TABLE) ---

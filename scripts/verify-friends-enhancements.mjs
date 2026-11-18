@@ -77,11 +77,13 @@ const applySectionContent = fs.readFileSync(path.join(ROOT, 'src/components/stat
 const friendsConfig = fs.readFileSync(path.join(ROOT, 'src/config/friends.ts'), 'utf-8');
 assert(friendsConfig.includes("name: 'shijianus'"), 'friendsConfig.siteInfo.name must be shijianus');
 assert(officialCardContent.includes('buildOfficialFriendSnippets'), 'StatusOfficialCard must use single-source snippets');
-assert(applySectionContent.includes('status-friend-apply-form'), 'StatusFriendApplySection must render SSR form');
+assert(statusMdContent.includes('```msform') && statusMdContent.includes('type: microsoft-forms'), 'docs/standards/status.md must declare Markdown-scanned Microsoft Forms block');
+assert(applySectionContent.includes('status-directory-section'), 'StatusFriendApplySection must render directory & noscript fallback');
 
 // 检查 ContentFeatureEnhancer.astro 中的表单与收集表渲染引擎
 const enhancerContent = fs.readFileSync(path.join(ROOT, 'src/components/ContentFeatureEnhancer.astro'), 'utf-8');
 assert(enhancerContent.includes('renderMarkdownFormBlocks'), 'ContentFeatureEnhancer missing renderMarkdownFormBlocks function');
+assert(enhancerContent.includes('ms-forms-shell'), 'ContentFeatureEnhancer missing Microsoft Forms renderer');
 assert(enhancerContent.includes('office-sheet-wrapper'), 'ContentFeatureEnhancer missing office-sheet-wrapper rendering');
 assert(enhancerContent.includes('office-sheet-table'), 'ContentFeatureEnhancer missing office-sheet-table rendering');
 assert(enhancerContent.includes('parseSafeMarkdownLink'), 'ContentFeatureEnhancer missing parseSafeMarkdownLink');

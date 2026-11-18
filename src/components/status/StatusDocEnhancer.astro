@@ -1,13 +1,6 @@
 <div class="sr-only" aria-live="polite" id="status-doc-live-region"></div>
 
 <script>
-  import {
-    validateFriendApplicationInput,
-    parseSafeMarkdownLink,
-    interpretApplyApiResponse,
-    type ApplyApiResponseShape,
-  } from '../../lib/friend-apply';
-
   const copyToClipboard = async (text: string): Promise<boolean> => {
     try {
       if (navigator.clipboard?.writeText) {
@@ -64,7 +57,10 @@
           anchor.classList.contains('doc-term') ||
           anchor.classList.contains('doc-heading-anchor') ||
           anchor.classList.contains('status-outline-link') ||
-          anchor.classList.contains('status-outline-top')
+          anchor.classList.contains('status-outline-top') ||
+          anchor.classList.contains('google-overview-card') ||
+          anchor.classList.contains('ms-forms-ext-entry') ||
+          anchor.classList.contains('ms-forms-ext-preview__anchor')
         ) {
           return;
         }
@@ -108,7 +104,7 @@
       // ---------------------------------------------------------------------
       // 2. Heading Anchor Deep-Links (#)
       // ---------------------------------------------------------------------
-      article.querySelectorAll<HTMLElement>('h2[id], h3[id]').forEach((heading) => {
+      article.querySelectorAll<HTMLElement>('h2[id]:not(.google-lead-title), h3[id]').forEach((heading) => {
         if (heading.querySelector('.doc-heading-anchor')) return;
         const id = heading.id;
         const headingText = (heading.textContent || '').trim();
@@ -486,161 +482,6 @@
       window.scrollTo({ top: 0, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
     });
 
-    // -----------------------------------------------------------------------
-    // 6. Truthful Friend-Link Application Form
-    // -----------------------------------------------------------------------
-    const form = document.getElementById('status-friend-apply-form') as HTMLFormElement | null;
-    const quickInput = document.getElementById('status-apply-quicklink') as HTMLInputElement | null;
-    const quickPreview = document.getElementById('status-apply-quicklink-preview') as HTMLDivElement | null;
-    const nameInput = document.getElementById('status-apply-name') as HTMLInputElement | null;
-    const urlInput = document.getElementById('status-apply-url') as HTMLInputElement | null;
-    const avatarInput = document.getElementById('status-apply-avatar') as HTMLInputElement | null;
-    const catSelect = document.getElementById('status-apply-category') as HTMLSelectElement | null;
-    const descInput = document.getElementById('status-apply-desc') as HTMLInputElement | null;
-    const contactInput = document.getElementById('status-apply-contact') as HTMLInputElement | null;
-    const submitBtn = document.getElementById('status-apply-submit') as HTMLButtonElement | null;
-    const feedbackBox = document.getElementById('status-apply-feedback') as HTMLDivElement | null;
-
-    const renderFeedbackCard = (
-      view: ReturnType<typeof interpretApplyApiResponse>,
-      extraMeta?: { submissionId?: string }
-    ) => {
-      if (!feedbackBox) return;
-      feedbackBox.hidden = false;
-      feedbackBox.dataset.kind = view.kind;
-      feedbackBox.replaceChildren();
-
-      const badge = document.createElement('div');
-      badge.style.fontSize = '0.78rem';
-      badge.style.fontWeight = '800';
-      badge.style.marginBottom = '0.25rem';
-      badge.textContent = view.badge;
-
-      const title = document.createElement('strong');
-      title.style.display = 'block';
-      title.style.fontSize = '0.98rem';
-      title.textContent = view.title;
-
-      const detail = document.createElement('p');
-      detail.style.margin = '0.4rem 0 0';
-      detail.style.fontSize = '0.88rem';
-      detail.style.lineHeight = '1.6';
-      detail.textContent = extraMeta?.submissionId
-        ? `${view.detail}（受理编号：${extraMeta.submissionId}）`
-        : view.detail;
-
-      const stepsUl = document.createElement('ul');
-      stepsUl.className = 'status-feedback-steps';
-      const stateIcon: Record<string, string> = {
-        done: '✓',
-        warn: '!',
-        fail: '✕',
-        pending: '⏳',
-      };
-      for (const step of view.steps) {
-        const li = document.createElement('li');
-        li.className = 'status-feedback-step';
-        li.dataset.state = step.state;
-        li.textContent = `${stateIcon[step.state] || '•'} ${step.label}`;
-        stepsUl.appendChild(li);
-      }
-
-      feedbackBox.append(badge, title, detail, stepsUl);
-    };
-
-    quickInput?.addEventListener('input', () => {
-      if (!quickPreview) return;
-      const val = quickInput.value.trim();
-      if (!val) {
-        quickPreview.hidden = true;
-        quickPreview.replaceChildren();
-        return;
-      }
-      const parsed = parseSafeMarkdownLink(val);
-      quickPreview.hidden = false;
-      quickPreview.classList.toggle('is-invalid', parsed.mode === 'invalid');
-      quickPreview.replaceChildren();
-
-      if (parsed.mode === 'invalid' || !parsed.url) {
-        quickPreview.textContent = '未识别到合法的 https:// 或 http:// 链接（仅支持标准 http/https 协议）。';
-      } else {
-        const label = document.createElement('span');
-        label.textContent = `已识别：${parsed.name} → ${parsed.url}`;
-        quickPreview.appendChild(label);
-        if (nameInput && parsed.name) nameInput.value = parsed.name;
-        if (urlInput && parsed.url) urlInput.value = parsed.url;
-      }
-    });
-
-    form?.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      if (!submitBtn) return;
-
-      const validation = validateFriendApplicationInput(
-        {
-          name: nameInput?.value || '',
-          url: urlInput?.value || '',
-          siteInput: quickInput?.value || '',
-          avatar: avatarInput?.value || '',
-          category: catSelect?.value || '',
-          desc: descInput?.value || '',
-          contact: contactInput?.value || '',
-          formId: 'friend-link-apply',
-          title: '友邻互链申请',
-          source: 'status_guide_form',
-        },
-        { requireAvatar: true, requireDesc: true, allowRelativeAvatar: false }
-      );
-
-      if (!validation.ok || !validation.data) {
-        renderFeedbackCard({
-          kind: 'error',
-          badge: '校验未通过',
-          title: '请先修正表单填写问题',
-          detail: validation.error || '请检查必填字段与网址协议（仅支持 https:// 或 http://）。',
-          steps: [
-            { label: '前端输入校验', state: 'fail' },
-            { label: '数据库持久化 (D1)', state: 'fail' },
-            { label: '站长通知 (TG)', state: 'fail' },
-            { label: '进入人工审核', state: 'fail' },
-          ],
-        });
-        const firstBadKey = Object.keys(validation.fieldErrors)[0];
-        if (firstBadKey === 'name') nameInput?.focus();
-        else if (firstBadKey === 'url') urlInput?.focus();
-        else if (firstBadKey === 'avatar') avatarInput?.focus();
-        else if (firstBadKey === 'desc') descInput?.focus();
-        return;
-      }
-
-      submitBtn.disabled = true;
-      const origLabel = submitBtn.textContent || '提交互链申请';
-      submitBtn.textContent = '正在提交并核验服务端状态...';
-
-      try {
-        const res = await fetch('/api/friends/apply', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(validation.data),
-        });
-        const data = (await res.json().catch(() => null)) as ApplyApiResponseShape | null;
-        const view = interpretApplyApiResponse(res.ok, res.status, data);
-        renderFeedbackCard(view, { submissionId: data?.submissionId });
-
-        if (res.ok && data?.ok === true) {
-          form.reset();
-          if (quickPreview) {
-            quickPreview.hidden = true;
-            quickPreview.replaceChildren();
-          }
-        }
-      } catch {
-        renderFeedbackCard(interpretApplyApiResponse(false, 0, null));
-      } finally {
-        submitBtn.disabled = false;
-        submitBtn.textContent = origLabel;
-      }
-    });
   }
 
   if (document.readyState === 'loading') {

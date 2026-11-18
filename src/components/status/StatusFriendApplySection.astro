@@ -1,6 +1,5 @@
 ---
 import { friendsConfig } from '../../config/friends';
-import { FRIEND_CATEGORIES, FRIEND_APPLY_LIMITS } from '../../lib/friend-apply';
 
 const officialRows = friendsConfig.categories.flatMap((cat) =>
   cat.items.map((item) => ({
@@ -10,15 +9,15 @@ const officialRows = friendsConfig.categories.flatMap((cat) =>
 );
 ---
 
-<section class="status-apply-section" aria-label="公开生态友邻与互链申请">
+<section class="status-directory-section" aria-label="公开生态友邻名录与离线申请指引">
   <details class="status-details">
     <summary>
-      <span>查看当前已收录的关联生态与友邻名录（共 {officialRows.length} 项）</span>
+      <span>展开查看当前已收录的关联生态与友邻名录（共 {officialRows.length} 项）</span>
       <span class="status-details__chevron" aria-hidden="true">▸</span>
     </summary>
     <div class="status-details__body">
       <p style="margin:0.65rem 0;">
-        以下条目源自站点配置 <code>src/config/friends.ts</code>（当前公开基线；新申请须经站长人工核验并合入配置后才会出现在此处及 <a href="/friends/">友人帐</a>）。
+        以下条目源自仓库配置文件 <code>src/config/friends.ts</code>（当前公开基线；新申请须经站长人工核验并合入配置后才会出现在此处及 <a href="/friends/">友人帐</a>）。
       </p>
       <div class="status-table-wrap">
         <table class="status-data-table">
@@ -49,134 +48,13 @@ const officialRows = friendsConfig.categories.flatMap((cat) =>
     </div>
   </details>
 
-  <div class="status-apply-panel" id="status-friend-apply-panel">
-    <div class="status-apply-panel__head">
-      <h3>提交友邻互链申请</h3>
+  <noscript>
+    <div class="status-callout status-callout--warn" style="margin-top:1rem;">
+      <p class="status-callout__title">当前浏览器未启用 JavaScript</p>
       <p>
-        提交至 <code>POST /api/friends/apply</code>，服务端会检验网址协议与长度，并在返回中如实拆分 D1 存储与 Telegram 通知状态。
+        嵌入式 <strong>Microsoft Forms</strong> 交互问卷需要 JavaScript 渲染；您仍可通过邮件发送站点名称、<code>https://</code> 外链网址、头像链接与简介至
+        <a href="mailto:shijianus@epocanvas.com">shijianus@epocanvas.com</a> 提交互链申请。
       </p>
     </div>
-
-    <form id="status-friend-apply-form" novalidate>
-      <div class="status-apply-grid">
-        <div class="status-apply-field status-apply-field--full">
-          <label for="status-apply-quicklink">
-            快捷导入（可选）：支持直接粘贴 <code>[站点名称](https://example.com)</code>
-          </label>
-          <input
-            id="status-apply-quicklink"
-            name="siteInput"
-            type="text"
-            maxlength={FRIEND_APPLY_LIMITS.urlMax + FRIEND_APPLY_LIMITS.nameMax + 10}
-            placeholder="例如：[我的技术博客](https://example.com) —— 输入后将自动拆分填充下方名称与网址"
-          />
-          <div id="status-apply-quicklink-preview" class="status-apply-preview" hidden></div>
-        </div>
-
-        <div class="status-apply-field">
-          <label for="status-apply-name">
-            站点名称 <span aria-hidden="true" style="color:var(--status-danger)">*</span>
-          </label>
-          <input
-            id="status-apply-name"
-            name="name"
-            type="text"
-            required
-            maxlength={FRIEND_APPLY_LIMITS.nameMax}
-            placeholder="例如：星海随笔"
-            autocomplete="organization"
-          />
-        </div>
-
-        <div class="status-apply-field">
-          <label for="status-apply-url">
-            站点主页地址 <span aria-hidden="true" style="color:var(--status-danger)">*</span>
-          </label>
-          <input
-            id="status-apply-url"
-            name="url"
-            type="url"
-            required
-            maxlength={FRIEND_APPLY_LIMITS.urlMax}
-            placeholder="https://example.com"
-            autocomplete="url"
-          />
-          <span class="status-apply-hint">仅接受可公开访问的 <code>https://</code> 或 <code>http://</code> 网址。</span>
-        </div>
-
-        <div class="status-apply-field">
-          <label for="status-apply-avatar">
-            站点头像 / 图标 URL <span aria-hidden="true" style="color:var(--status-danger)">*</span>
-          </label>
-          <input
-            id="status-apply-avatar"
-            name="avatar"
-            type="url"
-            required
-            maxlength={FRIEND_APPLY_LIMITS.avatarMax}
-            placeholder="https://example.com/avatar.png"
-          />
-        </div>
-
-        <div class="status-apply-field">
-          <label for="status-apply-category">意向分类</label>
-          <select id="status-apply-category" name="category">
-            {FRIEND_CATEGORIES.map((cat) => (
-              <option value={cat}>{cat}</option>
-            ))}
-          </select>
-        </div>
-
-        <div class="status-apply-field status-apply-field--full">
-          <label for="status-apply-desc">
-            一句话站点简介 <span aria-hidden="true" style="color:var(--status-danger)">*</span>
-          </label>
-          <input
-            id="status-apply-desc"
-            name="desc"
-            type="text"
-            required
-            maxlength={FRIEND_APPLY_LIMITS.descMax}
-            placeholder="简述贵站的写作主题、原创方向或技术栈"
-          />
-        </div>
-
-        <div class="status-apply-field status-apply-field--full">
-          <label for="status-apply-contact">联系方式 / 附言（选填，不公开展示）</label>
-          <input
-            id="status-apply-contact"
-            name="contact"
-            type="text"
-            maxlength={FRIEND_APPLY_LIMITS.contactMax}
-            placeholder="邮箱或 Telegram @handle，仅用于站长核对与反馈结果"
-          />
-        </div>
-      </div>
-
-      <div style="display:flex;flex-wrap:wrap;align-items:center;gap:0.75rem;margin-top:1.15rem;">
-        <button type="submit" id="status-apply-submit" class="status-btn status-btn--primary">
-          提交互链申请
-        </button>
-        <a href="/friends/" class="status-btn status-btn--secondary">
-          前往友人帐页面
-        </a>
-      </div>
-    </form>
-
-    <noscript>
-      <div class="status-feedback-card" data-kind="degraded_saved" style="margin-top:1rem;">
-        <strong>当前浏览器未启用 JavaScript：</strong>
-        您仍可完整阅读本页所有状态说明、友链信息与隐私政策。如需提交互链申请，请发送包含站点名称、网址、头像 URL 与简介的邮件至
-        <code>shijianus@epocanvas.com</code>，或在启用 JavaScript 后使用 <a href="/friends/">友人帐申请弹窗</a>。
-      </div>
-    </noscript>
-
-    <div
-      id="status-apply-feedback"
-      class="status-feedback-card"
-      role="status"
-      aria-live="polite"
-      hidden
-    ></div>
-  </div>
+  </noscript>
 </section>

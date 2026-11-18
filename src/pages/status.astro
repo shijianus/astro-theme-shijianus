@@ -7,6 +7,7 @@ import StatusOutlineNav, { type OutlineItem } from '../components/status/StatusO
 import StatusOfficialCard from '../components/status/StatusOfficialCard.astro';
 import StatusFriendApplySection from '../components/status/StatusFriendApplySection.astro';
 import StatusDocEnhancer from '../components/status/StatusDocEnhancer.astro';
+import StatusVisuals from '../components/status/StatusVisuals.astro';
 import { createSidebarData } from '../lib/theme.ts';
 import { siteConfig } from '../config/site';
 import {
@@ -53,13 +54,13 @@ const structuredData = {
 };
 
 const outlineItems: OutlineItem[] = [
-  { id: 'guide-overview', label: '阅读本指南' },
+  { id: 'guide-overview', label: '简介与阅读概览' },
   { id: 'about-shijianus', label: '认识 shijianus' },
   { id: 'site-status', label: '站点状态与运行边界' },
   { id: 'friends-system', label: '友邻系统如何工作' },
   { id: 'exchange-rules', label: '友邻交换与收录规则' },
   { id: 'official-friend-info', label: 'shijianus 官方友链信息' },
-  { id: 'apply-friend-link', label: '互链申请' },
+  { id: 'apply-friend-link', label: '互链申请（Microsoft Forms）' },
   { id: 'privacy-and-data', label: '隐私与数据处理' },
   { id: 'faq', label: '常见问题' },
   { id: 'glossary', label: '术语表与版本反馈' },
@@ -72,13 +73,38 @@ const drawerHeadings = outlineItems.map((item) => ({
 }));
 
 const rawHtml = await compiledContent();
-const CARD_MARKER = '<div data-status-slot="official-friend-card"></div>';
-const APPLY_MARKER = '<div data-status-slot="friend-apply-section"></div>';
-const VERSION_MARKER = '<div data-status-slot="version-meta"></div>';
+const SLOT_REGEX = /<div\s+data-status-slot="([a-z0-9-]+)"\s*><\/div>/g;
 
-const [beforeCard, afterCardRaw = ''] = rawHtml.split(CARD_MARKER);
-const [betweenCardAndApply, afterApplyRaw = ''] = afterCardRaw.split(APPLY_MARKER);
-const [betweenApplyAndVersion, afterVersion = ''] = afterApplyRaw.split(VERSION_MARKER);
+type DocChunk = { type: 'html'; html: string } | { type: 'slot'; name: string };
+const chunks: DocChunk[] = [];
+let cursor = 0;
+let slotMatch: RegExpExecArray | null;
+while ((slotMatch = SLOT_REGEX.exec(rawHtml)) !== null) {
+  if (slotMatch.index > cursor) {
+    chunks.push({ type: 'html', html: rawHtml.slice(cursor, slotMatch.index) });
+  }
+  chunks.push({ type: 'slot', name: slotMatch[1] });
+  cursor = SLOT_REGEX.lastIndex;
+}
+if (cursor < rawHtml.length) {
+  chunks.push({ type: 'html', html: rawHtml.slice(cursor) });
+}
+
+const VISUAL_SLOTS = new Set([
+  'lead-hero',
+  'overview-grid',
+  'friends-pipeline',
+  'rules-matrix',
+  'divider-about',
+  'divider-status',
+  'divider-friends',
+  'divider-rules',
+  'divider-card',
+  'divider-apply',
+  'divider-privacy',
+  'divider-faq',
+  'divider-glossary',
+]);
 ---
 
 <BlogLayout
@@ -110,27 +136,36 @@ const [betweenApplyAndVersion, afterVersion = ''] = afterApplyRaw.split(VERSION_
       <StatusOutlineNav items={outlineItems} variant="desktop" />
 
       <div class="status-doc-article">
-        <Fragment set:html={beforeCard} />
-
-        {afterCardRaw && <StatusOfficialCard />}
-
-        <Fragment set:html={betweenCardAndApply} />
-
-        {afterApplyRaw && <StatusFriendApplySection />}
-
-        <Fragment set:html={betweenApplyAndVersion} />
-
-        <section id="version-and-feedback" class="status-version-footer" aria-labelledby="version-and-feedback-heading">
-          <h3 id="version-and-feedback-heading">版本记录与问题反馈</h3>
-          <ul>
-            <li><strong>文档版本：</strong><code>{frontmatter.version}</code>（与页首元数据单一来源同步）</li>
-            <li><strong>首次发布：</strong><time datetime={pubIso}>{pubIso}</time> · <strong>最后修订：</strong><time datetime={updatedIso}>{updatedIso}</time> · <strong>最近核验：</strong><code>2026-11-16</code></li>
-            <li><strong>主要修订（{frontmatter.version}）：</strong>确立 <code>shijianus</code> 博客主体；移除未获实证的 SLA 与实时协同表述；如实披露 <code>/rss.xml</code>（404）与 <code>/shijianus-moments.json</code>（200）；补齐语义链接、术语解释与 URL 安全校验；修复 D1/Telegram 真实状态拆分与文档排版一致性。</li>
-            <li><strong>反馈与申诉：</strong>致信 <a href="mailto:shijianus@epocanvas.com">shijianus@epocanvas.com</a> / <a href="mailto:contact@epocanvas.com">contact@epocanvas.com</a>，或查看 <a href="/community/reporting-and-appeals/">举报与申诉说明</a>、<a href="/guestbook/">留言板</a>。</li>
-          </ul>
-        </section>
-
-        <Fragment set:html={afterVersion} />
+        <div class="status-doc-article__inner">
+          {chunks.map((chunk) => {
+            if (chunk.type === 'html') {
+              return <Fragment set:html={chunk.html} />;
+            }
+            if (VISUAL_SLOTS.has(chunk.name)) {
+              return <StatusVisuals variant={chunk.name as any} />;
+            }
+            if (chunk.name === 'official-friend-card') {
+              return <StatusOfficialCard />;
+            }
+            if (chunk.name === 'friend-apply-section') {
+              return <StatusFriendApplySection />;
+            }
+            if (chunk.name === 'version-meta') {
+              return (
+                <section id="version-and-feedback" class="status-version-footer" aria-labelledby="version-and-feedback-heading">
+                  <h3 id="version-and-feedback-heading">版本记录与问题反馈</h3>
+                  <ul>
+                    <li><strong>文档版本：</strong><code>{frontmatter.version}</code>（与页首元数据单一来源同步）</li>
+                    <li><strong>首次发布：</strong><time datetime={pubIso}>{pubIso}</time> · <strong>最后修订：</strong><time datetime={updatedIso}>{updatedIso}</time> · <strong>最近核验：</strong><code>2026-11-16</code></li>
+                    <li><strong>主要修订（{frontmatter.version}）：</strong>全面采用 Google 政策式图文阅读节奏与矢量 SVG 章节分割（移除顶部按钮堆砌）；全站重构高对比荧光笔 <code>&lt;mark&gt;</code> 高亮体系；互链申请升级为 Markdown 原生扫描式 Microsoft Forms 外链问卷并保留四阶段真实状态回执。</li>
+                    <li><strong>反馈与申诉：</strong>致信 <a href="mailto:shijianus@epocanvas.com">shijianus@epocanvas.com</a> / <a href="mailto:contact@epocanvas.com">contact@epocanvas.com</a>，或查看 <a href="/community/reporting-and-appeals/">举报与申诉说明</a>、<a href="/guestbook/">留言板</a>。</li>
+                  </ul>
+                </section>
+              );
+            }
+            return null;
+          })}
+        </div>
       </div>
     </div>
   </div>

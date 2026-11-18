@@ -138,10 +138,12 @@ async function run() {
     assert(await page.locator('#tab-html').isVisible(), 'HTML tab missing');
     assert(await page.locator('#tab-markdown').isVisible(), 'Markdown tab missing');
 
-    const quickInput = page.locator('#status-apply-quicklink');
-    const previewEl = page.locator('#status-apply-quicklink-preview');
-    const avatarInput = page.locator('#status-apply-avatar');
-    const descInput = page.locator('#status-apply-desc');
+    const msShell = page.locator('.ms-forms-shell[data-ms-forms="true"]');
+    await msShell.waitFor({ state: 'visible', timeout: 5000 });
+    const quickInput = page.locator('#msf-friend-link-apply-siteInput');
+    const previewEl = msShell.locator('.ms-forms-ext-preview');
+    const avatarInput = page.locator('#msf-friend-link-apply-avatar');
+    const descInput = page.locator('#msf-friend-link-apply-desc');
     const submitBtn = page.locator('#status-apply-submit');
 
     await quickInput.fill('[星际漫游者测试站](https://explorer.example.com)');
@@ -157,7 +159,7 @@ async function run() {
       const postData = route.request().postDataJSON();
       assert.strictEqual(postData.name, '星际漫游者测试站');
       assert.strictEqual(postData.url, 'https://explorer.example.com/');
-      assert.strictEqual(postData.source, 'status_guide_form');
+      assert.strictEqual(postData.source, 'status_msforms_markdown');
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
@@ -174,7 +176,7 @@ async function run() {
 
     await submitBtn.click();
     await page.waitForTimeout(300);
-    const feedback = page.locator('#status-apply-feedback');
+    const feedback = msShell.locator('.ms-forms-receipt');
     assert(await feedback.isVisible(), 'Feedback card must be visible');
     assert.strictEqual(await feedback.getAttribute('data-kind'), 'full_success');
 

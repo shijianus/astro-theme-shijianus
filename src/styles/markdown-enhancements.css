@@ -2688,170 +2688,240 @@ section[data-footnotes] li.footnote-target-active {
 }
 
 /* --------------------------------------------------------------------------
-   13. Inline Rich Typography & Badges
+   13. Inline Rich Typography & Badges (High-Contrast Highlighter Pen System)
    -------------------------------------------------------------------------- */
-/* All mark tags base & yellow */
+/* Shared structural base for all article highlights */
 mark,
 .mark-yellow,
-.article-body mark.mark-yellow,
-.article-body.post-content mark.mark-yellow,
-.article-body.post-content mark:not([class*="mark-"]) {
-  background: rgba(254, 240, 138, 0.75);
-  color: #854d0e;
-  padding: 0.12em 0.38em;
-  margin: 0 0.12em;
+.mark-amber,
+.mark-green,
+.mark-blue,
+.mark-pink,
+.mark-purple,
+.mark-orange,
+.mark-red,
+.mark-cyan,
+.article-body mark,
+.article-body.post-content mark {
+  --hl-top: rgba(254, 240, 138, 0.28);
+  --hl-sweep: rgba(253, 224, 71, 0.88);
+  --hl-edge: rgba(250, 204, 21, 0.96);
+  --hl-line: #ca8a04;
+  --hl-ink: #1c1917;
+  background: linear-gradient(
+    180deg,
+    var(--hl-top) 0%,
+    var(--hl-top) 34%,
+    var(--hl-sweep) 34%,
+    var(--hl-edge) 100%
+  ) !important;
+  color: var(--hl-ink) !important;
+  font-weight: 600;
+  padding: 0.14em 0.44em;
+  margin: 0 0.14em;
   border-radius: 4px;
+  border-bottom: 2px solid var(--hl-line);
+  box-shadow: 0 1px 0 rgba(15, 23, 42, 0.04);
   box-decoration-break: clone;
   -webkit-box-decoration-break: clone;
 }
 
 :root[data-theme='dark'] mark,
 :root[data-theme='dark'] .mark-yellow,
+:root[data-theme='dark'] .mark-amber,
+:root[data-theme='dark'] .mark-green,
+:root[data-theme='dark'] .mark-blue,
+:root[data-theme='dark'] .mark-pink,
+:root[data-theme='dark'] .mark-purple,
+:root[data-theme='dark'] .mark-orange,
+:root[data-theme='dark'] .mark-red,
+:root[data-theme='dark'] .mark-cyan,
+:root[data-theme='dark'] .article-body mark,
+:root[data-theme='dark'] .article-body.post-content mark {
+  --hl-top: rgba(250, 204, 21, 0.18);
+  --hl-sweep: rgba(234, 179, 8, 0.44);
+  --hl-edge: rgba(234, 179, 8, 0.58);
+  --hl-line: #facc15;
+  --hl-ink: #fef9c3;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.06);
+}
+
+/* Yellow / Amber mark (default) */
+mark,
+.mark-yellow,
+.mark-amber,
+.article-body mark.mark-yellow,
+.article-body mark.mark-amber,
+.article-body.post-content mark.mark-yellow,
+.article-body.post-content mark.mark-amber,
+.article-body.post-content mark:not([class*="mark-"]) {
+  --hl-top: rgba(254, 240, 138, 0.28);
+  --hl-sweep: rgba(253, 224, 71, 0.88);
+  --hl-edge: rgba(250, 204, 21, 0.96);
+  --hl-line: #ca8a04;
+  --hl-ink: #1c1917;
+}
+
+:root[data-theme='dark'] mark,
+:root[data-theme='dark'] .mark-yellow,
+:root[data-theme='dark'] .mark-amber,
 :root[data-theme='dark'] .article-body mark.mark-yellow,
+:root[data-theme='dark'] .article-body mark.mark-amber,
 :root[data-theme='dark'] .article-body.post-content mark.mark-yellow,
+:root[data-theme='dark'] .article-body.post-content mark.mark-amber,
 :root[data-theme='dark'] .article-body.post-content mark:not([class*="mark-"]) {
-  background: rgba(234, 179, 8, 0.28);
-  color: #fef08a;
+  --hl-top: rgba(250, 204, 21, 0.18);
+  --hl-sweep: rgba(234, 179, 8, 0.46);
+  --hl-edge: rgba(234, 179, 8, 0.6);
+  --hl-line: #facc15;
+  --hl-ink: #fef9c3;
 }
 
 /* Green mark */
 .mark-green,
 .article-body mark.mark-green,
 .article-body.post-content mark.mark-green {
-  background: rgba(187, 247, 208, 0.75);
-  color: #166534;
-  padding: 0.12em 0.38em;
-  margin: 0 0.12em;
-  border-radius: 4px;
-  box-decoration-break: clone;
-  -webkit-box-decoration-break: clone;
+  --hl-top: rgba(187, 247, 208, 0.3);
+  --hl-sweep: rgba(134, 239, 172, 0.86);
+  --hl-edge: rgba(74, 222, 128, 0.92);
+  --hl-line: #16a34a;
+  --hl-ink: #052e16;
 }
 
 :root[data-theme='dark'] .mark-green,
 :root[data-theme='dark'] .article-body mark.mark-green,
 :root[data-theme='dark'] .article-body.post-content mark.mark-green {
-  background: rgba(34, 197, 94, 0.28);
-  color: #86efac;
+  --hl-top: rgba(34, 197, 94, 0.18);
+  --hl-sweep: rgba(34, 197, 94, 0.42);
+  --hl-edge: rgba(22, 163, 74, 0.56);
+  --hl-line: #4ade80;
+  --hl-ink: #dcfce7;
 }
 
 /* Blue mark */
 .mark-blue,
 .article-body mark.mark-blue,
 .article-body.post-content mark.mark-blue {
-  background: rgba(191, 219, 254, 0.75);
-  color: #1e40af;
-  padding: 0.12em 0.38em;
-  margin: 0 0.12em;
-  border-radius: 4px;
-  box-decoration-break: clone;
-  -webkit-box-decoration-break: clone;
+  --hl-top: rgba(191, 219, 254, 0.32);
+  --hl-sweep: rgba(147, 197, 253, 0.88);
+  --hl-edge: rgba(96, 165, 250, 0.92);
+  --hl-line: #2563eb;
+  --hl-ink: #0f295c;
 }
 
 :root[data-theme='dark'] .mark-blue,
 :root[data-theme='dark'] .article-body mark.mark-blue,
 :root[data-theme='dark'] .article-body.post-content mark.mark-blue {
-  background: rgba(59, 130, 246, 0.28);
-  color: #93c5fd;
+  --hl-top: rgba(59, 130, 246, 0.2);
+  --hl-sweep: rgba(59, 130, 246, 0.44);
+  --hl-edge: rgba(37, 99, 235, 0.58);
+  --hl-line: #60a5fa;
+  --hl-ink: #dbeafe;
 }
 
 /* Pink mark */
 .mark-pink,
 .article-body mark.mark-pink,
 .article-body.post-content mark.mark-pink {
-  background: rgba(251, 207, 232, 0.75);
-  color: #9d174d;
-  padding: 0.12em 0.38em;
-  margin: 0 0.12em;
-  border-radius: 4px;
-  box-decoration-break: clone;
-  -webkit-box-decoration-break: clone;
+  --hl-top: rgba(251, 207, 232, 0.32);
+  --hl-sweep: rgba(249, 168, 212, 0.86);
+  --hl-edge: rgba(244, 114, 182, 0.92);
+  --hl-line: #db2777;
+  --hl-ink: #500724;
 }
 
 :root[data-theme='dark'] .mark-pink,
 :root[data-theme='dark'] .article-body mark.mark-pink,
 :root[data-theme='dark'] .article-body.post-content mark.mark-pink {
-  background: rgba(236, 72, 153, 0.28);
-  color: #f472b6;
+  --hl-top: rgba(236, 72, 153, 0.2);
+  --hl-sweep: rgba(236, 72, 153, 0.44);
+  --hl-edge: rgba(219, 39, 119, 0.56);
+  --hl-line: #f472b6;
+  --hl-ink: #fce7f3;
 }
 
 /* Purple mark */
 .mark-purple,
 .article-body mark.mark-purple,
 .article-body.post-content mark.mark-purple {
-  background: rgba(233, 213, 255, 0.75);
-  color: #6b21a8;
-  padding: 0.12em 0.38em;
-  margin: 0 0.12em;
-  border-radius: 4px;
-  box-decoration-break: clone;
-  -webkit-box-decoration-break: clone;
+  --hl-top: rgba(233, 213, 255, 0.34);
+  --hl-sweep: rgba(216, 180, 254, 0.88);
+  --hl-edge: rgba(192, 132, 252, 0.94);
+  --hl-line: #7c3aed;
+  --hl-ink: #2e1065;
 }
 
 :root[data-theme='dark'] .mark-purple,
 :root[data-theme='dark'] .article-body mark.mark-purple,
 :root[data-theme='dark'] .article-body.post-content mark.mark-purple {
-  background: rgba(168, 85, 247, 0.28);
-  color: #d8b4fe;
+  --hl-top: rgba(168, 85, 247, 0.22);
+  --hl-sweep: rgba(168, 85, 247, 0.46);
+  --hl-edge: rgba(147, 51, 234, 0.58);
+  --hl-line: #c084fc;
+  --hl-ink: #f3e8ff;
 }
 
 /* Orange mark */
 .mark-orange,
 .article-body mark.mark-orange,
 .article-body.post-content mark.mark-orange {
-  background: rgba(254, 215, 170, 0.75);
-  color: #9a3412;
-  padding: 0.12em 0.38em;
-  margin: 0 0.12em;
-  border-radius: 4px;
-  box-decoration-break: clone;
-  -webkit-box-decoration-break: clone;
+  --hl-top: rgba(254, 215, 170, 0.34);
+  --hl-sweep: rgba(253, 186, 116, 0.9);
+  --hl-edge: rgba(251, 146, 60, 0.94);
+  --hl-line: #ea580c;
+  --hl-ink: #431407;
 }
 
 :root[data-theme='dark'] .mark-orange,
 :root[data-theme='dark'] .article-body mark.mark-orange,
 :root[data-theme='dark'] .article-body.post-content mark.mark-orange {
-  background: rgba(249, 115, 22, 0.28);
-  color: #fdba74;
+  --hl-top: rgba(249, 115, 22, 0.2);
+  --hl-sweep: rgba(249, 115, 22, 0.46);
+  --hl-edge: rgba(234, 88, 12, 0.58);
+  --hl-line: #fb923c;
+  --hl-ink: #ffedd5;
 }
 
 /* Red mark */
 .mark-red,
 .article-body mark.mark-red,
 .article-body.post-content mark.mark-red {
-  background: rgba(254, 202, 202, 0.75);
-  color: #991b1b;
-  padding: 0.12em 0.38em;
-  margin: 0 0.12em;
-  border-radius: 4px;
-  box-decoration-break: clone;
-  -webkit-box-decoration-break: clone;
+  --hl-top: rgba(254, 202, 202, 0.34);
+  --hl-sweep: rgba(252, 165, 165, 0.9);
+  --hl-edge: rgba(248, 113, 113, 0.94);
+  --hl-line: #dc2626;
+  --hl-ink: #450a0a;
 }
 
 :root[data-theme='dark'] .mark-red,
 :root[data-theme='dark'] .article-body mark.mark-red,
 :root[data-theme='dark'] .article-body.post-content mark.mark-red {
-  background: rgba(239, 68, 68, 0.28);
-  color: #fca5a5;
+  --hl-top: rgba(239, 68, 68, 0.22);
+  --hl-sweep: rgba(239, 68, 68, 0.46);
+  --hl-edge: rgba(220, 38, 38, 0.58);
+  --hl-line: #f87171;
+  --hl-ink: #fee2e2;
 }
 
 /* Cyan mark */
 .mark-cyan,
 .article-body mark.mark-cyan,
 .article-body.post-content mark.mark-cyan {
-  background: rgba(165, 243, 252, 0.75);
-  color: #155e75;
-  padding: 0.12em 0.38em;
-  margin: 0 0.12em;
-  border-radius: 4px;
-  box-decoration-break: clone;
-  -webkit-box-decoration-break: clone;
+  --hl-top: rgba(165, 243, 252, 0.34);
+  --hl-sweep: rgba(103, 232, 249, 0.88);
+  --hl-edge: rgba(34, 211, 238, 0.94);
+  --hl-line: #0891b2;
+  --hl-ink: #083344;
 }
 
 :root[data-theme='dark'] .mark-cyan,
 :root[data-theme='dark'] .article-body mark.mark-cyan,
 :root[data-theme='dark'] .article-body.post-content mark.mark-cyan {
-  background: rgba(6, 182, 212, 0.28);
-  color: #67e8f9;
+  --hl-top: rgba(6, 182, 212, 0.2);
+  --hl-sweep: rgba(6, 182, 212, 0.44);
+  --hl-edge: rgba(8, 145, 178, 0.58);
+  --hl-line: #22d3ee;
+  --hl-ink: #cffafe;
 }
 
 u.u-wavy {
@@ -6069,5 +6139,482 @@ psw.is-visible {
 .office-sheet-table tr.is-highlight {
   animation: sheetRowHighlight 2.5s ease-out forwards;
 }
+
+/* ==========================================================================
+   Microsoft Forms (Fluent 2) Style Markdown-Scanned Form Engine (.ms-forms-shell)
+   ========================================================================== */
+.ms-forms-shell {
+  --msf-teal: #03787c;
+  --msf-teal-dark: #025b5f;
+  --msf-teal-soft: rgba(3, 120, 124, 0.1);
+  --msf-canvas: #eef5f5;
+  --msf-card: #ffffff;
+  --msf-border: rgba(15, 23, 42, 0.1);
+  --msf-ink: #111827;
+  --msf-muted: #4b5563;
+  margin: 1.75rem 0 2.25rem;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--msf-border);
+  background: var(--msf-canvas);
+  color: var(--msf-ink);
+  box-shadow: 0 10px 30px -10px rgba(3, 120, 124, 0.16);
+}
+
+:root[data-theme='dark'] .ms-forms-shell {
+  --msf-teal: #14b8a6;
+  --msf-teal-dark: #0f766e;
+  --msf-teal-soft: rgba(20, 184, 166, 0.16);
+  --msf-canvas: #0b161a;
+  --msf-card: #132028;
+  --msf-border: rgba(148, 163, 184, 0.18);
+  --msf-ink: #f1f5f9;
+  --msf-muted: #94a3b8;
+  box-shadow: 0 14px 36px -10px rgba(0, 0, 0, 0.55);
+}
+
+.ms-forms-header {
+  position: relative;
+  padding: 1.65rem 1.75rem 1.5rem;
+  background: linear-gradient(135deg, #03787c 0%, #025c61 60%, #01464a 100%);
+  color: #ffffff;
+  overflow: hidden;
+}
+
+.ms-forms-header__pattern {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  opacity: 0.18;
+}
+
+.ms-forms-header__content {
+  position: relative;
+  z-index: 1;
+}
+
+.ms-forms-header__top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.65rem;
+  margin-bottom: 0.85rem;
+}
+
+.ms-forms-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.26rem 0.72rem;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: #ffffff !important;
+  letter-spacing: 0.02em;
+}
+
+.ms-forms-ext-entry {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.28rem 0.72rem;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.94);
+  color: #025b5f !important;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-decoration: none !important;
+  transition: transform 150ms ease, background-color 150ms ease;
+}
+
+.ms-forms-ext-entry:hover,
+.ms-forms-ext-entry:focus-visible {
+  background: #ffffff;
+  transform: translateY(-1px);
+}
+
+.ms-forms-title {
+  margin: 0 0 0.45rem !important;
+  font-size: 1.42rem !important;
+  font-weight: 800;
+  color: #ffffff !important;
+  line-height: 1.3;
+}
+
+.ms-forms-desc {
+  margin: 0 !important;
+  font-size: 0.92rem;
+  line-height: 1.65;
+  color: rgba(255, 255, 255, 0.9) !important;
+  max-width: 66ch;
+}
+
+.ms-forms-meta-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.ms-forms-progress {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.ms-forms-progress__track {
+  width: 96px;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.24);
+  overflow: hidden;
+}
+
+.ms-forms-progress__fill {
+  height: 100%;
+  width: 0%;
+  background: #99f6e4;
+  border-radius: 999px;
+  transition: width 220ms ease;
+}
+
+.ms-forms-body {
+  padding: 1.25rem 1.35rem 1.4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.ms-forms-card {
+  position: relative;
+  background: var(--msf-card);
+  border: 1px solid var(--msf-border);
+  border-left: 4px solid transparent;
+  border-radius: 8px;
+  padding: 1.05rem 1.2rem;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.04);
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.ms-forms-card:focus-within {
+  border-left-color: var(--msf-teal);
+  box-shadow: 0 6px 18px rgba(3, 120, 124, 0.12);
+}
+
+.ms-forms-qhead {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.55rem;
+  margin-bottom: 0.6rem;
+}
+
+.ms-forms-qnum {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 5px;
+  background: var(--msf-teal-soft);
+  color: var(--msf-teal);
+  font-size: 0.8rem;
+  font-weight: 800;
+  flex-shrink: 0;
+  margin-top: 0.08rem;
+}
+
+.ms-forms-qtitle {
+  display: block;
+  font-size: 0.96rem;
+  font-weight: 700;
+  color: var(--msf-ink);
+  line-height: 1.45;
+  cursor: pointer;
+}
+
+.ms-forms-req {
+  color: #dc2626;
+  margin-left: 0.25rem;
+  font-weight: 800;
+}
+
+.ms-forms-qhint {
+  margin: -0.2rem 0 0.65rem 2.05rem !important;
+  font-size: 0.81rem;
+  color: var(--msf-muted);
+  line-height: 1.5;
+}
+
+.ms-forms-control-wrap {
+  margin-left: 2.05rem;
+}
+
+.ms-forms-input,
+.ms-forms-textarea,
+.ms-forms-select {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.58rem 0.78rem;
+  border: 1px solid var(--msf-border);
+  border-bottom: 2px solid rgba(100, 116, 139, 0.35);
+  border-radius: 5px 5px 2px 2px;
+  background: var(--msf-canvas);
+  color: var(--msf-ink);
+  font-size: 0.92rem;
+  font-family: inherit;
+  transition: border-color 160ms ease, background-color 160ms ease;
+}
+
+.ms-forms-input:focus,
+.ms-forms-textarea:focus,
+.ms-forms-select:focus {
+  outline: none;
+  background: var(--msf-card);
+  border-bottom-color: var(--msf-teal);
+  border-color: rgba(3, 120, 124, 0.32);
+}
+
+.ms-forms-textarea {
+  min-height: 84px;
+  resize: vertical;
+  line-height: 1.55;
+}
+
+.ms-forms-charcount {
+  margin-top: 0.32rem;
+  text-align: right;
+  font-size: 0.75rem;
+  color: var(--msf-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* External Markdown Link [name](https://...) Preview Card inside Question */
+.ms-forms-ext-preview {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+  margin-top: 0.55rem;
+  padding: 0.55rem 0.78rem;
+  border-radius: 6px;
+  border: 1px solid rgba(3, 120, 124, 0.25);
+  background: var(--msf-teal-soft);
+  font-size: 0.82rem;
+}
+
+.ms-forms-ext-preview.is-error {
+  border-color: rgba(220, 38, 38, 0.35);
+  background: rgba(239, 68, 68, 0.1);
+  color: #dc2626;
+}
+
+.ms-forms-ext-preview__anchor {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: var(--msf-teal) !important;
+  font-weight: 700;
+  text-decoration: underline !important;
+  overflow-wrap: anywhere;
+}
+
+.ms-forms-avatar-preview {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: 0.5rem;
+  padding: 0.4rem 0.68rem;
+  border-radius: 6px;
+  border: 1px solid var(--msf-border);
+  background: var(--msf-canvas);
+  font-size: 0.8rem;
+  color: var(--msf-muted);
+}
+
+.ms-forms-avatar-preview img {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid var(--msf-teal);
+}
+
+/* Microsoft Forms Clickable Radio Choice Cards */
+.ms-forms-radio-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(175px, 1fr));
+  gap: 0.5rem;
+}
+
+.ms-forms-radio-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.52rem 0.72rem;
+  border-radius: 6px;
+  border: 1px solid var(--msf-border);
+  background: var(--msf-canvas);
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: var(--msf-ink);
+  cursor: pointer;
+  transition: border-color 150ms ease, background-color 150ms ease;
+}
+
+.ms-forms-radio-item:has(input:checked) {
+  border-color: var(--msf-teal);
+  background: var(--msf-teal-soft);
+  color: var(--msf-teal);
+}
+
+.ms-forms-radio-item input {
+  accent-color: #03787c;
+  width: 15px;
+  height: 15px;
+  margin: 0;
+}
+
+.ms-forms-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding-top: 0.35rem;
+}
+
+.ms-forms-submit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  min-height: 40px;
+  padding: 0.52rem 1.45rem;
+  border: none;
+  border-radius: 6px;
+  background: #03787c;
+  color: #ffffff !important;
+  font-size: 0.92rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 3px 10px rgba(3, 120, 124, 0.28);
+  transition: background-color 150ms ease, transform 150ms ease;
+}
+
+.ms-forms-submit:hover:not(:disabled),
+.ms-forms-submit:focus-visible:not(:disabled) {
+  background: #025b5f;
+  transform: translateY(-1px);
+}
+
+.ms-forms-submit:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.ms-forms-reset {
+  padding: 0.48rem 0.95rem;
+  border-radius: 6px;
+  border: 1px solid var(--msf-border);
+  background: var(--msf-card);
+  color: var(--msf-muted);
+  font-size: 0.84rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.ms-forms-reset:hover {
+  color: var(--msf-ink);
+  border-color: var(--msf-teal);
+}
+
+/* Honest 4-Stage Receipt Card inside Microsoft Forms */
+.ms-forms-receipt {
+  margin: 0.25rem 0 0;
+  padding: 1.15rem 1.25rem;
+  border-radius: 8px;
+  background: var(--msf-card);
+  border: 1px solid var(--msf-border);
+  border-left: 4px solid var(--msf-teal);
+}
+
+.ms-forms-receipt[data-kind='error'] {
+  border-left-color: #dc2626;
+  background: rgba(239, 68, 68, 0.08);
+}
+
+.ms-forms-receipt[data-kind='degraded_saved'],
+.ms-forms-receipt[data-kind='degraded_notified'] {
+  border-left-color: #d97706;
+  background: rgba(245, 158, 11, 0.1);
+}
+
+.ms-forms-receipt[data-kind='full_success'] {
+  border-left-color: #059669;
+}
+
+.ms-forms-receipt__title {
+  margin: 0 0 0.3rem !important;
+  font-size: 1.02rem !important;
+  font-weight: 800;
+  color: var(--msf-ink);
+}
+
+.ms-forms-receipt__detail {
+  margin: 0 !important;
+  font-size: 0.88rem;
+  line-height: 1.6;
+  color: var(--msf-muted);
+}
+
+.ms-forms-receipt__steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin: 0.85rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ms-forms-receipt__step {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.24rem 0.6rem;
+  border-radius: 5px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  background: var(--msf-canvas);
+  border: 1px solid var(--msf-border);
+}
+
+.ms-forms-receipt__step[data-state='done'] { color: #059669; }
+.ms-forms-receipt__step[data-state='warn'] { color: #d97706; }
+.ms-forms-receipt__step[data-state='fail'] { color: #dc2626; }
+.ms-forms-receipt__step[data-state='pending'] { color: var(--msf-teal); }
+
+@media (max-width: 640px) {
+  .ms-forms-header,
+  .ms-forms-body {
+    padding: 1.15rem 0.95rem;
+  }
+
+  .ms-forms-qhint,
+  .ms-forms-control-wrap {
+    margin-left: 0;
+  }
+}
+
 
 

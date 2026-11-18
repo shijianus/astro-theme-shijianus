@@ -318,17 +318,55 @@ async function runBrowserTests() {
     assert.strictEqual(copiedJson.url, 'https://blog.epocanvas.com');
     console.log('  ✓ Official friend card tabs & clipboard copy verified (YAML + valid JSON)');
 
-    // 6. Friend Application Form: unsafe URL block + mocked API scenarios (success, D1 fail, TG fail, 503 total fail)
-    const quickInput = page.locator('#status-apply-quicklink');
-    await quickInput.scrollIntoViewIfNeeded();
+    // 1b. Google Policies visual architecture + high-contrast highlight checks
+    const visualCheck = await page.evaluate(() => {
+      const heroArt = document.querySelectorAll('.google-hero-art svg').length;
+      const overviewCards = document.querySelectorAll('.google-overview-grid a.google-overview-card').length;
+      const svgDividers = document.querySelectorAll('.google-section-divider svg').length;
+      const shovedButtons = document.querySelectorAll('.status-lead__actions .status-btn').length;
+      const marks = Array.from(document.querySelectorAll('.status-doc-article mark'));
+      const firstMark = marks[0] ? getComputedStyle(marks[0]) : null;
+      return {
+        heroArt,
+        overviewCards,
+        svgDividers,
+        shovedButtons,
+        markCount: marks.length,
+        markBorderWidth: firstMark?.borderBottomWidth,
+        markFontWeight: Number(firstMark?.fontWeight || 0),
+      };
+    });
+    assert(visualCheck.heroArt === 1, 'Missing Google hero SVG illustration');
+    assert(visualCheck.overviewCards === 4, `Expected 4 Google overview SVG cards, got ${visualCheck.overviewCards}`);
+    assert(visualCheck.svgDividers >= 8, `Expected >= 8 SVG section dividers, got ${visualCheck.svgDividers}`);
+    assert.strictEqual(visualCheck.shovedButtons, 0, 'Must NOT render top shoved pill buttons');
+    assert(visualCheck.markCount >= 3, 'Expected key highlights using high-contrast <mark>');
+    assert.strictEqual(visualCheck.markBorderWidth, '2px', 'Highlights must use crisp 2px marker underline');
+    assert(visualCheck.markFontWeight >= 600, 'Highlights must be font-weight >= 600');
+    console.log(`  ✓ Google SVG architecture & crisp marker highlights verified (${visualCheck.svgDividers} dividers, ${visualCheck.markCount} highlights)`);
+
+    // 6. Markdown-Scanned Microsoft Forms Application: unsafe URL block, live [name](url) external link preview & mocked API scenarios
+    const msShell = page.locator('.ms-forms-shell[data-ms-forms="true"]');
+    await msShell.scrollIntoViewIfNeeded();
+    assert(await msShell.isVisible(), 'Microsoft Forms shell must be scanned & rendered from Markdown');
+    assert((await msShell.locator('.ms-forms-card').count()) >= 6, 'Expected numbered Microsoft Forms question cards');
+
+    const quickInput = page.locator('#msf-friend-link-apply-siteInput');
     await quickInput.fill('[Evil](javascript:alert(1))');
     await page.waitForTimeout(100);
-    const previewErr = await page.locator('#status-apply-quicklink-preview').textContent();
-    assert(previewErr?.includes('未识别到合法的 https:// 或 http:// 链接'), `Unsafe link should be rejected: ${previewErr}`);
+    const previewErr = await msShell.locator('.ms-forms-ext-preview').textContent();
+    assert(previewErr?.includes('未识别到合法外链'), `Unsafe link should be rejected: ${previewErr}`);
 
     await quickInput.fill('[独立示例博客](https://blog.example.org)');
-    await page.locator('#status-apply-avatar').fill('https://blog.example.org/avatar.png');
-    await page.locator('#status-apply-desc').fill('独立前端与系统工程记录。');
+    await page.waitForTimeout(100);
+    const extPreviewAnchor = msShell.locator('.ms-forms-ext-preview__anchor');
+    assert(await extPreviewAnchor.isVisible(), 'Valid external [name](url) link preview anchor should appear');
+    assert.strictEqual(await extPreviewAnchor.getAttribute('href'), 'https://blog.example.org/');
+    assert.strictEqual(await extPreviewAnchor.getAttribute('target'), '_blank');
+    assert.strictEqual(await page.locator('#msf-friend-link-apply-name').inputValue(), '独立示例博客');
+
+    await page.locator('#msf-friend-link-apply-avatar').fill('https://blog.example.org/avatar.png');
+    await page.locator('#msf-friend-link-apply-desc').fill('独立前端与系统工程记录。');
 
     // 6a. Total failure (503) -> MUST NOT show fake success
     await page.route('**/api/friends/apply', async (route) => {
@@ -346,7 +384,7 @@ async function runBrowserTests() {
     });
     await page.locator('#status-apply-submit').click();
     await page.waitForTimeout(200);
-    const feedbackEl = page.locator('#status-apply-feedback');
+    const feedbackEl = msShell.locator('.ms-forms-receipt');
     assert(await feedbackEl.isVisible());
     assert.strictEqual(await feedbackEl.getAttribute('data-kind'), 'error');
     assert((await feedbackEl.textContent())?.includes('未能完成受理'));
@@ -389,13 +427,13 @@ async function runBrowserTests() {
       });
     });
     await quickInput.fill('[独立示例博客](https://blog.example.org)');
-    await page.locator('#status-apply-avatar').fill('https://blog.example.org/avatar.png');
-    await page.locator('#status-apply-desc').fill('独立前端与系统工程记录。');
+    await page.locator('#msf-friend-link-apply-avatar').fill('https://blog.example.org/avatar.png');
+    await page.locator('#msf-friend-link-apply-desc').fill('独立前端与系统工程记录。');
     await page.locator('#status-apply-submit').click();
     await page.waitForTimeout(200);
     assert.strictEqual(await feedbackEl.getAttribute('data-kind'), 'full_success');
     assert((await feedbackEl.textContent())?.includes('并不代表站点已被收录'));
-    console.log('  ✓ Friend application form scenarios verified (XSS URL block, 503 error, degraded D1, honest success)');
+    console.log('  ✓ Microsoft Forms (msform MD scanner) verified (external [name](url) preview, XSS block, 503, degraded D1, honest receipt)');
 
     // 7. Viewports & Light/Dark screenshots
     await page.goto(`${BASE_URL}/status/`, { waitUntil: 'networkidle' });

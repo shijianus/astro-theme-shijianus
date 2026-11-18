@@ -1,0 +1,250 @@
+---
+interface Props {
+  variant:
+    | 'lead-hero'
+    | 'overview-grid'
+    | 'friends-pipeline'
+    | 'rules-matrix'
+    | 'divider-about'
+    | 'divider-status'
+    | 'divider-friends'
+    | 'divider-rules'
+    | 'divider-card'
+    | 'divider-apply'
+    | 'divider-privacy'
+    | 'divider-faq'
+    | 'divider-glossary';
+}
+
+const { variant } = Astro.props;
+
+const dividerMeta: Record<string, { label: string; color: string }> = {
+  'divider-about': { label: '01 · 品牌与架构归属', color: '#4285F4' },
+  'divider-status': { label: '02 · 运行边界与实测快照', color: '#34A853' },
+  'divider-friends': { label: '03 · 友邻系统架构', color: '#425AEF' },
+  'divider-rules': { label: '04 · 收录与互链标准', color: '#FBBC04' },
+  'divider-card': { label: '05 · 官方单源名片', color: '#03787C' },
+  'divider-apply': { label: '06 · MICROSOFT FORMS 申请', color: '#03787C' },
+  'divider-privacy': { label: '07 · 隐私与数据处理', color: '#EA4335' },
+  'divider-faq': { label: '08 · 常见问题解答', color: '#8B5CF6' },
+  'divider-glossary': { label: '09 · 术语表与修订记录', color: '#64748B' },
+};
+---
+
+{variant === 'lead-hero' && (
+  <div class="google-hero-art" aria-hidden="true">
+    <svg viewBox="0 0 260 116" fill="none" xmlns="http://www.w3.org/2000/svg" class="google-hero-art__svg">
+      <!-- Soft backdrop halo -->
+      <circle cx="130" cy="58" r="46" fill="#E8F0FE" class="g-fill-soft-blue" />
+      <circle cx="62" cy="44" r="18" fill="#E6F4EA" class="g-fill-soft-green" />
+      <circle cx="198" cy="70" r="20" fill="#FEF7E0" class="g-fill-soft-amber" />
+      <!-- Dotted connection arcs -->
+      <path d="M54 58 C 76 26, 184 26, 206 58" stroke="#93C5FD" stroke-width="1.8" stroke-dasharray="4 4" stroke-linecap="round" />
+      <path d="M72 86 C 102 102, 158 102, 188 86" stroke="#86EFAC" stroke-width="1.8" stroke-dasharray="4 4" stroke-linecap="round" />
+      <!-- Left node: Friend / RSS feed card -->
+      <rect x="26" y="42" width="44" height="34" rx="8" fill="#FFFFFF" stroke="#34A853" stroke-width="2" class="g-card-fill" />
+      <circle cx="38" cy="54" r="4" fill="#34A853" />
+      <line x1="46" y1="54" x2="61" y2="54" stroke="#64748B" stroke-width="2" stroke-linecap="round" />
+      <line x1="35" y1="65" x2="61" y2="65" stroke="#CBD5E1" stroke-width="2" stroke-linecap="round" />
+      <!-- Right node: Document & Policy checklist -->
+      <rect x="190" y="38" width="44" height="38" rx="8" fill="#FFFFFF" stroke="#FBBC04" stroke-width="2" class="g-card-fill" />
+      <line x1="200" y1="50" x2="224" y2="50" stroke="#F59E0B" stroke-width="2.2" stroke-linecap="round" />
+      <line x1="200" y1="58" x2="220" y2="58" stroke="#94A3B8" stroke-width="2" stroke-linecap="round" />
+      <line x1="200" y1="66" x2="216" y2="66" stroke="#CBD5E1" stroke-width="2" stroke-linecap="round" />
+      <!-- Centerpiece Shield: Verified Status & Trust -->
+      <path d="M130 16 L166 30 V58 C166 80.5 150.6 99.6 130 105 C109.4 99.6 94 80.5 94 58 V30 L130 16Z" fill="#4285F4" stroke="#1D4ED8" stroke-width="2" />
+      <path d="M130 22 L160 34 V58 C160 76.8 147.2 92.8 130 98 V22Z" fill="#60A5FA" fill-opacity="0.28" />
+      <circle cx="130" cy="58" r="15" fill="#FFFFFF" />
+      <path d="M123.5 58.2 L128 62.7 L137 53.5" stroke="#1D4ED8" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" />
+      <!-- Accent sparkle -->
+      <path d="M174 22 L176 27 L181 29 L176 31 L174 36 L172 31 L167 29 L172 27 Z" fill="#FBBC04" />
+      <circle cx="84" cy="24" r="3" fill="#EA4335" />
+    </svg>
+  </div>
+)}
+
+{variant === 'overview-grid' && (
+  <div class="google-overview-grid" aria-label="文档核心导航概览">
+    <a href="#site-status" class="google-overview-card">
+      <div class="google-overview-card__icon" aria-hidden="true">
+        <svg viewBox="0 0 48 48" fill="none">
+          <circle cx="24" cy="24" r="20" fill="#E6F4EA" class="g-fill-soft-green" />
+          <path d="M13 25h5l3-7 5 13 3-6h6" stroke="#1E8E3E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </div>
+      <div class="google-overview-card__body">
+        <h3>站点运行边界</h3>
+        <p>区分实测状态与源码能力，明确 <mark class="mark-amber">/rss.xml</mark>（404）与动态接口的真实状态。</p>
+        <span class="google-overview-card__link">查看状态清单 →</span>
+      </div>
+    </a>
+
+    <a href="#friends-system" class="google-overview-card">
+      <div class="google-overview-card__icon" aria-hidden="true">
+        <svg viewBox="0 0 48 48" fill="none">
+          <circle cx="24" cy="24" r="20" fill="#E8F0FE" class="g-fill-soft-blue" />
+          <circle cx="17" cy="20" r="4" stroke="#1A73E8" stroke-width="2.2" />
+          <circle cx="31" cy="20" r="4" stroke="#1A73E8" stroke-width="2.2" />
+          <path d="M11 33c0-3.3 2.7-6 6-6s6 2.7 6 6M25 33c0-3.3 2.7-6 6-6s6 2.7 6 6" stroke="#1A73E8" stroke-width="2.2" stroke-linecap="round" />
+        </svg>
+      </div>
+      <div class="google-overview-card__body">
+        <h3>友邻聚合与规则</h3>
+        <p>说明友人帐、朋友圈 <mark class="mark-blue">shijianus-moments-v1</mark> 清单及收录条件。</p>
+        <span class="google-overview-card__link">阅读运作规范 →</span>
+      </div>
+    </a>
+
+    <a href="#official-friend-info" class="google-overview-card">
+      <div class="google-overview-card__icon" aria-hidden="true">
+        <svg viewBox="0 0 48 48" fill="none">
+          <circle cx="24" cy="24" r="20" fill="#FEF7E0" class="g-fill-soft-amber" />
+          <rect x="14" y="15" width="20" height="18" rx="3" stroke="#D97706" stroke-width="2.2" />
+          <path d="M19 22h10M19 27h7" stroke="#D97706" stroke-width="2.2" stroke-linecap="round" />
+        </svg>
+      </div>
+      <div class="google-overview-card__body">
+        <h3>官方友链名片</h3>
+        <p>单源生成的 YAML、JSON、HTML 与 Markdown 一键复制配置。</p>
+        <span class="google-overview-card__link">获取本站名片 →</span>
+      </div>
+    </a>
+
+    <a href="#apply-friend-link" class="google-overview-card">
+      <div class="google-overview-card__icon" aria-hidden="true">
+        <svg viewBox="0 0 48 48" fill="none">
+          <circle cx="24" cy="24" r="20" fill="#E0F2FE" class="g-fill-soft-teal" />
+          <rect x="14" y="13" width="20" height="22" rx="3" stroke="#03787C" stroke-width="2.2" />
+          <path d="M19 20h10M19 25h6M26 30l2 2 4-4" stroke="#03787C" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </div>
+      <div class="google-overview-card__body">
+        <h3>在线互链申请</h3>
+        <p>使用 Markdown 扫描式 <strong>Microsoft Forms</strong> 外链表单提交申请并核查回执。</p>
+        <span class="google-overview-card__link">前往在线填表 →</span>
+      </div>
+    </a>
+  </div>
+)}
+
+{variant === 'friends-pipeline' && (
+  <div class="google-pipeline-grid" aria-label="友邻体系三段链路示意图">
+    <div class="google-pipeline-step">
+      <div class="google-pipeline-step__badge">
+        <svg viewBox="0 0 36 36" fill="none" aria-hidden="true">
+          <circle cx="18" cy="18" r="18" fill="#E8F0FE" />
+          <path d="M12 13h12M12 18h12M12 23h8" stroke="#1A73E8" stroke-width="2.2" stroke-linecap="round" />
+        </svg>
+      </div>
+      <h4>1. 友人帐静态名录</h4>
+      <p>读取 <code>src/config/friends.ts</code>，无外部数据库依赖即可完整浏览。</p>
+    </div>
+
+    <div class="google-pipeline-arrow" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-6-6 6 6-6 6" />
+      </svg>
+    </div>
+
+    <div class="google-pipeline-step">
+      <div class="google-pipeline-step__badge">
+        <svg viewBox="0 0 36 36" fill="none" aria-hidden="true">
+          <circle cx="18" cy="18" r="18" fill="#E6F4EA" />
+          <path d="M12 24a6 6 0 0 1 6-6m-6 2a10 10 0 0 1 10-10" stroke="#1E8E3E" stroke-width="2.2" stroke-linecap="round" />
+          <circle cx="12" cy="24" r="1.8" fill="#1E8E3E" />
+        </svg>
+      </div>
+      <h4>2. 构建期抓取聚合</h4>
+      <p><code>prebuild</code> 优先拉取 <code>shijianus-moments.json</code> 并回退 RSS/Atom/JSON Feed。</p>
+    </div>
+
+    <div class="google-pipeline-arrow" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-6-6 6 6-6 6" />
+      </svg>
+    </div>
+
+    <div class="google-pipeline-step">
+      <div class="google-pipeline-step__badge">
+        <svg viewBox="0 0 36 36" fill="none" aria-hidden="true">
+          <circle cx="18" cy="18" r="18" fill="#FEF7E0" />
+          <circle cx="18" cy="18" r="7" stroke="#D97706" stroke-width="2.2" />
+          <path d="M18 14.5v3.8l2.5 1.7" stroke="#D97706" stroke-width="2.2" stroke-linecap="round" />
+        </svg>
+      </div>
+      <h4>3. 纯时间序展示</h4>
+      <p>置顶优先、其余按发布时间倒序排列，<mark class="mark-green">无热度算法干扰</mark>。</p>
+    </div>
+  </div>
+)}
+
+{variant === 'rules-matrix' && (
+  <div class="google-rules-matrix" aria-label="互链收录正反对照说明">
+    <div class="google-rules-card google-rules-card--allow">
+      <div class="google-rules-card__head">
+        <svg viewBox="0 0 28 28" fill="none" aria-hidden="true">
+          <circle cx="14" cy="14" r="14" fill="#E6F4EA" />
+          <path d="M9.5 14.2 12.6 17.3 18.8 11" stroke="#16A34A" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+        <h4>欢迎互链的站点</h4>
+      </div>
+      <ul>
+        <li><mark class="mark-green">独立内容载体</mark>：个人博客、技术笔记、设计人文站与开源文档主页。</li>
+        <li>具备基本排版可读性，持续或曾经沉淀过独立思考与原创文章。</li>
+        <li>公开 <code>https://</code>（推荐）或 <code>http://</code> 稳定可达；低频更新亦可长期保留。</li>
+      </ul>
+    </div>
+
+    <div class="google-rules-card google-rules-card--deny">
+      <div class="google-rules-card__head">
+        <svg viewBox="0 0 28 28" fill="none" aria-hidden="true">
+          <circle cx="14" cy="14" r="14" fill="#FCE8E6" />
+          <path d="M10.5 10.5 17.5 17.5M17.5 10.5 10.5 17.5" stroke="#DC2626" stroke-width="2.3" stroke-linecap="round" />
+        </svg>
+        <h4>不予收录或撤除的情形</h4>
+      </div>
+      <ul>
+        <li><mark class="mark-red">非原创/垃圾站</mark>：纯采集站、SEO 垃圾站、AI 批量堆砌站或纯营销引流页。</li>
+        <li>包含恶意重定向、脚本注入风险或大面积遮挡阅读的弹窗广告。</li>
+        <li>域名过期被第三方抢注为无关广告、博彩或灰产页时将立即下线。</li>
+      </ul>
+    </div>
+  </div>
+)}
+
+{variant.startsWith('divider-') && (
+  <div class="google-section-divider" aria-hidden="true" style={`--div-accent:${dividerMeta[variant]?.color || '#425aef'}`}>
+    <span class="google-section-divider__line"></span>
+    <span class="google-section-divider__pill">
+      {variant === 'divider-about' && (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M2.5 12h19M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>
+      )}
+      {variant === 'divider-status' && (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12h4l3-7 4 14 3-7h4"/></svg>
+      )}
+      {variant === 'divider-friends' && (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      )}
+      {variant === 'divider-rules' && (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
+      )}
+      {variant === 'divider-card' && (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8.5" cy="12" r="2.5"/><path d="M14 10h4M14 14h3"/></svg>
+      )}
+      {variant === 'divider-apply' && (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h4"/></svg>
+      )}
+      {variant === 'divider-privacy' && (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+      )}
+      {variant === 'divider-faq' && (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      )}
+      {variant === 'divider-glossary' && (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+      )}
+      <span>{dividerMeta[variant]?.label}</span>
+    </span>
+    <span class="google-section-divider__line"></span>
+  </div>
+)}
