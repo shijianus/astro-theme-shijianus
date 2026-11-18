@@ -795,7 +795,7 @@ export function GuestbookBoard() {
                 const { title, bodyWithoutLeadingHeading } = extractOpTitle(item);
                 const excerpt = bodyWithoutLeadingHeading.replace(/!\[[^\]]*\]\([^)]*\)/g,'').replace(/\[([^\]]+)\]\([^)]+\)/g,'$1').replace(/[#*`_>]/g,'').trim();
                 return <article key={item.id} className={`gb-gesture-row ${isRead ? 'is-read-row' : ''}`}>
-                  <GestureAvatar name={item.authorName} avatar={item.authorAvatar} size={34} />
+                  <GestureAvatar name={item.authorName} avatar={item.authorAvatar} size={34} isOwner={item.authorRole === 'admin'} />
                   <div className="gb-gesture-row__main">
                     <h2 className="gb-gesture-row__title"><a href={'#gesture-' + item.id}>{isPinned && <Pin size={13} aria-label="置顶" />}{title}</a></h2>
                     {excerpt && !excerpt.startsWith(title) && <p className="gb-gesture-row__excerpt">{excerpt}</p>}

@@ -52,7 +52,7 @@ export function GestureRelatedAndTopicMap({ relatedLinks, topicMap, gesture, sub
     <section className="gd-zone6-topic-map" aria-label="讨论概览">
       <span><strong>{topicMap.viewsCount.toLocaleString()}</strong> 观看</span>
       {hot && <><span>{topicMap.likesCount} 次表态</span><span>{relatedLinks.length} 个链接</span><span>{topicMap.usersCount} 位参与者</span><span>约 {topicMap.estimatedReadMinutes} 分钟阅读</span></>}
-      <span className="gd-tm-avatars">{topicMap.participants.slice(0,5).map(p => <GestureAvatar key={p.authorId || p.authorName} name={p.authorName} avatar={p.authorAvatar} size={26} />)}</span>
+      <span className="gd-tm-avatars">{topicMap.participants.slice(0,5).map(p => <GestureAvatar key={p.authorId || p.authorName} name={p.authorName} avatar={p.authorAvatar} size={26} isOwner={p.authorRole === 'admin'} />)}</span>
       <button type="button" className="gd-summary-toggle" aria-expanded={summary} onClick={() => setSummary(!summary)}><Sparkles size={14} />总结</button>
     </section>
     {summary && <section className="gd-digest" aria-label="讨论摘录"><h2>讨论摘录 · {subGestures.length} 条回复</h2>

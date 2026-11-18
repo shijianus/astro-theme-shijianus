@@ -30,6 +30,7 @@ export interface GestureNode {
   editCount?: number;
   viewsCount?: number;
   canManage?: boolean;
+  levelLabel?: string;
   floorIndex?: number;
   authorId: string;
   authorName: string;

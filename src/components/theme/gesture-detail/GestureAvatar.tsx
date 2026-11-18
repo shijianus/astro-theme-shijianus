@@ -43,7 +43,7 @@ export function GestureAvatar({
       style={{
         width: `${size}px`,
         height: `${size}px`,
-        borderRadius: '50%',
+        borderRadius: isOwner ? '5px' : '50%',
         fontSize: `${fontSize}px`,
         backgroundColor: fallbackBg,
       }}

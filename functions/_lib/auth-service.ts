@@ -909,6 +909,35 @@ export async function calculateUserLevel(email: string, env: AppEnv): Promise<Us
     }
   }
 
+  return describeUserLevel(cleanEmail, env, registeredDays, commentCount, likesReceived);
+}
+
+/** Resolve public level labels in bulk with the same account rules as the account center. */
+export async function getAuthorLevelLabels(authorIds: string[], env: AppEnv) {
+  const labels = new Map<string, string>();
+  const accounts = resolveActiveDb(env);
+  if (!accounts || !authorIds.length) return labels;
+  await ensureAuthTables(accounts);
+  const profiles = await accounts.prepare(`
+    SELECT id, email, MAX(0, CAST(julianday('now') - julianday(created_at) AS INTEGER)) AS days
+    FROM users WHERE id IN (SELECT value FROM json_each(?))
+  `).bind(JSON.stringify(authorIds)).all<{ id: string; email: string; days: number }>();
+  const users = profiles.results || [];
+  if (!users.length) return labels;
+  const stats = await (env.DB || accounts).prepare(`
+    SELECT author_email, COUNT(*) AS comments, SUM(likes_count) AS likes FROM comments
+    WHERE author_email IN (SELECT value FROM json_each(?)) AND status != 'deleted'
+    GROUP BY author_email
+  `).bind(JSON.stringify(users.map(user => user.email))).all<{ author_email: string; comments: number; likes: number }>();
+  const byEmail = new Map(stats.results?.map(row => [row.author_email, row]));
+  for (const user of users) {
+    const totals = byEmail.get(user.email);
+    labels.set(user.id, describeUserLevel(user.email.toLowerCase(), env, user.days, totals?.comments || 0, totals?.likes || 0).badge);
+  }
+  return labels;
+}
+
+function describeUserLevel(cleanEmail: string, env: AppEnv, registeredDays: number, commentCount: number, likesReceived: number): UserLevelInfo {
   const readingMinutes = Math.min(9999, registeredDays * 5 + commentCount * 15 + likesReceived * 2);
   const articlesRead = Math.min(999, Math.floor(registeredDays * 0.8 + commentCount * 2 + 1));
 

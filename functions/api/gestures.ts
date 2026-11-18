@@ -4,7 +4,7 @@ import { collectGestureLinks, resolveGestureLinks } from '../_lib/gesture-links.
 import { gestureTimestamp, validBoost } from '../../src/lib/gesture-text.ts';
 import type { AppEnv } from '../_lib/types';
 import { jsonResponse, optionsResponse, safeReadJson } from '../_lib/http.ts';
-import { getUserBySessionToken } from '../_lib/auth-service.ts';
+import { getAuthorLevelLabels, getUserBySessionToken } from '../_lib/auth-service.ts';
 import {
   buildReactionDetails,
   ensureGestureTables,
@@ -129,7 +129,14 @@ export async function onRequest(context: {
     }
     const canManage = (row: RawCommentRow) => isAdmin || Boolean(authUser?.id && authUser.id === row.author_id) ||
       Boolean(candidateToken && row.session_token && candidateToken === row.session_token);
-    const mapFloor = (row: RawCommentRow, floor: number) => ({ ...mapRowToClientComment(row, isAdmin, currentUserId, floor), canManage: canManage(row) });
+    const authors = new Set([opRow, ...replyRows].filter(row => row.author_role === 'reader').map(row => row.author_id));
+    // An unavailable optional account store must not prevent reading the discussion.
+    const labels = await getAuthorLevelLabels([...authors], env).catch(() => new Map<string, string>());
+    const mapFloor = (row: RawCommentRow, floor: number) => ({
+      ...mapRowToClientComment(row, isAdmin, currentUserId, floor),
+      canManage: canManage(row),
+      levelLabel: row.author_role === 'admin' ? 'LV.4' : labels.get(row.author_id),
+    });
     const opMapped = mapFloor(opRow, 1);
     const subMapped = replyRows.map((row,i) => mapFloor(row,i+2));
     const allIds = [opRow.id, ...replyRows.map(r => r.id)];
