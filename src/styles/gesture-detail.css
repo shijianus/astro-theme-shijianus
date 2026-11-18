@@ -25,7 +25,6 @@
   border-radius: 12px;
   background: rgba(15, 23, 42, 0.65);
   backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
   border: 1px solid rgba(255, 255, 255, 0.08);
   color: #e2e8f0;
 }
@@ -100,7 +99,6 @@
 .gd-monolithic-shell {
   background: rgba(15, 23, 42, 0.65);
   backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 14px;
   color: #e2e8f0;
@@ -1703,7 +1701,6 @@
   border-radius: 12px;
   background: rgba(15, 23, 42, 0.68);
   backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
   border: 1px solid rgba(255, 255, 255, 0.08);
   display: flex;
   flex-direction: column;
