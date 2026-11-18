@@ -19,7 +19,7 @@ interface Props {
   onToggleBookmark: (id: string) => void;
   onBackToList: () => void;
   onToast: (message: string) => void;
-  onZoomImage: (src: string) => void;
+  onZoomImage: (image: HTMLImageElement) => void;
 }
 const PAGE_SIZE = 40;
 const empty: GestureNode[] = [];

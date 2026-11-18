@@ -130,6 +130,10 @@ rules.table_close = () => '</table></div>';
 const image = rules.image;
 rules.image = (tokens, i, options, env, renderer) => {
   tokens[i].attrSet('loading', 'lazy');
+  if (env.zoomImages) {
+    tokens[i].attrSet('tabindex', '0');
+    tokens[i].attrSet('aria-haspopup', 'dialog');
+  }
   return image(tokens, i, options, env, renderer);
 };
 const fence = rules.fence;
@@ -145,6 +149,6 @@ rules.fence = (tokens, i, options, env, renderer) => {
     : code;
 };
 
-export function renderGestureMarkdown(message: string) {
-  return markdown.render(message);
+export function renderGestureMarkdown(message: string, zoomImages = false) {
+  return markdown.render(message, { zoomImages });
 }

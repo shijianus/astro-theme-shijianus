@@ -49,7 +49,7 @@ interface GestureFloorCardProps {
   onEditSave: (nodeId: string, newMessage: string, newTitle?: string) => Promise<boolean>;
   onDelete: (nodeId: string) => Promise<void>;
   onCopyLink: (floorIndex: number, isOp: boolean) => Promise<boolean>;
-  onZoomImage: (src: string) => void;
+  onZoomImage: (image: HTMLImageElement) => void;
 }
 
 export function GestureFloorCard({
@@ -90,7 +90,7 @@ export function GestureFloorCard({
   const replyBodyAnchorRef = useRef<HTMLDivElement | null>(null);
   const pendingBeforeTopRef = useRef<number | null>(null);
 
-  const renderedBody = useMemo(() => renderGestureMarkdown(bodyMarkdown), [bodyMarkdown]);
+  const renderedBody = useMemo(() => renderGestureMarkdown(bodyMarkdown, true), [bodyMarkdown]);
   const badges = resolveAuthorBadges(node);
   const editCount = Number(node.editCount || 0);
 
@@ -133,9 +133,9 @@ export function GestureFloorCard({
 
   const handleBodyClick = (e: React.MouseEvent<HTMLDivElement>) => {
     const target = e.target as HTMLElement;
-    if (target.tagName === 'IMG') {
-      const src = (target as HTMLImageElement).src;
-      if (src) onZoomImage(src);
+    if (target instanceof HTMLImageElement) {
+      target.focus({ preventScroll: true });
+      onZoomImage(target);
     }
   };
 
@@ -259,6 +259,12 @@ export function GestureFloorCard({
               ref={replyBodyAnchorRef}
               className="gd-markdown-body gd-floor-markdown"
               onClick={handleBodyClick}
+              onKeyDown={e => {
+                if (e.target instanceof HTMLImageElement && (e.key === 'Enter' || e.key === ' ')) {
+                  e.preventDefault();
+                  onZoomImage(e.target);
+                }
+              }}
               dangerouslySetInnerHTML={{
                 __html: renderedBody,
               }}

@@ -114,7 +114,11 @@ export function GuestbookBoard() {
   const [dbComments, setDbComments] = useState<BlogComment[]>([]);
   const [loading, setLoading] = useState(true);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
-  const [zoomedImage, setZoomedImage] = useState<string | null>(null);
+  const [zoomedImage, setZoomedImage] = useState<HTMLImageElement | null>(null);
+  const imageDialog = useRef<HTMLDialogElement>(null);
+  useEffect(() => {
+    if (zoomedImage) imageDialog.current?.showModal();
+  }, [zoomedImage]);
   const [identity, setIdentity] = useState<CommentIdentity | null>(null);
 
   // Top Boost Stream State
@@ -639,12 +643,13 @@ export function GuestbookBoard() {
 
       {/* Lightbox Zoom */}
       {zoomedImage && (
-        <div className="gb-lightbox" onClick={() => setZoomedImage(null)}>
-          <button className="gb-lightbox__close" onClick={() => setZoomedImage(null)}>
+        <dialog ref={imageDialog} className="gb-lightbox" aria-label="查看原图"
+          onClick={() => imageDialog.current?.close()} onClose={() => setZoomedImage(null)}>
+          <button className="gb-lightbox__close" aria-label="关闭原图" autoFocus>
             <X className="w-5 h-5" />
           </button>
-          <img src={zoomedImage} alt="Zoomed view" className="gb-lightbox__img" />
-        </div>
+          <img src={zoomedImage.currentSrc || zoomedImage.src} alt={zoomedImage.alt} className="gb-lightbox__img" />
+        </dialog>
       )}
 
       {/* ========================================================
@@ -829,7 +834,7 @@ export function GuestbookBoard() {
             onToggleBookmark={toggleBookmark}
             onBackToList={closeGestureDetail}
             onToast={showToast}
-            onZoomImage={(src) => setZoomedImage(src)}
+            onZoomImage={setZoomedImage}
           />
         )
       )}
