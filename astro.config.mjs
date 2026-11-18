@@ -415,7 +415,9 @@ function commentsDevIntegration() {
       'astro:server:setup': ({ server }) => {
         server.middlewares.use(async (req, res, next) => {
           const rawUrl = req.url || '';
-          if (rawUrl === '/api/comments' || rawUrl.startsWith('/api/comments?') || rawUrl.startsWith('/api/comments/')) {
+          const isCommentsApi = rawUrl === '/api/comments' || rawUrl.startsWith('/api/comments?') || rawUrl.startsWith('/api/comments/');
+          const isGesturesApi = rawUrl === '/api/gestures' || rawUrl.startsWith('/api/gestures?') || rawUrl.startsWith('/api/gestures/');
+          if (isCommentsApi || isGesturesApi) {
             try {
               const protocol = req.socket?.encrypted ? 'https' : 'http';
               const host = req.headers.host || 'localhost:4321';
@@ -443,7 +445,9 @@ function commentsDevIntegration() {
                 body: hasBody ? bodyBuffer : undefined,
               });
 
-              const { onRequest } = await import('./functions/api/comments.ts');
+              const { onRequest } = isGesturesApi
+                ? await import('./functions/api/gestures.ts')
+                : await import('./functions/api/comments.ts');
               const webRes = await onRequest({
                 request: webReq,
                 env: {
@@ -867,6 +871,9 @@ export default defineConfig({
     },
     server: {
       cors: true,
+      watch: {
+        ignored: ['**/.comments-dev.json', '**/.boosts-dev.json'],
+      },
       headers: {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',

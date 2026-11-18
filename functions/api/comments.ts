@@ -1,238 +1,17 @@
 import type { AppEnv } from '../_lib/types';
 import { jsonResponse, optionsResponse, safeReadJson } from '../_lib/http.ts';
 import { getUserBySessionToken } from '../_lib/auth-service.ts';
+import {
+  ensureGestureTables,
+  generateSecureId,
+  mapRowToClientComment,
+  memoryFallbackStore,
+  resolveCountryInfo,
+  syncDevStore,
+  type RawCommentRow,
+} from '../_lib/gesture-shared.ts';
 
-interface RawCommentRow {
-  id: string;
-  post_slug: string;
-  parent_id: string | null;
-  quote_id: string | null;
-  quote_source?: string;
-  post_type: 'comment' | 'gesture' | 'boost' | 'emoji';
-  tag?: string;
-  author_id: string;
-  author_name: string;
-  author_email?: string;
-  author_avatar?: string;
-  author_website?: string;
-  author_role: 'admin' | 'reader' | 'visitor';
-  message: string;
-  session_token?: string;
-  ip?: string;
-  ip_country?: string;
-  ip_location?: string;
-  show_location: number;
-  user_agent?: string;
-  likes_count: number;
-  reactions?: string;
-  status: 'published' | 'pinned' | 'flagged' | 'deleted';
-  created_at: string;
-  updated_at: string;
-}
-
-const COUNTRY_NAMES: Record<string, { zh: string; en: string }> = {
-  TW: { zh: '台湾', en: 'Taiwan' },
-  HK: { zh: '香港', en: 'Hong Kong' },
-  MO: { zh: '澳门', en: 'Macau' },
-  CN: { zh: '中国大陆', en: 'China' },
-  US: { zh: '美国', en: 'United States' },
-  JP: { zh: '日本', en: 'Japan' },
-  KR: { zh: '韩国', en: 'South Korea' },
-  SG: { zh: '新加坡', en: 'Singapore' },
-  GB: { zh: '英国', en: 'United Kingdom' },
-  DE: { zh: '德国', en: 'Germany' },
-  FR: { zh: '法国', en: 'France' },
-  CA: { zh: '加拿大', en: 'Canada' },
-  AU: { zh: '澳大利亚', en: 'Australia' },
-  RU: { zh: '俄罗斯', en: 'Russia' },
-  IN: { zh: '印度', en: 'India' },
-  MY: { zh: '马来西亚', en: 'Malaysia' },
-  GLOBAL: { zh: '全球', en: 'Global' },
-};
-
-function resolveCountryInfo(countryCode: string) {
-  const code = (countryCode || 'GLOBAL').toUpperCase();
-  const entry = COUNTRY_NAMES[code];
-  const name = entry?.zh || code;
-  const englishName = entry?.en || code;
-  let flag = '🌐';
-  if (code === 'TW') flag = '🇹🇼';
-  else if (code === 'HK') flag = '🇭🇰';
-  else if (code === 'MO') flag = '🇲🇴';
-  else if (code.length === 2 && code !== 'XX' && code !== 'ZZ') {
-    const codePoints = [...code].map((c) => 127397 + c.charCodeAt(0));
-    flag = String.fromCodePoint(...codePoints);
-  }
-  return { code, name, englishName, flag };
-}
-
-function generateSecureId(prefix: string, bytesCount = 12): string {
-  if (typeof crypto !== 'undefined' && 'getRandomValues' in crypto) {
-    const array = new Uint8Array(bytesCount);
-    crypto.getRandomValues(array);
-    const hex = Array.from(array, (b) => b.toString(16).padStart(2, '0')).join('');
-    return `${prefix}_${Date.now()}_${hex}`;
-  }
-  return `${prefix}_${Date.now()}_${Math.random().toString(36).substring(2, 12)}`;
-}
-
-// In-memory fallback store when running without D1 binding
-const memoryFallbackStore = new Map<string, RawCommentRow>();
-
-// Optional local dev persistence when running in Node dev server
-function syncDevStore(action: 'load' | 'save') {
-  if (typeof process === 'undefined' || !process.cwd || typeof process.versions?.node === 'undefined') return;
-  try {
-    const fs = (globalThis as any).__node_fs || require?.('node:fs');
-    const path = (globalThis as any).__node_path || require?.('node:path');
-    if (!fs || !path) return;
-    const storePath = path.resolve(process.cwd(), '.comments-dev.json');
-    if (action === 'load') {
-      if (fs.existsSync(storePath)) {
-        const raw = fs.readFileSync(storePath, 'utf8');
-        const list = JSON.parse(raw);
-        if (Array.isArray(list)) {
-          memoryFallbackStore.clear();
-          for (const item of list) {
-            memoryFallbackStore.set(item.id, item);
-          }
-        }
-      }
-    } else {
-      const list = Array.from(memoryFallbackStore.values());
-      fs.writeFileSync(storePath, JSON.stringify(list, null, 2), 'utf8');
-    }
-  } catch {}
-}
-
-// Preload local dev store if available
-syncDevStore('load');
-
-let tableEnsured = false;
-
-async function ensureTable(db: any) {
-  if (!db || !db.prepare || tableEnsured) return;
-  try {
-    await db.prepare(`
-      CREATE TABLE IF NOT EXISTS comments (
-        id TEXT PRIMARY KEY,
-        post_slug TEXT NOT NULL,
-        parent_id TEXT,
-        quote_id TEXT,
-        quote_source TEXT DEFAULT '',
-        post_type TEXT DEFAULT 'comment',
-        author_id TEXT NOT NULL,
-        author_name TEXT NOT NULL,
-        author_email TEXT DEFAULT '',
-        author_avatar TEXT DEFAULT '',
-        author_website TEXT DEFAULT '',
-        author_role TEXT DEFAULT 'visitor',
-        message TEXT NOT NULL,
-        session_token TEXT,
-        ip TEXT,
-        ip_country TEXT DEFAULT 'GLOBAL',
-        ip_location TEXT DEFAULT '',
-        show_location INTEGER DEFAULT 1,
-        user_agent TEXT,
-        likes_count INTEGER DEFAULT 0,
-        reactions TEXT DEFAULT '{}',
-        status TEXT DEFAULT 'published',
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-      );
-    `).run();
-    await db.prepare(`CREATE INDEX IF NOT EXISTS idx_comments_post_slug ON comments (post_slug);`).run();
-    await db.prepare(`CREATE INDEX IF NOT EXISTS idx_comments_created_at ON comments (created_at);`).run();
-    await db.prepare(`CREATE INDEX IF NOT EXISTS idx_comments_parent_id ON comments (parent_id);`).run();
-    await db.prepare(`CREATE INDEX IF NOT EXISTS idx_comments_ip_created ON comments (ip, created_at);`).run();
-
-    try {
-      await db.prepare(`ALTER TABLE comments ADD COLUMN tag TEXT DEFAULT 'general';`).run();
-    } catch {}
-    try {
-      await db.prepare(`CREATE INDEX IF NOT EXISTS idx_comments_tag ON comments (tag);`).run();
-    } catch {}
-
-    tableEnsured = true;
-  } catch (err) {
-    console.error('[Comments] Table ensure error:', err);
-  }
-}
-
-function mapRowToClientComment(row: RawCommentRow, isAdmin = false, currentUserId = '') {
-  const isVisitor = row.author_role === 'visitor';
-  const showLoc = isVisitor ? true : Boolean(row.show_location);
-  const countryInfo = resolveCountryInfo(row.ip_country || 'GLOBAL');
-
-  let quoteParsed = null;
-  if (row.quote_source) {
-    try {
-      quoteParsed = JSON.parse(row.quote_source);
-    } catch {
-      quoteParsed = null;
-    }
-  }
-
-  let reactionsParsed: { summary: Record<string, number>; users: Record<string, string> } = {
-    summary: {},
-    users: {},
-  };
-  if (row.reactions) {
-    try {
-      const parsed = JSON.parse(row.reactions);
-      if (parsed && typeof parsed === 'object') {
-        reactionsParsed = {
-          summary: parsed.summary || {},
-          users: parsed.users || {},
-        };
-      }
-    } catch {}
-  }
-  const summaryTotal = Object.values(reactionsParsed.summary).reduce((a, b) => a + b, 0);
-  if (summaryTotal === 0 && (row.likes_count || 0) > 0) {
-    reactionsParsed.summary['👍'] = Number(row.likes_count);
-  }
-
-  // Security: Never leak other readers' user IDs or session tokens to public viewers
-  let clientUsers: Record<string, string> = {};
-  if (isAdmin) {
-    clientUsers = reactionsParsed.users;
-  } else if (currentUserId && reactionsParsed.users[currentUserId]) {
-    clientUsers = { [currentUserId]: reactionsParsed.users[currentUserId] };
-  }
-
-  return {
-    id: row.id,
-    postSlug: row.post_slug,
-    parentId: row.parent_id,
-    quoteId: row.quote_id,
-    quote: quoteParsed,
-    postType: row.post_type || 'comment',
-    tag: row.tag || 'general',
-    authorId: row.author_id,
-    authorName: row.author_name || (row.author_role === 'admin' ? 'shijianus' : '访客'),
-    authorAvatar: row.author_avatar || (row.author_role === 'admin' ? '/media/shijianus/avatar.jpg' : ''),
-    authorWebsite: row.author_website || '',
-    authorRole: row.author_role || 'visitor',
-    message: row.message,
-    likesCount: Number(row.likes_count || summaryTotal || 0),
-    reactions: {
-      summary: reactionsParsed.summary,
-      users: clientUsers,
-    },
-    status: row.status || 'published',
-    createdAt: row.created_at,
-    updatedAt: row.updated_at,
-    // Country & Location exposure rules
-    showLocation: showLoc,
-    ipCountry: showLoc || isAdmin ? countryInfo.code : null,
-    ipCountryName: showLoc || isAdmin ? countryInfo.name : null,
-    ipCountryFlag: showLoc || isAdmin ? countryInfo.flag : null,
-    ipLocation: showLoc || isAdmin ? (row.ip_location || countryInfo.name) : null,
-    // Raw IP is exclusively exposed to Admin
-    ip: isAdmin ? row.ip : undefined,
-  };
-}
+const ensureTable = ensureGestureTables;
 
 function sanitizeTgHtml(str: string): string {
   return (str || '')
@@ -667,7 +446,8 @@ export async function onRequest(context: {
         }
 
         const query = `
-          SELECT id, post_slug, parent_id, quote_id, quote_source, post_type, tag, author_id, author_name,
+          SELECT id, post_slug, parent_id, reply_to_id, quote_id, quote_source, post_type, tag, title, tags,
+                 edit_count, views_count, author_id, author_name,
                  author_avatar, author_website, author_role, message, ip, ip_country, ip_location,
                  show_location, likes_count, reactions, status, created_at, updated_at
           FROM comments
@@ -955,6 +735,9 @@ export async function onRequest(context: {
 
     const quoteId = payload.quoteId ? String(payload.quoteId).trim() : null;
     const quoteSource = payload.quote ? JSON.stringify(payload.quote).slice(0, 500) : '';
+    const replyToId = payload.replyToId ? String(payload.replyToId).trim() : null;
+    const titleVal = payload.title ? String(payload.title).trim().slice(0, 120) : null;
+    const tagsJson = Array.isArray(payload.tags) ? JSON.stringify(payload.tags.slice(0, 5)) : '[]';
     // Visitors are forced to show location (1), registered users can toggle
     const showLocation = isVisitor ? 1 : (payload.showLocation === false ? 0 : 1);
     const countryInfo = resolveCountryInfo(cfCountry);
@@ -966,10 +749,15 @@ export async function onRequest(context: {
       id: commentId,
       post_slug: slug,
       parent_id: parentId,
+      reply_to_id: replyToId,
       quote_id: quoteId,
       quote_source: quoteSource,
       post_type: postType,
       tag: tag,
+      title: titleVal,
+      tags: tagsJson,
+      edit_count: 0,
+      views_count: 0,
       author_id: authorId,
       author_name: authorName,
       author_email: authorEmail,
@@ -995,12 +783,13 @@ export async function onRequest(context: {
       try {
         await env.DB.prepare(`
           INSERT INTO comments (
-            id, post_slug, parent_id, quote_id, quote_source, post_type, tag, author_id, author_name,
+            id, post_slug, parent_id, reply_to_id, quote_id, quote_source, post_type, tag, title, tags,
+            edit_count, views_count, author_id, author_name,
             author_email, author_avatar, author_website, author_role, message, session_token,
             ip, ip_country, ip_location, show_location, user_agent, likes_count, reactions, status, created_at, updated_at
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, '{}', 'published', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 0, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, '{}', 'published', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
         `).bind(
-          commentId, slug, parentId, quoteId, quoteSource, postType, tag, authorId, authorName,
+          commentId, slug, parentId, replyToId, quoteId, quoteSource, postType, tag, titleVal, tagsJson, authorId, authorName,
           authorEmail, authorAvatar, authorWebsite, authorRole, rawMessage, effectiveSessionToken,
           clientIp, cfCountry, ipLocation, showLocation, userAgent
         ).run();
@@ -1079,7 +868,7 @@ export async function onRequest(context: {
       }
 
       await env.DB.prepare(`
-        UPDATE comments SET message = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?
+        UPDATE comments SET message = ?, edit_count = COALESCE(edit_count, 0) + 1, updated_at = CURRENT_TIMESTAMP WHERE id = ?
       `).bind(message, id).run();
 
       return jsonResponse(request, env, { ok: true, message: '评论修改成功' });
@@ -1097,6 +886,7 @@ export async function onRequest(context: {
       return jsonResponse(request, env, { ok: false, error: '无权修改此评论或访客会话已失效' }, { status: 403 });
     }
     item.message = message;
+    item.edit_count = Number(item.edit_count || 0) + 1;
     item.updated_at = new Date().toISOString();
     syncDevStore('save');
     return jsonResponse(request, env, { ok: true, message: '评论修改成功' });
