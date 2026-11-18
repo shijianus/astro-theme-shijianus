@@ -598,157 +598,53 @@
 }
 
 /* ============================================================================
-   ZONE 3: Scoped Boost Section (Terminates Sticky Avatar Track Above)
+   ZONE 3: Scoped Boost Pills Column (Placed below ZONE 4 Action Bar, borderless)
    ============================================================================ */
-.gd-zone3-boost.is-op {
-  margin-top: 14px;
-  padding: 10px 14px;
-  border-radius: 10px;
-  background: rgba(30, 41, 59, 0.55);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+.gd-zone3-boost {
+  margin-top: 10px;
+  padding-left: 62px; /* Align cleanly with body column */
   display: flex;
   flex-direction: column;
-  gap: 10px;
-}
-
-.gd-boost-op-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-.gd-boost-op-title {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 12.5px;
-  font-weight: 700;
-  color: #fbbf24;
-}
-
-.gd-boost-trigger-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 3px 10px;
-  border-radius: 999px;
-  border: 1px dashed rgba(251, 191, 36, 0.35);
-  background: rgba(251, 191, 36, 0.06);
-  color: #fde68a;
-  font-size: 12px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-
-.gd-boost-trigger-chip:hover {
-  background: rgba(251, 191, 36, 0.14);
-  border-style: solid;
+  align-items: flex-start;
+  gap: 8px;
 }
 
 .gd-boost-op-pills {
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  width: 100%;
 }
 
 .gd-boost-op-pill {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 4px 10px 4px 6px;
+  gap: 7px;
+  padding: 5px 12px 5px 7px;
   border-radius: 999px;
-  background: rgba(15, 23, 42, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.07);
+  background: rgba(30, 41, 59, 0.62);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   font-size: 12.5px;
   color: #e2e8f0;
+  max-width: 100%;
 }
 
 .gd-boost-op-pill-author {
   font-weight: 600;
   color: #94a3b8;
   font-size: 12px;
+  flex-shrink: 0;
 }
 
-/* SubGesture Compact Strip (~32px) */
-.gd-zone3-boost.is-subgesture {
-  margin-top: 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.gd-boost-compact-strip {
-  min-height: 32px;
-  padding: 4px 10px;
-  border-radius: 8px;
-  background: rgba(30, 41, 59, 0.5);
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.gd-boost-compact-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 12px;
-  font-weight: 700;
-  color: #fbbf24;
-}
-
-.gd-boost-compact-sep {
-  color: rgba(255, 255, 255, 0.15);
-  font-size: 12px;
-}
-
-.gd-boost-compact-pills {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-  flex: 1;
-  min-width: 0;
-}
-
-.gd-boost-mini-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 12px;
-  color: #cbd5e1;
-}
-
-.gd-boost-compact-actions {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  margin-left: auto;
-}
-
-.gd-boost-tiny-btn {
-  width: 22px;
-  height: 22px;
-  border-radius: 6px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(255, 255, 255, 0.04);
-  color: #94a3b8;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-}
-
-.gd-boost-tiny-btn:hover {
-  color: #fbbf24;
-  border-color: rgba(251, 191, 36, 0.4);
+.gd-boost-op-pill-content {
+  word-break: break-word;
 }
 
 .gd-boost-inline-form {
+  width: 100%;
+  max-width: 480px;
+  box-sizing: border-box;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -1188,28 +1084,35 @@
 }
 
 .gd-zone5-links {
-  padding: 12px 26px;
+  margin: 12px 26px 12px 88px;
+  padding: 6px 10px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.07);
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  gap: 2px;
 }
 
 .gd-related-link-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
-  padding: 5px 8px;
+  gap: 12px;
+  padding: 6px 8px;
   border-radius: 6px;
-  color: #cbd5e1;
+  color: #e2e8f0;
   text-decoration: none;
   font-size: 13px;
-  transition: background 0.15s ease;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.gd-related-link-row + .gd-related-link-row {
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
 }
 
 .gd-related-link-row:hover {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(56, 189, 248, 0.08);
   color: #38bdf8;
 }
 
@@ -1227,12 +1130,23 @@
 }
 
 .gd-related-link-count {
+  flex-shrink: 0;
   font-size: 11px;
-  font-weight: 700;
-  padding: 1px 7px;
+  font-weight: 600;
+  padding: 1px 8px;
   border-radius: 999px;
+}
+
+.gd-related-link-count.is-num {
+  font-weight: 700;
   background: rgba(56, 189, 248, 0.15);
   color: #7dd3fc;
+}
+
+.gd-related-link-count.is-meta {
+  background: rgba(255, 255, 255, 0.05);
+  color: #94a3b8;
+  border: 1px solid rgba(255, 255, 255, 0.07);
 }
 
 .gd-related-more-btn {
@@ -1252,10 +1166,18 @@
 .gd-zone6-topic-map {
   padding: 12px 26px;
   background: rgba(2, 6, 23, 0.35);
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
+  flex-wrap: wrap;
+}
+
+.gd-topic-map-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
   flex-wrap: wrap;
 }
 
@@ -2044,11 +1966,14 @@
 @media (max-width: 640px) {
   .gd-zone1-header,
   .gd-floor-article,
-  .gd-zone5-links,
   .gd-zone6-topic-map,
   .gd-reply-composer {
     padding-left: 16px;
     padding-right: 16px;
+  }
+
+  .gd-zone5-links {
+    margin: 10px 16px;
   }
 
   .gd-floor-split {
@@ -2060,6 +1985,7 @@
     width: 40px;
   }
 
+  .gd-zone3-boost,
   .gd-zone4-action-bar,
   .gd-direct-replies-timeline {
     padding-left: 0;

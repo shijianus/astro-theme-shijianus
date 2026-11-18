@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { BookOpen, ChevronDown, ChevronUp, Link2, Sparkles } from 'lucide-react';
 import {
   formatMetricCount,
   type GestureNode,
+  type GestureParticipant,
   type GestureRelatedLink,
   type GestureTopicMap,
 } from '../../../lib/gesture-client';
@@ -17,6 +18,19 @@ interface GestureRelatedAndTopicMapProps {
   onToggleAiSummary: () => void;
   gesture: GestureNode;
   subGestures: GestureNode[];
+}
+
+function resolveLinkBadgeText(link: GestureRelatedLink): string {
+  if (link.replyCount > 0) return String(link.replyCount);
+  try {
+    if (link.url.startsWith('/posts/')) return '站内文章';
+    if (link.url.startsWith('/community/')) return '社区文档';
+    if (link.url.startsWith('/')) return '站内页面';
+    const parsed = new URL(link.url);
+    return parsed.hostname.replace(/^www\./, '');
+  } catch {
+    return '外链';
+  }
 }
 
 /**
@@ -42,6 +56,35 @@ export function GestureRelatedAndTopicMap({
     .sort((a, b) => (b.likesCount || 0) - (a.likesCount || 0))
     .slice(0, 3);
 
+  // Guarantee max 5 avatars, and the 1st avatar is ALWAYS the OP (楼主)
+  const orderedAvatars: GestureParticipant[] = useMemo(() => {
+    const opKey = gesture.authorId || gesture.authorName;
+    const opEntry: GestureParticipant = {
+      authorId: gesture.authorId,
+      authorName: gesture.authorName,
+      authorAvatar: gesture.authorAvatar,
+      authorRole: gesture.authorRole,
+      count: 1,
+    };
+
+    const others: GestureParticipant[] = [];
+    const seen = new Set<string>([opKey]);
+
+    for (const p of topicMap.participants || []) {
+      const pKey = p.authorId || p.authorName;
+      if (pKey === opKey) {
+        opEntry.count = p.count;
+        continue;
+      }
+      if (!seen.has(pKey)) {
+        seen.add(pKey);
+        others.push(p);
+      }
+    }
+
+    return [opEntry, ...others].slice(0, 5);
+  }, [gesture, topicMap.participants]);
+
   return (
     <div className="gd-zone5-6-wrap">
       {/* ZONE 5: Related Links (auto-hidden when empty) */}
@@ -56,12 +99,12 @@ export function GestureRelatedAndTopicMap({
               className="gd-related-link-row"
             >
               <span className="gd-related-link-main">
-                <Link2 className="w-3.5 h-3.5 text-indigo-400 flex-shrink-0" />
+                <Link2 className="w-3.5 h-3.5 text-sky-400 flex-shrink-0" />
                 <span className="gd-related-link-title">{link.title}</span>
               </span>
-              {link.replyCount > 0 && (
-                <span className="gd-related-link-count">{link.replyCount}</span>
-              )}
+              <span className={`gd-related-link-count ${link.replyCount > 0 ? 'is-num' : 'is-meta'}`}>
+                {resolveLinkBadgeText(link)}
+              </span>
             </a>
           ))}
 
@@ -80,32 +123,33 @@ export function GestureRelatedAndTopicMap({
 
       {/* ZONE 6: Topic Map Data Watershed */}
       <section className="gd-zone6-topic-map" aria-label="讨论统计与 Topic Map">
-        <div className="gd-topic-map-metrics">
-          <div className="gd-tm-stat">
-            <strong>{formatMetricCount(topicMap.viewsCount)}</strong>
-            <span>觀看</span>
+        <div className="gd-topic-map-left">
+          <div className="gd-topic-map-metrics">
+            <div className="gd-tm-stat">
+              <strong>{formatMetricCount(topicMap.viewsCount)}</strong>
+              <span>觀看</span>
+            </div>
+            <div className="gd-tm-stat">
+              <strong>{formatMetricCount(topicMap.likesCount)}</strong>
+              <span>個讚</span>
+            </div>
+            <div className="gd-tm-stat">
+              <strong>{topicMap.linksCount}</strong>
+              <span>連結</span>
+            </div>
+            <div className="gd-tm-stat">
+              <strong>{topicMap.usersCount}</strong>
+              <span>使用者</span>
+            </div>
           </div>
-          <div className="gd-tm-stat">
-            <strong>{formatMetricCount(topicMap.likesCount)}</strong>
-            <span>個讚</span>
-          </div>
-          <div className="gd-tm-stat">
-            <strong>{topicMap.linksCount}</strong>
-            <span>連結</span>
-          </div>
-          <div className="gd-tm-stat">
-            <strong>{topicMap.usersCount}</strong>
-            <span>使用者</span>
-          </div>
-        </div>
 
-        <div className="gd-topic-map-right">
-          <div className="gd-tm-avatars" aria-label="高频参与者">
-            {topicMap.participants.slice(0, 5).map((p) => (
+          {/* Placed directly after .gd-tm-stat (使用者), max 5 avatars, 1st MUST be OP (楼主) */}
+          <div className="gd-tm-avatars" aria-label="讨论参与者头像">
+            {orderedAvatars.map((p, idx) => (
               <div
                 key={p.authorId || p.authorName}
-                className="gd-tm-avatar-item"
-                title={`${p.authorName} (${p.count} 条发言)`}
+                className={`gd-tm-avatar-item ${idx === 0 ? 'is-op-avatar' : ''}`}
+                title={`${p.authorName}${idx === 0 ? ' (楼主)' : ''} · ${p.count} 条发言`}
               >
                 <GestureAvatar
                   name={p.authorName}
@@ -116,7 +160,9 @@ export function GestureRelatedAndTopicMap({
               </div>
             ))}
           </div>
+        </div>
 
+        <div className="gd-topic-map-right">
           <span className="gd-tm-read-time">{topicMap.estimatedReadMinutes} 分钟阅读</span>
 
           <div className="gd-tm-toggles">

@@ -364,7 +364,14 @@ export async function onRequest(context: {
       }
     }
 
-    const participants = Array.from(participantMap.values()).sort((a, b) => b.count - a.count);
+    const opKey = opMapped.authorId || opMapped.authorName;
+    const participants = Array.from(participantMap.values()).sort((a, b) => {
+      const aKey = a.authorId || a.authorName;
+      const bKey = b.authorId || b.authorName;
+      if (aKey === opKey && bKey !== opKey) return -1;
+      if (bKey === opKey && aKey !== opKey) return 1;
+      return b.count - a.count;
+    });
     const latestReplyAt = subMapped.length > 0 ? subMapped[subMapped.length - 1].createdAt : opMapped.createdAt;
 
     return jsonResponse(request, env, {
@@ -378,7 +385,7 @@ export async function onRequest(context: {
         likesCount: totalReactions,
         linksCount: relatedLinks.length,
         usersCount: participantMap.size,
-        participants: participants.slice(0, 8),
+        participants: participants.slice(0, 5),
         estimatedReadMinutes: Math.max(1, Math.ceil(totalChars / 400)),
         latestReplyAt,
       },

@@ -296,16 +296,6 @@ export function GestureFloorCard({
         </div>
       </div>
 
-      {/* ZONE 3: Scoped Boost Section (Terminates Sticky Avatar Track Above) */}
-      <GestureBoostSection
-        gestureId={node.id}
-        isOp={isOp}
-        boosts={boosts}
-        composerOpen={boostComposerOpen}
-        onComposerOpenChange={setBoostComposerOpen}
-        onAddBoost={onAddBoost}
-      />
-
       {/* ZONE 4: Pure-Icon Action Bar + Top-4 Aggregated Emoji Pill + Direct Replies Trigger */}
       <div className="gd-zone4-action-bar">
         <div className="gd-zone4-left">
@@ -335,7 +325,7 @@ export function GestureFloorCard({
         </div>
 
         {isOp ? (
-          /* OP Full Action Bar: [♡] [🔗] [••• (animated slide-out)] [↩] */
+          /* OP Full Action Bar: [♡] [⚡] [❞] [🔗] [••• (animated slide-out)] [↩] */
           <div className="gd-zone4-right is-op">
             <EmojiReactionCluster
               summary={{}}
@@ -345,6 +335,16 @@ export function GestureFloorCard({
               showHeartTrigger={true}
               hideSummaryPill={true}
             />
+
+            <button
+              type="button"
+              className={`gd-icon-btn ${boostComposerOpen ? 'is-active' : ''}`}
+              onClick={() => setBoostComposerOpen((prev) => !prev)}
+              title="发送 Boost 短评"
+              aria-label="发送 Boost 短评"
+            >
+              <Zap className="w-4 h-4" />
+            </button>
 
             <button
               type="button"
@@ -492,6 +492,16 @@ export function GestureFloorCard({
           </div>
         )}
       </div>
+
+      {/* ZONE 3: Scoped Boost Pills Column (Placed below ZONE 4 Action Bar) */}
+      <GestureBoostSection
+        gestureId={node.id}
+        isOp={isOp}
+        boosts={boosts}
+        composerOpen={boostComposerOpen}
+        onComposerOpenChange={setBoostComposerOpen}
+        onAddBoost={onAddBoost}
+      />
 
       {/* Scene A: 1-to-N Direct Replies Timeline Expansion */}
       {directReplies.length > 0 && directRepliesExpanded && (

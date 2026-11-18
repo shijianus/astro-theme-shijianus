@@ -1,5 +1,5 @@
 import { chromium } from 'playwright';
-import { spawn } from 'child_process';
+import { execSync, spawn } from 'child_process';
 import fs from 'fs';
 import net from 'net';
 import path from 'path';
@@ -20,7 +20,7 @@ function getFreePort() {
   });
 }
 
-async function waitForServer(url, timeoutMs = 45000) {
+async function waitForServer(url, timeoutMs = 90000) {
   const start = Date.now();
   while (Date.now() - start < timeoutMs) {
     try {
@@ -37,6 +37,9 @@ function assert(cond, msg) {
 }
 
 async function run() {
+  try {
+    execSync('node ./node_modules/astro/bin/astro.mjs dev stop', { cwd: process.cwd(), stdio: 'ignore' });
+  } catch {}
   const PORT = await getFreePort();
   const BASE_URL = `http://localhost:${PORT}`;
   const hadComments = fs.existsSync(COMMENTS_DEV_PATH);
@@ -58,7 +61,10 @@ async function run() {
 
   let browser;
   try {
-    await waitForServer(`${BASE_URL}/guestbook/`);
+    await waitForServer(`${BASE_URL}/guestbook/`).catch((err) => {
+      console.error('[Verify] Server logs on timeout:\n', serverLogs.slice(-3000));
+      throw err;
+    });
     console.log('[Verify] Dev server ready.');
 
     browser = await chromium.launch({ headless: true });
@@ -133,12 +139,30 @@ async function run() {
     assert(!opAuthorMeta?.includes('杭州') && !opAuthorMeta?.includes('中国'), `Must NOT show IP location in author bar`);
     console.log('[Verify] ✓ ZONE 2 sticky avatar, clean rail, and author meta verified');
 
-    // 5. ZONE 3: Scoped Boost (OP always visible; SubGesture Floor 2 zero-footprint until [⚡] clicked)
-    const opBoostCount = await page.locator('#floor-1 .gd-zone3-boost.is-op .gd-boost-op-pill').count();
-    if (opBoostCount < 2) {
-      console.log('[Debug] #floor-1 .gd-zone3-boost HTML:', await page.locator('#floor-1 .gd-zone3-boost').innerHTML());
-    }
-    assert(opBoostCount >= 2, `Expected OP starter boosts >= 2, got ${opBoostCount}`);
+    // 5. ZONE 3 (Placed below ZONE 4 action bar, borderless, single-column .gd-boost-op-pill)
+    const opBoostLayout = await page.$eval('#floor-1', (el) => {
+      const actionBar = el.querySelector('.gd-zone4-action-bar');
+      const boostSec = el.querySelector('.gd-zone3-boost');
+      const pillsWrap = el.querySelector('.gd-boost-op-pills');
+      const pills = Array.from(el.querySelectorAll('.gd-boost-op-pill'));
+      const boostCs = boostSec ? window.getComputedStyle(boostSec) : null;
+      const pillsCs = pillsWrap ? window.getComputedStyle(pillsWrap) : null;
+      return {
+        isBelowActionBar: Boolean(actionBar && boostSec && (actionBar.compareDocumentPosition(boostSec) & Node.DOCUMENT_POSITION_FOLLOWING)),
+        hasBoostHead: el.querySelectorAll('.gd-boost-op-head').length,
+        boostBorder: boostCs?.borderTopWidth,
+        boostBg: boostCs?.backgroundColor,
+        flexDirection: pillsCs?.flexDirection,
+        pillCount: pills.length,
+        pill1Top: pills[0]?.getBoundingClientRect().bottom || 0,
+        pill2Top: pills[1]?.getBoundingClientRect().top || 0,
+      };
+    });
+    assert(opBoostLayout.isBelowActionBar, 'Boost section must be placed below .gd-zone4-action-bar');
+    assert(opBoostLayout.hasBoostHead === 0, 'Redundant Boost header/explanation must be removed');
+    assert(opBoostLayout.boostBorder === '0px', `Boost wrapper must have no border, got ${opBoostLayout.boostBorder}`);
+    assert(opBoostLayout.flexDirection === 'column', `Boost pills must stack as a vertical column, got ${opBoostLayout.flexDirection}`);
+    assert(opBoostLayout.pillCount >= 2 && opBoostLayout.pill2Top >= opBoostLayout.pill1Top, 'Each .gd-boost-op-pill must stack vertically on its own row');
 
     const f2BoostBefore = await page.locator('#floor-2 .gd-zone3-boost').count();
     assert(f2BoostBefore === 0, `Floor 2 with 0 boosts must have zero DOM footprint, got ${f2BoostBefore}`);
@@ -155,8 +179,8 @@ async function run() {
     await page.locator('#floor-2 button[aria-label="发送 Boost 短评"]').click();
     await page.locator('#floor-2 .gd-boost-inline-input').fill('测试子楼层 Boost 微语');
     await page.locator('#floor-2 .gd-boost-inline-submit').click();
-    await page.waitForSelector('#floor-2 .gd-boost-compact-strip', { timeout: 5000 });
-    console.log('[Verify] ✓ ZONE 3 scoped Boost progressive disclosure & submission verified');
+    await page.waitForSelector('#floor-2 .gd-boost-op-pill', { timeout: 5000 });
+    console.log('[Verify] ✓ ZONE 3 below action bar, single-column .gd-boost-op-pill & submission verified');
 
     // 6. ZONE 4: Top-4 Aggregated Emoji pill + Hover Breakdown + [•••] Slide-Out Drawer
     const topIconsCount = await page.locator('#floor-1 .gd-agg-emoji-char').count();
@@ -168,14 +192,28 @@ async function run() {
     await page.waitForSelector('#floor-1 .gd-more-drawer.is-open');
     console.log('[Verify] ✓ ZONE 4 Top-4 Emoji pill hover breakdown & animated [•••] drawer verified');
 
-    // 7. ZONE 5 & ZONE 6: Related links + Topic Map + AI summary + Hot filter
+    // 7. ZONE 5 & ZONE 6: Related links + Topic Map + AI summary + Hot filter + Avatar placement/order
     const linksCount = await page.locator('.gd-zone5-links .gd-related-link-row').count();
     assert(linksCount >= 2, `Expected >= 2 related links in ZONE 5, got ${linksCount}`);
-    const tmStatsText = await page.locator('.gd-zone6-topic-map').textContent();
-    assert(tmStatsText?.includes('觀看') && tmStatsText?.includes('個讚') && tmStatsText?.includes('使用者'), 'Topic Map metrics missing');
+    const tmCheck = await page.$eval('.gd-zone6-topic-map', (el) => {
+      const metrics = el.querySelector('.gd-topic-map-metrics');
+      const avatarsWrap = el.querySelector('.gd-topic-map-left .gd-tm-avatars');
+      const avatarItems = Array.from(el.querySelectorAll('.gd-tm-avatar-item'));
+      return {
+        text: el.textContent || '',
+        avatarsAfterMetrics: Boolean(metrics && avatarsWrap && (metrics.compareDocumentPosition(avatarsWrap) & Node.DOCUMENT_POSITION_FOLLOWING)),
+        avatarCount: avatarItems.length,
+        firstTitle: avatarItems[0]?.getAttribute('title') || '',
+        firstIsOp: avatarItems[0]?.classList.contains('is-op-avatar') || false,
+      };
+    });
+    assert(tmCheck.text.includes('觀看') && tmCheck.text.includes('個讚') && tmCheck.text.includes('使用者'), 'Topic Map metrics missing');
+    assert(tmCheck.avatarsAfterMetrics, '.gd-tm-avatars must be placed directly after .gd-topic-map-metrics (.gd-tm-stat)');
+    assert(tmCheck.avatarCount >= 1 && tmCheck.avatarCount <= 5, `Expected 1..5 avatars, got ${tmCheck.avatarCount}`);
+    assert(tmCheck.firstIsOp && tmCheck.firstTitle.includes('shijianus'), `First avatar must be OP shijianus, got "${tmCheck.firstTitle}"`);
     await page.locator('button[title="AI 讨论脉络摘要"]').click();
     await page.waitForSelector('.gd-ai-digest-panel');
-    console.log('[Verify] ✓ ZONE 5 related links & ZONE 6 Topic Map + AI summary verified');
+    console.log('[Verify] ✓ ZONE 5 related links & ZONE 6 Topic Map + OP-first <=5 avatars verified');
 
     // 8. Scene A: 1-to-N Direct Replies Timeline on Floor 2 (Alice -> 2 replies: lanfeng & Mr.XiWang)
     const f2DirectBtn = page.locator('#floor-2 .gd-direct-replies-btn');
@@ -306,6 +344,9 @@ async function run() {
     console.log('===============================================================\n');
   } finally {
     if (browser) await browser.close();
+    try {
+      execSync('node ./node_modules/astro/bin/astro.mjs dev stop', { cwd: process.cwd(), stdio: 'ignore' });
+    } catch {}
     try {
       if (devProc.pid) process.kill(-devProc.pid, 'SIGKILL');
     } catch {
