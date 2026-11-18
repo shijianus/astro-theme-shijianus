@@ -389,7 +389,7 @@ export async function onRequest(context: {
           FROM comments 
           WHERE post_slug LIKE 'moment_%'
           GROUP BY post_slug
-        `).all<{ post_slug: string; comment_count: number; likes_count: number }>();
+        `).bind().all<{ post_slug: string; comment_count: number; likes_count: number }>();
 
         const statsMap: Record<string, { commentCount: number; likesCount: number }> = {};
         for (const row of statsRes.results || []) {

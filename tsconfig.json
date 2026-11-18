@@ -10,7 +10,6 @@
     "themes",
     "scratch",
     "scripts",
-    "src/components/theme/GuestbookBoard.tsx",
     "src/components/ThemeOverlays.tsx",
     "src/components/theme/PostComments.tsx"
   ],

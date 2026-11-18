@@ -83,6 +83,9 @@ export type AppEnv = {
   EPOMAIL_CLIENT_SECRET?: string;
   EPOMAIL_REDIRECT_URI?: string;
   ADMIN_TOKEN?: string;
+  ADMIN_EMAIL?: string;
+  IS_DEV?: string;
+  EPOMAIL_AUTHORITATIVE_HOST?: string;
   IMAGE_HOST_URL?: string;
   IMAGE_HOST_TOKEN?: string;
 };
