@@ -35,6 +35,7 @@ export function GestureDetailPage({ gestureId, channels, identity, bookmarkedPos
   const [highlight, setHighlight] = useState(0);
   const [contact, setContact] = useState<GestureNode | null>(null);
   const [quote, setQuote] = useState<GestureQuote | null>(null);
+  const [visitorSessionToken, setVisitorSessionToken] = useState('');
   const textarea = useRef<HTMLTextAreaElement>(null);
   const content = useRef<HTMLElement>(null);
   const loadVersion = useRef(0);
@@ -69,6 +70,9 @@ export function GestureDetailPage({ gestureId, channels, identity, bookmarkedPos
     } catch { if (version === loadVersion.current) setErr('讨论加载失败，请重试'); }
   }, [gestureId]);
   const viewed = useRef(false);
+  useEffect(() => {
+    setVisitorSessionToken(getOrCreateGestureSessionToken());
+  }, [identity?.token]);
   useEffect(() => {
     void refresh(!viewed.current);
     viewed.current = true;
@@ -141,7 +145,7 @@ export function GestureDetailPage({ gestureId, channels, identity, bookmarkedPos
   }
   function renderFloor(n: GestureNode, body: string) {
     const floor = n.floorIndex!;
-    const user = identity?.id || getOrCreateGestureSessionToken();
+    const user = identity?.id || visitorSessionToken;
     return <GestureFloorCard key={n.id} node={n} floorIndex={floor} isOp={floor === 1} bodyMarkdown={body}
       boosts={thread?.boostsByGestureId?.[n.id] || []} directReplies={children.get(n.id) || []}
       replyParentNode={byId.get(n.replyToId || n.parentId || '') || null} quotedNode={byId.get(n.quoteId || '') || null}
