@@ -109,7 +109,6 @@ export function GestureDetailPage({
 
   // Interactive controls state
   const [hotFilterActive, setHotFilterActive] = useState(false);
-  const [aiSummaryOpen, setAiSummaryOpen] = useState(false);
   const [topbarCopied, setTopbarCopied] = useState(false);
   const [currentFloor, setCurrentFloor] = useState(1);
   const [scrollPercent, setScrollPercent] = useState(0);
@@ -646,10 +645,6 @@ export function GestureDetailPage({
           <GestureRelatedAndTopicMap
             relatedLinks={relatedLinks}
             topicMap={topicMap}
-            hotFilterActive={hotFilterActive}
-            onToggleHotFilter={() => setHotFilterActive((prev) => !prev)}
-            aiSummaryOpen={aiSummaryOpen}
-            onToggleAiSummary={() => setAiSummaryOpen((prev) => !prev)}
             gesture={gesture}
             subGestures={subGestures}
           />
