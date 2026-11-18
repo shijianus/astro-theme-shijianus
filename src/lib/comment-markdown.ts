@@ -24,7 +24,7 @@ function sanitizeUrl(rawUrl: string): string {
   return '#';
 }
 
-export function renderCommentMarkdown(raw: string, renderMath?: (source: string, display: boolean) => string): string {
+export function renderCommentMarkdown(raw: string): string {
   if (!raw || !raw.trim()) return '';
 
   let text = raw;
@@ -95,13 +95,8 @@ export function renderCommentMarkdown(raw: string, renderMath?: (source: string,
 
   // 5. Math blocks ($$ ... $$)
   text = text.replace(/\$\$([\s\S]*?)\$\$/g, (_, math) => {
-    return saveBlock(`<div class="tk-math-block">${renderMath ? renderMath(math.trim(), true) : `<code>${escapeHtml(math.trim())}</code>`}</div>`);
+    return saveBlock(`<div class="tk-math-block"><code>${escapeHtml(math.trim())}</code></div>`);
   });
-
-  if (renderMath) {
-    text = text.replace(/`([^`\n]+)`/g, (_, code) => saveBlock('<code class="tk-inline-code">' + escapeHtml(code) + '</code>'));
-    text = text.replace(/\$([^$\n]+)\$/g, (_, math) => saveBlock(renderMath(math.trim(), false)));
-  }
 
   // 6. Tables: GFM table format
   text = text.replace(/((?:\|[^\n]+\|\r?\n)+)/g, (tableMatch) => {
