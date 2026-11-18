@@ -518,11 +518,14 @@ async function runVerification() {
     if (!detailView) throw new Error('Detail view (.gb-gesture-detail-view) failed to open');
     console.log('[Verify] ✓ Successfully entered Gesture Detail View');
 
-    // Verify 1 楼 (楼主 OP)
+    // Verify 1 楼 (楼主 OP) with implicit floor_index (no explicit #1 楼主 badge)
     const opFloor = await page.$('#floor-1.is-op-floor');
     if (!opFloor) throw new Error('1 楼 (OP Floor) not rendered');
-    const floorNumber = await page.textContent('#floor-1 .gb-floor-number');
-    console.log(`[Verify] OP Floor identifier: "${floorNumber?.trim()}"`);
+    const implicitFloor = await opFloor.getAttribute('data-floor-index');
+    if (implicitFloor !== '1') throw new Error(`Expected implicit data-floor-index="1", got "${implicitFloor}"`);
+    const floorNumberCount = await page.$$eval('#floor-1 .gb-floor-number', (els) => els.length);
+    if (floorNumberCount !== 0) throw new Error('Expected explicit #1 楼主 label to be omitted');
+    console.log(`[Verify] OP Floor implicit data-floor-index: "${implicitFloor}"`);
 
     // Verify Right-side Floor Timeline Scroller Widget
     const scrollerCard = await page.$('.gb-floor-scroller-card');
