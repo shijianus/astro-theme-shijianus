@@ -483,3 +483,14 @@ body.theme-body:has(#guestbook-dashboard):not(.theme-overlay-open, .reward-modal
   body:has(#guestbook-dashboard) #rightside-config-show { flex-direction: row; }
   body:has(#guestbook-dashboard) #nav-right { margin-inline-start: auto; width: auto !important; flex: 0 1 auto; }
 }
+@media (max-width: 900px) {
+  #content-inner.layout:has(#guestbook-dashboard) { padding-top: 48px; }
+}
+@media (max-width: 480px) {
+  body:has(#guestbook-dashboard) #nav-group #blog_name { left: 0 !important; }
+  body:has(#guestbook-dashboard) #site-name { padding-inline: 2px; }
+  body:has(#guestbook-dashboard) #nav-right { gap: 2px !important; }
+  body:has(#guestbook-dashboard) #nav-right > * { margin-inline: 0 !important; }
+  body:has(#guestbook-dashboard) #nav-right .nav-button:not(.back-to-top-btn),
+  body:has(#guestbook-dashboard) #toggle-menu { min-width: 32px !important; width: 32px !important; }
+}
