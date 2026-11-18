@@ -15,25 +15,15 @@ import {
   Smile,
   Image as ImageIcon,
   Send,
-  Share2,
-  Trash2,
   Pencil,
   X,
   ChevronDown,
   ChevronUp,
-  Tag,
   AlertCircle,
   Pin,
   CheckCircle2,
   Bookmark,
-  Compass,
   Eye,
-  Layers,
-  CornerDownRight,
-  ArrowLeft,
-  ChevronsUp,
-  ChevronsDown,
-  SlidersHorizontal,
   Minus,
   Maximize2,
   Minimize2,
@@ -42,9 +32,6 @@ import {
 import {
   fetchComments,
   createComment,
-  editComment,
-  deleteComment,
-  likeComment,
   readCommentIdentity,
   getCommentInitials,
   uploadCommentImage,
@@ -52,7 +39,8 @@ import {
   type CommentIdentity,
 } from '../../lib/comment-client';
 import { renderCommentMarkdown } from '../../lib/comment-markdown';
-import { computeUserLevel } from '../../lib/user-level';
+import { resolveAuthorBadges } from '../../lib/gesture-client';
+import { GestureDetailPage } from './gesture-detail/GestureDetailPage';
 
 // Board topic channels / dimensions configuration
 export const CHANNELS = [
@@ -299,7 +287,7 @@ export const OFFICIAL_PINNED_POSTS: BlogComment[] = [
       users: {},
     },
     status: 'pinned',
-    createdAt: '2026-10-31T00:20:00.000Z',
+    createdAt: '2026-08-03T08:15:00.000Z',
     showLocation: true,
     ipCountryFlag: '🇨🇳',
     ipCountryName: '中国',
@@ -523,23 +511,8 @@ export function GuestbookBoard() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Gesture Detail View State
-  const [detailReplyMessage, setDetailReplyMessage] = useState('');
-  const [detailReplyImages, setDetailReplyImages] = useState<string[]>([]);
-  const [detailReplyUploading, setDetailReplyUploading] = useState(false);
-  const [detailReplyPreviewTab, setDetailReplyPreviewTab] = useState<'write' | 'preview'>('write');
-  const [detailReplyShowEmoji, setDetailReplyShowEmoji] = useState(false);
-  const [detailReplySubmitting, setDetailReplySubmitting] = useState(false);
-  const [replyTargetFloor, setReplyTargetFloor] = useState<{ id: string; author: string } | null>(null);
-
-  // Floor Timeline Scroller State (for detail view)
-  const [currentFloor, setCurrentFloor] = useState(1);
-  const [scrollPercent, setScrollPercent] = useState(0);
-
   const gestureTextareaRef = useRef<HTMLTextAreaElement>(null);
-  const detailReplyTextareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const detailFileInputRef = useRef<HTMLInputElement>(null);
 
   const showToast = (msg: string) => setToastMessage(msg);
 
@@ -573,8 +546,10 @@ export function GuestbookBoard() {
       try {
         setLoading(true);
         const res = await fetchComments('guestbook');
-        if (res.ok && res.comments) {
-          setDbComments(res.comments);
+        if (Array.isArray(res)) {
+          setDbComments(res);
+        } else if ((res as any)?.ok && Array.isArray((res as any).comments)) {
+          setDbComments((res as any).comments);
         }
       } catch (err) {
         console.error('Failed to load guestbook comments:', err);
@@ -586,12 +561,13 @@ export function GuestbookBoard() {
     loadData();
   }, []);
 
-  // Sync with URL hash for direct links (e.g., #gesture-<id>)
+  // Sync with URL hash for direct links (e.g., #gesture-<id> or #gesture-<id>-floor-<n>)
   useEffect(() => {
     const handleHashChange = () => {
       const hash = window.location.hash;
       if (hash.startsWith('#gesture-')) {
-        const targetId = hash.replace('#gesture-', '');
+        const raw = hash.replace('#gesture-', '');
+        const targetId = raw.replace(/-floor-\d+$/, '');
         setActiveGestureId(targetId);
         setActiveView('detail');
         markAsRead(targetId);
@@ -859,60 +835,6 @@ export function GuestbookBoard() {
     );
   }, [activeGestureId, repliesByParent]);
 
-  // Total floors for detail view: 1 (OP) + replies.length
-  const totalFloors = useMemo(() => {
-    return 1 + currentReplies.length;
-  }, [currentReplies]);
-
-  // Floor Timeline Scroll Tracker in Detail View
-  useEffect(() => {
-    if (activeView !== 'detail') return;
-
-    const handleScroll = () => {
-      const floors = document.querySelectorAll('.gb-floor-target');
-      if (!floors.length) return;
-
-      const viewportMiddle = window.innerHeight * 0.45;
-      let activeIdx = 0;
-
-      floors.forEach((floor, idx) => {
-        const rect = floor.getBoundingClientRect();
-        if (rect.top <= viewportMiddle) {
-          activeIdx = idx;
-        }
-      });
-
-      const floorNum = activeIdx + 1;
-      setCurrentFloor(floorNum);
-      const total = floors.length;
-      const pct = Math.min(100, Math.max(0, Math.round((floorNum / total) * 100)));
-      setScrollPercent(pct);
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    // Run once initially
-    setTimeout(handleScroll, 200);
-
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [activeView, activeGestureId, currentReplies]);
-
-  // Jump to floor
-  const jumpToFloor = (floorNumber: number) => {
-    const el = document.getElementById(`floor-${floorNumber}`);
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-  };
-
-  // Jump to reply composer
-  const jumpToComposer = () => {
-    const el = document.getElementById('detail-reply-composer');
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      detailReplyTextareaRef.current?.focus();
-    }
-  };
-
   // Enter Gesture Detail View
   const openGestureDetail = (item: BlogComment) => {
     setActiveGestureId(item.id);
@@ -962,11 +884,11 @@ export function GuestbookBoard() {
         }
 
         const res = await createComment({
-          postSlug: 'guestbook',
+          slug: 'guestbook',
           message: text,
           postType: 'boost',
           tag: composerDimension !== 'all' ? composerDimension : 'chat',
-          identity: identity || undefined,
+          author: identity || undefined,
         });
 
         if (res.ok && res.comment) {
@@ -1006,11 +928,11 @@ export function GuestbookBoard() {
         }
 
         const res = await createComment({
-          postSlug: 'guestbook',
+          slug: 'guestbook',
           message: finalMessage,
           postType: 'gesture',
           tag: composerDimension !== 'all' ? composerDimension : 'tech',
-          identity: identity || undefined,
+          author: identity || undefined,
         });
 
         if (res.ok && res.comment) {
@@ -1031,71 +953,6 @@ export function GuestbookBoard() {
       setComposerError(err.message || '网络连接异常');
     } finally {
       setComposerSubmitting(false);
-    }
-  };
-
-  // 3. Submit Reply in Detail View
-  const handleDetailReplySubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!currentGesture) return;
-
-    let body = detailReplyMessage.trim();
-    if (!body) {
-      showToast('⚠️ 请填写回复内容');
-      return;
-    }
-
-    if (replyTargetFloor) {
-      body = `> @${replyTargetFloor.author}\n\n${body}`;
-    }
-
-    if (detailReplyImages.length > 0) {
-      const imgMd = detailReplyImages.map((src) => `\n![image](${src})`).join('');
-      body += imgMd;
-    }
-
-    try {
-      setDetailReplySubmitting(true);
-      const res = await createComment({
-        postSlug: 'guestbook',
-        parentId: currentGesture.id,
-        message: body,
-        postType: 'gesture',
-        tag: currentGesture.tag,
-        identity: identity || undefined,
-      });
-
-      if (res.ok && res.comment) {
-        setDbComments((prev) => [...prev, res.comment!]);
-        setDetailReplyMessage('');
-        setDetailReplyImages([]);
-        setReplyTargetFloor(null);
-        showToast('💬 回复已发表到最新楼层！');
-        // Scroll to the new floor
-        setTimeout(() => {
-          jumpToFloor(totalFloors + 1);
-        }, 300);
-      } else {
-        showToast(res.error || '回复失败，请重试');
-      }
-    } catch (err: any) {
-      showToast(err.message || '网络连接异常');
-    } finally {
-      setDetailReplySubmitting(false);
-    }
-  };
-
-  // Reactions toggle
-  const handleReaction = async (commentId: string, emoji: string) => {
-    try {
-      const res = await likeComment(commentId, emoji);
-      if (res.ok && res.comment) {
-        setDbComments((prev) =>
-          prev.map((c) => (c.id === commentId ? { ...c, ...res.comment } : c))
-        );
-      }
-    } catch (err) {
-      console.error('Reaction toggle error:', err);
     }
   };
 
@@ -1187,12 +1044,10 @@ export function GuestbookBoard() {
       )}
 
       {/* ========================================================
-          1. 楼上：BOOST 实时观点流 (TOP BOOST STREAM)
-          - 3 排自适应观点流
-          - 速度与信息总量成正比
-          - 每个 Boost 仅在板上出现 1 次（不重复堆叠）
-          - 宽间距聚焦单句展台（同屏不超过 2 句）
+          1. 楼上：BOOST 实时观点流 & 横排分类导航 (仅在列表广场态渲染，详情沉浸态彻底移除)
           ======================================================== */}
+      {activeView === 'list' && (
+        <>
       <section className="gb-boost-wall-card" aria-label="Boost 实时观点流">
         {/* Boost Header */}
         <div className="gb-boost-wall-head">
@@ -1432,6 +1287,8 @@ export function GuestbookBoard() {
           </button>
         </div>
       )}
+        </>
+      )}
 
       {/* ========================================================
           3. 楼下：GESTURE 广场列表 / 详情双视图 (GESTURE STREAM)
@@ -1458,7 +1315,7 @@ export function GuestbookBoard() {
               <button
                 type="button"
                 className="gb-new-gesture-btn"
-                onClick={() => openFloatingComposer('gesture')}
+                onClick={openFloatingComposer}
               >
                 <Pencil className="w-4 h-4 mr-1.5" /> 发起第一条留言
               </button>
@@ -1471,7 +1328,7 @@ export function GuestbookBoard() {
                 const isRead = readPostIds.includes(item.id);
                 const replies = repliesByParent[item.id] || [];
                 const channel = CHANNELS.find((c) => c.id === item.tag) || CHANNELS[2];
-                const userLevel = computeUserLevel(item.authorId || item.authorName);
+                const userLevel = resolveAuthorBadges(item);
 
                 // Excerpt clean up
                 const cleanExcerpt = item.message
@@ -1531,7 +1388,7 @@ export function GuestbookBoard() {
                           {item.authorRole === 'admin' && (
                             <span className="gb-badge is-admin ml-1">👑 站长</span>
                           )}
-                          <span className="gb-level-badge ml-1">{userLevel.badge}</span>
+                          <span className="gb-level-badge ml-1">{userLevel.levelLabel}</span>
                         </span>
                         <span className="gb-dot-divider">•</span>
                         <time className="gb-gesture-row__time">{formatTime(item.createdAt)}</time>
@@ -1585,518 +1442,22 @@ export function GuestbookBoard() {
         </main>
       ) : (
         /* ========================================================
-           DETAIL VIEW (GESTURE 详情与楼层时间轴滑块)
+           DETAIL VIEW (GESTURE 详情与楼层时间轴滑块 - 独立沉浸架构)
            ======================================================== */
-        currentGesture && (
-          <div className="gb-gesture-detail-view">
-            {/* Detail Top Navigation */}
-            <div className="gb-detail-topbar">
-              <button
-                type="button"
-                className="gb-back-btn"
-                onClick={closeGestureDetail}
-              >
-                <ArrowLeft className="w-4 h-4 mr-1.5" />
-                <span>返回 Gesture 列表</span>
-              </button>
-
-              <div className="gb-detail-topbar__actions">
-                <button
-                  type="button"
-                  className={`gb-action-icon-btn ${bookmarkedPostIds.includes(currentGesture.id) ? 'is-active' : ''}`}
-                  onClick={(e) => toggleBookmark(currentGesture.id, e)}
-                  title="书签收藏"
-                >
-                  <Bookmark className="w-4 h-4" />
-                </button>
-
-                <button
-                  type="button"
-                  className="gb-action-icon-btn"
-                  onClick={() => {
-                    navigator.clipboard.writeText(window.location.href);
-                    showToast('🔗 贴文直达链接已复制到剪贴板！');
-                  }}
-                  title="复制直达链接"
-                >
-                  <Share2 className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-
-            {/* Layout Grid: Left Stream (Floors) + Right Timeline Scroller */}
-            <div className="gb-detail-layout">
-              {/* Left Column: Floor Stream */}
-              <div className="gb-detail-stream">
-                {/* 1 楼 (主楼 / OP Floor) */}
-                <article
-                  id="floor-1"
-                  className="gb-floor-item is-op-floor gb-floor-target"
-                >
-                  {/* Floor Header */}
-                  <div className="gb-floor-head">
-                    <div className="gb-floor-author-info">
-                      <div className="gb-floor-avatar">
-                        {currentGesture.authorAvatar ? (
-                          <img src={currentGesture.authorAvatar} alt={currentGesture.authorName} />
-                        ) : (
-                          <span>{getCommentInitials(currentGesture.authorName)}</span>
-                        )}
-                      </div>
-                      <div className="gb-floor-meta">
-                        <div className="gb-floor-name-row">
-                          <span className="gb-floor-name">{currentGesture.authorName || '访客'}</span>
-                          {currentGesture.authorRole === 'admin' && (
-                            <span className="gb-badge is-admin">👑 站长</span>
-                          )}
-                          <span className="gb-level-badge">
-                            {computeUserLevel(currentGesture.authorId || currentGesture.authorName).badge}
-                          </span>
-                          {currentGesture.status === 'pinned' && (
-                            <span className="gb-badge is-pinned">📌 置顶</span>
-                          )}
-                        </div>
-                        <div className="gb-floor-sub-row">
-                          <time>{formatTime(currentGesture.createdAt)}</time>
-                          {currentGesture.ipLocation && (
-                            <>
-                              <span className="gb-dot-divider">•</span>
-                              <span>
-                                {currentGesture.ipCountryFlag} {currentGesture.ipLocation}
-                              </span>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="gb-floor-number">#1 楼主</div>
-                  </div>
-
-                  {/* Floor Body (Markdown) */}
-                  <div className="gb-floor-body">
-                    <div
-                      className="gb-markdown-body"
-                      dangerouslySetInnerHTML={{
-                        __html: renderCommentMarkdown(currentGesture.message),
-                      }}
-                    />
-                  </div>
-
-                  {/* Floor Footer & Reactions */}
-                  <div className="gb-floor-foot">
-                    <div className="gb-reactions-bar">
-                      {['👍', '❤️', '🚀', '🎉', '💡', '🔥'].map((emoji) => {
-                        const count = currentGesture.reactions?.summary?.[emoji] || 0;
-                        return (
-                          <button
-                            key={emoji}
-                            type="button"
-                            className={`gb-reaction-btn ${count > 0 ? 'has-reactions' : ''}`}
-                            onClick={() => handleReaction(currentGesture.id, emoji)}
-                          >
-                            <span>{emoji}</span>
-                            {count > 0 && <span className="gb-reaction-num">{count}</span>}
-                          </button>
-                        );
-                      })}
-                    </div>
-
-                    <div className="gb-floor-actions">
-                      <button
-                        type="button"
-                        className="gb-floor-action-btn"
-                        onClick={() => {
-                          setReplyTargetFloor({ id: currentGesture.id, author: currentGesture.authorName });
-                          jumpToComposer();
-                        }}
-                      >
-                        <CornerDownRight className="w-3.5 h-3.5 mr-1" /> 回复楼主
-                      </button>
-                    </div>
-                  </div>
-                </article>
-
-                {/* 后续楼层 (Replies / 2楼、3楼...) */}
-                {currentReplies.map((reply, index) => {
-                  const floorNum = index + 2;
-                  const userLevel = computeUserLevel(reply.authorId || reply.authorName);
-
-                  return (
-                    <article
-                      key={reply.id}
-                      id={`floor-${floorNum}`}
-                      className="gb-floor-item gb-floor-target"
-                    >
-                      <div className="gb-floor-head">
-                        <div className="gb-floor-author-info">
-                          <div className="gb-floor-avatar">
-                            {reply.authorAvatar ? (
-                              <img src={reply.authorAvatar} alt={reply.authorName} />
-                            ) : (
-                              <span>{getCommentInitials(reply.authorName)}</span>
-                            )}
-                          </div>
-                          <div className="gb-floor-meta">
-                            <div className="gb-floor-name-row">
-                              <span className="gb-floor-name">{reply.authorName || '访客'}</span>
-                              {reply.authorRole === 'admin' && (
-                                <span className="gb-badge is-admin">👑 站长</span>
-                              )}
-                              <span className="gb-level-badge">{userLevel.badge}</span>
-                            </div>
-                            <div className="gb-floor-sub-row">
-                              <time>{formatTime(reply.createdAt)}</time>
-                              {reply.ipLocation && (
-                                <>
-                                  <span className="gb-dot-divider">•</span>
-                                  <span>
-                                    {reply.ipCountryFlag} {reply.ipLocation}
-                                  </span>
-                                </>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="gb-floor-number">#{floorNum} 楼</div>
-                      </div>
-
-                      <div className="gb-floor-body">
-                        <div
-                          className="gb-markdown-body"
-                          dangerouslySetInnerHTML={{
-                            __html: renderCommentMarkdown(reply.message),
-                          }}
-                        />
-                      </div>
-
-                      <div className="gb-floor-foot">
-                        <div className="gb-reactions-bar">
-                          {['👍', '❤️', '🚀', '🎉', '💡', '🔥'].map((emoji) => {
-                            const count = reply.reactions?.summary?.[emoji] || 0;
-                            return (
-                              <button
-                                key={emoji}
-                                type="button"
-                                className={`gb-reaction-btn ${count > 0 ? 'has-reactions' : ''}`}
-                                onClick={() => handleReaction(reply.id, emoji)}
-                              >
-                                <span>{emoji}</span>
-                                {count > 0 && <span className="gb-reaction-num">{count}</span>}
-                              </button>
-                            );
-                          })}
-                        </div>
-
-                        <div className="gb-floor-actions">
-                          <button
-                            type="button"
-                            className="gb-floor-action-btn"
-                            onClick={() => {
-                              setReplyTargetFloor({ id: reply.id, author: reply.authorName });
-                              jumpToComposer();
-                            }}
-                          >
-                            <CornerDownRight className="w-3.5 h-3.5 mr-1" /> 回复 #{floorNum}
-                          </button>
-                        </div>
-                      </div>
-                    </article>
-                  );
-                })}
-
-                {/* 底部楼层跟帖工坊 (Detail Reply Composer) */}
-                <section
-                  id="detail-reply-composer"
-                  className="gb-detail-reply-box"
-                >
-                  <div className="gb-detail-reply-head">
-                    <span className="gb-detail-reply-title">
-                      <MessageSquare className="w-4 h-4 mr-1.5 text-indigo-500" />
-                      跟帖回复讨论
-                    </span>
-                    {replyTargetFloor && (
-                      <span className="gb-reply-quote-target">
-                        正在引用 @{replyTargetFloor.author}
-                        <button
-                          type="button"
-                          className="gb-quote-clear"
-                          onClick={() => setReplyTargetFloor(null)}
-                        >
-                          <X className="w-3 h-3 ml-1 inline" />
-                        </button>
-                      </span>
-                    )}
-                  </div>
-
-                  <form onSubmit={handleDetailReplySubmit}>
-                    {/* Toolbar */}
-                    <div className="gb-md-toolbar">
-                      <button
-                        type="button"
-                        title="粗体"
-                        onClick={() =>
-                          insertMarkdownHelper(detailReplyTextareaRef, setDetailReplyMessage, '**', '**')
-                        }
-                      >
-                        <Bold className="w-4 h-4" />
-                      </button>
-                      <button
-                        type="button"
-                        title="斜体"
-                        onClick={() =>
-                          insertMarkdownHelper(detailReplyTextareaRef, setDetailReplyMessage, '*', '*')
-                        }
-                      >
-                        <Italic className="w-4 h-4" />
-                      </button>
-                      <button
-                        type="button"
-                        title="代码块"
-                        onClick={() =>
-                          insertMarkdownHelper(
-                            detailReplyTextareaRef,
-                            setDetailReplyMessage,
-                            '\n```\n',
-                            '\n```\n'
-                          )
-                        }
-                      >
-                        <Code className="w-4 h-4" />
-                      </button>
-                      <button
-                        type="button"
-                        title="引用"
-                        onClick={() =>
-                          insertMarkdownHelper(detailReplyTextareaRef, setDetailReplyMessage, '\n> ', '\n')
-                        }
-                      >
-                        <Quote className="w-4 h-4" />
-                      </button>
-                      <button
-                        type="button"
-                        title="列表"
-                        onClick={() =>
-                          insertMarkdownHelper(detailReplyTextareaRef, setDetailReplyMessage, '\n- ', '\n')
-                        }
-                      >
-                        <List className="w-4 h-4" />
-                      </button>
-                      <button
-                        type="button"
-                        title="超链接"
-                        onClick={() =>
-                          insertMarkdownHelper(
-                            detailReplyTextareaRef,
-                            setDetailReplyMessage,
-                            '[说明](',
-                            ')'
-                          )
-                        }
-                      >
-                        <LinkIcon className="w-4 h-4" />
-                      </button>
-
-                      <div className="gb-toolbar-divider"></div>
-
-                      <button
-                        type="button"
-                        title="插入表情"
-                        onClick={() => setDetailReplyShowEmoji((prev) => !prev)}
-                      >
-                        <Smile className="w-4 h-4" />
-                      </button>
-
-                      <button
-                        type="button"
-                        title="上传图片"
-                        onClick={() => detailFileInputRef.current?.click()}
-                      >
-                        <ImageIcon className="w-4 h-4" />
-                      </button>
-
-                      <input
-                        ref={detailFileInputRef}
-                        type="file"
-                        accept="image/*"
-                        style={{ display: 'none' }}
-                        onChange={(e) =>
-                          handleImageFileChange(e, setDetailReplyUploading, setDetailReplyImages)
-                        }
-                      />
-
-                      <div className="gb-tab-switch ml-auto">
-                        <button
-                          type="button"
-                          className={`gb-tab-btn ${detailReplyPreviewTab === 'write' ? 'is-active' : ''}`}
-                          onClick={() => setDetailReplyPreviewTab('write')}
-                        >
-                          编辑
-                        </button>
-                        <button
-                          type="button"
-                          className={`gb-tab-btn ${detailReplyPreviewTab === 'preview' ? 'is-active' : ''}`}
-                          onClick={() => setDetailReplyPreviewTab('preview')}
-                        >
-                          预览
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Emoji Palette */}
-                    {detailReplyShowEmoji && (
-                      <div className="gb-emoji-popover">
-                        {EMOJI_GROUPS.map((group, idx) => (
-                          <div key={idx} className="gb-emoji-group">
-                            <span className="gb-emoji-group__title">{group.name}</span>
-                            <div className="gb-emoji-grid">
-                              {group.emojis.map((em) => (
-                                <button
-                                  key={em}
-                                  type="button"
-                                  className="gb-emoji-btn"
-                                  onClick={() => {
-                                    insertMarkdownHelper(detailReplyTextareaRef, setDetailReplyMessage, em);
-                                    setDetailReplyShowEmoji(false);
-                                  }}
-                                >
-                                  {em}
-                                </button>
-                              ))}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-
-                    {/* Textarea or Preview */}
-                    {detailReplyPreviewTab === 'write' ? (
-                      <textarea
-                        ref={detailReplyTextareaRef}
-                        rows={3}
-                        value={detailReplyMessage}
-                        onChange={(e) => setDetailReplyMessage(e.target.value)}
-                        placeholder="写下回复..."
-                        className="gb-textarea is-reply-box"
-                      />
-                    ) : (
-                      <div className="gb-preview-box">
-                        {detailReplyMessage.trim() ? (
-                          <div
-                            className="gb-markdown-body"
-                            dangerouslySetInnerHTML={{
-                              __html: renderCommentMarkdown(detailReplyMessage),
-                            }}
-                          />
-                        ) : (
-                          <span className="text-slate-400 text-xs">暂无预览内容</span>
-                        )}
-                      </div>
-                    )}
-
-                    {/* Attached Images */}
-                    {detailReplyImages.length > 0 && (
-                      <div className="gb-attached-images">
-                        {detailReplyImages.map((src, idx) => (
-                          <div key={idx} className="gb-thumb-wrap">
-                            <img src={src} alt="Attached" className="gb-thumb" />
-                            <button
-                              type="button"
-                              className="gb-thumb-del"
-                              onClick={() =>
-                                setDetailReplyImages((prev) => prev.filter((_, i) => i !== idx))
-                              }
-                            >
-                              <X className="w-3 h-3" />
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-
-                    {/* Submit Bar */}
-                    <div className="gb-detail-reply-footer">
-                      <span className="gb-word-count">字数: {detailReplyMessage.length}</span>
-                      <button
-                        type="submit"
-                        disabled={detailReplySubmitting || !detailReplyMessage.trim()}
-                        className="gb-submit-btn"
-                      >
-                        <Send className="w-3.5 h-3.5 mr-1" />
-                        <span>{detailReplySubmitting ? '发表中...' : '提交回复'}</span>
-                      </button>
-                    </div>
-                  </form>
-                </section>
-              </div>
-
-              {/* ========================================================
-                  右侧侧边栏：长条百分比滑动当前楼层进度条 (TIMELINE SCROLLER)
-                  ======================================================== */}
-              <aside className="gb-floor-scroller-aside">
-                <div className="gb-floor-scroller-card">
-                  {/* Scroller Header: Percentage & Current Floor */}
-                  <div className="gb-scroller-header">
-                    <span className="gb-scroller-floor-label">
-                      {currentFloor} / {totalFloors} 楼
-                    </span>
-                  </div>
-
-                  {/* Jump to Top Button */}
-                  <button
-                    type="button"
-                    className="gb-scroller-jump-btn"
-                    title="跳转至 1 楼 (顶部)"
-                    onClick={() => jumpToFloor(1)}
-                  >
-                    <ChevronsUp className="w-4 h-4" />
-                  </button>
-
-                  {/* Vertical Progress Rail & Interactive Floor Notches */}
-                  <div className="gb-scroller-rail-wrap">
-                    <div className="gb-scroller-rail">
-                      {/* Active Progress Fill */}
-                      <div
-                        className="gb-scroller-fill"
-                        style={{ height: `${scrollPercent}%` }}
-                      ></div>
-
-                      {/* Notches for each floor */}
-                      {Array.from({ length: totalFloors }).map((_, idx) => {
-                        const floorNum = idx + 1;
-                        const notchPercent = (floorNum / totalFloors) * 100;
-                        const isReached = currentFloor >= floorNum;
-
-                        return (
-                          <button
-                            key={floorNum}
-                            type="button"
-                            className={`gb-scroller-notch ${isReached ? 'is-reached' : ''} ${currentFloor === floorNum ? 'is-current' : ''}`}
-                            style={{ top: `${notchPercent}%` }}
-                            onClick={() => jumpToFloor(floorNum)}
-                            title={`跳转至 #${floorNum} 楼`}
-                          >
-                            <span className="gb-notch-tooltip">#{floorNum} 楼</span>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  {/* Jump to Bottom / Reply Button */}
-                  <button
-                    type="button"
-                    className="gb-scroller-jump-btn"
-                    title="跳转至底部回复"
-                    onClick={jumpToComposer}
-                  >
-                    <ChevronsDown className="w-4 h-4" />
-                  </button>
-                </div>
-              </aside>
-            </div>
-          </div>
+        activeGestureId && (
+          <GestureDetailPage
+            gestureId={activeGestureId}
+            fallbackGesture={currentGesture}
+            fallbackReplies={currentReplies}
+            channels={CHANNELS}
+            identity={identity}
+            bookmarkedPostIds={bookmarkedPostIds}
+            onToggleBookmark={toggleBookmark}
+            onBackToList={closeGestureDetail}
+            onToast={showToast}
+            onZoomImage={(src) => setZoomedImage(src)}
+            onSyncNewComment={(comment) => setDbComments((prev) => [...prev, comment])}
+          />
         )
       )}
 
