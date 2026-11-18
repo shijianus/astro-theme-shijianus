@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Send, Zap } from 'lucide-react';
 import type { GestureBoost } from '../../../lib/gesture-client';
-import { GestureAvatar } from './GestureAvatar';
 
 interface GestureBoostSectionProps {
   gestureId: string;
@@ -12,16 +11,17 @@ interface GestureBoostSectionProps {
   onAddBoost: (gestureId: string, content: string) => Promise<boolean>;
 }
 
-const MAX_BOOST_CHARS = 60;
+export const MAX_BOOST_CHARS = 16;
 
 /**
- * Scoped Boost List (rendered below ZONE 4 action bar).
- * - No redundant outer border/wrapper or "Boost (N)" explanation header.
- * - Each Boost renders as an individual .gd-boost-op-pill stacked in its own vertical column.
- * - Triggered via [⚡] icon in the action bar; inline input auto-collapses on blur when empty.
+ * Scoped Boost Flow (rendered below ZONE 4 action bar, aligned on 56px content axis).
+ * - Hard 16-char cap (`maxLength={16}`).
+ * - Horizontal wrapping borderless micro-pills (`gap: 6px`).
+ * - OP includes trailing `[⚡ + Boost]` trigger button; SubGesture has zero footprint when empty.
  */
 export function GestureBoostSection({
   gestureId,
+  isOp,
   boosts,
   composerOpen,
   onComposerOpenChange,
@@ -50,40 +50,50 @@ export function GestureBoostSection({
     }
   };
 
-  if (boosts.length === 0 && !composerOpen) {
+  if (!isOp && boosts.length === 0 && !composerOpen) {
     return null;
   }
 
   return (
     <div className="gd-zone3-boost" aria-label="Boost 短评列表">
-      {boosts.length > 0 && (
-        <div className="gd-boost-op-pills">
-          {boosts.map((b) => (
-            <div key={b.id} className="gd-boost-op-pill">
-              <GestureAvatar name={b.authorName} avatar={b.authorAvatar} size={20} />
-              <span className="gd-boost-op-pill-author">{b.authorName}:</span>
-              <span className="gd-boost-op-pill-content">{b.content}</span>
-            </div>
-          ))}
-        </div>
-      )}
+      <div className="gd-boost-op-pills">
+        {boosts.map((b) => (
+          <span key={b.id} className="gd-boost-op-pill">
+            <span className="gd-boost-op-pill-author">{b.authorName}</span>
+            <span className="gd-boost-op-pill-sep">·</span>
+            <span className="gd-boost-op-pill-content">{b.content}</span>
+          </span>
+        ))}
+
+        {isOp && !composerOpen && (
+          <button
+            type="button"
+            className="gd-boost-add-trigger"
+            onClick={() => onComposerOpenChange(true)}
+            title="添加短评 Boost（16字以内）"
+          >
+            <Zap className="w-3 h-3" />
+            <span>+ Boost</span>
+          </button>
+        )}
+      </div>
 
       {composerOpen && (
         <form className="gd-boost-inline-form is-slide-in" onSubmit={handleSubmit}>
-          <Zap className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />
+          <Zap className="w-3.5 h-3.5 text-amber-400/80 flex-shrink-0" />
           <input
             ref={inputRef}
             autoFocus
             type="text"
             maxLength={MAX_BOOST_CHARS}
             value={draft}
-            onChange={(e) => setDraft(e.target.value)}
+            onChange={(e) => setDraft(e.target.value.slice(0, MAX_BOOST_CHARS))}
             onBlur={() => {
               if (!draft.trim()) {
                 onComposerOpenChange(false);
               }
             }}
-            placeholder="发送一条短评 Boost（60字以内）..."
+            placeholder={`短评 Boost（${MAX_BOOST_CHARS}字以内）...`}
             className="gd-boost-inline-input"
           />
           <span className="gd-boost-char-hint">{draft.trim().length}/{MAX_BOOST_CHARS}</span>
@@ -94,7 +104,7 @@ export function GestureBoostSection({
             className="gd-boost-inline-submit"
             title="发送 Boost"
           >
-            <Send className="w-3.5 h-3.5" />
+            <Send className="w-3 h-3" />
           </button>
         </form>
       )}

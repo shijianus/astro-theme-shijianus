@@ -14,6 +14,7 @@ interface GestureTimelineScrollerProps {
   latestDate?: string;
   scrollPercent: number;
   jumpOrigin: JumpOriginAnchor | null;
+  jumpOriginFading?: boolean;
   hotFilterActive: boolean;
   subscribed: boolean;
   onJumpToFloor: (floorIndex: number) => void;
@@ -24,9 +25,10 @@ interface GestureTimelineScrollerProps {
 }
 
 /**
- * Right-side Sticky Proportional Timeline Scroller & Cross-Floor Jump Origin Anchor (├─ [ 返回 ]).
- * Desktop: sticky right rail aligned beside monolithic glass discussion container.
- * Mobile (<= 1024px): compact bottom-right pill avoiding bottom-left MusicPocket.
+ * Right-side Sticky Borderless Timeline Scroller & Cross-Floor Jump Origin Anchor (├─ [ 返回 ]).
+ * - Zero card frame / background / border.
+ * - Strictly NO floor dots/notches on the 1px vertical rail regardless of floor count.
+ * - Only a 1px vertical line + single 3px bright cyan-blue active thumb bar.
  */
 export function GestureTimelineScroller({
   totalFloors,
@@ -36,6 +38,7 @@ export function GestureTimelineScroller({
   latestDate,
   scrollPercent,
   jumpOrigin,
+  jumpOriginFading = false,
   hotFilterActive,
   subscribed,
   onJumpToFloor,
@@ -104,7 +107,7 @@ export function GestureTimelineScroller({
   return (
     <aside className="gd-timeline-aside" aria-label="贴文楼层时间轴滑块">
       <div className={`gd-timeline-card gb-floor-scroller-card ${isDragging ? 'is-dragging' : ''}`}>
-        {/* 1. Top [📖] Quick Jump Popover Toggle */}
+        {/* 1. Top Minimal [📖] Quick Jump Popover Toggle */}
         <div className="gd-tl-top-wrap">
           <button
             type="button"
@@ -113,7 +116,7 @@ export function GestureTimelineScroller({
             title="阅读总览 / 快捷楼层跳转"
             aria-expanded={quickJumpOpen}
           >
-            <BookOpen className="w-4 h-4" />
+            <BookOpen className="w-3.5 h-3.5" />
           </button>
 
           {quickJumpOpen && (
@@ -126,7 +129,7 @@ export function GestureTimelineScroller({
                   max={safeTotal}
                   value={jumpInput}
                   onChange={(e) => setJumpInput(e.target.value)}
-                  placeholder={`输入 1-${safeTotal}`}
+                  placeholder={`1-${safeTotal}`}
                   className="gd-tl-quick-input"
                 />
                 <button type="submit" className="gd-tl-quick-go">
@@ -141,7 +144,7 @@ export function GestureTimelineScroller({
                     setQuickJumpOpen(false);
                   }}
                 >
-                  回到 1 楼
+                  1 楼
                 </button>
                 <button
                   type="button"
@@ -150,14 +153,14 @@ export function GestureTimelineScroller({
                     setQuickJumpOpen(false);
                   }}
                 >
-                  跳至最新 ({safeTotal})
+                  最新 ({safeTotal})
                 </button>
               </div>
             </div>
           )}
         </div>
 
-        {/* 2. Start Date Capsule */}
+        {/* 2. Start Date (Borderless plain label) */}
         <button
           type="button"
           className="gd-tl-date-capsule"
@@ -167,7 +170,7 @@ export function GestureTimelineScroller({
           {formatMonthDay(startDate)}
         </button>
 
-        {/* 4. Proportional Timeline Rail (100% maps 1 ~ N) */}
+        {/* 3. Pure 1px Vertical Line + Single 3px Bright Cyan-Blue Thumb */}
         <div className="gd-tl-rail-section">
           <div
             ref={railRef}
@@ -179,27 +182,6 @@ export function GestureTimelineScroller({
             aria-valuenow={displayFloor}
             aria-label="楼层阅读进度滑块"
           >
-            {/* Floor Notches along rail */}
-            {Array.from({ length: safeTotal }).map((_, idx) => {
-              const floorNum = idx + 1;
-              const pct = safeTotal <= 1 ? 0 : (idx / (safeTotal - 1)) * 100;
-              return (
-                <button
-                  key={floorNum}
-                  type="button"
-                  className={`gb-scroller-notch gd-tl-notch ${currentFloor >= floorNum ? 'is-reached' : ''} ${currentFloor === floorNum ? 'is-current' : ''}`}
-                  style={{ top: `${pct}%` }}
-                  onPointerDown={(e) => e.stopPropagation()}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onJumpToFloor(floorNum);
-                  }}
-                  title={`跳至第 ${floorNum} 楼`}
-                />
-              );
-            })}
-
-            {/* 3. Cyan-Blue Highlighted Active Thumb + Floor/Date Indicator */}
             <div
               className="gd-tl-active-thumb"
               style={{ top: `${thumbPercent}%` }}
@@ -213,10 +195,10 @@ export function GestureTimelineScroller({
               </div>
             </div>
 
-            {/* 5. Cross-Floor Jump Origin Anchor: ├─ [ 返回 ] */}
+            {/* Cross-Floor Jump Origin Anchor: ├─ [ 返回 ] */}
             {jumpOrigin && (
               <div
-                className="gd-tl-return-anchor"
+                className={`gd-tl-return-anchor ${jumpOriginFading ? 'is-fading' : ''}`}
                 style={{ top: `${Math.min(96, Math.max(4, jumpOrigin.percent))}%` }}
                 onPointerDown={(e) => e.stopPropagation()}
               >
@@ -238,7 +220,7 @@ export function GestureTimelineScroller({
           </div>
         </div>
 
-        {/* 6. Latest Active Relative Time */}
+        {/* 4. Latest Active Relative Time */}
         <button
           type="button"
           className="gd-tl-latest-time"
@@ -248,17 +230,17 @@ export function GestureTimelineScroller({
           {formatCompactRelative(latestDate)}
         </button>
 
-        {/* 7. Bottom Control Dock: [📚 熱門回覆] [↩] [🔔] */}
+        {/* 5. Minimal Borderless Action Icons: [📚] [↩] [🔔] */}
         <div className="gd-tl-bottom-dock">
           <button
             type="button"
             className={`gd-tl-dock-btn is-hot-filter ${hotFilterActive ? 'is-active' : ''}`}
             onClick={onToggleHotFilter}
             title={hotFilterActive ? '退出热门筛选' : '只看热门回复'}
+            aria-label={hotFilterActive ? '退出热门筛选' : '只看热门回复'}
             aria-pressed={hotFilterActive}
           >
             <BookOpen className="w-3.5 h-3.5" />
-            <span>熱門回覆</span>
           </button>
 
           <button
@@ -287,7 +269,7 @@ export function GestureTimelineScroller({
         {jumpOrigin && (
           <button
             type="button"
-            className="gd-mobile-return-pill"
+            className={`gd-mobile-return-pill ${jumpOriginFading ? 'is-fading' : ''}`}
             onClick={onReturnToOrigin}
           >
             <CornerUpLeft className="w-3.5 h-3.5" />
@@ -296,7 +278,6 @@ export function GestureTimelineScroller({
         )}
       </div>
 
-      {/* Screen-reader / debug percentage indicator */}
       <span className="sr-only">{scrollPercent}%</span>
     </aside>
   );

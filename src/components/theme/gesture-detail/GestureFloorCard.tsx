@@ -168,13 +168,13 @@ export function GestureFloorCard({
     >
       {/* ZONE 2: Two-column Sticky Avatar + Content Body (Ends strictly BEFORE Boost & Action Bar) */}
       <div className="gd-floor-split">
-        {/* Left Fixed Rail (~52px): Transparent background, NO vertical line in normal state */}
+        {/* Left Fixed Rail (42px): Transparent background, NO vertical line in normal state */}
         <div className="gd-avatar-rail">
           <div className="gd-sticky-avatar-wrap">
             <GestureAvatar
               name={node.authorName}
               avatar={node.authorAvatar}
-              size={isOp ? 40 : 36}
+              size={isOp ? 42 : 36}
               isOwner={badges.isOwner}
             />
           </div>

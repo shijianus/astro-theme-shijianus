@@ -79,176 +79,298 @@ async function run() {
       waitUntil: 'domcontentloaded',
     });
 
-    await page.waitForSelector('.gd-monolithic-shell', { timeout: 15000 });
+    await page.waitForSelector('.gd-monolithic-shell[data-detail-loaded="true"]', { timeout: 15000 });
     await page.waitForSelector('#floor-1 .gd-edit-count-badge', { timeout: 15000 });
     await page.waitForSelector('#floor-5 .gd-reply-target-pill', { timeout: 15000 });
+    await page.waitForSelector('.gd-zone5-links', { timeout: 15000 });
     await page.waitForTimeout(300);
 
-    // 1. Detail isolation: home boost wall & filter nav bar MUST be completely removed
+    // 1. Detail isolation & centered 960px layout
     const boostWallCount = await page.locator('.gb-boost-wall-card').count();
     const navBarCount = await page.locator('.gb-nav-bar').count();
     assert(boostWallCount === 0, `Home boost wall must be removed in detail view, got ${boostWallCount}`);
     assert(navBarCount === 0, `Home filter/search nav bar must be removed in detail view, got ${navBarCount}`);
-    console.log('[Verify] ✓ Detail immersive isolation verified (home boost wall & nav removed)');
 
-    // 2. Monolithic dark frosted glass & no #1 楼主 badge
-    const shellStyle = await page.$eval('.gd-monolithic-shell', (el) => {
+    const gridLayout = await page.$eval('.gd-detail-grid', (el) => {
       const cs = window.getComputedStyle(el);
+      const shell = el.querySelector('.gd-monolithic-shell');
+      const topbarInShell = Boolean(shell && shell.querySelector('.gd-topbar'));
       return {
-        bg: cs.backgroundColor,
-        backdrop: cs.backdropFilter || cs.webkitBackdropFilter,
-        overflow: cs.overflow,
+        maxWidth: cs.maxWidth,
+        display: cs.display,
+        gap: cs.gap,
+        topbarInShell,
       };
     });
-    console.log('[Verify] Monolithic shell style:', shellStyle);
-    assert(shellStyle.overflow !== 'hidden', `Monolithic shell overflow must not be hidden (got ${shellStyle.overflow})`);
-    assert(shellStyle.backdrop.includes('blur'), `Expected backdrop-filter blur, got ${shellStyle.backdrop}`);
+    assert(gridLayout.maxWidth === '960px', `Detail grid maxWidth must be 960px, got ${gridLayout.maxWidth}`);
+    assert(gridLayout.display === 'flex', `Detail grid display must be flex, got ${gridLayout.display}`);
+    assert(gridLayout.gap === '36px', `Detail grid gap must be 36px, got ${gridLayout.gap}`);
+    assert(gridLayout.topbarInShell, 'Topbar must be built inside .gd-monolithic-shell');
+    console.log('[Verify] ✓ Centered 960px flex layout & built-in borderless topbar verified');
 
-    const floorNumTextCount = await page.locator('.gb-floor-number').count();
-    assert(floorNumTextCount === 0, 'Must NOT render explicit #1 楼主 label');
-    console.log('[Verify] ✓ Monolithic dark frosted glass & implicit floor_index verified');
+    // 2. Matte high-opacity dark glass shell & zero redundant borders
+    const matteChecks = await page.evaluate(() => {
+      const shell = document.querySelector('.gd-monolithic-shell');
+      const shellCs = shell ? window.getComputedStyle(shell) : null;
+      const backBtn = document.querySelector('.gd-back-btn');
+      const backCs = backBtn ? window.getComputedStyle(backBtn) : null;
+      const roleBadge = document.querySelector('.gd-role-badge');
+      const roleCs = roleBadge ? window.getComputedStyle(roleBadge) : null;
+      const levelBadge = document.querySelector('.gd-level-badge');
+      const levelCs = levelBadge ? window.getComputedStyle(levelBadge) : null;
+      const staticBadge = document.querySelector('.gd-static-badge');
+      const staticCs = staticBadge ? window.getComputedStyle(staticBadge) : null;
+      const linksSec = document.querySelector('.gd-zone5-links');
+      const linksCs = linksSec ? window.getComputedStyle(linksSec) : null;
+      const tlAside = document.querySelector('.gd-timeline-aside');
+      const tlAsideCs = tlAside ? window.getComputedStyle(tlAside) : null;
+      const tlCard = document.querySelector('.gd-timeline-card');
+      const tlCardCs = tlCard ? window.getComputedStyle(tlCard) : null;
 
-    // 3. ZONE 1: Title & static read-only tags
-    const titleInfo = await page.$eval('.gd-zone1-title', (el) => ({
-      text: el.textContent?.trim(),
-      fontSize: parseFloat(window.getComputedStyle(el).fontSize),
-    }));
-    assert(titleInfo.text?.includes('欢迎来到读者留言与交流广场'), `Unexpected title: ${titleInfo.text}`);
-    assert(titleInfo.fontSize >= 22, `Title font size should be >= 22px, got ${titleInfo.fontSize}`);
-    const staticTagsCount = await page.locator('.gd-zone1-tags .gd-static-badge').count();
-    assert(staticTagsCount >= 2, `Expected at least 2 static badges, got ${staticTagsCount}`);
-    console.log(`[Verify] ✓ ZONE 1 title (${titleInfo.fontSize}px) & ${staticTagsCount} static read-only tags verified`);
-
-    // 4. ZONE 2: Sticky avatar, NO vertical line on normal rail, NO IP location, edit_count + createdAt
-    const opRailCheck = await page.$eval('#floor-1 .gd-avatar-rail', (el) => {
-      const cs = window.getComputedStyle(el);
-      const stickyEl = el.querySelector('.gd-sticky-avatar-wrap');
-      const stickyCs = stickyEl ? window.getComputedStyle(stickyEl) : null;
       return {
-        borderLeftWidth: cs.borderLeftWidth,
-        bg: cs.backgroundColor,
-        stickyPos: stickyCs?.position,
-        stickyTop: stickyCs?.top,
+        shellBg: shellCs?.backgroundColor,
+        shellBackdrop: shellCs?.backdropFilter || shellCs?.webkitBackdropFilter,
+        shellBorderRadius: shellCs?.borderRadius,
+        shellOverflow: shellCs?.overflow,
+        backBorder: backCs?.borderTopWidth,
+        backBg: backCs?.backgroundColor,
+        roleBorder: roleCs?.borderTopWidth,
+        roleBg: roleCs?.backgroundColor,
+        roleColor: roleCs?.color,
+        levelBorder: levelCs?.borderTopWidth,
+        levelBg: levelCs?.backgroundColor,
+        levelColor: levelCs?.color,
+        staticBorder: staticCs?.borderTopWidth,
+        linksBorder: linksCs?.borderTopWidth,
+        linksBg: linksCs?.backgroundColor,
+        tlAsideWidth: tlAsideCs?.width,
+        tlCardBg: tlCardCs?.backgroundColor,
+        tlCardBorder: tlCardCs?.borderTopWidth,
       };
     });
-    assert(opRailCheck.stickyPos === 'sticky', `OP avatar must be sticky, got ${opRailCheck.stickyPos}`);
-    assert(opRailCheck.borderLeftWidth === '0px', `Normal avatar rail must have no line, got ${opRailCheck.borderLeftWidth}`);
+    console.log('[Verify] Matte & borderless styles:', matteChecks);
+    assert(matteChecks.shellOverflow !== 'hidden', `Shell overflow must not be hidden, got ${matteChecks.shellOverflow}`);
+    assert(matteChecks.shellBackdrop?.includes('blur(20px)'), `Expected blur(20px), got ${matteChecks.shellBackdrop}`);
+    assert(matteChecks.shellBg === 'rgba(13, 17, 26, 0.88)', `Expected matte bg rgba(13, 17, 26, 0.88), got ${matteChecks.shellBg}`);
+    assert(matteChecks.backBorder === '0px' && matteChecks.backBg === 'rgba(0, 0, 0, 0)', 'Topbar back button must be borderless & transparent');
+    assert(matteChecks.roleBorder === '0px' && matteChecks.roleBg === 'rgba(0, 0, 0, 0)', 'Role badge must be borderless text');
+    assert(matteChecks.levelBorder === '0px' && matteChecks.levelBg === 'rgba(0, 0, 0, 0)', 'Level badge must be borderless text');
+    assert(matteChecks.roleColor === 'rgb(100, 116, 139)' && matteChecks.levelColor === 'rgb(100, 116, 139)', 'Role/level must be muted #64748B');
+    assert(matteChecks.staticBorder === '0px', 'Category static tags must have 0px border');
+    assert(matteChecks.linksBorder === '0px' && matteChecks.linksBg === 'rgba(0, 0, 0, 0)', 'Related links block must be borderless & transparent');
+    assert(matteChecks.tlAsideWidth === '96px', `Timeline aside width must be 96px, got ${matteChecks.tlAsideWidth}`);
+    assert(matteChecks.tlCardBorder === '0px' && matteChecks.tlCardBg === 'rgba(0, 0, 0, 0)', 'Timeline card must have no background or border');
+    console.log('[Verify] ✓ High-opacity matte glass & global borderless verification passed');
 
-    const opAuthorMeta = await page.locator('#floor-1 .gd-author-meta-right').textContent();
-    assert(opAuthorMeta?.includes('2') && opAuthorMeta?.includes('8月 3日'), `Expected edit_count + first date, got "${opAuthorMeta}"`);
-    assert(!opAuthorMeta?.includes('杭州') && !opAuthorMeta?.includes('中国'), `Must NOT show IP location in author bar`);
-    console.log('[Verify] ✓ ZONE 2 sticky avatar, clean rail, and author meta verified');
+    // 3. Dual Vertical Alignment Axes (0px and 56px) + Protagonist Typography + Matte Avatars
+    const axisCheck = await page.evaluate(() => {
+      const title = document.querySelector('.gd-zone1-title');
+      const tags = document.querySelector('.gd-zone1-tags');
+      const opAvatar = document.querySelector('#floor-1 .gd-sticky-avatar-wrap .gd-avatar');
+      const subAvatar = document.querySelector('#floor-2 .gd-sticky-avatar-wrap .gd-avatar');
+      const topicMap = document.querySelector('.gd-zone6-topic-map');
+      const topicMapLeft = document.querySelector('.gd-topic-map-left');
 
-    // 5. ZONE 3 (Placed below ZONE 4 action bar, borderless, single-column .gd-boost-op-pill)
+      const authorName = document.querySelector('#floor-1 .gd-author-name');
+      const body = document.querySelector('#floor-1 .gd-floor-markdown');
+      const actionBar = document.querySelector('#floor-1 .gd-zone4-action-bar');
+      const boostSec = document.querySelector('#floor-1 .gd-zone3-boost');
+      const linksSec = document.querySelector('.gd-zone5-links');
+
+      const bodyCs = body ? window.getComputedStyle(body) : null;
+      const opAvatarCs = opAvatar ? window.getComputedStyle(opAvatar) : null;
+      const f2Avatar = document.querySelector('#floor-2 .gd-sticky-avatar-wrap .gd-avatar');
+      const f2AvatarCs = f2Avatar ? window.getComputedStyle(f2Avatar) : null;
+      const iconBtn = document.querySelector('#floor-1 .gd-icon-btn');
+      const iconCs = iconBtn ? window.getComputedStyle(iconBtn) : null;
+
+      return {
+        x0_title: title?.getBoundingClientRect().left ?? -1,
+        x0_tags: tags?.getBoundingClientRect().left ?? -1,
+        x0_opAvatar: opAvatar?.getBoundingClientRect().left ?? -1,
+        x0_subAvatar: subAvatar?.getBoundingClientRect().left ?? -1,
+        x0_topicMapLeft: topicMapLeft?.getBoundingClientRect().left ?? -1,
+        x56_author: authorName?.getBoundingClientRect().left ?? -1,
+        x56_body: body?.getBoundingClientRect().left ?? -1,
+        x56_actionBar: actionBar?.getBoundingClientRect().left ?? -1,
+        x56_boost: boostSec?.getBoundingClientRect().left ?? -1,
+        x56_links: linksSec?.getBoundingClientRect().left ?? -1,
+        bodyFontSize: bodyCs?.fontSize,
+        bodyColor: bodyCs?.color,
+        bodyLineHeight: bodyCs?.lineHeight,
+        bodyMarginTop: bodyCs?.marginTop,
+        bodyMarginBottom: bodyCs?.marginBottom,
+        opAvatarWidth: opAvatarCs?.width,
+        opAvatarRadius: opAvatarCs?.borderRadius,
+        f2AvatarBg: f2AvatarCs?.backgroundColor,
+        f2AvatarBgImg: f2AvatarCs?.backgroundImage,
+        iconDefaultColor: iconCs?.color,
+        topicMapTopBorder: topicMap ? window.getComputedStyle(topicMap).borderTopWidth : '',
+        topicMapBg: topicMap ? window.getComputedStyle(topicMap).backgroundColor : '',
+      };
+    });
+    console.log('[Verify] Dual-axis & typography metrics:', axisCheck);
+    assert(Math.abs(axisCheck.x0_title - axisCheck.x0_opAvatar) <= 1, `Title (${axisCheck.x0_title}) and OP avatar (${axisCheck.x0_opAvatar}) must align on 0px axis`);
+    assert(Math.abs(axisCheck.x0_tags - axisCheck.x0_opAvatar) <= 1, `Tags and OP avatar must align on 0px axis`);
+    assert(Math.abs(axisCheck.x0_subAvatar - axisCheck.x0_opAvatar) <= 1, `SubGesture avatar and OP avatar must align on 0px axis`);
+    assert(Math.abs(axisCheck.x0_topicMapLeft - axisCheck.x0_opAvatar) <= 1, `Topic Map left and OP avatar must align on 0px axis`);
+
+    assert(Math.abs(axisCheck.x56_author - axisCheck.x0_opAvatar - 56) <= 1, `Content axis must be +56px from 0px axis (${axisCheck.x56_author} vs ${axisCheck.x0_opAvatar})`);
+    assert(Math.abs(axisCheck.x56_body - axisCheck.x56_author) <= 1, 'Body must align on 56px content axis');
+    assert(Math.abs(axisCheck.x56_actionBar - axisCheck.x56_author) <= 1, 'Action bar must align on 56px content axis');
+    assert(Math.abs(axisCheck.x56_boost - axisCheck.x56_author) <= 1, 'Boost section must align on 56px content axis');
+    assert(Math.abs(axisCheck.x56_links - axisCheck.x56_author) <= 1, 'Related links must align on 56px content axis');
+
+    assert(axisCheck.bodyFontSize === '16px', `Body fontSize must be 16px, got ${axisCheck.bodyFontSize}`);
+    assert(axisCheck.bodyColor === 'rgb(226, 232, 240)', `Body color must be #E2E8F0, got ${axisCheck.bodyColor}`);
+    assert(axisCheck.bodyMarginTop === '14px' && axisCheck.bodyMarginBottom === '20px', `Body margin must be 14px / 20px, got ${axisCheck.bodyMarginTop}/${axisCheck.bodyMarginBottom}`);
+    assert(axisCheck.opAvatarWidth === '42px' && axisCheck.opAvatarRadius === '50%', `OP avatar must be 42px circle, got ${axisCheck.opAvatarWidth} / ${axisCheck.opAvatarRadius}`);
+    assert(axisCheck.f2AvatarBgImg === 'none', `Default letter avatar must use solid matte Morandi bg, not gradient (${axisCheck.f2AvatarBgImg})`);
+    assert(axisCheck.iconDefaultColor === 'rgb(100, 116, 139)', `Default action icons must be #64748B, got ${axisCheck.iconDefaultColor}`);
+    console.log('[Verify] ✓ Dual-axis alignment (0px / 56px), protagonist typography & matte avatars verified');
+
+    // 4. Boost: <= 16 chars frontend + backend enforcement, horizontal wrapping micro-pills, OP [+ Boost], SubGesture zero footprint
     const opBoostLayout = await page.$eval('#floor-1', (el) => {
-      const actionBar = el.querySelector('.gd-zone4-action-bar');
-      const boostSec = el.querySelector('.gd-zone3-boost');
       const pillsWrap = el.querySelector('.gd-boost-op-pills');
       const pills = Array.from(el.querySelectorAll('.gd-boost-op-pill'));
-      const boostCs = boostSec ? window.getComputedStyle(boostSec) : null;
       const pillsCs = pillsWrap ? window.getComputedStyle(pillsWrap) : null;
+      const addBtn = el.querySelector('.gd-boost-add-trigger');
       return {
-        isBelowActionBar: Boolean(actionBar && boostSec && (actionBar.compareDocumentPosition(boostSec) & Node.DOCUMENT_POSITION_FOLLOWING)),
-        hasBoostHead: el.querySelectorAll('.gd-boost-op-head').length,
-        boostBorder: boostCs?.borderTopWidth,
-        boostBg: boostCs?.backgroundColor,
         flexDirection: pillsCs?.flexDirection,
+        flexWrap: pillsCs?.flexWrap,
+        gap: pillsCs?.gap,
         pillCount: pills.length,
-        pill1Top: pills[0]?.getBoundingClientRect().bottom || 0,
-        pill2Top: pills[1]?.getBoundingClientRect().top || 0,
+        hasAddTrigger: Boolean(addBtn),
       };
     });
-    assert(opBoostLayout.isBelowActionBar, 'Boost section must be placed below .gd-zone4-action-bar');
-    assert(opBoostLayout.hasBoostHead === 0, 'Redundant Boost header/explanation must be removed');
-    assert(opBoostLayout.boostBorder === '0px', `Boost wrapper must have no border, got ${opBoostLayout.boostBorder}`);
-    assert(opBoostLayout.flexDirection === 'column', `Boost pills must stack as a vertical column, got ${opBoostLayout.flexDirection}`);
-    assert(opBoostLayout.pillCount >= 2 && opBoostLayout.pill2Top >= opBoostLayout.pill1Top, 'Each .gd-boost-op-pill must stack vertically on its own row');
+    assert(opBoostLayout.flexDirection === 'row' && opBoostLayout.flexWrap === 'wrap', `Boost pills must flow horizontally with wrap, got ${opBoostLayout.flexDirection}/${opBoostLayout.flexWrap}`);
+    assert(opBoostLayout.pillCount >= 2 && opBoostLayout.hasAddTrigger, 'OP must show horizontal boost micro-pills and [+ Boost] trigger');
+
+    // Backend hard 16-char cap check
+    const overLimitRes = await page.evaluate(async () => {
+      const r = await fetch('/api/gestures', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'boost',
+          gestureId: 'pinned_welcome_official',
+          content: '一二三四五六七八九十十一十二十三十四十五十六十七',
+        }),
+      });
+      return { status: r.status, body: await r.json() };
+    });
+    assert(overLimitRes.status === 400 && !overLimitRes.body.ok, `Backend must reject Boost > 16 chars, got ${JSON.stringify(overLimitRes)}`);
 
     const f2BoostBefore = await page.locator('#floor-2 .gd-zone3-boost').count();
     assert(f2BoostBefore === 0, `Floor 2 with 0 boosts must have zero DOM footprint, got ${f2BoostBefore}`);
 
-    // Click [⚡] on Floor 2 -> input slides open; blur while empty -> auto-collapses
     await page.locator('#floor-2 button[aria-label="发送 Boost 短评"]').click();
     await page.waitForSelector('#floor-2 .gd-boost-inline-input');
+    const maxLenAttr = await page.locator('#floor-2 .gd-boost-inline-input').getAttribute('maxlength');
+    assert(maxLenAttr === '16', `Boost input maxLength must be 16, got ${maxLenAttr}`);
     await page.locator('#floor-2 .gd-boost-inline-input').blur();
     await page.waitForTimeout(150);
-    const f2BoostAfterBlur = await page.locator('#floor-2 .gd-zone3-boost').count();
-    assert(f2BoostAfterBlur === 0, 'Empty SubGesture boost input must auto-collapse on blur');
+    assert((await page.locator('#floor-2 .gd-zone3-boost').count()) === 0, 'Empty SubGesture boost input must auto-collapse on blur');
 
-    // Re-open Floor 2 Boost and actually submit a scoped boost
     await page.locator('#floor-2 button[aria-label="发送 Boost 短评"]').click();
-    await page.locator('#floor-2 .gd-boost-inline-input').fill('测试子楼层 Boost 微语');
+    await page.locator('#floor-2 .gd-boost-inline-input').fill('测试子楼层 Boost');
     await page.locator('#floor-2 .gd-boost-inline-submit').click();
     await page.waitForSelector('#floor-2 .gd-boost-op-pill', { timeout: 5000 });
-    console.log('[Verify] ✓ ZONE 3 below action bar, single-column .gd-boost-op-pill & submission verified');
+    console.log('[Verify] ✓ Boost <= 16 chars (FE+BE), horizontal micro-pills & SubGesture zero footprint verified');
 
-    // 6. ZONE 4: Top-4 Aggregated Emoji pill + Hover Breakdown + [•••] Slide-Out Drawer
-    const topIconsCount = await page.locator('#floor-1 .gd-agg-emoji-char').count();
-    assert(topIconsCount <= 4 && topIconsCount >= 1, `Expected 1..4 top emoji icons, got ${topIconsCount}`);
+    // 5. Emoji cluster tight gap (1px) + strict UPWARD popovers
     await page.locator('#floor-1 .gd-agg-emoji-pill').hover();
     await page.waitForSelector('#floor-1 .gd-reaction-breakdown-popover', { timeout: 3000 });
+    const breakdownPos = await page.evaluate(() => {
+      const pill = document.querySelector('#floor-1 .gd-agg-emoji-pill')?.getBoundingClientRect();
+      const pop = document.querySelector('#floor-1 .gd-reaction-breakdown-popover')?.getBoundingClientRect();
+      const icons = document.querySelector('#floor-1 .gd-agg-emoji-icons');
+      const iconsGap = icons ? window.getComputedStyle(icons).gap : '';
+      return { popBottom: pop?.bottom ?? 9999, pillTop: pill?.top ?? 0, iconsGap };
+    });
+    assert(breakdownPos.iconsGap === '1px', `Top-4 emoji icons gap must be 1px, got ${breakdownPos.iconsGap}`);
+    assert(breakdownPos.popBottom <= breakdownPos.pillTop + 1, `Breakdown popover must pop UPWARD (${breakdownPos.popBottom} <= ${breakdownPos.pillTop})`);
 
-    await page.locator('#floor-1 button[aria-label="更多操作"]').click();
-    await page.waitForSelector('#floor-1 .gd-more-drawer.is-open');
-    console.log('[Verify] ✓ ZONE 4 Top-4 Emoji pill hover breakdown & animated [•••] drawer verified');
+    await page.locator('#floor-1 .gd-heart-btn').click();
+    await page.waitForSelector('#floor-1 .gd-quick-emoji-bar', { timeout: 3000 });
+    const quickBarPos = await page.evaluate(() => {
+      const btn = document.querySelector('#floor-1 .gd-heart-btn')?.getBoundingClientRect();
+      const bar = document.querySelector('#floor-1 .gd-quick-emoji-bar')?.getBoundingClientRect();
+      return { barBottom: bar?.bottom ?? 9999, btnTop: btn?.top ?? 0 };
+    });
+    assert(quickBarPos.barBottom <= quickBarPos.btnTop + 1, `Quick emoji picker must pop UPWARD (${quickBarPos.barBottom} <= ${quickBarPos.btnTop})`);
+    await page.locator('#floor-1 .gd-heart-btn').click();
+    console.log('[Verify] ✓ Tight emoji cluster & strict upward popovers verified');
 
-    // 7. ZONE 5 & ZONE 6: Related links + Topic Map + AI summary + Hot filter + Avatar placement/order
+    // 6. Related links authenticity & Adaptive Topic Map (lightweight vs hot mode)
     const linksCount = await page.locator('.gd-zone5-links .gd-related-link-row').count();
-    assert(linksCount >= 2, `Expected >= 2 related links in ZONE 5, got ${linksCount}`);
-    const tmCheck = await page.$eval('.gd-zone6-topic-map', (el) => {
-      const metrics = el.querySelector('.gd-topic-map-metrics');
-      const avatarsWrap = el.querySelector('.gd-topic-map-left .gd-tm-avatars');
-      const avatarItems = Array.from(el.querySelectorAll('.gd-tm-avatar-item'));
+    assert(linksCount === 2, `Expected strictly 2 real links from OP (no fabricated sibling links), got ${linksCount}`);
+    const tmLightCheck = await page.$eval('.gd-zone6-topic-map', (el) => {
+      const isLight = el.classList.contains('is-light-mode');
+      const stackedMetrics = el.querySelectorAll('.gd-topic-map-metrics.is-stacked').length;
+      const avatars = Array.from(el.querySelectorAll('.gd-tm-avatar-item'));
+      const firstAvatarBox = avatars[0]?.querySelector('.gd-avatar')?.getBoundingClientRect();
       return {
+        isLight,
+        stackedMetrics,
         text: el.textContent || '',
-        avatarsAfterMetrics: Boolean(metrics && avatarsWrap && (metrics.compareDocumentPosition(avatarsWrap) & Node.DOCUMENT_POSITION_FOLLOWING)),
-        avatarCount: avatarItems.length,
-        firstTitle: avatarItems[0]?.getAttribute('title') || '',
-        firstIsOp: avatarItems[0]?.classList.contains('is-op-avatar') || false,
+        avatarCount: avatars.length,
+        avatarWidth: firstAvatarBox?.width || 0,
+        firstIsOp: avatars[0]?.classList.contains('is-op-avatar') || false,
       };
     });
-    assert(tmCheck.text.includes('觀看') && tmCheck.text.includes('個讚') && tmCheck.text.includes('使用者'), 'Topic Map metrics missing');
-    assert(tmCheck.avatarsAfterMetrics, '.gd-tm-avatars must be placed directly after .gd-topic-map-metrics (.gd-tm-stat)');
-    assert(tmCheck.avatarCount >= 1 && tmCheck.avatarCount <= 5, `Expected 1..5 avatars, got ${tmCheck.avatarCount}`);
-    assert(tmCheck.firstIsOp && tmCheck.firstTitle.includes('shijianus'), `First avatar must be OP shijianus, got "${tmCheck.firstTitle}"`);
-    await page.locator('button[title="AI 讨论脉络摘要"]').click();
-    await page.waitForSelector('.gd-ai-digest-panel');
-    console.log('[Verify] ✓ ZONE 5 related links & ZONE 6 Topic Map + OP-first <=5 avatars verified');
+    assert(tmLightCheck.isLight && tmLightCheck.stackedMetrics === 0, 'Topic Map with < 15 replies must render in lightweight single-row mode');
+    assert(tmLightCheck.text.includes('觀看') && tmLightCheck.text.includes('總結'), 'Lightweight Topic Map must show views & [總結]');
+    assert(Math.round(tmLightCheck.avatarWidth) === 26, `Topic Map avatars must be 26px, got ${tmLightCheck.avatarWidth}`);
+    assert(tmLightCheck.firstIsOp, 'First avatar in Topic Map must be OP');
+    console.log('[Verify] ✓ Related links authenticity (2 real links) & Lightweight Topic Map verified');
 
-    // 8. Scene A: 1-to-N Direct Replies Timeline on Floor 2 (Alice -> 2 replies: lanfeng & Mr.XiWang)
-    const f2DirectBtn = page.locator('#floor-2 .gd-direct-replies-btn');
-    await f2DirectBtn.click();
+    // 7. Right Timeline Scroller: zero dots! 1px rail + 3px thumb
+    const railCheck = await page.evaluate(() => {
+      const notches = document.querySelectorAll('.gd-tl-notch, .gb-scroller-notch').length;
+      const rail = document.querySelector('.gd-tl-rail');
+      const thumb = document.querySelector('.gd-tl-thumb-bar');
+      const latestText = document.querySelector('.gd-tl-latest-time')?.textContent?.trim() || '';
+      return {
+        notches,
+        railWidth: rail ? window.getComputedStyle(rail).width : '',
+        thumbWidth: thumb ? window.getComputedStyle(thumb).width : '',
+        latestText,
+      };
+    });
+    assert(railCheck.notches === 0, `Timeline rail must NEVER render dots/notches, got ${railCheck.notches}`);
+    assert(railCheck.railWidth === '1px', `Timeline rail must be 1px wide, got ${railCheck.railWidth}`);
+    assert(railCheck.thumbWidth === '3px', `Timeline active thumb must be 3px wide, got ${railCheck.thumbWidth}`);
+    assert(railCheck.latestText.length > 0, 'Timeline latest relative time must be displayed');
+    console.log('[Verify] ✓ Pure 1px timeline rail, 3px thumb, zero dots & relative time verified:', railCheck);
+
+    // 8. Scene A: 1-to-N Direct Replies Timeline on Floor 2 & ├─ [ 返回 ] fade-out
+    await page.locator('#floor-2 .gd-direct-replies-btn').click();
     await page.waitForSelector('#floor-2 .gd-direct-replies-timeline');
     const timelineRows = await page.locator('#floor-2 .gd-timeline-reply-row').count();
     assert(timelineRows === 2, `Expected 2 direct replies under Floor 2, got ${timelineRows}`);
     const timelineAvatarPos = await page.$eval('#floor-2 .gd-timeline-avatar', (el) => window.getComputedStyle(el).position);
     assert(timelineAvatarPos === 'static', `Timeline reply avatar must be non-sticky (static), got ${timelineAvatarPos}`);
 
-    // Click [↓ 跳至贴文] on first timeline reply -> should jump & pin ├─ [ 返回 ]
     await page.locator('#floor-2 .gd-timeline-reply-row .gd-jump-post-btn').first().click();
     await page.waitForSelector('.gd-tl-return-anchor', { timeout: 3000 });
     await page.waitForTimeout(450);
 
-    // Click ├─ [ 返回 ] -> returns and clears anchor
     await page.locator('.gd-tl-return-btn').click();
     await page.waitForTimeout(450);
-    const returnAnchorAfter = await page.locator('.gd-tl-return-anchor').count();
-    assert(returnAnchorAfter === 0, 'Return anchor must fade out after clicking [返回]');
+    assert((await page.locator('.gd-tl-return-anchor').count()) === 0, 'Return anchor must fade out after clicking [返回]');
 
-    // Collapse Scene A via bottom [ ^ ] button
     await page.locator('#floor-2 .gd-timeline-bottom-collapse-btn').click();
     await page.waitForTimeout(150);
-    const timelineCollapsed = await page.locator('#floor-2 .gd-direct-replies-timeline').count();
-    assert(timelineCollapsed === 0, 'Bottom [ ^ ] must collapse Scene A direct replies timeline');
-    console.log('[Verify] ✓ Scene A 1-to-N timeline, non-sticky avatars, bidirectional collapse & ├─ [ 返回 ] verified');
+    assert((await page.locator('#floor-2 .gd-direct-replies-timeline').count()) === 0, 'Bottom [ ^ ] must collapse Scene A timeline');
+    console.log('[Verify] ✓ Scene A 1-to-N timeline & ├─ [ 返回 ] fade-out verified');
 
-    // 9. Scene B: 1-to-1 Nested Parent SubGesture on Floor 5 (Mr.XiWang -> [↪ Alice]) + Scroll Compensation
+    // 9. Scene B: Dual Sticky Avatars + 1px │ Line + Scroll Compensation
     const f5Badge = page.locator('#floor-5 .gd-reply-target-pill');
     await f5Badge.scrollIntoViewIfNeeded();
     await f5Badge.click();
     await page.waitForSelector('#floor-5 .gd-nested-parent-box');
 
-    // Verify dual sticky avatars (outer Floor 5 + inner Alice) and explicit 1px vertical line
     const dualSticky = await page.$eval('#floor-5', (el) => {
       const outer = el.querySelector(':scope > .gd-floor-split .gd-sticky-avatar-wrap');
       const inner = el.querySelector('.gd-nested-parent-sticky-cluster');
@@ -262,7 +384,6 @@ async function run() {
     assert(dualSticky.outerPos === 'sticky' && dualSticky.innerPos === 'sticky', `Dual sticky avatars required, got ${JSON.stringify(dualSticky)}`);
     assert(dualSticky.lineWidth === '1px', `Inner vertical line must be 1px, got ${dualSticky.lineWidth}`);
 
-    // Measure scroll compensation when collapsing Scene B via inner [⌄]
     await page.evaluate(() => {
       const card = document.querySelector('#floor-5 .gd-floor-markdown');
       if (card) card.scrollIntoView({ block: 'center', behavior: 'instant' });
@@ -272,55 +393,109 @@ async function run() {
     assert(collapseBtnBox, 'Collapse button boundingBox missing');
     const beforeCollapse = await page.evaluate(() => {
       const body = document.querySelector('#floor-5 .gd-floor-markdown');
-      return {
-        scrollY: window.scrollY,
-        bodyTop: body ? body.getBoundingClientRect().top : 0,
-      };
+      return { bodyTop: body ? body.getBoundingClientRect().top : 0 };
     });
-    // Click at exact rendered coordinates of sticky collapse button so Playwright doesn't auto-scroll sticky node
     await page.mouse.click(collapseBtnBox.x + collapseBtnBox.width / 2, collapseBtnBox.y + collapseBtnBox.height / 2);
     await page.waitForTimeout(100);
     const afterCollapse = await page.evaluate(() => {
       const body = document.querySelector('#floor-5 .gd-floor-markdown');
-      return {
-        scrollY: window.scrollY,
-        bodyTop: body ? body.getBoundingClientRect().top : 0,
-      };
+      return { bodyTop: body ? body.getBoundingClientRect().top : 0 };
     });
     const topDrift = Math.abs(afterCollapse.bodyTop - beforeCollapse.bodyTop);
-    console.log(`[Verify] Scene B collapse scroll compensation: scrollY ${Math.round(beforeCollapse.scrollY)} -> ${Math.round(afterCollapse.scrollY)}, bodyTop drift = ${Math.round(topDrift)}px`);
     assert(topDrift <= 4, `Expected replyer body to stay stationary after collapse compensation, drift=${topDrift}px`);
-    console.log('[Verify] ✓ Scene B dual sticky avatars, explicit 1px │ line & scroll compensation verified');
+    console.log('[Verify] ✓ Scene B dual sticky avatars, 1px │ line & scroll compensation verified');
 
-    // 10. Orthogonal Quote Card on Floor 5
-    const quoteCard = page.locator('#floor-5 .gd-quote-card');
-    assert((await quoteCard.count()) === 1, 'Expected orthogonal Quote card on Floor 5');
+    // 10. Orthogonal Quote Card
     await page.locator('#floor-5 .gd-quote-action-btn[title="展开被引用原贴全文"]').click();
     await page.waitForSelector('#floor-5 .gd-quote-full-md');
     await page.locator('#floor-5 .gd-quote-action-btn[title="跳至被引用楼层"]').click();
     await page.waitForSelector('.gd-tl-return-anchor');
     await page.locator('.gd-tl-return-btn').click();
-    await page.waitForTimeout(300);
-    console.log('[Verify] ✓ Orthogonal Quote card expansion & [↑] jump + [返回] verified');
+    await page.waitForTimeout(350);
+    console.log('[Verify] ✓ Orthogonal Quote card verified');
 
-    // 11. Right Timeline Scroller Controls ([📖] quick jump, [📚] hot filter, [🔔] subscribe)
-    await page.locator('.gd-tl-overview-btn').click();
-    await page.waitForSelector('.gd-tl-quick-popover');
-    await page.locator('.gd-tl-overview-btn').click();
-    await page.locator('.gd-tl-dock-btn.is-hot-filter').click();
-    await page.waitForSelector('.gd-hot-filter-banner');
-    await page.locator('.gd-hot-filter-banner button').click();
-    await page.locator('.gd-tl-dock-btn[aria-label="订阅通知"]').click();
-    await page.waitForSelector('.gd-tl-dock-btn.is-subscribed');
-    console.log('[Verify] ✓ Right timeline scroller controls verified');
-
-    // 12. Reply creation in detail view
-    await page.locator('#detail-reply-composer textarea').fill('自动化端到端测试跟帖：验证单层暗色毛玻璃与右侧时间轴滑块联动！');
+    // 11. Live SubGesture Reply Creation
+    await page.locator('#detail-reply-composer textarea').fill('端到端测试跟帖：验证高遮罩哑光深色底板、双轴对齐与极简时间轴。');
     await page.locator('.gd-submit-reply-btn').click();
     await page.waitForSelector('#floor-6', { timeout: 8000 });
-    console.log('[Verify] ✓ Live SubGesture reply persistence & floor 6 rendering verified');
+    console.log('[Verify] ✓ Live SubGesture reply persistence verified');
 
-    // 13. Mobile viewport check (avoiding bottom-left MusicPocket & zero horizontal overflow)
+    // 12. Hot Topic Mode (>= 15 replies & >= 500 views) + 0-links hidden check via mocked response
+    await page.route('**/api/gestures?id=hot_topic_mock*', async (route) => {
+      const baseCreated = '2026-08-03T08:00:00.000Z';
+      const subGestures = Array.from({ length: 16 }).map((_, idx) => ({
+        id: `hot_sub_${idx + 2}`,
+        postSlug: 'guestbook',
+        parentId: 'hot_topic_mock',
+        postType: 'gesture',
+        floorIndex: idx + 2,
+        authorId: `u_${idx}`,
+        authorName: `User${idx}`,
+        authorRole: 'reader',
+        message: `Hot reply #${idx + 2}`,
+        likesCount: 2,
+        status: 'published',
+        createdAt: `2026-08-04T0${Math.min(9, idx)}:00:00.000Z`,
+      }));
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          ok: true,
+          gesture: {
+            id: 'hot_topic_mock',
+            postSlug: 'guestbook',
+            postType: 'gesture',
+            tag: 'tech',
+            title: '高热度讨论帖测试',
+            tags: ['技术探讨'],
+            editCount: 0,
+            viewsCount: 680,
+            floorIndex: 1,
+            authorId: 'u_op',
+            authorName: 'TopicAuthor',
+            authorRole: 'reader',
+            message: '纯文本讨论，没有任何引用链接。',
+            likesCount: 10,
+            status: 'published',
+            createdAt: baseCreated,
+          },
+          subGestures,
+          boostsByGestureId: {},
+          relatedLinks: [],
+          topicMap: {
+            viewsCount: 680,
+            likesCount: 42,
+            linksCount: 0,
+            usersCount: 17,
+            participants: [{ authorId: 'u_op', authorName: 'TopicAuthor', authorRole: 'reader', count: 1 }],
+            estimatedReadMinutes: 3,
+            latestReplyAt: '2026-08-04T09:00:00.000Z',
+          },
+          subscribed: false,
+        }),
+      });
+    });
+
+    await page.goto(`${BASE_URL}/guestbook/#gesture-hot_topic_mock`, { waitUntil: 'domcontentloaded' });
+    await page.waitForSelector('.gd-zone6-topic-map.is-hot-mode', { timeout: 10000 });
+    const hotCheck = await page.evaluate(() => {
+      const metricStrong = document.querySelector('.gd-topic-map-metrics.is-stacked .gd-tm-stat strong');
+      return {
+        linksCount: document.querySelectorAll('.gd-zone5-links').length,
+        editBadgeCount: document.querySelectorAll('#floor-1 .gd-edit-count-badge').length,
+        stackedCount: document.querySelectorAll('.gd-topic-map-metrics.is-stacked .gd-tm-stat').length,
+        numColor: metricStrong ? window.getComputedStyle(metricStrong).color : '',
+        numSize: metricStrong ? window.getComputedStyle(metricStrong).fontSize : '',
+      };
+    });
+    assert(hotCheck.linksCount === 0, `0-links post must hide .gd-zone5-links completely, got ${hotCheck.linksCount}`);
+    assert(hotCheck.editBadgeCount === 0, `editCount=0 must hide edit badge completely, got ${hotCheck.editBadgeCount}`);
+    assert(hotCheck.stackedCount === 4, `Hot Topic mode must render 4 stacked metrics, got ${hotCheck.stackedCount}`);
+    assert(hotCheck.numColor === 'rgb(56, 189, 248)' && hotCheck.numSize === '18px', `Hot Topic metric numbers must be 18px #38bdf8, got ${hotCheck.numSize}/${hotCheck.numColor}`);
+    console.log('[Verify] ✓ Hot Topic Mode (4 stacked metrics), 0-links zero height & editCount=0 hidden verified');
+
+    // 13. Mobile viewport check
     await page.setViewportSize({ width: 390, height: 844 });
     await page.waitForTimeout(400);
     const mobileMetrics = await page.evaluate(() => {
@@ -329,18 +504,16 @@ async function run() {
       return {
         scrollWidth: document.documentElement.scrollWidth,
         innerWidth: window.innerWidth,
-        asideRight: asideRect ? asideRect.right : 0,
         asideLeft: asideRect ? asideRect.left : 0,
       };
     });
-    console.log('[Verify] Mobile metrics:', mobileMetrics);
     assert(mobileMetrics.scrollWidth <= mobileMetrics.innerWidth + 2, `Mobile horizontal overflow: ${mobileMetrics.scrollWidth} > ${mobileMetrics.innerWidth}`);
-    assert(mobileMetrics.asideLeft > 120, `Mobile timeline aside should stay on bottom-right away from MusicPocket, left=${mobileMetrics.asideLeft}`);
-    console.log('[Verify] ✓ Mobile layout & MusicPocket clearance verified');
+    assert(mobileMetrics.asideLeft > 120, `Mobile timeline aside should stay on bottom-right, left=${mobileMetrics.asideLeft}`);
+    console.log('[Verify] ✓ Mobile viewport & zero horizontal overflow verified');
 
     assert(pageErrors.length === 0, `Page runtime errors detected: ${pageErrors.join('; ')}`);
     console.log('\n===============================================================');
-    console.log('🎉 ALL GESTURE DETAIL PAGE E2E VERIFICATIONS PASSED 100%!');
+    console.log('🎉 ALL GESTURE DETAIL VISUAL DE-NOISING E2E CHECKS PASSED 100%!');
     console.log('===============================================================\n');
   } finally {
     if (browser) await browser.close();

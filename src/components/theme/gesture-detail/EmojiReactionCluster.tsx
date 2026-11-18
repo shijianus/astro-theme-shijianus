@@ -121,7 +121,6 @@ export function EmojiReactionCluster({
       {showHeartTrigger && (
         <div
           className="gd-heart-picker-host"
-          onMouseEnter={() => setShowQuickPicker(true)}
           onMouseLeave={() => setShowQuickPicker(false)}
         >
           <button

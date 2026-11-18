@@ -533,19 +533,16 @@ async function runVerification() {
     const floorLabel = await page.textContent('.gb-scroller-floor-label');
     console.log(`[Verify] Floor Scroller Widget: "${floorLabel?.trim()}"`);
 
-    // Test Floor Notches along the rail
+    // Test Pure 1px Timeline Rail (strictly zero dots/notches)
     const notchesCount = await page.$$eval('.gb-scroller-notch', (els) => els.length);
-    console.log(`[Verify] Interactive floor notches along rail: ${notchesCount}`);
-    if (notchesCount < 2) {
-      throw new Error('Expected multiple floor notches along timeline rail');
+    if (notchesCount !== 0) {
+      throw new Error(`Expected zero dots/notches on timeline rail, got ${notchesCount}`);
     }
-
-    // Click Notch 2 to jump to Floor 2
-    const notch2 = await page.$('.gb-scroller-notch:nth-child(2)');
-    if (notch2) {
-      await notch2.click();
+    const railBox = await page.locator('.gd-tl-rail').boundingBox();
+    if (railBox) {
+      await page.mouse.click(railBox.x + railBox.width / 2, railBox.y + railBox.height * 0.5);
       await page.waitForTimeout(300);
-      console.log('[Verify] ✓ Clicked floor notch to jump between floors');
+      console.log('[Verify] ✓ Clicked pure 1px timeline rail to jump between floors');
     }
 
     // 6. Test In-place Detail Reply

@@ -317,7 +317,7 @@ export async function onRequest(context: {
       }
     }
 
-    const relatedLinks = extractRelatedLinks(opRow, siblingTopRows, replyCountMap);
+    const relatedLinks = extractRelatedLinks(opRow, replyRows, siblingTopRows, replyCountMap);
 
     // Compute Topic Map metrics
     const allFloors = [opMapped, ...subMapped];
@@ -372,7 +372,15 @@ export async function onRequest(context: {
       if (bKey === opKey && aKey !== opKey) return 1;
       return b.count - a.count;
     });
-    const latestReplyAt = subMapped.length > 0 ? subMapped[subMapped.length - 1].createdAt : opMapped.createdAt;
+    let latestMs = Date.parse(opMapped.createdAt) || 0;
+    let latestReplyAt = opMapped.createdAt;
+    for (const f of subMapped) {
+      const ms = Date.parse(f.createdAt);
+      if (Number.isFinite(ms) && ms > latestMs) {
+        latestMs = ms;
+        latestReplyAt = f.createdAt;
+      }
+    }
 
     return jsonResponse(request, env, {
       ok: true,
@@ -576,8 +584,8 @@ export async function onRequest(context: {
     if (!content) {
       return jsonResponse(request, env, { ok: false, error: 'Boost 短语不能为空' }, { status: 400 });
     }
-    if (content.length > 60) {
-      return jsonResponse(request, env, { ok: false, error: 'Boost 短语限制 60 字以内' }, { status: 400 });
+    if (content.length > 16) {
+      return jsonResponse(request, env, { ok: false, error: 'Boost 短语限制 16 字以内' }, { status: 400 });
     }
 
     const actor = resolveActor();

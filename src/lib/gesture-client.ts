@@ -309,23 +309,24 @@ export function formatMonthDay(iso?: string): string {
 }
 
 /**
- * Formats compact relative activity duration (e.g. "2 天", "5 小时", "刚刚") for timeline dock.
+ * Formats compact relative activity duration (e.g. "2天前", "5小时前", "刚刚") for timeline dock.
  */
 export function formatCompactRelative(iso?: string): string {
   if (!iso) return '刚刚';
   try {
     const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return '刚刚';
     const diffMs = Math.max(0, Date.now() - d.getTime());
     const mins = Math.floor(diffMs / 60000);
     if (mins < 1) return '刚刚';
-    if (mins < 60) return `${mins} 分`;
+    if (mins < 60) return `${mins}分钟前`;
     const hours = Math.floor(mins / 60);
-    if (hours < 24) return `${hours} 时`;
+    if (hours < 24) return `${hours}小时前`;
     const days = Math.floor(hours / 24);
-    if (days < 30) return `${days} 天`;
+    if (days < 30) return `${days}天前`;
     const months = Math.floor(days / 30);
-    if (months < 12) return `${months} 月`;
-    return `${Math.floor(months / 12)} 年`;
+    if (months < 12) return `${months}个月前`;
+    return `${Math.floor(months / 12)}年前`;
   } catch {
     return '刚刚';
   }

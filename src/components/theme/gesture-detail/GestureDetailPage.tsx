@@ -114,6 +114,7 @@ export function GestureDetailPage({
   const [currentFloor, setCurrentFloor] = useState(1);
   const [scrollPercent, setScrollPercent] = useState(0);
   const [jumpOrigin, setJumpOrigin] = useState<JumpOriginAnchor | null>(null);
+  const [jumpOriginFading, setJumpOriginFading] = useState(false);
   const [highlightedFloorIndex, setHighlightedFloorIndex] = useState<number | null>(null);
 
   // Reply / Quote composer state
@@ -121,6 +122,7 @@ export function GestureDetailPage({
   const [quoteTarget, setQuoteTarget] = useState<GestureQuote | null>(null);
   const replyTextareaRef = useRef<HTMLTextAreaElement>(null);
   const highlightTimerRef = useRef<number | null>(null);
+  const returnFadeTimerRef = useRef<number | null>(null);
 
   // Load full thread from /api/gestures (with clean fallback if offline/mock)
   useEffect(() => {
@@ -251,6 +253,8 @@ export function GestureDetailPage({
   const handleJumpWithMemory = useCallback(
     (targetFloorIndex: number, originFloorIndex: number) => {
       if (targetFloorIndex !== originFloorIndex) {
+        if (returnFadeTimerRef.current) window.clearTimeout(returnFadeTimerRef.current);
+        setJumpOriginFading(false);
         const originPct =
           totalFloors <= 1
             ? 0
@@ -269,7 +273,12 @@ export function GestureDetailPage({
   const handleReturnToOrigin = useCallback(() => {
     if (!jumpOrigin) return;
     const target = jumpOrigin.floorIndex;
-    setJumpOrigin(null);
+    setJumpOriginFading(true);
+    if (returnFadeTimerRef.current) window.clearTimeout(returnFadeTimerRef.current);
+    returnFadeTimerRef.current = window.setTimeout(() => {
+      setJumpOrigin(null);
+      setJumpOriginFading(false);
+    }, 200);
     scrollToFloor(target, true);
   }, [jumpOrigin, scrollToFloor]);
 
@@ -485,15 +494,19 @@ export function GestureDetailPage({
   if (loading && !gesture) {
     return (
       <div className="gb-gesture-detail-view gd-detail-root">
-        <div className="gd-topbar">
-          <button type="button" className="gb-back-btn gd-back-btn" onClick={onBackToList}>
-            <ArrowLeft className="w-4 h-4" />
-            <span>返回 Gesture 列表</span>
-          </button>
-        </div>
-        <div className="gd-monolithic-shell gd-loading-box">
-          <div className="gb-spinner" />
-          <span>正在加载 Gesture 完整讨论脉络...</span>
+        <div className="gd-detail-grid">
+          <main className="gd-monolithic-shell">
+            <div className="gd-topbar">
+              <button type="button" className="gb-back-btn gd-back-btn" onClick={onBackToList}>
+                <ArrowLeft className="w-4 h-4" />
+                <span>返回 Gesture 列表</span>
+              </button>
+            </div>
+            <div className="gd-loading-box">
+              <div className="gb-spinner" />
+              <span>正在加载 Gesture 完整讨论脉络...</span>
+            </div>
+          </main>
         </div>
       </div>
     );
@@ -502,14 +515,18 @@ export function GestureDetailPage({
   if (!gesture) {
     return (
       <div className="gb-gesture-detail-view gd-detail-root">
-        <div className="gd-topbar">
-          <button type="button" className="gb-back-btn gd-back-btn" onClick={onBackToList}>
-            <ArrowLeft className="w-4 h-4" />
-            <span>返回 Gesture 列表</span>
-          </button>
-        </div>
-        <div className="gd-monolithic-shell gd-empty-box">
-          <p>未找到该 Gesture 讨论，可能已被作者删除。</p>
+        <div className="gd-detail-grid">
+          <main className="gd-monolithic-shell">
+            <div className="gd-topbar">
+              <button type="button" className="gb-back-btn gd-back-btn" onClick={onBackToList}>
+                <ArrowLeft className="w-4 h-4" />
+                <span>返回 Gesture 列表</span>
+              </button>
+            </div>
+            <div className="gd-empty-box">
+              <p>未找到该 Gesture 讨论，可能已被作者删除。</p>
+            </div>
+          </main>
         </div>
       </div>
     );
@@ -519,6 +536,20 @@ export function GestureDetailPage({
   const channel = channels.find((c) => c.id === gesture.tag) || { id: 'chat', label: '随心闲聊', icon: '💬' };
   const isBookmarked = bookmarkedPostIds.includes(gesture.id);
   const currentFloorDate = nodeByFloor.get(currentFloor)?.createdAt || gesture.createdAt;
+  const latestActivityDate = (() => {
+    let bestIso = gesture.createdAt;
+    let bestMs = Date.parse(gesture.createdAt) || 0;
+    const candidates = [topicMap.latestReplyAt, ...subGestures.map((s) => s.createdAt)];
+    for (const c of candidates) {
+      if (!c) continue;
+      const ms = Date.parse(c);
+      if (Number.isFinite(ms) && ms > bestMs) {
+        bestMs = ms;
+        bestIso = c;
+      }
+    }
+    return bestIso;
+  })();
   const sessionToken = getOrCreateGestureSessionToken();
 
   const checkCanManage = (node: GestureNode) => {
@@ -535,43 +566,43 @@ export function GestureDetailPage({
 
   return (
     <div className="gb-gesture-detail-view gd-detail-root">
-      {/* Minimal Detail Topbar (NO home plaza filter/search/boost banner!) */}
-      <div className="gd-topbar">
-        <button type="button" className="gb-back-btn gd-back-btn" onClick={onBackToList}>
-          <ArrowLeft className="w-4 h-4" />
-          <span>返回 Gesture 列表</span>
-        </button>
-
-        <div className="gd-topbar__actions">
-          <button
-            type="button"
-            className={`gd-topbar-btn ${isBookmarked ? 'is-bookmarked' : ''}`}
-            onClick={(e) => onToggleBookmark(gesture.id, e)}
-            title={isBookmarked ? '移出书签' : '加入书签'}
-            aria-label="书签"
-          >
-            <Bookmark className="w-4 h-4" />
-          </button>
-
-          <button
-            type="button"
-            className={`gd-topbar-btn ${topbarCopied ? 'is-copied' : ''}`}
-            onClick={() => {
-              handleCopyShareLink();
-              setTopbarCopied(true);
-              setTimeout(() => setTopbarCopied(false), 1800);
-            }}
-            title="分享贴文链接"
-            aria-label="分享链接"
-          >
-            {topbarCopied ? <Check className="w-4 h-4" /> : <Link2 className="w-4 h-4" />}
-          </button>
-        </div>
-      </div>
-
-      {/* Main 2-Column Layout: Left Monolithic Dark Frosted Glass + Right Sticky Timeline Rail */}
+      {/* Centered 2-Column Layout (max-width: 960px, gap: 36px): Left Matte Shell + Right Borderless Timeline */}
       <div className="gd-detail-grid">
-        <main className="gd-monolithic-shell">
+        <main className="gd-monolithic-shell" data-detail-loaded={loading ? 'false' : 'true'}>
+          {/* Built-in Borderless Topbar (NO outer box, aligned on 0px main axis) */}
+          <div className="gd-topbar">
+            <button type="button" className="gb-back-btn gd-back-btn" onClick={onBackToList}>
+              <ArrowLeft className="w-4 h-4" />
+              <span>返回 Gesture 列表</span>
+            </button>
+
+            <div className="gd-topbar__actions">
+              <button
+                type="button"
+                className={`gd-topbar-btn ${isBookmarked ? 'is-bookmarked' : ''}`}
+                onClick={(e) => onToggleBookmark(gesture.id, e)}
+                title={isBookmarked ? '移出书签' : '加入书签'}
+                aria-label="书签"
+              >
+                <Bookmark className="w-4 h-4" />
+              </button>
+
+              <button
+                type="button"
+                className={`gd-topbar-btn ${topbarCopied ? 'is-copied' : ''}`}
+                onClick={() => {
+                  handleCopyShareLink();
+                  setTopbarCopied(true);
+                  setTimeout(() => setTopbarCopied(false), 1800);
+                }}
+                title="分享贴文链接"
+                aria-label="分享链接"
+              >
+                {topbarCopied ? <Check className="w-4 h-4" /> : <Link2 className="w-4 h-4" />}
+              </button>
+            </div>
+          </div>
+
           {/* ZONE 1: OP Exclusive Header */}
           <GestureHeaderZone
             title={opTitle}
@@ -698,9 +729,10 @@ export function GestureDetailPage({
           currentFloor={currentFloor}
           currentFloorDate={currentFloorDate}
           startDate={gesture.createdAt}
-          latestDate={topicMap.latestReplyAt || gesture.createdAt}
+          latestDate={latestActivityDate}
           scrollPercent={scrollPercent}
           jumpOrigin={jumpOrigin}
+          jumpOriginFading={jumpOriginFading}
           hotFilterActive={hotFilterActive}
           subscribed={subscribed}
           onJumpToFloor={handleJumpFromRail}
