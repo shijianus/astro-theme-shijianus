@@ -299,7 +299,7 @@ export function formatMonthDay(iso?: string): string {
   try {
     const d = new Date(gestureTimestamp(iso));
     if (Number.isNaN(d.getTime())) return '—';
-    return `${d.getMonth() + 1}月 ${d.getDate()}日`;
+    return new Intl.DateTimeFormat('zh-CN', { month: 'short', day: 'numeric', ...(d.getFullYear() !== new Date().getFullYear() ? { year: 'numeric' as const } : {}) }).format(d);
   } catch {
     return '刚刚';
   }

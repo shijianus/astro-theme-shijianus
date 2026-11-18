@@ -1,3 +1,4 @@
+import { gestureTimestamp } from '../../src/lib/gesture-text.ts';
 import type { AppEnv, D1DatabaseLike } from './types';
 
 export interface RawCommentRow {
@@ -364,8 +365,8 @@ export function mapRowToClientComment(
       details: buildReactionDetails(rxParsed),
     },
     status: row.status || 'published',
-    createdAt: row.created_at,
-    updatedAt: row.updated_at,
+    createdAt: gestureTimestamp(row.created_at),
+    updatedAt: gestureTimestamp(row.updated_at),
     showLocation: showLoc,
     ipCountry: showLoc || isAdmin ? countryInfo.code : null,
     ipCountryName: showLoc || isAdmin ? countryInfo.name : null,
