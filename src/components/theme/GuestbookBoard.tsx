@@ -116,8 +116,15 @@ export function GuestbookBoard() {
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [zoomedImage, setZoomedImage] = useState<HTMLImageElement | null>(null);
   const imageDialog = useRef<HTMLDialogElement>(null);
+  const imageTrigger = useRef<HTMLImageElement | null>(null);
   useEffect(() => {
-    if (zoomedImage) imageDialog.current?.showModal();
+    if (zoomedImage) {
+      imageTrigger.current = zoomedImage;
+      imageDialog.current?.showModal();
+    } else if (imageTrigger.current) {
+      imageTrigger.current.focus({ preventScroll: true });
+      imageTrigger.current = null;
+    }
   }, [zoomedImage]);
   const [identity, setIdentity] = useState<CommentIdentity | null>(null);
 
@@ -645,7 +652,7 @@ export function GuestbookBoard() {
       {zoomedImage && (
         <dialog ref={imageDialog} className="gb-lightbox" aria-label="查看原图"
           onClick={() => imageDialog.current?.close()} onClose={() => setZoomedImage(null)}>
-          <button className="gb-lightbox__close" aria-label="关闭原图" autoFocus>
+          <button className="gb-lightbox__close" aria-label="关闭原图">
             <X className="w-5 h-5" />
           </button>
           <img src={zoomedImage.currentSrc || zoomedImage.src} alt={zoomedImage.alt} className="gb-lightbox__img" />
