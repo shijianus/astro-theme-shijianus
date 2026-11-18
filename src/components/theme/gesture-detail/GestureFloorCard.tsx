@@ -90,7 +90,7 @@ export function GestureFloorCard({
   const replyBodyAnchorRef = useRef<HTMLDivElement | null>(null);
   const pendingBeforeTopRef = useRef<number | null>(null);
 
-  const renderedBody = useMemo(() => renderGestureMarkdown(bodyMarkdown, true), [bodyMarkdown]);
+  const renderedBody = useMemo(() => ({ __html: renderGestureMarkdown(bodyMarkdown, true) }), [bodyMarkdown]);
   const badges = resolveAuthorBadges(node);
   const editCount = Number(node.editCount || 0);
 
@@ -265,9 +265,7 @@ export function GestureFloorCard({
                   onZoomImage(e.target);
                 }
               }}
-              dangerouslySetInnerHTML={{
-                __html: renderedBody,
-              }}
+              dangerouslySetInnerHTML={renderedBody}
             />
           )}
 
