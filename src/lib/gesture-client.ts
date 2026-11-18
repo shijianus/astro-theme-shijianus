@@ -339,7 +339,7 @@ export function resolveAuthorBadges(node: { authorRole: string; levelLabel?: str
   return { isOwner, roleLabel: isOwner ? '站长' : null, levelLabel: node.levelLabel || '' };
 }
 
-export function extractOpTitle(gesture: GestureNode): { title: string; bodyWithoutLeadingHeading: string } {
+export function extractOpTitle(gesture: Pick<GestureNode, 'message' | 'title'>): { title: string; bodyWithoutLeadingHeading: string } {
   const raw = gesture.message || '';
   if (gesture.title && gesture.title.trim()) {
     const stripped = raw.replace(/^#{1,6}[^\S\r\n]+([^\n]+)(?:\n+|$)/, (heading, title) => title.trim() === gesture.title?.trim() ? '' : heading).trim();

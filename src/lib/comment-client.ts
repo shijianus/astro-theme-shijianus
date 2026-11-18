@@ -36,6 +36,9 @@ export type BlogComment = {
   quote?: CommentQuote | null;
   postType: PostType;
   tag?: string;
+  title?: string | null;
+  tags?: string[];
+  replyCount?: number;
   authorId: string;
   authorName: string;
   authorEmail?: string;
@@ -278,6 +281,8 @@ export async function fetchComments(
 }
 
 export async function createComment(params: {
+  title?: string;
+  tags?: string[];
   slug: string;
   message: string;
   postType?: PostType;
@@ -317,6 +322,8 @@ export async function createComment(params: {
         action: 'create',
         slug: params.slug,
         message: params.message,
+        title: params.title,
+        tags: params.tags,
         postType: params.postType || 'comment',
         tag: params.tag || 'general',
         parentId: params.parentId || undefined,

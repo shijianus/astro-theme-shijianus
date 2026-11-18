@@ -1,7 +1,8 @@
-import { BOOST_LIMIT, boostLength, validBoost } from '../../lib/gesture-text';
+import { boostLength, validBoost } from '../../lib/gesture-text';
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import {
   Rocket,
+  Heart,
   MessageSquare,
   Sparkles,
   Flame,
@@ -31,16 +32,16 @@ import {
   GripVertical,
 } from 'lucide-react';
 import {
-  fetchComments,
   createComment,
   readCommentIdentity,
-  getCommentInitials,
   uploadCommentImage,
   type BlogComment,
   type CommentIdentity,
 } from '../../lib/comment-client';
 import { renderCommentMarkdown } from '../../lib/comment-markdown';
-import { resolveAuthorBadges } from '../../lib/gesture-client';
+import { extractOpTitle, getOrCreateGestureSessionToken, formatMonthDay } from '../../lib/gesture-client';
+import { GestureAvatar } from './gesture-detail/GestureAvatar';
+import { GesturePopover } from './gesture-detail/GesturePopover';
 import { GestureDetailPage } from './gesture-detail/GestureDetailPage';
 
 // Board topic channels / dimensions configuration
@@ -85,280 +86,6 @@ const EMOJI_GROUPS = [
   },
 ];
 
-// Starter Boost viewpoint messages (ensuring top stream has diverse thoughts on first view)
-const STARTER_BOOSTS: BlogComment[] = [
-  // Track 1 (Index 0, 3, 6)
-  {
-    id: 'boost_starter_1',
-    postSlug: 'guestbook',
-    parentId: null,
-    postType: 'boost',
-    tag: 'chat',
-    authorId: 'reader_1',
-    authorName: '星河漫游者',
-    authorAvatar: '/media/shijianus/avatar.jpg',
-    authorRole: 'member',
-    message: '🌟 尺素寸心，愿我们的独立思考在边缘节点恒久闪烁！',
-    likesCount: 5,
-    reactions: { summary: { '❤️': 3, '🚀': 2 }, users: {} },
-    status: 'approved',
-    createdAt: '2026-10-31T01:00:00.000Z',
-    showLocation: true,
-    ipCountryFlag: '🇨🇳',
-    ipCountryName: '中国',
-    ipLocation: '上海',
-  },
-  {
-    id: 'boost_starter_4',
-    postSlug: 'guestbook',
-    parentId: null,
-    postType: 'boost',
-    tag: 'ideas',
-    authorId: 'reader_4',
-    authorName: 'DesignCrafter',
-    authorRole: 'member',
-    message: '🎨 设计中留白的克制感往往比繁复的修饰更打动人心。',
-    likesCount: 6,
-    reactions: { summary: { '💡': 4, '✨': 2 }, users: {} },
-    status: 'approved',
-    createdAt: '2026-10-31T02:15:00.000Z',
-    showLocation: true,
-    ipCountryFlag: '🇯🇵',
-    ipCountryName: '日本',
-    ipLocation: 'Tokyo',
-  },
-  {
-    id: 'boost_starter_7',
-    postSlug: 'guestbook',
-    parentId: null,
-    postType: 'boost',
-    tag: 'tech',
-    authorId: 'reader_7',
-    authorName: 'Rustacean',
-    authorRole: 'member',
-    message: '🦀 边缘运行时轻量可靠，低延迟交互让全站讨论流畅如飞。',
-    likesCount: 4,
-    reactions: { summary: { '⚡': 4 }, users: {} },
-    status: 'approved',
-    createdAt: '2026-10-31T03:00:00.000Z',
-    showLocation: true,
-    ipCountryFlag: '🇩🇪',
-    ipCountryName: '德国',
-    ipLocation: 'Frankfurt',
-  },
-
-  // Track 2 (Index 1, 4, 7)
-  {
-    id: 'boost_starter_2',
-    postSlug: 'guestbook',
-    parentId: null,
-    postType: 'boost',
-    tag: 'tech',
-    authorId: 'reader_2',
-    authorName: 'KernelHacker',
-    authorRole: 'member',
-    message: '⚡ 边缘计算的毫秒级落盘体验非常丝滑，短句观点随手记录毫无负担！',
-    likesCount: 4,
-    reactions: { summary: { '🔥': 4 }, users: {} },
-    status: 'approved',
-    createdAt: '2026-10-31T01:30:00.000Z',
-    showLocation: true,
-    ipCountryFlag: '🇸🇬',
-    ipCountryName: '新加坡',
-    ipLocation: 'Singapore',
-  },
-  {
-    id: 'boost_starter_5',
-    postSlug: 'guestbook',
-    parentId: null,
-    postType: 'boost',
-    tag: 'feedback',
-    authorId: 'reader_5',
-    authorName: 'CodePilot',
-    authorRole: 'member',
-    message: '💻 刚刚重构完分布式边缘函数，低延迟架构确实让人赏心悦目。',
-    likesCount: 2,
-    reactions: { summary: { '🎉': 2 }, users: {} },
-    status: 'approved',
-    createdAt: '2026-10-31T02:40:00.000Z',
-    showLocation: true,
-    ipCountryFlag: '🇺🇸',
-    ipCountryName: '美国',
-    ipLocation: 'California',
-  },
-  {
-    id: 'boost_starter_8',
-    postSlug: 'guestbook',
-    parentId: null,
-    postType: 'boost',
-    tag: 'life',
-    authorId: 'reader_8',
-    authorName: '青空与海',
-    authorRole: 'member',
-    message: '🌊 无论身处何地，敲下几句此刻的想法，都是给世界的信号。',
-    likesCount: 5,
-    reactions: { summary: { '✨': 3, '❤️': 2 }, users: {} },
-    status: 'approved',
-    createdAt: '2026-10-31T03:20:00.000Z',
-    showLocation: true,
-    ipCountryFlag: '🇨🇦',
-    ipCountryName: '加拿大',
-    ipLocation: 'Vancouver',
-  },
-
-  // Track 3 (Index 2, 5, 8)
-  {
-    id: 'boost_starter_3',
-    postSlug: 'guestbook',
-    parentId: null,
-    postType: 'boost',
-    tag: 'life',
-    authorId: 'reader_3',
-    authorName: '晨光微熹',
-    authorRole: 'member',
-    message: '☕ 清晨喝一杯手冲曼特宁，阅读博主的工程规范，收获满满。',
-    likesCount: 3,
-    reactions: { summary: { '👍': 3 }, users: {} },
-    status: 'approved',
-    createdAt: '2026-10-31T02:00:00.000Z',
-    showLocation: true,
-    ipCountryFlag: '🇨🇳',
-    ipCountryName: '中国',
-    ipLocation: '浙江 · 杭州',
-  },
-  {
-    id: 'boost_starter_6',
-    postSlug: 'guestbook',
-    parentId: null,
-    postType: 'boost',
-    tag: 'chat',
-    authorId: 'reader_6',
-    authorName: '极客漫步',
-    authorRole: 'member',
-    message: '📖 博客的排版与字体读起来非常舒适，期待更多深度好文！',
-    likesCount: 7,
-    reactions: { summary: { '💯': 4, '👍': 3 }, users: {} },
-    status: 'approved',
-    createdAt: '2026-10-31T02:50:00.000Z',
-    showLocation: true,
-    ipCountryFlag: '🇨🇳',
-    ipCountryName: '中国',
-    ipLocation: '北京',
-  },
-  {
-    id: 'boost_starter_9',
-    postSlug: 'guestbook',
-    parentId: null,
-    postType: 'boost',
-    tag: 'ideas',
-    authorId: 'reader_9',
-    authorName: 'PixelArtist',
-    authorRole: 'member',
-    message: '🌱 保持好奇与专注，每一行代码都是与数字世界的真诚对话。',
-    likesCount: 3,
-    reactions: { summary: { '🎨': 3 }, users: {} },
-    status: 'approved',
-    createdAt: '2026-10-31T03:40:00.000Z',
-    showLocation: true,
-    ipCountryFlag: '🇦🇺',
-    ipCountryName: '澳大利亚',
-    ipLocation: 'Sydney',
-  },
-];
-
-// Official Pinned Welcome Thread (Clean & Welcoming, zero lecturing)
-export const OFFICIAL_PINNED_POSTS: BlogComment[] = [
-  {
-    id: 'pinned_welcome_official',
-    postSlug: 'guestbook',
-    parentId: null,
-    postType: 'gesture',
-    tag: 'chat',
-    authorId: 'admin',
-    authorName: 'shijianus',
-    authorAvatar: '/media/shijianus/avatar.jpg',
-    authorRole: 'admin',
-    authorWebsite: 'https://blog.epocanvas.com',
-    message: `### 🌟 欢迎来到读者留言与交流广场
-
-欢迎在此留下你的足迹、想法与问候，探讨技术、交流灵感或随心闲聊。期待与你的每一次思想碰撞！✨`,
-    likesCount: 16,
-    reactions: {
-      summary: { '👍': 8, '✨': 5, '❤️': 6 },
-      users: {},
-    },
-    status: 'pinned',
-    createdAt: '2026-08-03T08:15:00.000Z',
-    showLocation: true,
-    ipCountryFlag: '🇨🇳',
-    ipCountryName: '中国',
-    ipLocation: '浙江 · 杭州',
-  },
-];
-
-const OFFICIAL_PINNED_POST = OFFICIAL_PINNED_POSTS[0];
-
-// Starter replies for pinned post to demonstrate the floor slider immediately
-const STARTER_PINNED_REPLIES: BlogComment[] = [
-  {
-    id: 'reply_floor_2_official',
-    postSlug: 'guestbook',
-    parentId: 'pinned_welcome_official',
-    postType: 'gesture',
-    tag: 'tech',
-    authorId: 'reader_alice',
-    authorName: 'Alice',
-    authorRole: 'member',
-    message: '体验了右侧的长条百分比楼层滑块，拖拽和点击跳转指定楼层非常灵敏，阅读长篇讨论毫无迷航感！',
-    likesCount: 3,
-    reactions: { summary: { '👍': 3 }, users: {} },
-    status: 'approved',
-    createdAt: '2026-10-31T00:15:00.000Z',
-    showLocation: true,
-    ipCountryFlag: '🇨🇳',
-    ipCountryName: '中国',
-    ipLocation: '北京',
-  },
-  {
-    id: 'reply_floor_3_official',
-    postSlug: 'guestbook',
-    parentId: 'pinned_welcome_official',
-    postType: 'gesture',
-    tag: 'tech',
-    authorId: 'reader_bob',
-    authorName: 'Bob_Dev',
-    authorRole: 'member',
-    message: '楼上常驻的 Boost 观点流很生动，把即时短评和深度长帖解耦，界面的层次感瞬间拉满了。支持！',
-    likesCount: 4,
-    reactions: { summary: { '🚀': 2, '❤️': 2 }, users: {} },
-    status: 'approved',
-    createdAt: '2026-10-31T00:45:00.000Z',
-    showLocation: true,
-    ipCountryFlag: '🇺🇸',
-    ipCountryName: '美国',
-    ipLocation: 'San Jose',
-  },
-  {
-    id: 'reply_floor_4_official',
-    postSlug: 'guestbook',
-    parentId: 'pinned_welcome_official',
-    postType: 'gesture',
-    tag: 'tech',
-    authorId: 'reader_carol',
-    authorName: 'Carol_UI',
-    authorRole: 'member',
-    message: '横排分类里的“书签”和“已读”功能很实用，逛论坛或者深度讨论时可以随手收藏感兴趣的 Gesture。',
-    likesCount: 2,
-    reactions: { summary: { '💡': 2 }, users: {} },
-    status: 'approved',
-    createdAt: '2026-10-31T01:10:00.000Z',
-    showLocation: true,
-    ipCountryFlag: '🇨🇳',
-    ipCountryName: '中国',
-    ipLocation: '广东 · 深圳',
-  },
-];
-
 export function GuestbookBoard() {
   // Navigation & View state
   const [activeView, setActiveView] = useState<'list' | 'detail'>('list');
@@ -396,7 +123,10 @@ export function GuestbookBoard() {
   const [identity, setIdentity] = useState<CommentIdentity | null>(null);
 
   // Top Boost Stream State
-  const [isBoostMarqueePaused, setIsBoostMarqueePaused] = useState(false);
+  const [listLimit, setListLimit] = useState(20);
+  const [listError, setListError] = useState('');
+  const [retry, setRetry] = useState(0);
+  const emojiButton = useRef<HTMLButtonElement>(null);
 
   // Floating Non-blocking Composer Dock State
   const [showComposer, setShowComposer] = useState(false);
@@ -543,24 +273,27 @@ export function GuestbookBoard() {
   useEffect(() => {
     setIdentity(readCommentIdentity());
 
+    if (activeView !== 'list') return;
+    const controller = new AbortController();
     async function loadData() {
+      setLoading(true); setListError('');
+      const topics = new Map<string, BlogComment>();
       try {
-        setLoading(true);
-        const res = await fetchComments('guestbook');
-        if (Array.isArray(res)) {
-          setDbComments(res);
-        } else if ((res as any)?.ok && Array.isArray((res as any).comments)) {
-          setDbComments((res as any).comments);
+        for (let offset = 0; ; offset += 200) {
+          const res = await fetch('/api/comments?slug=guestbook&view=topics&limit=200&offset=' + offset, { signal: controller.signal });
+          const data = await res.json();
+          if (!res.ok || !data.ok || !Array.isArray(data.comments)) throw new Error();
+          for (const n of data.comments as BlogComment[]) topics.set(n.id,n);
+          if (data.comments.length < 200) break;
         }
-      } catch (err) {
-        console.error('Failed to load guestbook comments:', err);
-      } finally {
-        setLoading(false);
-      }
+        if (!controller.signal.aborted) setDbComments([...topics.values()]);
+      } catch { if (!controller.signal.aborted) setListError('留言加载失败'); }
+      finally { if (!controller.signal.aborted) setLoading(false); }
     }
-
-    loadData();
-  }, []);
+    void loadData();
+    return () => controller.abort();
+  }, [activeView, retry]);
+  useEffect(() => { setListLimit(20); }, [categoryFilter, searchQuery, selectedDimension]);
 
   // Sync with URL hash for direct links (e.g., #gesture-<id> or #gesture-<id>-floor-<n>)
   useEffect(() => {
@@ -616,111 +349,22 @@ export function GuestbookBoard() {
     return () => clearTimeout(t);
   }, [toastMessage]);
 
-  // Merge starter Boosts with DB Boosts
-  const allBoostComments = useMemo(() => {
-    const fromDb = dbComments.filter((c) => c.postType === 'boost');
-    const existingIds = new Set(fromDb.map((c) => c.id));
-    const starters = STARTER_BOOSTS.filter((c) => !existingIds.has(c.id));
-    return [...fromDb, ...starters];
-  }, [dbComments]);
-
-  // 3 Tracks partitioning for Boost stream (Each Boost comment appears strictly ONCE)
-  const { boostRow1, boostRow2, boostRow3 } = useMemo(() => {
-    const row1: BlogComment[] = [];
-    const row2: BlogComment[] = [];
-    const row3: BlogComment[] = [];
-
-    allBoostComments.forEach((b, idx) => {
-      if (idx % 3 === 0) row1.push(b);
-      else if (idx % 3 === 1) row2.push(b);
-      else row3.push(b);
-    });
-
-    return { boostRow1: row1, boostRow2: row2, boostRow3: row3 };
-  }, [allBoostComments]);
-
-  // Animation speed directly proportional to information density:
-  // More items -> faster scroll (shorter duration); Fewer items -> slower scroll (longer duration)
-  const boostAnimDuration = useMemo(() => {
-    const count = allBoostComments.length;
-    const dur = Math.max(18, Math.min(58, Math.round(58 - count * 1.5)));
-    return `${dur}s`;
-  }, [allBoostComments.length]);
-
-  // Merge starter pinned posts (all 4 official topics) & starter replies with DB comments
-  const allGestureCommentsWithPinned = useMemo(() => {
-    const existingIds = new Set(dbComments.map((c) => c.id));
-    const missingPinned = OFFICIAL_PINNED_POSTS.filter((p) => !existingIds.has(p.id));
-    let list = [...missingPinned, ...dbComments];
-
-    // Ensure starter replies exist if pinned post has no replies
-    const hasStarterReplies = list.some((c) => c.parentId === OFFICIAL_PINNED_POSTS[0].id);
-    if (!hasStarterReplies) {
-      list = [...list, ...STARTER_PINNED_REPLIES];
-    }
-    return list;
-  }, [dbComments]);
-
-  // Intelligent Dynamic Type Detection for Floating Composer:
-  // - < 8 chars: definitely Boost
-  // - <= 30 chars with no title, no custom tag, no image, no specific dimension: Boost
-  // - otherwise: Gesture
-  const trimmedComposerText = composerText.trim();
-  const hasComposerTitle = composerTitle.trim().length > 0;
-  const hasComposerTags = composerTagsList.length > 0 || composerTagInput.trim().length > 0;
-  const hasComposerImages = composerImages.length > 0;
-  const hasComposerSpecificDim = composerDimension !== 'all' && composerDimension !== '';
-
-  // Dynamic Intelligent Detection for Composer Type (Boost vs Gesture)
-  // Rule:
-  // - If user provides title, custom tags, attached images, or specific channel/dimension -> Gesture
-  // - Otherwise, if content length <= 30 chars (including default empty or < 8 chars) -> Boost
-  // - All other cases (e.g. text > 30 chars) -> Gesture
-  const determinedType: 'boost' | 'gesture' = useMemo(() => {
-    if (hasComposerTitle || hasComposerTags || hasComposerImages || hasComposerSpecificDim) {
-      return 'gesture';
-    }
-    const len = boostLength(trimmedComposerText);
-    if (len <= BOOST_LIMIT && !trimmedComposerText.includes('\n')) {
-      return 'boost';
-    }
-    return 'gesture';
-  }, [trimmedComposerText, hasComposerTitle, hasComposerTags, hasComposerImages, hasComposerSpecificDim]);
-
+  const allBoostComments = dbComments.filter(n => n.postType === 'boost' && !n.parentId);
+  const [determinedType, setComposerType] = useState<'gesture' | 'boost'>('gesture');
+  const [boostDraft, setBoostDraft] = useState('');
+  const trimmedComposerText = (determinedType === 'boost' ? boostDraft : composerText).trim();
   const currentComposerDimObj =
     CHANNELS.find((c) => c.id === composerDimension) ||
     (composerDimension === 'all'
       ? { id: 'all', label: '综合分区', icon: '🌟', desc: '随心分享，轻量短句或全站综合交流' }
       : CHANNELS[0]);
 
-  // Result only: clean character count
-  const composerWordResult = useMemo(() => {
-    const len = boostLength(trimmedComposerText);
-    return len > 0 ? `${len} 字` : '';
-  }, [trimmedComposerText]);
+  const wordCount = boostLength(trimmedComposerText);
+  const composerWordResult = determinedType === 'boost'
+    ? wordCount + '/16 · ' + (wordCount > 16 ? '超出 ' : '余 ') + Math.abs(16 - wordCount)
+    : wordCount + ' 字';
 
-  const isWordCountWarning = false;
-  const isWordCountNeedMore = false;
-
-  // Organize Gestures into Top-Level Posts vs Replies
-  const { topLevelGestures, repliesByParent } = useMemo(() => {
-    const top: BlogComment[] = [];
-    const rep: Record<string, BlogComment[]> = {};
-
-    for (const c of allGestureCommentsWithPinned) {
-      // Exclude Boost from Gesture feed
-      if (c.postType === 'boost') continue;
-
-      if (c.parentId) {
-        if (!rep[c.parentId]) rep[c.parentId] = [];
-        rep[c.parentId].push(c);
-      } else {
-        top.push(c);
-      }
-    }
-
-    return { topLevelGestures: top, repliesByParent: rep };
-  }, [allGestureCommentsWithPinned]);
+  const topLevelGestures = useMemo(() => dbComments.filter(n => !n.parentId && n.postType !== 'boost'), [dbComments]);
 
   // Filtered Gestures according to the 8 horizontal categories
   const filteredGestures = useMemo(() => {
@@ -731,7 +375,7 @@ export function GuestbookBoard() {
       const q = searchQuery.toLowerCase().trim();
       list = list.filter(
         (c) =>
-          c.message.toLowerCase().includes(q) ||
+          c.message.toLowerCase().includes(q) || c.title?.toLowerCase().includes(q) ||
           (c.authorName && c.authorName.toLowerCase().includes(q)) ||
           (c.tag && c.tag.toLowerCase().includes(q))
       );
@@ -770,8 +414,8 @@ export function GuestbookBoard() {
       case 'hot':
         // Hot: sort by replies count * 3 + likes
         list.sort((a, b) => {
-          const scoreA = (repliesByParent[a.id]?.length || 0) * 3 + (a.likesCount || 0);
-          const scoreB = (repliesByParent[b.id]?.length || 0) * 3 + (b.likesCount || 0);
+          const scoreA = (a.replyCount || 0) * 3 + (a.likesCount || 0);
+          const scoreB = (b.replyCount || 0) * 3 + (b.likesCount || 0);
           return scoreB - scoreA;
         });
         break;
@@ -788,7 +432,7 @@ export function GuestbookBoard() {
           list = [];
         } else {
           list = list.filter(
-            (c) => c.authorId === identity.id || c.authorName === identity.name
+            (c) => c.authorId === identity.id
           );
         }
         break;
@@ -810,31 +454,12 @@ export function GuestbookBoard() {
     categoryFilter,
     selectedDimension,
     searchQuery,
-    repliesByParent,
     identity,
     readPostIds,
     bookmarkedPostIds,
   ]);
 
-  // Active Gesture Display Cap (At most 20 items per view, older items remain in DB and searchable)
-  const displayedGestures = useMemo(() => {
-    return filteredGestures.slice(0, 20);
-  }, [filteredGestures]);
-
-  // Current Active Gesture in detail view
-  const currentGesture = useMemo(() => {
-    if (!activeGestureId) return null;
-    return allGestureCommentsWithPinned.find((c) => c.id === activeGestureId) || null;
-  }, [activeGestureId, allGestureCommentsWithPinned]);
-
-  // Current Active Gesture's replies
-  const currentReplies = useMemo(() => {
-    if (!activeGestureId) return [];
-    const rep = repliesByParent[activeGestureId] || [];
-    return [...rep].sort(
-      (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-    );
-  }, [activeGestureId, repliesByParent]);
+  const displayedGestures = filteredGestures.slice(0, listLimit);
 
   // Enter Gesture Detail View
   const openGestureDetail = (item: BlogComment) => {
@@ -867,7 +492,7 @@ export function GuestbookBoard() {
   // 1. Submit from Floating Composer (Intelligently handles Boost or Gesture)
   const handleComposerSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    const text = composerText.trim();
+    const text = trimmedComposerText;
     if (!text) {
       setComposerError('请输入内容');
       return;
@@ -878,7 +503,7 @@ export function GuestbookBoard() {
       setComposerError(null);
 
       if (determinedType === 'boost') {
-        if (!validBoost(composerText)) {
+        if (!validBoost(boostDraft)) {
           setComposerError('Boost 限单行、最多 16 字');
           setComposerSubmitting(false);
           return;
@@ -886,6 +511,7 @@ export function GuestbookBoard() {
 
         const res = await createComment({
           slug: 'guestbook',
+          sessionToken: getOrCreateGestureSessionToken(),
           message: text,
           postType: 'boost',
           tag: composerDimension !== 'all' ? composerDimension : 'chat',
@@ -894,7 +520,7 @@ export function GuestbookBoard() {
 
         if (res.ok && res.comment) {
           setDbComments((prev) => [res.comment!, ...prev]);
-          setComposerText('');
+          setBoostDraft('');
           setShowComposer(false);
           showToast('✨ 发布成功！');
         } else {
@@ -902,26 +528,17 @@ export function GuestbookBoard() {
         }
       } else {
         // Gesture Mode
-        if (text.length < 8 && !composerTitle.trim()) {
+        if (text.length < 8) {
           setComposerError('至少需要 8 字');
           setComposerSubmitting(false);
           return;
         }
 
         let finalMessage = text;
-        if (composerTitle.trim()) {
-          finalMessage = `### ${composerTitle.trim()}\n\n${finalMessage}`;
-        }
         const allTags = [...composerTagsList];
         const pending = composerTagInput.trim().replace(/^#+/, '').trim().slice(0, 20);
         if (pending && !allTags.includes(pending) && allTags.length < 5) {
           allTags.push(pending);
-        }
-        if (allTags.length > 0) {
-          const formattedTags = allTags
-            .map((t) => (t.startsWith('#') ? t : `#${t}`))
-            .join(' ');
-          finalMessage = `${finalMessage}\n\n${formattedTags}`;
         }
         if (composerImages.length > 0) {
           const imgMd = composerImages.map((src) => `\n![image](${src})`).join('');
@@ -930,8 +547,11 @@ export function GuestbookBoard() {
 
         const res = await createComment({
           slug: 'guestbook',
+          sessionToken: getOrCreateGestureSessionToken(),
           message: finalMessage,
           postType: 'gesture',
+          title: composerTitle.trim(),
+          tags: allTags,
           tag: composerDimension !== 'all' ? composerDimension : 'tech',
           author: identity || undefined,
         });
@@ -1004,28 +624,10 @@ export function GuestbookBoard() {
     }
   };
 
-  const formatTime = (isoString?: string) => {
-    if (!isoString) return '刚刚';
-    try {
-      const date = new Date(isoString);
-      const diff = Date.now() - date.getTime();
-      const minutes = Math.floor(diff / 60000);
-      if (minutes < 1) return '刚刚';
-      if (minutes < 60) return `${minutes}分钟前`;
-      const hours = Math.floor(minutes / 60);
-      if (hours < 24) return `${hours}小时前`;
-      const days = Math.floor(hours / 24);
-      if (days < 30) return `${days}天前`;
-      return date.toLocaleDateString();
-    } catch {
-      return '刚刚';
-    }
-  };
-
   const currentDimensionObj = CHANNELS.find((c) => c.id === selectedDimension) || CHANNELS[0];
 
   return (
-    <div className="guestbook-board-container">
+    <div className={`guestbook-board-container ${activeView === "list" ? "is-board-list" : ""}`}>
       {/* Toast Notification */}
       {toastMessage && (
         <div className="gb-toast" role="status">
@@ -1049,124 +651,10 @@ export function GuestbookBoard() {
           ======================================================== */}
       {activeView === 'list' && (
         <>
-      <section className="gb-boost-wall-card" aria-label="Boost 实时观点流">
-        {/* Boost Header */}
-        <div className="gb-boost-wall-head">
-          <div className="gb-boost-head-left">
-            <span className="gb-boost-badge">
-              <span className="gb-pulse-dot"></span>
-              <Rocket className="w-3.5 h-3.5 mr-1" /> Boost
-            </span>
-            <span className="gb-boost-status-count">
-              {allBoostComments.length}
-            </span>
-          </div>
-        </div>
-
-        {/* 3 Tracks Stream (Smooth Horizontal Floating Viewpoints, Speed Adaptive) */}
-        <div
-          className={`gb-boost-marquee-container is-three-rows ${isBoostMarqueePaused ? 'is-paused' : ''}`}
-          onMouseEnter={() => setIsBoostMarqueePaused(true)}
-          onMouseLeave={() => setIsBoostMarqueePaused(false)}
-        >
-          {/* Track 1: Normal Direction */}
-          <div
-            className="gb-boost-track gb-track-1"
-            style={{ animationDuration: boostAnimDuration }}
-          >
-            {boostRow1.map((b) => (
-              <div key={`track1-${b.id}`} className="gb-boost-pill-card">
-                <div className="gb-boost-pill__avatar">
-                  {b.authorAvatar ? (
-                    <img src={b.authorAvatar} alt={b.authorName} />
-                  ) : (
-                    <span>{getCommentInitials(b.authorName)}</span>
-                  )}
-                </div>
-                <div className="gb-boost-pill__body">
-                  <div className="gb-boost-pill__meta">
-                    <span className="gb-boost-pill__name">{b.authorName || '访客'}</span>
-                    {b.ipCountryFlag && (
-                      <span className="gb-boost-pill__flag" title={b.ipCountryName}>
-                        {b.ipCountryFlag}
-                      </span>
-                    )}
-                    <span className="gb-boost-pill__time">{formatTime(b.createdAt)}</span>
-                  </div>
-                  <div className="gb-boost-pill__text">{b.message}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Track 2: Reverse Direction */}
-          <div
-            className="gb-boost-track gb-track-2 is-reverse"
-            style={{ animationDuration: boostAnimDuration }}
-          >
-            {boostRow2.map((b) => (
-              <div key={`track2-${b.id}`} className="gb-boost-pill-card is-reverse">
-                <div className="gb-boost-pill__avatar is-purple">
-                  {b.authorAvatar ? (
-                    <img src={b.authorAvatar} alt={b.authorName} />
-                  ) : (
-                    <span>{getCommentInitials(b.authorName)}</span>
-                  )}
-                </div>
-                <div className="gb-boost-pill__body">
-                  <div className="gb-boost-pill__meta">
-                    <span className="gb-boost-pill__name">{b.authorName || '访客'}</span>
-                    {b.ipCountryFlag && (
-                      <span className="gb-boost-pill__flag" title={b.ipCountryName}>
-                        {b.ipCountryFlag}
-                      </span>
-                    )}
-                    <span className="gb-boost-pill__time">{formatTime(b.createdAt)}</span>
-                  </div>
-                  <div className="gb-boost-pill__text">{b.message}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Track 3: Normal Direction (Teal Accent) */}
-          <div
-            className="gb-boost-track gb-track-3 is-track-3"
-            style={{ animationDuration: boostAnimDuration }}
-          >
-            {boostRow3.map((b) => (
-              <div key={`track3-${b.id}`} className="gb-boost-pill-card is-teal">
-                <div className="gb-boost-pill__avatar is-emerald">
-                  {b.authorAvatar ? (
-                    <img src={b.authorAvatar} alt={b.authorName} />
-                  ) : (
-                    <span>{getCommentInitials(b.authorName)}</span>
-                  )}
-                </div>
-                <div className="gb-boost-pill__body">
-                  <div className="gb-boost-pill__meta">
-                    <span className="gb-boost-pill__name">{b.authorName || '访客'}</span>
-                    {b.ipCountryFlag && (
-                      <span className="gb-boost-pill__flag" title={b.ipCountryName}>
-                        {b.ipCountryFlag}
-                      </span>
-                    )}
-                    <span className="gb-boost-pill__time">{formatTime(b.createdAt)}</span>
-                  </div>
-                  <div className="gb-boost-pill__text">{b.message}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ========================================================
-          2. 横排分类与维度导航条 (NAV BAR)
-          - 顺序："维度" 放在第一个（下拉菜单，最多 4 项滚动展示）
-          - 其后排开横向分类 Tabs："最新" "近期" "热门" "精选" "我的贴文" "已读" "书签"
-          - 右侧保留统一发布入口：发布 Gesture
-          ======================================================== */}
+      <header className="gb-board-header"><h1>读者留言与交流广场</h1><button type="button" className="gb-new-gesture-btn" onClick={openFloatingComposer}><Pencil size={15} />发布留言</button></header>
+      {allBoostComments.length > 0 && <section className="gb-board-boosts" aria-label="广场 Boost">
+        <Rocket size={15} /><div className="gd-boost-op-pills" tabIndex={0}>{allBoostComments.map(n => <span key={n.id} className="gd-boost-op-pill"><span>{n.authorName}</span> · {n.message}</span>)}</div>
+      </section>}
       <nav className="gb-nav-bar" aria-label="Gesture 讨论分类与维度">
         <div className="gb-nav-bar__categories">
           {/* 1. 维度下拉选择器 (Dimension Dropdown) - 位于首位 */}
@@ -1213,7 +701,6 @@ export function GuestbookBoard() {
 
           {/* 2. 横向排开的各分类标签项 (最新, 近期, 热门, 精选, 我的贴文, 已读, 书签) */}
           {HORIZONTAL_TABS.map((cat) => {
-            const Icon = cat.icon;
             const isActive = categoryFilter === cat.id;
             const count =
               cat.id === 'bookmarked'
@@ -1226,11 +713,11 @@ export function GuestbookBoard() {
               <button
                 key={cat.id}
                 type="button"
-                data-cat-id={cat.id}
+                data-cat-id={cat.id} aria-pressed={isActive}
                 className={`gb-cat-tab-btn ${isActive ? 'is-active' : ''}`}
                 onClick={() => setCategoryFilter(cat.id)}
               >
-                <Icon className="w-3.5 h-3.5 mr-1.5 flex-shrink-0" />
+
                 <span>{cat.label}</span>
                 {count > 0 && <span className="gb-cat-badge">{count}</span>}
               </button>
@@ -1246,7 +733,7 @@ export function GuestbookBoard() {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="搜索留言..."
+              aria-label="搜索留言" placeholder="搜索留言…"
               className="gb-search-input"
             />
             {searchQuery && (
@@ -1260,34 +747,10 @@ export function GuestbookBoard() {
             )}
           </div>
 
-          <button
-            type="button"
-            className="gb-new-gesture-btn"
-            onClick={openFloatingComposer}
-          >
-            <Pencil className="w-4 h-4 mr-1.5" />
-            <span>发布留言</span>
-          </button>
+
         </div>
       </nav>
 
-      {/* Dimension Pills Quick Strip (When Dimensions is selected) */}
-      {selectedDimension !== 'all' && (
-        <div className="gb-active-dimension-strip">
-          <span className="gb-active-dim-label">当前维度筛选：</span>
-          <span className="gb-active-dim-pill">
-            {CHANNELS.find((c) => c.id === selectedDimension)?.icon}{' '}
-            {CHANNELS.find((c) => c.id === selectedDimension)?.label}
-          </span>
-          <button
-            type="button"
-            className="gb-active-dim-reset"
-            onClick={() => setSelectedDimension('all')}
-          >
-            清除维度筛选 <X className="w-3 h-3 ml-0.5 inline" />
-          </button>
-        </div>
-      )}
         </>
       )}
 
@@ -1302,7 +765,7 @@ export function GuestbookBoard() {
               <div className="gb-spinner"></div>
               <span>正在连接边缘节点并加载 Gesture 讨论广场...</span>
             </div>
-          ) : filteredGestures.length === 0 ? (
+          ) : listError ? <p className="gb-empty-state" role="status">{listError} <button onClick={() => setRetry(n => n+1)}>重试</button></p> : filteredGestures.length === 0 ? (
             <div className="gb-empty-state">
               <div className="gb-empty-icon">🌱</div>
               <h3 className="gb-empty-title">
@@ -1327,115 +790,25 @@ export function GuestbookBoard() {
                 const isPinned = item.status === 'pinned';
                 const isBookmarked = bookmarkedPostIds.includes(item.id);
                 const isRead = readPostIds.includes(item.id);
-                const replies = repliesByParent[item.id] || [];
-                const channel = CHANNELS.find((c) => c.id === item.tag) || CHANNELS[2];
-                const userLevel = resolveAuthorBadges(item);
-
-                // Excerpt clean up
-                const cleanExcerpt = item.message
-                  .replace(/^###\s+.*$/m, '')
-                  .replace(/!\[.*?\]\(.*?\)/g, '')
-                  .replace(/[#*`_>]/g, '')
-                  .trim();
-
-                // Extract title if present
-                const titleMatch = item.message.match(/^###\s+(.*)$/m);
-                const title = titleMatch ? titleMatch[1] : cleanExcerpt.slice(0, 48) || '无标题讨论';
-
-                return (
-                  <article
-                    key={item.id}
-                    className={`gb-gesture-row ${isPinned ? 'is-pinned-row' : ''} ${isRead ? 'is-read-row' : ''}`}
-                    onClick={() => openGestureDetail(item)}
-                  >
-                    {/* Left: Author Avatar & Channel Icon */}
-                    <div className="gb-gesture-row__avatar-wrap">
-                      <div className="gb-gesture-row__avatar">
-                        {item.authorAvatar ? (
-                          <img src={item.authorAvatar} alt={item.authorName} />
-                        ) : (
-                          <span>{getCommentInitials(item.authorName)}</span>
-                        )}
-                      </div>
-                      <span className="gb-gesture-row__channel-icon" title={channel.label}>
-                        {channel.icon}
-                      </span>
-                    </div>
-
-                    {/* Middle: Title & Meta Info */}
-                    <div className="gb-gesture-row__main">
-                      <div className="gb-gesture-row__header">
-                        {isPinned && (
-                          <span className="gb-badge is-pinned" title="官方置顶">
-                            <Pin className="w-3 h-3 inline mr-0.5" /> 官方置顶
-                          </span>
-                        )}
-                        <span className="gb-channel-tag">
-                          {channel.icon} {channel.label}
-                        </span>
-                        <h2 className="gb-gesture-row__title">
-                          {title}
-                        </h2>
-                      </div>
-
-                      <p className="gb-gesture-row__excerpt">
-                        {cleanExcerpt.slice(0, 110)}
-                        {cleanExcerpt.length > 110 ? '...' : ''}
-                      </p>
-
-                      <div className="gb-gesture-row__footer">
-                        <span className="gb-gesture-row__author">
-                          {item.authorName || '访客'}
-                          {item.authorRole === 'admin' && (
-                            <span className="gb-badge is-admin ml-1">👑 站长</span>
-                          )}
-                          <span className="gb-level-badge ml-1">{userLevel.levelLabel}</span>
-                        </span>
-                        <span className="gb-dot-divider">•</span>
-                        <time className="gb-gesture-row__time">{formatTime(item.createdAt)}</time>
-                        {item.ipLocation && (
-                          <>
-                            <span className="gb-dot-divider">•</span>
-                            <span className="gb-gesture-row__loc">
-                              {item.ipCountryFlag} {item.ipLocation}
-                            </span>
-                          </>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Right: Metrics & Bookmark */}
-                    <div className="gb-gesture-row__right">
-                      {/* Replies count */}
-                      <div className="gb-gesture-metric is-replies" title="跟帖回复数">
-                        <MessageSquare className="w-4 h-4 mr-1 text-indigo-500" />
-                        <span>{replies.length}</span>
-                      </div>
-
-                      {/* Likes count */}
-                      <div className="gb-gesture-metric is-likes" title="表态点赞数">
-                        <Flame className="w-4 h-4 mr-1 text-orange-500" />
-                        <span>{item.likesCount || 0}</span>
-                      </div>
-
-                      {/* Bookmark Button */}
-                      <button
-                        type="button"
-                        className={`gb-bookmark-toggle ${isBookmarked ? 'is-bookmarked' : ''}`}
-                        title={isBookmarked ? '移出书签' : '加入书签'}
-                        onClick={(e) => toggleBookmark(item.id, e)}
-                      >
-                        <Bookmark className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </article>
-                );
+                const channel = CHANNELS.find(c => c.id === item.tag);
+                const { title, bodyWithoutLeadingHeading } = extractOpTitle(item);
+                const excerpt = bodyWithoutLeadingHeading.replace(/!\[[^\]]*\]\([^)]*\)/g,'').replace(/\[([^\]]+)\]\([^)]+\)/g,'$1').replace(/[#*`_>]/g,'').trim();
+                return <article key={item.id} className={`gb-gesture-row ${isRead ? 'is-read-row' : ''}`}>
+                  <GestureAvatar name={item.authorName} avatar={item.authorAvatar} size={34} />
+                  <div className="gb-gesture-row__main">
+                    <h2 className="gb-gesture-row__title"><a href={'#gesture-' + item.id}>{isPinned && <Pin size={13} aria-label="置顶" />}{title}</a></h2>
+                    {excerpt && !excerpt.startsWith(title) && <p className="gb-gesture-row__excerpt">{excerpt}</p>}
+                    <div className="gb-gesture-row__footer"><strong>{item.authorName}</strong><time dateTime={item.createdAt}>{formatMonthDay(item.createdAt)}</time>{channel && <span>{channel.label}</span>}</div>
+                  </div>
+                  <div className="gb-gesture-row__right"><span title="回复数"><MessageSquare size={14} />{item.replyCount ?? 0}</span><span title="表态数"><Heart size={14} />{item.likesCount}</span>
+                    <button className="gb-bookmark-toggle" aria-label="书签" aria-pressed={isBookmarked} onClick={e => toggleBookmark(item.id,e)}><Bookmark size={15} /></button></div>
+                </article>;
               })}
 
               {/* 20-Item Display Cap Notice */}
-              {filteredGestures.length > 20 && (
+              {filteredGestures.length > listLimit && (
                 <div className="gb-list-cap-notice">
-                  <span>共 {filteredGestures.length} 篇留言</span>
+                  <button onClick={() => setListLimit(n => n + 20)}>查看更多留言（共 {filteredGestures.length} 篇）</button>
                 </div>
               )}
             </div>
@@ -1569,6 +942,11 @@ export function GuestbookBoard() {
 
             {/* Composer Content Body */}
             <div className="gb-composer-body">
+              <div className="gb-publish-modes" aria-label="发表类型">
+                <button aria-pressed={determinedType === 'gesture'} onClick={() => setComposerType('gesture')}>Gesture 讨论</button>
+                <button aria-pressed={determinedType === 'boost'} onClick={() => setComposerType('boost')}>Boost 短评</button>
+              </div>
+              {determinedType === 'boost' ? <input className="gb-modal-title-input" aria-label="广场 Boost" value={boostDraft} onChange={e => setBoostDraft(e.target.value)} /> : <>
               {/* Title Input */}
               <div className="gb-modal-row">
                 <input
@@ -1747,7 +1125,7 @@ export function GuestbookBoard() {
                 <button
                   type="button"
                   title="插入表情"
-                  onClick={() => setComposerShowEmoji((prev) => !prev)}
+                  ref={emojiButton} onClick={() => setComposerShowEmoji((prev) => !prev)}
                 >
                   <Smile className="w-4 h-4" />
                 </button>
@@ -1790,7 +1168,7 @@ export function GuestbookBoard() {
 
               {/* Emoji Popover */}
               {composerShowEmoji && (
-                <div className="gb-emoji-popover">
+                <GesturePopover anchor={emojiButton} label="贴文表情" onClose={() => setComposerShowEmoji(false)}><div>
                   {EMOJI_GROUPS.map((group, idx) => (
                     <div key={idx} className="gb-emoji-group">
                       <span className="gb-emoji-group__title">{group.name}</span>
@@ -1811,7 +1189,7 @@ export function GuestbookBoard() {
                       </div>
                     </div>
                   ))}
-                </div>
+                </div></GesturePopover>
               )}
 
               {/* Textarea or Preview */}
@@ -1859,6 +1237,7 @@ export function GuestbookBoard() {
                 </div>
               )}
 
+              </>}
               {/* Error Alert */}
               {composerError && (
                 <div className="gb-error-alert">
@@ -1870,13 +1249,7 @@ export function GuestbookBoard() {
               {/* Footer */}
               <div className="gb-modal-foot">
                 <span
-                  className={`gb-word-count ${
-                    isWordCountWarning
-                      ? 'is-warning'
-                      : isWordCountNeedMore
-                      ? 'is-need-more'
-                      : ''
-                  }`}
+                  className="gb-word-count"
                 >
                   {composerWordResult}
                 </span>
@@ -1891,7 +1264,7 @@ export function GuestbookBoard() {
 
                   <button
                     type="button"
-                    disabled={composerSubmitting || !trimmedComposerText}
+                    disabled={composerSubmitting || !trimmedComposerText || (determinedType === 'boost' && !validBoost(boostDraft))}
                     onClick={handleComposerSubmit}
                     className="gb-submit-btn"
                   >

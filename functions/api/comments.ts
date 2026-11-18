@@ -427,6 +427,26 @@ export async function onRequest(context: {
       return jsonResponse(request, env, { ok: false, error: 'Slug parameter is required' }, { status: 400 });
     }
 
+    if (slug === 'guestbook' && url.searchParams.get('view') === 'topics') {
+      type Topic = RawCommentRow & { reply_count: number };
+      let topics: Topic[];
+      if (env.DB) {
+        await ensureTable(env.DB);
+        const result = await env.DB.prepare(`SELECT t.*, (SELECT COUNT(*) FROM comments r WHERE r.parent_id=t.id
+          AND r.status IN ('published','pinned') AND r.post_type!='boost') AS reply_count
+          FROM comments t WHERE t.parent_id IS NULL AND t.post_slug='guestbook' AND t.status IN ('published','pinned')
+          ORDER BY t.created_at DESC, t.id LIMIT ? OFFSET ?`).bind(limit, offset).all<Topic>();
+        topics = result.results || [];
+      } else {
+        const rows = [...memoryFallbackStore.values()].filter(r => r.post_slug === slug && ['published','pinned'].includes(r.status));
+        const counts = new Map<string, number>();
+        for (const r of rows) if (r.parent_id && r.post_type !== 'boost') counts.set(r.parent_id, (counts.get(r.parent_id) || 0) + 1);
+        topics = rows.filter(r => !r.parent_id).sort((a,b) => b.created_at.localeCompare(a.created_at) || a.id.localeCompare(b.id))
+          .slice(offset, offset + limit).map(r => ({ ...r, reply_count: counts.get(r.id) || 0 }));
+      }
+      return jsonResponse(request, env, { ok: true, comments: topics.map(r => ({ ...mapRowToClientComment(r, isAdmin, currentUserId), replyCount: r.reply_count })) });
+    }
+
     if (env.DB) {
       await ensureTable(env.DB);
       try {
