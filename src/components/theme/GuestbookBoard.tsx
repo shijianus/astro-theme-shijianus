@@ -38,7 +38,7 @@ import {
   type BlogComment,
   type CommentIdentity,
 } from '../../lib/comment-client';
-import { renderCommentMarkdown } from '../../lib/comment-markdown';
+import { renderGestureMarkdown } from '../../lib/gesture-markdown';
 import { extractOpTitle, getOrCreateGestureSessionToken, formatMonthDay } from '../../lib/gesture-client';
 import { GestureAvatar } from './gesture-detail/GestureAvatar';
 import { GesturePopover } from './gesture-detail/GesturePopover';
@@ -1208,7 +1208,7 @@ export function GuestbookBoard() {
                     <div
                       className="gb-markdown-body"
                       dangerouslySetInnerHTML={{
-                        __html: renderCommentMarkdown(composerText),
+                        __html: renderGestureMarkdown(composerText),
                       }}
                     />
                   ) : (

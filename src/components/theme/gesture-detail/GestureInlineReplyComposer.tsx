@@ -14,7 +14,7 @@ import {
   X,
 } from 'lucide-react';
 import { uploadCommentImage } from '../../../lib/comment-client';
-import { renderCommentMarkdown } from '../../../lib/comment-markdown';
+import { renderGestureMarkdown } from '../../../lib/gesture-markdown';
 import type { GestureNode, GestureQuote } from '../../../lib/gesture-client';
 
 const COMPACT_EMOJI_LIST = [
@@ -239,7 +239,7 @@ export function GestureInlineReplyComposer({
             {message.trim() ? (
               <div
                 className="gd-markdown-body"
-                dangerouslySetInnerHTML={{ __html: renderCommentMarkdown(message) }}
+                dangerouslySetInnerHTML={{ __html: renderGestureMarkdown(message) }}
               />
             ) : (
               <span className="gd-preview-empty">暂无预览内容</span>

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { ArrowUp, ChevronDown, ChevronUp } from 'lucide-react';
 import type { GestureNode, GestureQuote } from '../../../lib/gesture-client';
-import { renderCommentMarkdown } from '../../../lib/comment-markdown';
+import { renderGestureMarkdown } from '../../../lib/gesture-markdown';
 import { GestureAvatar } from './GestureAvatar';
 
 interface QuoteEmbedCardProps {
@@ -64,7 +64,7 @@ export function QuoteEmbedCard({
         {expanded ? (
           <div
             className="gd-markdown-body gd-quote-full-md"
-            dangerouslySetInnerHTML={{ __html: renderCommentMarkdown(fullContent) }}
+            dangerouslySetInnerHTML={{ __html: renderGestureMarkdown(fullContent) }}
           />
         ) : (
           <p className="gd-quote-excerpt">{quote.excerpt || quotedNode?.message.slice(0,100)}</p>

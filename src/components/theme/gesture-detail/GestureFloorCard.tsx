@@ -20,7 +20,7 @@ import {
   type GestureBoost,
   type GestureNode,
 } from '../../../lib/gesture-client';
-import { renderCommentMarkdown } from '../../../lib/comment-markdown';
+import { renderGestureMarkdown } from '../../../lib/gesture-markdown';
 import { GestureAvatar } from './GestureAvatar';
 import { EmojiReactionCluster } from './EmojiReactionCluster';
 import { GestureBoostSection } from './GestureBoostSection';
@@ -260,7 +260,7 @@ export function GestureFloorCard({
               className="gd-markdown-body gd-floor-markdown"
               onClick={handleBodyClick}
               dangerouslySetInnerHTML={{
-                __html: renderCommentMarkdown(bodyMarkdown),
+                __html: renderGestureMarkdown(bodyMarkdown),
               }}
             />
           )}
