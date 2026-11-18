@@ -50,10 +50,10 @@ body:has(#guestbook-dashboard) :is(#theme-snow-mid, #theme-snow-foreground) { z-
 .gd-markdown-body img { max-width: 100%; height: auto; cursor: zoom-in; }
 .gd-markdown-body td,.gd-markdown-body th { padding: .3em .65em; border-bottom: 1px solid var(--gb-rule); }
 .gd-markdown-body .tk-spoiler:not(:hover):not(:focus) { filter: blur(3px); }
-.gd-loading-box,.gd-empty-box { padding-block: 32px; color: var(--gb-meta); }
+.gd-empty-box { padding-block: 32px; color: var(--gb-meta); }
 @media (max-width: 760px) {
   #guestbook-dashboard { --gb-avatar: 34px; }
-  .gd-detail-grid { grid-template-columns: minmax(0,1fr); gap: 0; }
+  .gd-detail-grid { display: flex; flex-direction: column; align-items: stretch; gap: 0; }
   .gd-floor-article { scroll-margin-top: 118px; padding-block: 16px; }
 }
 .gd-reply-context, .gd-quote-card { margin: 8px 0; border-inline-start: 2px solid #41515f; padding-inline-start: 12px; color: var(--gb-meta); }
@@ -82,9 +82,6 @@ body:has(#guestbook-dashboard) :is(#theme-snow-mid, #theme-snow-foreground) { z-
 .gb-popover-panel button:hover, .gb-popover-panel button[aria-pressed="true"] { background: #394959; }
 .gd-breakdown-list { margin: 0; padding: 0; list-style: none; }
 .gd-breakdown-list li { display: grid; grid-template-columns: 50px 1fr; gap: 8px; padding: 3px; color: #c6d1dc; overflow-wrap: anywhere; }
-/* ============================================================================
-   ZONE 3: Scoped Horizontal Boost Micro-Pills (Aligned on 56px content axis)
-   ============================================================================ */
 .gd-zone3-boost { min-width: 0; margin-top: 5px; }
 .gd-boost-op-pills { display: flex; flex-wrap: nowrap; align-items: center; gap: 6px; overflow-x: auto; white-space: nowrap; scrollbar-width: thin; max-width: 100%; overscroll-behavior-x: contain; }
 .gd-boost-op-pill { display: inline-flex; align-items: baseline; gap: 5px; flex: 0 0 auto; padding: 2px 9px; background: #1b2631; border-radius: 12px; color: #b8c5d1; font-size: 12px; }
@@ -93,9 +90,6 @@ body:has(#guestbook-dashboard) :is(#theme-snow-mid, #theme-snow-foreground) { z-
 .gd-boost-inline-input { min-width: 0; flex: 1; border: 1px solid #455364; border-radius: 4px; padding: 5px 8px; background: #151c26; color: var(--gb-text); }
 .gd-boost-inline-submit { min-width: 30px; min-height: 30px; }
 .gd-boost-char-hint { font-variant-numeric: tabular-nums; }
-/* ============================================================================
-   SCENE A: Direct Replies Timeline Expansion (56px axis, Non-sticky 32px avatars + │)
-   ============================================================================ */
 .gd-topic-info { padding-inline-start: calc(var(--gb-avatar) + var(--gb-gap)); }
 .gd-zone5-links { padding: 6px 0 14px; }
 .gd-zone5-links h2,.gd-digest h2 { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--gb-meta); font-weight: 550; margin-bottom: 4px; }
@@ -108,37 +102,6 @@ body:has(#guestbook-dashboard) :is(#theme-snow-mid, #theme-snow-foreground) { z-
 .gd-summary-toggle { margin-inline-start: auto; gap: 5px; min-height: 30px; }
 .gd-digest { color: var(--gb-meta); font-size: 14px; padding-bottom: 10px; }
 @media (max-width: 480px) { .gd-topic-info { padding-inline-start: 0; } }
-.gd-hot-filter-banner {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 8px 28px;
-  background: rgba(245, 158, 11, 0.07);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-  font-size: 12.5px;
-  color: #FDE68A;
-}
-
-.gd-hot-filter-label {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.gd-hot-filter-banner button {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  border: none;
-  background: transparent;
-  color: #FBBF24;
-  cursor: pointer;
-  font-weight: 600;
-}
-
-/* ============================================================================
-   INLINE EDIT & REPLY COMPOSER INSIDE MATTE SHELL
-   ============================================================================ */
 .gd-inline-edit-form {
   margin: 12px 0 18px;
   display: flex;
@@ -305,16 +268,6 @@ body:has(#guestbook-dashboard) :is(#theme-snow-mid, #theme-snow-foreground) { z-
   color: #E2E8F0;
 }
 
-.gd-emoji-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-  padding: 8px;
-  background: rgba(13, 17, 26, 0.9);
-  border-left: 1px solid rgba(255, 255, 255, 0.06);
-  border-right: 1px solid rgba(255, 255, 255, 0.06);
-}
-
 .gd-emoji-item {
   width: 28px;
   height: 28px;
@@ -436,9 +389,6 @@ body:has(#guestbook-dashboard) :is(#theme-snow-mid, #theme-snow-foreground) { z-
   cursor: not-allowed;
 }
 
-/* ============================================================================
-   RIGHT SIDEBAR: Borderless Pure-Line Timeline Scroller (96px, NO card, NO dots)
-   ============================================================================ */
 .gd-timeline-aside { position: sticky; top: 88px; grid-area: rail; display: flex; flex-direction: column; align-items: flex-start; gap: 12px; color: var(--gb-meta); font-size: 12px; margin-top: 35px; padding-bottom: 12px; font-variant-numeric: tabular-nums; }
 .gd-detail-grid { grid-template-areas: "main rail"; }
 .gd-monolithic-shell { grid-area: main; }
@@ -458,7 +408,7 @@ body:has(#guestbook-dashboard) :is(#theme-snow-mid, #theme-snow-foreground) { z-
 .gd-stream-tools button[aria-pressed="true"] { color: var(--gb-accent); }
 .gd-floor-article.is-jump-highlighted .gd-author-name { text-decoration: underline; text-decoration-color: var(--gb-accent); text-underline-offset: 4px; }
 @media (max-width: 760px) {
-  .gd-detail-grid { grid-template-areas: "rail" "main"; }
+  .gd-timeline-aside { order: -1; }
   .gd-timeline-aside { flex-direction: row; align-items: center; top: 60px; background: var(--gb-paper); z-index: 5; margin: 0; padding: 5px 0; gap: 10px; border-bottom: 1px solid var(--gb-rule); }
   .gd-tl-rail { width: auto; height: 28px; flex: 1; }
   .gd-tl-rail::before { inset: 50% 0 auto; height: 1px; width: auto; }
@@ -473,8 +423,6 @@ body.theme-body:has(#guestbook-dashboard):not(.theme-overlay-open, .reward-modal
 }
 #guestbook-dashboard .gd-markdown-body .katex { color: var(--gb-text); }
 @media (max-width: 760px) {
-  .gd-detail-grid { display: flex; flex-direction: column; align-items: stretch; }
-  .gd-timeline-aside { order: -1; }
   body:has(#guestbook-dashboard) #rightside {
     position: static !important;
     width: fit-content;

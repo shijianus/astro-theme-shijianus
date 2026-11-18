@@ -378,7 +378,6 @@ export function GuestbookBoard() {
 
   const topLevelGestures = useMemo(() => dbComments.filter(n => !n.parentId && n.postType !== 'boost'), [dbComments]);
 
-  // Filtered Gestures according to the 8 horizontal categories
   const filteredGestures = useMemo(() => {
     let list = [...topLevelGestures];
 
@@ -398,7 +397,6 @@ export function GuestbookBoard() {
       list = list.filter((c) => (c.tag || 'tech') === selectedDimension);
     }
 
-    // Apply the 8 categories
     switch (categoryFilter) {
       case 'latest':
         // Pinned on top, then newest
@@ -846,13 +844,6 @@ export function GuestbookBoard() {
         )
       )}
 
-      {/* ========================================================
-          4. 悬浮非阻塞草拟面板 (FLOATING NON-BLOCKING COMPOSER DOCK)
-          智能识别机制：
-          - 低于 8 字：默认智能识别为 Boost
-          - 低于 30 字且无标题、无自定义 Tag、无特定分类：默认智能识别为 Boost
-          - 其余情况（包含标题、选择专属分类、输入 Tag、或达到 30 字以上）：自动转为 Gesture
-          ======================================================== */}
       {showComposer && (
         isComposerMinimized ? (
           <div

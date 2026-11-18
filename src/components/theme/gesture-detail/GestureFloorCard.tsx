@@ -162,7 +162,7 @@ export function GestureFloorCard({
         <GestureAvatar name={node.authorName} avatar={node.authorAvatar} size={isOp ? 40 : 34} isOwner={badges.isOwner} />
       </div>
       <div className="gd-content-col">
-          {/* Author Bar (First Line) - NO IP location, NO #1 楼主 badge */}
+
           <div className="gd-author-bar">
             <div className="gd-author-badges">
               <span className="gd-author-name">{node.authorName || '访客'}</span>
@@ -271,7 +271,6 @@ export function GestureFloorCard({
             />
           )}
 
-      {/* ZONE 4: Pure-Icon Action Bar + Top-4 Aggregated Emoji Pill + Direct Replies Trigger */}
       <div className="gd-zone4-action-bar">
         <div className="gd-zone4-left">
           <EmojiReactionCluster
@@ -330,7 +329,6 @@ export function GestureFloorCard({
               {copiedJustNow ? <Check className="w-4 h-4" /> : <Link2 className="w-4 h-4" />}
             </button>
 
-            {/* Animated [•••] Slide-Out Drawer */}
             <div className={`gd-more-drawer ${moreMenuOpen ? 'is-open' : ''}`}>
               {moreMenuOpen && <div className="gd-more-drawer__items">
                 <a className="gd-icon-btn" href="/community/reporting-and-appeals/"
@@ -405,17 +403,14 @@ export function GestureFloorCard({
           </div>
       </div>
 
-      {/* ZONE 3: Scoped Boost Pills Column (Placed below ZONE 4 Action Bar) */}
       <GestureBoostSection
         gestureId={node.id}
-        isOp={isOp}
         boosts={boosts}
         composerOpen={boostComposerOpen}
         onComposerOpenChange={setBoostComposerOpen}
         onAddBoost={onAddBoost}
       />
 
-      {/* Scene A: 1-to-N Direct Replies Timeline Expansion */}
       {directReplies.length > 0 && directRepliesExpanded && (
         <GestureReplyContext nodes={directReplies} origin={floorIndex} onJump={onJumpToFloor} />
       )}

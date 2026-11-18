@@ -5,7 +5,6 @@ import type { GestureBoost } from '../../../lib/gesture-client';
 
 interface GestureBoostSectionProps {
   gestureId: string;
-  isOp: boolean;
   boosts: GestureBoost[];
   composerOpen: boolean;
   onComposerOpenChange: (open: boolean) => void;

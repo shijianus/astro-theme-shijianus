@@ -5,7 +5,6 @@ interface GestureHeaderZoneProps {
   isPinned: boolean;
   channelLabel: string;
   staticTags?: string[];
-  channelIcon?: string;
 }
 
 export function GestureHeaderZone({ title, isPinned, channelLabel, staticTags = [] }: GestureHeaderZoneProps) {

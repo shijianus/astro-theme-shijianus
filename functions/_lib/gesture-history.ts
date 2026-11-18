@@ -88,4 +88,3 @@ export async function welcomeReplyCount(db?: AppEnv['DB']) {
   const boosts = await fetchThreadBoosts(db, welcomeId);
   return welcomeReplies(rows, boosts).length;
 }
-
