@@ -1,4 +1,4 @@
-import { boostLength, validBoost } from '../../lib/gesture-text';
+import { boostLength, validBoost, parseGestureHash } from '../../lib/gesture-text';
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import {
   Rocket,
@@ -269,10 +269,16 @@ export function GuestbookBoard() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Load identity & fetch comments
   useEffect(() => {
-    setIdentity(readCommentIdentity());
+    const update = () => setIdentity(readCommentIdentity());
+    update();
+    window.addEventListener('shijianus:comment-account-change', update);
+    window.addEventListener('storage', update);
+    return () => { window.removeEventListener('shijianus:comment-account-change', update); window.removeEventListener('storage', update); };
+  }, []);
 
+  // Load the topic index independently of the active thread.
+  useEffect(() => {
     if (activeView !== 'list') return;
     const controller = new AbortController();
     async function loadData() {
@@ -299,9 +305,9 @@ export function GuestbookBoard() {
   useEffect(() => {
     const handleHashChange = () => {
       const hash = window.location.hash;
-      if (hash.startsWith('#gesture-')) {
-        const raw = hash.replace('#gesture-', '');
-        const targetId = raw.replace(/-floor-\d+$/, '');
+      const route = parseGestureHash(hash);
+      if (route) {
+        const targetId = route.id;
         setActiveGestureId(targetId);
         setActiveView('detail');
         markAsRead(targetId);

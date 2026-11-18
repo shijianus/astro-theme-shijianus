@@ -1,3 +1,4 @@
+import { batchFetchBoostsByGestureIds, welcomeReplyCount, welcomeId, welcomeContent, welcomeReplies, isStarterBoost } from '../_lib/gesture-history.ts';
 import { collectGestureLinks, resolveGestureLinks } from '../_lib/gesture-links.ts';
 import { gestureTimestamp, validBoost } from '../../src/lib/gesture-text.ts';
 import type { AppEnv } from '../_lib/types';
@@ -17,46 +18,6 @@ import {
   type RawBoostRow,
   type RawCommentRow,
 } from '../_lib/gesture-shared.ts';
-
-async function batchFetchBoostsByGestureIds(
-  db: AppEnv['DB'] | undefined,
-  gestureIds: string[]
-): Promise<Record<string, RawBoostRow[]>> {
-  const grouped: Record<string, RawBoostRow[]> = {};
-  if (!gestureIds.length) return grouped;
-
-  if (db) {
-    const uniqueIds = Array.from(new Set(gestureIds));
-    // SQLite bind limit safety: chunk by 80
-    for (let i = 0; i < uniqueIds.length; i += 80) {
-      const chunk = uniqueIds.slice(i, i + 80);
-      const placeholders = chunk.map(() => '?').join(', ');
-      const res = await db
-        .prepare(`SELECT id, gesture_id, user_id, author_name, author_avatar, content, created_at FROM boosts WHERE gesture_id IN (${placeholders}) ORDER BY created_at ASC`)
-        .bind(...chunk)
-        .all<RawBoostRow>();
-
-      for (const row of res.results || []) {
-        if (!row.gesture_id) continue;
-        if (!grouped[row.gesture_id]) grouped[row.gesture_id] = [];
-        grouped[row.gesture_id].push(row);
-      }
-    }
-    return grouped;
-  }
-
-  const idSet = new Set(gestureIds);
-  const rows = Array.from(memoryBoostsStore.values())
-    .filter((b) => b.gesture_id && idSet.has(b.gesture_id))
-    .sort((a, b) => Date.parse(gestureTimestamp(a.created_at)) - Date.parse(gestureTimestamp(b.created_at)) || a.id.localeCompare(b.id));
-
-  for (const row of rows) {
-    if (!row.gesture_id) continue;
-    if (!grouped[row.gesture_id]) grouped[row.gesture_id] = [];
-    grouped[row.gesture_id].push(row);
-  }
-  return grouped;
-}
 
 export async function onRequest(context: {
   request: Request;
@@ -159,17 +120,18 @@ export async function onRequest(context: {
       }
     }
 
-    // Assign implicit sequential floorIndex (1 = OP, 2..N = SubGestures chronologically)
-    const opMapped = mapRowToClientComment(opRow, isAdmin, currentUserId, 1);
-    const subMapped = replyRows.map((row, idx) => mapRowToClientComment(row, isAdmin, currentUserId, idx + 2));
-
+    const boostsGrouped = await batchFetchBoostsByGestureIds(env.DB, [opRow.id, ...replyRows.map(r => r.id)]);
+    const oldFloors = replyRows;
+    if (opRow.id === welcomeId) {
+      opRow = welcomeContent(opRow);
+      replyRows = welcomeReplies(replyRows, boostsGrouped);
+    }
     const canManage = (row: RawCommentRow) => isAdmin || Boolean(authUser?.id && authUser.id === row.author_id) ||
       Boolean(candidateToken && row.session_token && candidateToken === row.session_token);
-    const publicNode = (row: RawCommentRow, floor: number) => ({ ...mapRowToClientComment(row, isAdmin, currentUserId, floor), canManage: canManage(row) });
-
-    // Batch fetch scoped boosts (NO N+1 queries)
-    const allIds = [opRow.id, ...replyRows.map((r) => r.id)];
-    const boostsGrouped = await batchFetchBoostsByGestureIds(env.DB, allIds);
+    const mapFloor = (row: RawCommentRow, floor: number) => ({ ...mapRowToClientComment(row, isAdmin, currentUserId, floor), canManage: canManage(row) });
+    const opMapped = mapFloor(opRow, 1);
+    const subMapped = replyRows.map((row,i) => mapFloor(row,i+2));
+    const allIds = [opRow.id, ...replyRows.map(r => r.id)];
     const boostsByGestureId: Record<string, Array<{
       id: string;
       gestureId: string;
@@ -181,7 +143,7 @@ export async function onRequest(context: {
     }>> = {};
 
     for (const id of allIds) {
-      boostsByGestureId[id] = (boostsGrouped[id] || []).map((b) => ({
+      boostsByGestureId[id] = (boostsGrouped[id] || []).filter(b => opRow!.id !== welcomeId || !isStarterBoost(b)).map((b) => ({
         id: b.id,
         gestureId: b.gesture_id || id,
         userId: b.user_id,
@@ -214,6 +176,8 @@ export async function onRequest(context: {
         }
       }
     }
+    const welcome = targets.find(t => t.id === welcomeId);
+    if (welcome) welcome.reply_count = opRow.id === welcomeId ? replyRows.length : await welcomeReplyCount(env.DB);
     const relatedLinks = resolveGestureLinks(citations, targets);
 
     // Compute Topic Map metrics
@@ -279,8 +243,9 @@ export async function onRequest(context: {
 
     return jsonResponse(request, env, {
       ok: true,
-      gesture: publicNode(opRow, 1),
-      subGestures: subMapped.map((node, i) => ({ ...node, canManage: canManage(replyRows[i]) })),
+      gesture: opMapped,
+      subGestures: subMapped,
+      legacyFloorIds: oldFloors.length !== replyRows.length ? [opRow.id, ...oldFloors.map(r => r.id)] : undefined,
       boostsByGestureId,
       relatedLinks,
       topicMap: {

@@ -68,10 +68,12 @@ export function GestureDetailPage({ gestureId, channels, identity, bookmarkedPos
       return data;
     } catch { if (version === loadVersion.current) setErr('讨论加载失败，请重试'); }
   }, [gestureId]);
+  const viewed = useRef(false);
   useEffect(() => {
-    void refresh(true);
+    void refresh(!viewed.current);
+    viewed.current = true;
     return () => { loadVersion.current++; };
-  }, [refresh]);
+  }, [refresh, identity?.token]);
 
   const go = useCallback((floor: number, offset?: number) => {
     let index = filtered.findIndex(n => n.floorIndex === floor);
@@ -88,14 +90,19 @@ export function GestureDetailPage({ gestureId, channels, identity, bookmarkedPos
     setHighlight(jump.floor);
     setJump(null);
   }, [jump, activePage, floors]);
-  const followHash = useRef(go);
-  followHash.current = go;
+  const followHash = useRef(() => {});
+  followHash.current = () => {
+      if (!op) return;
+      const route = parseGestureHash(location.hash);
+      if (route?.id !== gestureId) return;
+      const id = route.postId || thread?.legacyFloorIds?.[route.floor - 1];
+      const target = id ? byId.get(id)?.floorIndex : route.floor;
+      if (!target || target > floors.length) { onToast('该楼层已归档或删除'); return; }
+      if (target > 1 || route.floor > 1) go(target);
+  };
   useEffect(() => {
     if (!op) return;
-    const handle = () => {
-      const route = parseGestureHash(location.hash);
-      if (route?.id === gestureId && route.floor > 1) followHash.current(Math.min(route.floor, floors.length));
-    };
+    const handle = () => followHash.current();
     handle();
     window.addEventListener('hashchange', handle);
     return () => window.removeEventListener('hashchange', handle);
@@ -123,7 +130,7 @@ export function GestureDetailPage({ gestureId, channels, identity, bookmarkedPos
     } catch { onToast('网络异常，请重试'); return false; }
   }
   async function copy(floor = 1) {
-    const url = location.origin + '/guestbook/#gesture-' + gestureId + (floor > 1 ? '-floor-' + floor : '');
+    const url = location.origin + '/guestbook/#gesture-' + gestureId + (floor > 1 ? '-floor-' + floor + '~' + floors[floor-1].id : '');
     try { await navigator.clipboard.writeText(url); onToast('链接已复制'); }
     catch { onToast('无法访问剪贴板'); }
   }

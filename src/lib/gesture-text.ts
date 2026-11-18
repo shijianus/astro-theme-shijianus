@@ -10,8 +10,8 @@ export function validBoost(value: string) {
 }
 
 export function parseGestureHash(hash: string) {
-  const m = /^#gesture-([\w-]+?)(?:-floor-(\d+))?$/.exec(hash);
-  return m ? { id: m[1], floor: Math.max(1, Number(m[2]) || 1) } : null;
+  const m = /^#gesture-([\w-]+?)(?:-floor-(\d+)(?:~([\w-]+))?)?$/.exec(hash);
+  return m ? { id: m[1], floor: Math.max(1, Number(m[2]) || 1), postId: m[3] } : null;
 }
 
 // SQLite CURRENT_TIMESTAMP has no offset and always represents UTC.

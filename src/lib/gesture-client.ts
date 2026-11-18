@@ -92,6 +92,7 @@ export interface GestureDetailResponse {
   boostsByGestureId?: Record<string, GestureBoost[]>;
   relatedLinks?: GestureRelatedLink[];
   topicMap?: GestureTopicMap;
+  legacyFloorIds?: string[];
   subscribed?: boolean;
   error?: string;
 }
@@ -105,7 +106,7 @@ export function getOrCreateGestureSessionToken(): string {
   try {
     let token = window.sessionStorage.getItem(VISITOR_SESSION_KEY);
     if (!token) {
-      token = `vst_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
+      token = `vst_${crypto.randomUUID()}`;
       window.sessionStorage.setItem(VISITOR_SESSION_KEY, token);
     }
     return token;

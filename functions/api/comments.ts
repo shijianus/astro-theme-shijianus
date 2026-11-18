@@ -1,3 +1,4 @@
+import { welcomeContent, welcomeId, welcomeReplyCount } from '../_lib/gesture-history.ts';
 import { validBoost } from '../../src/lib/gesture-text.ts';
 import type { AppEnv } from '../_lib/types';
 import { jsonResponse, optionsResponse, safeReadJson } from '../_lib/http.ts';
@@ -444,7 +445,9 @@ export async function onRequest(context: {
         topics = rows.filter(r => !r.parent_id).sort((a,b) => b.created_at.localeCompare(a.created_at) || a.id.localeCompare(b.id))
           .slice(offset, offset + limit).map(r => ({ ...r, reply_count: counts.get(r.id) || 0 }));
       }
-      return jsonResponse(request, env, { ok: true, comments: topics.map(r => ({ ...mapRowToClientComment(r, isAdmin, currentUserId), replyCount: r.reply_count })) });
+      const welcome = topics.find(r => r.id === welcomeId);
+      if (welcome) welcome.reply_count = await welcomeReplyCount(env.DB);
+      return jsonResponse(request, env, { ok: true, comments: topics.map(r => ({ ...mapRowToClientComment(welcomeContent(r), isAdmin, currentUserId), replyCount: r.reply_count })) });
     }
 
     if (env.DB) {
