@@ -25,8 +25,7 @@ import { GestureAvatar } from './GestureAvatar';
 import { EmojiReactionCluster } from './EmojiReactionCluster';
 import { GestureBoostSection } from './GestureBoostSection';
 import { QuoteEmbedCard } from './QuoteEmbedCard';
-import { NestedParentSubGesture } from './NestedParentSubGesture';
-import { DirectRepliesTimeline } from './DirectRepliesTimeline';
+import { GestureReplyContext } from './GestureReplyContext';
 
 interface GestureFloorCardProps {
   node: GestureNode;
@@ -89,21 +88,14 @@ export function GestureFloorCard({
   const [editTitleDraft, setEditTitleDraft] = useState(node.title || '');
   const [editSaving, setEditSaving] = useState(false);
 
-  const nestedParentRef = useRef<HTMLDivElement | null>(null);
+
   const replyBodyAnchorRef = useRef<HTMLDivElement | null>(null);
   const pendingBeforeTopRef = useRef<number | null>(null);
 
   const badges = resolveAuthorBadges(node);
   const editCount = Number(node.editCount || 0);
 
-  // Show [↪ (small avatar) RepliedAuthor] ONLY on SubGesture when replying to a non-adjacent SubGesture floor (never spam OP on every reply)
-  const showReplyTargetBadge = Boolean(
-    !isOp &&
-      replyParentNode &&
-      replyParentNode.id !== node.parentId &&
-      replyParentNode.floorIndex !== undefined &&
-      replyParentNode.floorIndex !== floorIndex - 1
-  );
+  const showReplyTargetBadge = !isOp && Boolean(replyParentNode);
 
   // Scroll height compensation right after Scene B parent collapses (zero layout flicker, instant)
   useLayoutEffect(() => {
@@ -179,6 +171,20 @@ export function GestureFloorCard({
             </div>
 
             <div className="gd-author-meta-right">
+              {editCount > 0 && (
+                <span className="gd-edit-count-badge" title={`已编辑 ${editCount} 次`}>
+                  <span>{editCount}</span>
+                  <Pencil className="w-3 h-3" />
+                  <span className="gd-meta-dot">·</span>
+                </span>
+              )}
+
+              <time className="gd-first-date" dateTime={node.createdAt}>
+                {formatMonthDay(node.createdAt)}
+              </time>
+            </div>
+          </div>
+
               {showReplyTargetBadge && replyParentNode && (
                 <button
                   type="button"
@@ -198,35 +204,12 @@ export function GestureFloorCard({
                 </button>
               )}
 
-              {editCount > 0 && (
-                <span className="gd-edit-count-badge" title={`已编辑 ${editCount} 次`}>
-                  <span>{editCount}</span>
-                  <Pencil className="w-3 h-3" />
-                  <span className="gd-meta-dot">·</span>
-                </span>
-              )}
-
-              <time className="gd-first-date" dateTime={node.createdAt}>
-                {formatMonthDay(node.createdAt)}
-              </time>
-            </div>
-          </div>
-
-          {/* Scene B: In-place Nested Parent SubGesture (1-to-1, Dual Sticky Avatars + 1px Vertical Line │) */}
-          {showReplyTargetBadge && replyParentNode && parentExpanded && (
-            <NestedParentSubGesture
-              parentNode={replyParentNode}
-              currentFloorIndex={floorIndex}
-              containerRef={nestedParentRef}
-              onCollapseWithCompensation={toggleNestedParent}
-              onJumpToFloor={onJumpToFloor}
-            />
-          )}
+          {parentExpanded && replyParentNode && <GestureReplyContext nodes={[replyParentNode]} origin={floorIndex} onJump={onJumpToFloor} />}
 
           {/* Orthogonal Quote Block (Content-level excerpt, independent of Reply relation) */}
-          {node.quote && (
+          {(node.quote || quotedNode) && (
             <QuoteEmbedCard
-              quote={node.quote}
+              quote={node.quote || { id: quotedNode!.id, authorName: quotedNode!.authorName, excerpt: quotedNode!.message.slice(0,100) }}
               quotedNode={quotedNode}
               currentFloorIndex={floorIndex}
               onJumpToFloor={onJumpToFloor}
@@ -436,12 +419,7 @@ export function GestureFloorCard({
 
       {/* Scene A: 1-to-N Direct Replies Timeline Expansion */}
       {directReplies.length > 0 && directRepliesExpanded && (
-        <DirectRepliesTimeline
-          replies={directReplies}
-          currentFloorIndex={floorIndex}
-          onCollapse={() => setDirectRepliesExpanded(false)}
-          onJumpToFloor={onJumpToFloor}
-        />
+        <GestureReplyContext nodes={directReplies} origin={floorIndex} onJump={onJumpToFloor} />
       )}
       </div>
     </article>

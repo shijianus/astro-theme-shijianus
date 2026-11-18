@@ -1448,8 +1448,7 @@ export function GuestbookBoard() {
         activeGestureId && (
           <GestureDetailPage
             gestureId={activeGestureId}
-            fallbackGesture={currentGesture}
-            fallbackReplies={currentReplies}
+            key={activeGestureId}
             channels={CHANNELS}
             identity={identity}
             bookmarkedPostIds={bookmarkedPostIds}
@@ -1457,7 +1456,6 @@ export function GuestbookBoard() {
             onBackToList={closeGestureDetail}
             onToast={showToast}
             onZoomImage={(src) => setZoomedImage(src)}
-            onSyncNewComment={(comment) => setDbComments((prev) => [...prev, comment])}
           />
         )
       )}

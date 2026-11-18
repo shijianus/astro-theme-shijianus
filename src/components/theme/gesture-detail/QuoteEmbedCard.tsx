@@ -26,7 +26,7 @@ export function QuoteEmbedCard({
 
   const authorName = quotedNode?.authorName || quote.authorName;
   const authorAvatar = quotedNode?.authorAvatar || quote.authorAvatar;
-  const targetFloor = quotedNode?.floorIndex || quote.floorIndex || 1;
+  const targetFloor = quotedNode?.floorIndex;
   const fullContent = quotedNode?.message || quote.fullMessage || quote.excerpt;
 
   return (
@@ -48,7 +48,7 @@ export function QuoteEmbedCard({
             {expanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
           </button>
 
-          <button
+          {targetFloor && <button
             type="button"
             className="gd-quote-action-btn"
             onClick={() => onJumpToFloor(targetFloor, currentFloorIndex)}
@@ -56,7 +56,7 @@ export function QuoteEmbedCard({
             aria-label="跳至被引用楼层"
           >
             <ArrowUp className="w-3.5 h-3.5" />
-          </button>
+          </button>}
         </div>
       </div>
 
@@ -67,7 +67,7 @@ export function QuoteEmbedCard({
             dangerouslySetInnerHTML={{ __html: renderCommentMarkdown(fullContent) }}
           />
         ) : (
-          <p className="gd-quote-excerpt">{quote.excerpt}</p>
+          <p className="gd-quote-excerpt">{quote.excerpt || quotedNode?.message.slice(0,100)}</p>
         )}
       </div>
     </div>

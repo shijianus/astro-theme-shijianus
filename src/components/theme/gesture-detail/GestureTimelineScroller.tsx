@@ -1,284 +1,74 @@
-import React, { useCallback, useRef, useState } from 'react';
-import { Bell, BellRing, BookOpen, CornerUpLeft, Reply, Undo2 } from 'lucide-react';
-import {
-  formatCompactRelative,
-  formatMonthDay,
-  type JumpOriginAnchor,
-} from '../../../lib/gesture-client';
+import { useLayoutEffect, useRef, useState, type RefObject } from 'react';
+import { Undo2 } from 'lucide-react';
+import { formatMonthDay, type GestureNode } from '../../../lib/gesture-client';
 
-interface GestureTimelineScrollerProps {
-  totalFloors: number;
-  currentFloor: number;
-  currentFloorDate?: string;
-  startDate?: string;
-  latestDate?: string;
-  scrollPercent: number;
-  jumpOrigin: JumpOriginAnchor | null;
-  jumpOriginFading?: boolean;
-  hotFilterActive: boolean;
-  subscribed: boolean;
-  onJumpToFloor: (floorIndex: number) => void;
-  onReturnToOrigin: () => void;
-  onToggleHotFilter: () => void;
-  onReplyOp: () => void;
-  onToggleSubscribe: () => void;
+interface Props {
+  content: RefObject<HTMLElement | null>;
+  floors: GestureNode[];
+  page: number;
+  latest: string;
+  origin: number | null;
+  fading: boolean;
+  onJump: (floor: number) => void;
+  onReturn: () => void;
 }
 
-/**
- * Right-side Sticky Borderless Timeline Scroller & Cross-Floor Jump Origin Anchor (├─ [ 返回 ]).
- * - Zero card frame / background / border.
- * - Strictly NO floor dots/notches on the 1px vertical rail regardless of floor count.
- * - Only a 1px vertical line + single 3px bright cyan-blue active thumb bar.
- */
-export function GestureTimelineScroller({
-  totalFloors,
-  currentFloor,
-  currentFloorDate,
-  startDate,
-  latestDate,
-  scrollPercent,
-  jumpOrigin,
-  jumpOriginFading = false,
-  hotFilterActive,
-  subscribed,
-  onJumpToFloor,
-  onReturnToOrigin,
-  onToggleHotFilter,
-  onReplyOp,
-  onToggleSubscribe,
-}: GestureTimelineScrollerProps) {
-  const [quickJumpOpen, setQuickJumpOpen] = useState(false);
-  const [jumpInput, setJumpInput] = useState('');
-  const [isDragging, setIsDragging] = useState(false);
-  const [previewFloor, setPreviewFloor] = useState<number | null>(null);
-  const railRef = useRef<HTMLDivElement>(null);
-
-  const safeTotal = Math.max(1, totalFloors);
-  const displayFloor = previewFloor ?? currentFloor;
-  const thumbPercent =
-    safeTotal <= 1 ? 0 : Math.min(100, Math.max(0, ((displayFloor - 1) / (safeTotal - 1)) * 100));
-
-  const computeFloorFromClientY = useCallback(
-    (clientY: number) => {
-      const rail = railRef.current;
-      if (!rail) return 1;
-      const rect = rail.getBoundingClientRect();
-      const ratio = Math.min(1, Math.max(0, (clientY - rect.top) / Math.max(1, rect.height)));
-      return Math.min(safeTotal, Math.max(1, Math.round(ratio * (safeTotal - 1)) + 1));
-    },
-    [safeTotal]
-  );
-
-  const handleRailPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
-    if (e.button !== 0) return;
-    e.preventDefault();
-    setIsDragging(true);
-    const floor = computeFloorFromClientY(e.clientY);
-    setPreviewFloor(floor);
-    onJumpToFloor(floor);
-
-    const handleMove = (mv: PointerEvent) => {
-      const f = computeFloorFromClientY(mv.clientY);
-      setPreviewFloor(f);
-      onJumpToFloor(f);
-    };
-
-    const handleUp = () => {
-      setIsDragging(false);
-      setPreviewFloor(null);
-      window.removeEventListener('pointermove', handleMove);
-      window.removeEventListener('pointerup', handleUp);
-    };
-
-    window.addEventListener('pointermove', handleMove);
-    window.addEventListener('pointerup', handleUp);
-  };
-
-  const handleQuickJumpSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const parsed = Number.parseInt(jumpInput.trim(), 10);
-    if (Number.isFinite(parsed) && parsed >= 1 && parsed <= safeTotal) {
-      onJumpToFloor(parsed);
-      setQuickJumpOpen(false);
-      setJumpInput('');
+export function GestureTimelineScroller({ content, floors, page, latest, origin, fading, onJump, onReturn }: Props) {
+  const [current, setCurrent] = useState(1);
+  const [preview, setPreview] = useState<number | null>(null);
+  const [input, setInput] = useState('');
+  const rail = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    const main = content.current;
+    if (!main) return;
+    const elements = Array.from(main.querySelectorAll<HTMLElement>('[data-floor-index]'));
+    let frame = 0;
+    function update() {
+      frame = 0;
+      const anchor = matchMedia('(max-width: 760px)').matches ? 150 : 112;
+      let lo = 0, hi = elements.length;
+      while (lo < hi) {
+        const mid = (lo + hi) >>> 1;
+        if (elements[mid].getBoundingClientRect().top <= anchor) lo = mid + 1;
+        else hi = mid;
+      }
+      setCurrent(Number(elements[Math.max(0, lo - 1)]?.dataset.floorIndex || 1));
     }
-  };
-
-  return (
-    <aside className="gd-timeline-aside" aria-label="贴文楼层时间轴滑块">
-      <div className={`gd-timeline-card gb-floor-scroller-card ${isDragging ? 'is-dragging' : ''}`}>
-        {/* 1. Top Minimal [📖] Quick Jump Popover Toggle */}
-        <div className="gd-tl-top-wrap">
-          <button
-            type="button"
-            className={`gd-tl-overview-btn ${quickJumpOpen ? 'is-active' : ''}`}
-            onClick={() => setQuickJumpOpen((prev) => !prev)}
-            title="阅读总览 / 快捷楼层跳转"
-            aria-expanded={quickJumpOpen}
-          >
-            <BookOpen className="w-3.5 h-3.5" />
-          </button>
-
-          {quickJumpOpen && (
-            <div className="gd-tl-quick-popover">
-              <div className="gd-tl-quick-title">快捷楼层跳转 (1 ~ {safeTotal})</div>
-              <form className="gd-tl-quick-form" onSubmit={handleQuickJumpSubmit}>
-                <input
-                  type="number"
-                  min={1}
-                  max={safeTotal}
-                  value={jumpInput}
-                  onChange={(e) => setJumpInput(e.target.value)}
-                  placeholder={`1-${safeTotal}`}
-                  className="gd-tl-quick-input"
-                />
-                <button type="submit" className="gd-tl-quick-go">
-                  跳转
-                </button>
-              </form>
-              <div className="gd-tl-quick-presets">
-                <button
-                  type="button"
-                  onClick={() => {
-                    onJumpToFloor(1);
-                    setQuickJumpOpen(false);
-                  }}
-                >
-                  1 楼
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    onJumpToFloor(safeTotal);
-                    setQuickJumpOpen(false);
-                  }}
-                >
-                  最新 ({safeTotal})
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* 2. Start Date (Borderless plain label) */}
-        <button
-          type="button"
-          className="gd-tl-date-capsule"
-          onClick={() => onJumpToFloor(1)}
-          title="回到主贴文"
-        >
-          {formatMonthDay(startDate)}
-        </button>
-
-        {/* 3. Pure 1px Vertical Line + Single 3px Bright Cyan-Blue Thumb */}
-        <div className="gd-tl-rail-section">
-          <div
-            ref={railRef}
-            className="gd-tl-rail"
-            onPointerDown={handleRailPointerDown}
-            role="slider"
-            aria-valuemin={1}
-            aria-valuemax={safeTotal}
-            aria-valuenow={displayFloor}
-            aria-label="楼层阅读进度滑块"
-          >
-            <div
-              className="gd-tl-active-thumb"
-              style={{ top: `${thumbPercent}%` }}
-            >
-              <span className="gd-tl-thumb-bar" />
-              <div className="gd-tl-thumb-readout">
-                <strong className="gb-scroller-floor-label">
-                  {displayFloor} / {safeTotal}
-                </strong>
-                <span>{formatMonthDay(currentFloorDate || startDate)}</span>
-              </div>
-            </div>
-
-            {/* Cross-Floor Jump Origin Anchor: ├─ [ 返回 ] */}
-            {jumpOrigin && (
-              <div
-                className={`gd-tl-return-anchor ${jumpOriginFading ? 'is-fading' : ''}`}
-                style={{ top: `${Math.min(96, Math.max(4, jumpOrigin.percent))}%` }}
-                onPointerDown={(e) => e.stopPropagation()}
-              >
-                <span className="gd-tl-return-tick" aria-hidden="true" />
-                <button
-                  type="button"
-                  className="gd-tl-return-btn"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onReturnToOrigin();
-                  }}
-                  title={`返回跳转前位置 (${jumpOrigin.floorIndex} 楼)`}
-                >
-                  <Undo2 className="w-3 h-3" />
-                  <span>返回</span>
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* 4. Latest Active Relative Time */}
-        <button
-          type="button"
-          className="gd-tl-latest-time"
-          onClick={() => onJumpToFloor(safeTotal)}
-          title="跳至最新回复"
-        >
-          {formatCompactRelative(latestDate)}
-        </button>
-
-        {/* 5. Minimal Borderless Action Icons: [📚] [↩] [🔔] */}
-        <div className="gd-tl-bottom-dock">
-          <button
-            type="button"
-            className={`gd-tl-dock-btn is-hot-filter ${hotFilterActive ? 'is-active' : ''}`}
-            onClick={onToggleHotFilter}
-            title={hotFilterActive ? '退出热门筛选' : '只看热门回复'}
-            aria-label={hotFilterActive ? '退出热门筛选' : '只看热门回复'}
-            aria-pressed={hotFilterActive}
-          >
-            <BookOpen className="w-3.5 h-3.5" />
-          </button>
-
-          <button
-            type="button"
-            className="gd-tl-dock-btn"
-            onClick={onReplyOp}
-            title="回复主贴"
-            aria-label="回复主贴"
-          >
-            <Reply className="w-3.5 h-3.5" />
-          </button>
-
-          <button
-            type="button"
-            className={`gd-tl-dock-btn ${subscribed ? 'is-subscribed' : ''}`}
-            onClick={onToggleSubscribe}
-            title={subscribed ? '已订阅贴文更新通知' : '订阅贴文更新通知'}
-            aria-pressed={subscribed}
-            aria-label="订阅通知"
-          >
-            {subscribed ? <BellRing className="w-3.5 h-3.5" /> : <Bell className="w-3.5 h-3.5" />}
-          </button>
-        </div>
-
-        {/* Mobile Floating Return Anchor if jumped on <=1024px */}
-        {jumpOrigin && (
-          <button
-            type="button"
-            className={`gd-mobile-return-pill ${jumpOriginFading ? 'is-fading' : ''}`}
-            onClick={onReturnToOrigin}
-          >
-            <CornerUpLeft className="w-3.5 h-3.5" />
-            <span>返回 {jumpOrigin.floorIndex}F</span>
-          </button>
-        )}
-      </div>
-
-      <span className="sr-only">{scrollPercent}%</span>
-    </aside>
-  );
+    const schedule = () => { if (!frame) frame = requestAnimationFrame(update); };
+    const resize = new ResizeObserver(schedule);
+    resize.observe(main);
+    window.addEventListener('scroll', schedule, { passive: true });
+    window.addEventListener('resize', schedule);
+    update();
+    return () => { resize.disconnect(); cancelAnimationFrame(frame); window.removeEventListener('scroll', schedule); window.removeEventListener('resize', schedule); };
+  }, [page, floors, content]);
+  const total = floors.length;
+  const active = Math.min(preview ?? current, total);
+  const date = floors[active - 1]?.createdAt;
+  const percent = total > 1 ? 100 * (active - 1) / (total - 1) : 0;
+  function pointerFloor(e: React.PointerEvent) {
+    const rect = rail.current!.getBoundingClientRect();
+    const fraction = rect.width > rect.height ? (e.clientX - rect.left) / rect.width : (e.clientY - rect.top) / rect.height;
+    return Math.round(Math.max(0, Math.min(1, fraction)) * (total - 1)) + 1;
+  }
+  return <aside className="gd-timeline-aside" aria-label="楼层时间轴">
+    <time className="gd-tl-start" dateTime={floors[0]?.createdAt} title="话题开始">{formatMonthDay(floors[0]?.createdAt)}</time>
+    <div className="gd-tl-rail" ref={rail} tabIndex={0} role="slider" aria-label="跳转楼层" aria-valuemin={1} aria-valuemax={total} aria-valuenow={active}
+      onPointerDown={e => { if (e.button === 0) { e.currentTarget.setPointerCapture(e.pointerId); setPreview(pointerFloor(e)); } }}
+      onPointerMove={e => { if (e.currentTarget.hasPointerCapture(e.pointerId)) setPreview(pointerFloor(e)); }}
+      onPointerUp={e => { if (e.currentTarget.hasPointerCapture(e.pointerId)) { e.currentTarget.releasePointerCapture(e.pointerId); onJump(pointerFloor(e)); } setPreview(null); }}
+      onPointerCancel={() => setPreview(null)}
+      onKeyDown={e => {
+        const targets: Record<string,number> = { Home: 1, End: total, ArrowDown: active+1, ArrowRight: active+1, ArrowUp: active-1, ArrowLeft: active-1, PageDown: active+40, PageUp: active-40 };
+        if (e.key in targets) { e.preventDefault(); onJump(Math.min(total, Math.max(1, targets[e.key]))); }
+      }} style={{ '--progress': percent + '%' } as React.CSSProperties}>
+      <span className="gd-tl-thumb" />
+    </div>
+    <div className="gd-tl-readout"><details><summary aria-label="输入楼层跳转">{active} / {total}</summary>
+      <form onSubmit={e => { e.preventDefault(); const n = Number(input); if (n >= 1 && n <= total) { e.currentTarget.closest('details')!.open = false; setInput(''); onJump(n); } }}>
+        <input type="number" aria-label="目标楼层" min={1} max={total} required value={input} onChange={e => setInput(e.target.value)} /><button>跳转</button>
+      </form></details><time dateTime={date}>{formatMonthDay(date)}</time></div>
+    <time className="gd-tl-latest" dateTime={latest} title="最后活动时间">最近活动<br />{formatMonthDay(latest)}</time>
+    {origin !== null && <button className={'gd-return' + (fading ? ' is-fading' : '')} onClick={onReturn}><Undo2 size={13} />返回 {origin} 楼</button>}
+  </aside>;
 }

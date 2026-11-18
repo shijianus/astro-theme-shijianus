@@ -1,3 +1,4 @@
+import { gestureTimestamp } from './gesture-text';
 import { readCommentIdentity, type CommentIdentity } from './comment-client';
 
 export interface ReactionDetailItem {
@@ -95,12 +96,6 @@ export interface GestureDetailResponse {
   error?: string;
 }
 
-export interface JumpOriginAnchor {
-  floorIndex: number;
-  percent: number;
-  targetFloorIndex: number;
-}
-
 const VISITOR_SESSION_KEY = 'shijianus_gesture_visitor_session';
 
 export function getOrCreateGestureSessionToken(): string {
@@ -129,14 +124,14 @@ function buildAuthHeaders(identity?: CommentIdentity | null): Record<string, str
   return headers;
 }
 
-export async function fetchGestureDetail(id: string): Promise<GestureDetailResponse> {
+export async function fetchGestureDetail(id: string, trackView = true): Promise<GestureDetailResponse> {
   const token = getOrCreateGestureSessionToken();
   const headers: Record<string, string> = {};
   if (token) {
     headers['X-Comment-Session-Token'] = token;
     headers['Authorization'] = `Bearer ${token}`;
   }
-  const res = await fetch(`/api/gestures?id=${encodeURIComponent(id)}`, { headers });
+  const res = await fetch(`/api/gestures?id=${encodeURIComponent(id)}&trackView=${trackView ? 1 : 0}`, { headers });
   const contentType = res.headers.get('content-type') || '';
   if (!contentType.includes('application/json')) {
     return { ok: false, error: `HTTP ${res.status}` };
@@ -299,10 +294,10 @@ export async function reportGestureNode(params: {
  * Formats date strictly to clean "8月 3日" style for first-published display.
  */
 export function formatMonthDay(iso?: string): string {
-  if (!iso) return '刚刚';
+  if (!iso) return '—';
   try {
-    const d = new Date(iso);
-    if (Number.isNaN(d.getTime())) return '刚刚';
+    const d = new Date(gestureTimestamp(iso));
+    if (Number.isNaN(d.getTime())) return '—';
     return `${d.getMonth() + 1}月 ${d.getDate()}日`;
   } catch {
     return '刚刚';
@@ -315,7 +310,7 @@ export function formatMonthDay(iso?: string): string {
 export function formatCompactRelative(iso?: string): string {
   if (!iso) return '刚刚';
   try {
-    const d = new Date(iso);
+    const d = new Date(gestureTimestamp(iso));
     if (Number.isNaN(d.getTime())) return '刚刚';
     const diffMs = Math.max(0, Date.now() - d.getTime());
     const mins = Math.floor(diffMs / 60000);
