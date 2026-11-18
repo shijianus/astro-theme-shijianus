@@ -28,6 +28,7 @@ export interface GestureNode {
   tags?: string[];
   editCount?: number;
   viewsCount?: number;
+  canManage?: boolean;
   floorIndex?: number;
   authorId: string;
   authorName: string;
@@ -60,7 +61,8 @@ export interface GestureRelatedLink {
   id?: string;
   title: string;
   url: string;
-  replyCount: number;
+  replyCount?: number;
+  kind?: 'gesture' | 'site' | 'external';
   type: 'external' | 'gesture';
 }
 
