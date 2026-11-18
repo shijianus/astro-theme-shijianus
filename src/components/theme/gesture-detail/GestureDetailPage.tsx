@@ -3,7 +3,7 @@ import { ArrowLeft, Bell, Bookmark, Link2 } from 'lucide-react';
 import type { CommentIdentity } from '../../../lib/comment-client';
 import { parseGestureHash } from '../../../lib/gesture-text';
 import { createScopedBoost, deleteGestureNode, editGestureNode, extractOpTitle, fetchGestureDetail,
-  getOrCreateGestureSessionToken, reactToGesture, replyToGesture, reportGestureNode, toggleGestureSubscription,
+  getOrCreateGestureSessionToken, reactToGesture, replyToGesture, toggleGestureSubscription,
   type GestureDetailResponse, type GestureNode, type GestureQuote } from '../../../lib/gesture-client';
 import { GestureHeaderZone } from './GestureHeaderZone';
 import { GestureFloorCard } from './GestureFloorCard';
@@ -154,7 +154,6 @@ export function GestureDetailPage({ gestureId, channels, identity, bookmarkedPos
       onQuoteFloor={target => { setQuote({ id: target.id, authorName: target.authorName, excerpt: target.message.slice(0,100) }); focusComposer(); }}
       onJumpToFloor={crossJump} onCopyLink={copy} onToggleBookmark={() => onToggleBookmark(gestureId)} onZoomImage={onZoomImage}
       onEditSave={(id, message, title) => mutate(editGestureNode({ id, message, title, identity }), '修改已保存')}
-      onReport={async id => { try { const r = await reportGestureNode({ id, identity }); onToast(r.message || r.error || '反馈失败'); } catch { onToast('反馈失败'); } }}
       onDelete={async id => {
         if (!window.confirm('确认删除此内容？')) return;
         try { const r = await deleteGestureNode({ id, identity }); if (r.ok) { onToast('已删除'); if (id === gestureId) onBackToList(); else await refresh(); } else onToast(r.error || '删除失败'); }

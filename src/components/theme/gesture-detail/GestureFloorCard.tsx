@@ -46,7 +46,6 @@ interface GestureFloorCardProps {
   onQuoteFloor: (node: GestureNode) => void;
   onJumpToFloor: (targetFloorIndex: number, originFloorIndex: number) => void;
   onToggleBookmark: (nodeId: string) => void;
-  onReport: (nodeId: string) => void;
   onEditSave: (nodeId: string, newMessage: string, newTitle?: string) => Promise<boolean>;
   onDelete: (nodeId: string) => Promise<void>;
   onCopyLink: (floorIndex: number, isOp: boolean) => Promise<boolean>;
@@ -72,7 +71,6 @@ export function GestureFloorCard({
   onQuoteFloor,
   onJumpToFloor,
   onToggleBookmark,
-  onReport,
   onEditSave,
   onDelete,
   onCopyLink,
@@ -328,18 +326,10 @@ export function GestureFloorCard({
             {/* Animated [•••] Slide-Out Drawer */}
             <div className={`gd-more-drawer ${moreMenuOpen ? 'is-open' : ''}`}>
               {moreMenuOpen && <div className="gd-more-drawer__items">
-                <button
-                  type="button"
-                  className="gd-icon-btn"
-                  onClick={() => {
-                    onReport(node.id);
-                    setMoreMenuOpen(false);
-                  }}
-                  title="举报 / 反馈"
-                  aria-label="举报"
-                >
+                <a className="gd-icon-btn" href="/community/reporting-and-appeals/"
+                  target="_blank" rel="noopener noreferrer" title="举报与申诉" aria-label="举报与申诉">
                   <Flag className="w-3.5 h-3.5" />
-                </button>
+                </a>
                 <button
                   type="button"
                   className={`gd-icon-btn ${isBookmarked ? 'is-bookmarked' : ''}`}

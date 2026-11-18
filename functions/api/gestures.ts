@@ -720,7 +720,7 @@ export async function onRequest(context: {
 
   // 7. REPORT GESTURE
   if (action === 'report') {
-    return jsonResponse(request, env, { ok: true, message: '已收到反馈，站长会尽快核查' });
+    return jsonResponse(request, env, { ok: true, message: '请按站点举报与申诉说明提交反馈', url: '/community/reporting-and-appeals/' });
   }
 
   return jsonResponse(request, env, { ok: false, error: 'Unsupported action' }, { status: 400 });
