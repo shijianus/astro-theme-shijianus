@@ -11,7 +11,7 @@
   position: relative;
   z-index: 1;
 }
-body:has(#guestbook-dashboard) :is(#theme-snow-mid, #theme-snow-foreground) { z-index: 0; }
+body:has(#guestbook-dashboard) :is(#theme-snow-mid, #theme-snow-foreground) { z-index: 0 !important; }
 #guestbook-dashboard .guestbook-board-container { width: min(100%, 1240px); margin-inline: auto; padding: 0 0 40px; }
 .gd-detail-root { width: 100%; color: var(--gb-text); }
 .gd-detail-grid { display: grid; grid-template-columns: minmax(0, 1fr) 88px; align-items: start; gap: 24px; padding: 0 var(--gb-gutter); background: var(--gb-paper); }
@@ -464,4 +464,22 @@ body:has(#guestbook-dashboard) :is(#theme-snow-mid, #theme-snow-foreground) { z-
   .gd-tl-rail::before { inset: 50% 0 auto; height: 1px; width: auto; }
   .gd-tl-thumb { top: calc(50% - 1px); left: clamp(0px,calc(var(--progress) - 10px),calc(100% - 20px)); width: 20px; height: 3px; }
   .gd-tl-latest,.gd-tl-readout time { display: none; }
+}
+
+/* The site canvas has inline stacking and the body normally creates an overflow container. */
+body.theme-body:has(#guestbook-dashboard):not(.theme-overlay-open, .reward-modal-open, .console-open) {
+  overflow-x: clip !important;
+  overflow-y: visible;
+}
+#guestbook-dashboard .gd-markdown-body .katex { color: var(--gb-text); }
+@media (max-width: 760px) {
+  .gd-detail-grid { display: flex; flex-direction: column; align-items: stretch; }
+  .gd-timeline-aside { order: -1; }
+  body:has(#guestbook-dashboard) #rightside {
+    position: static !important;
+    width: fit-content;
+    margin: 12px auto;
+  }
+  body:has(#guestbook-dashboard) #rightside-config-show { flex-direction: row; }
+  body:has(#guestbook-dashboard) #nav-right { margin-inline-start: auto; width: auto !important; flex: 0 1 auto; }
 }
