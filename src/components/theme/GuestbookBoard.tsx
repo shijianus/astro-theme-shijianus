@@ -97,23 +97,18 @@ export function GuestbookBoard() {
   const dimensionDropdownRef = useRef<HTMLDivElement>(null);
 
   // Local storage lists for read & bookmarked posts
-  const [readPostIds, setReadPostIds] = useState<string[]>(() => {
-    if (typeof window === 'undefined') return [];
-    try {
-      return JSON.parse(localStorage.getItem('shijianus_guestbook_reads') || '[]');
-    } catch {
-      return [];
+  const [readPostIds, setReadPostIds] = useState<string[]>([]);
+  const [bookmarkedPostIds, setBookmarkedPostIds] = useState<string[]>([]);
+  useEffect(() => {
+    function saved(key: string): string[] {
+      try {
+        const value = JSON.parse(localStorage.getItem(key) || '[]');
+        return Array.isArray(value) ? value.filter(id => typeof id === 'string') : [];
+      } catch { return []; }
     }
-  });
-
-  const [bookmarkedPostIds, setBookmarkedPostIds] = useState<string[]>(() => {
-    if (typeof window === 'undefined') return [];
-    try {
-      return JSON.parse(localStorage.getItem('shijianus_guestbook_bookmarks') || '[]');
-    } catch {
-      return [];
-    }
-  });
+    setReadPostIds(saved('shijianus_guestbook_reads'));
+    setBookmarkedPostIds(saved('shijianus_guestbook_bookmarks'));
+  }, []);
 
   // DB comments
   const [dbComments, setDbComments] = useState<BlogComment[]>([]);

@@ -99,6 +99,7 @@ export function GestureDetailPage({ gestureId, channels, identity, bookmarkedPos
       const target = id ? byId.get(id)?.floorIndex : route.floor;
       if (!target || target > floors.length) { onToast('该楼层已归档或删除'); return; }
       if (target > 1 || route.floor > 1) go(target);
+      else if (window.scrollY > 120) go(1);
   };
   useEffect(() => {
     if (!op) return;
