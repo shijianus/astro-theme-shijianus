@@ -35,8 +35,8 @@ try {
     'rendered floor elements', await page.locator('[data-floor-index], .gb-floor-target').count());
   await page.setViewportSize({ width: 390, height: 844 });
   await expect(body).toBeVisible();
-  console.log('Public markup', (await page.locator('.gd-tl-rail').count()) ? 'reading rail' : 'earlier layout');
-  await page.goto(board, { waitUntil: 'commit' });
+  console.log('Public progress control', await page.locator('.gd-tl-readout, .gb-scroller-floor-label').first().innerText());
+  await page.locator('.gd-back-btn, .gb-back-btn').first().click();
   await expect(rows.first()).toBeVisible({ timeout: 45000 });
 } finally {
   await browser.close();
