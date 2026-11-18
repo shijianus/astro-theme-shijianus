@@ -2,7 +2,7 @@ import MarkdownIt from 'markdown-it';
 import { parseGestureHash } from '../../src/lib/gesture-text.ts';
 import type { RawCommentRow } from './gesture-shared.ts';
 
-interface Citation { url: string; label: string; internal: boolean; id?: string; floor?: number }
+interface Citation { url: string; label: string; internal: boolean; id?: string; floor?: number; postId?: string }
 const markdown = new MarkdownIt({ linkify: true });
 markdown.linkify.set({ fuzzyLink: false, fuzzyEmail: false });
 const canonicalOrigin = 'https://blog.epocanvas.com';
@@ -40,7 +40,7 @@ export function collectGestureLinks(rows: RawCommentRow[], origin: string) {
       if (!old.label) old.label = label;
       return;
     }
-    found.set(key, { url: href, label, internal, id: target?.id, floor: target?.floor });
+    found.set(key, { url: href, label, internal, id: target?.id, floor: target?.floor, postId: target?.postId });
   }
   for (const row of rows) {
     if (!/https?:\/\/|]\(|\/guestbook\/|]:/i.test(row.message)) continue;
@@ -56,7 +56,7 @@ export function collectGestureLinks(rows: RawCommentRow[], origin: string) {
           href = '';
         } else if (href) label += token.content;
         else if (token.type === 'text') {
-          for (const match of token.content.matchAll(/\/guestbook\/#gesture-[\w-]+/g)) add(match[0]);
+          for (const match of token.content.matchAll(/\/guestbook\/#gesture-[\w~-]+/g)) add(match[0]);
         }
       }
     }
@@ -65,15 +65,23 @@ export function collectGestureLinks(rows: RawCommentRow[], origin: string) {
 }
 
 type Target = Pick<RawCommentRow, 'id' | 'title' | 'message'> & { reply_count: number };
-export function resolveGestureLinks(citations: Citation[], targets: Target[]) {
+export function resolveGestureLinks(citations: Citation[], targets: Target[], floorIds: Map<string, string[]>, legacyIds: Map<string, string[]>) {
   const byId = new Map(targets.map(target => [target.id, target]));
+  const seen = new Set<string>();
   return citations.flatMap(citation => {
     const { url, id, floor = 1 } = citation;
     if (id) {
       const target = byId.get(id);
-      if (!target || floor > target.reply_count + 1) return [];
+      if (!target) return [];
+      const ids = floorIds.get(id);
+      const postId = citation.postId || legacyIds.get(id)?.[floor-1] || ids?.[floor-1];
+      const position = ids && postId ? ids.indexOf(postId) + 1 : floor;
+      if (!position || position > target.reply_count + 1 || (citation.postId && !ids?.includes(citation.postId))) return [];
+      const key = id + '/' + position;
+      if (seen.has(key)) return [];
+      seen.add(key);
       const name = target.title || target.message.replace(/^#{1,6}\s+/, '').split('\n')[0].slice(0, 80);
-      return [{ id, url, title: name + (floor > 1 ? ' · 第 ' + floor + ' 楼' : ''), replyCount: target.reply_count, type: 'gesture', kind: 'gesture' }];
+      return [{ id, url: position > 1 && postId ? '/guestbook/#gesture-' + id + '-floor-' + position + '~' + postId : url, title: name + (position > 1 ? ' · 第 ' + position + ' 楼' : ''), replyCount: target.reply_count, type: 'gesture', kind: 'gesture' }];
     }
     return [{ url, title: citation.label || url, type: 'external', kind: citation.internal ? 'site' : 'external' }];
   }).sort((a, b) => Number(b.type === 'gesture') - Number(a.type === 'gesture'));

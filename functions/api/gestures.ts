@@ -177,9 +177,25 @@ export async function onRequest(context: {
         }
       }
     }
-    const welcome = targets.find(t => t.id === welcomeId);
-    if (welcome) welcome.reply_count = opRow.id === welcomeId ? replyRows.length : await welcomeReplyCount(env.DB);
-    const relatedLinks = resolveGestureLinks(citations, targets);
+    const floorIds = new Map<string, string[]>();
+    const oldIds = new Map<string, string[]>();
+    const floorTargets = new Set(citations.filter(c => (c.floor || 1) > 1 || c.postId).map(c => c.id));
+    for (const t of targets) {
+      if (!floorTargets.has(t.id)) {
+        if (t.id === welcomeId) t.reply_count = opRow.id === welcomeId ? replyRows.length : await welcomeReplyCount(env.DB);
+        continue;
+      }
+      const original = t.id === rootId ? oldFloors : env.DB
+        ? (await env.DB.prepare("SELECT * FROM comments WHERE parent_id=? AND post_type!='boost' AND status IN ('published','pinned') ORDER BY julianday(created_at), id").bind(t.id).all<RawCommentRow>()).results || []
+        : [...memoryFallbackStore.values()].filter(r => r.parent_id === t.id && r.post_type !== 'boost' && ['published','pinned'].includes(r.status))
+          .sort((a,b) => Date.parse(gestureTimestamp(a.created_at))-Date.parse(gestureTimestamp(b.created_at)) || a.id.localeCompare(b.id));
+      const visible = t.id === rootId ? replyRows : t.id === welcomeId
+        ? welcomeReplies(original, await batchFetchBoostsByGestureIds(env.DB, original.map(r => r.id))) : original;
+      floorIds.set(t.id, [t.id, ...visible.map(r => r.id)]);
+      t.reply_count = visible.length;
+      if (visible.length !== original.length) oldIds.set(t.id, [t.id, ...original.map(r => r.id)]);
+    }
+    const relatedLinks = resolveGestureLinks(citations, targets, floorIds, oldIds);
 
     // Compute Topic Map metrics
     const allFloors = [opMapped, ...subMapped];
