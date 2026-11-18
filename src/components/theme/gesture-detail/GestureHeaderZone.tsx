@@ -30,12 +30,14 @@ export function GestureHeaderZone({
             <span>官方置顶</span>
           </span>
         )}
-        <span className="gd-static-badge is-channel">
-          {channelIcon && <span>{channelIcon}</span>}
-          <span>{channelLabel}</span>
-        </span>
+        {staticTags.length === 0 && (
+          <span className="gd-static-badge is-channel">
+            {channelIcon && <span>{channelIcon}</span>}
+            <span>{channelLabel}</span>
+          </span>
+        )}
         {staticTags
-          .filter((t) => t !== '官方置顶' && t !== channelLabel)
+          .filter((t) => t !== '官方置顶')
           .map((tag) => (
             <span key={tag} className="gd-static-badge">
               {tag}

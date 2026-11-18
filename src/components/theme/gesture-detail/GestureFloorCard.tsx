@@ -96,10 +96,11 @@ export function GestureFloorCard({
   const badges = resolveAuthorBadges(node);
   const editCount = Number(node.editCount || 0);
 
-  // Show [↪ (small avatar) RepliedAuthor] ONLY on SubGesture when replying to a non-adjacent floor
+  // Show [↪ (small avatar) RepliedAuthor] ONLY on SubGesture when replying to a non-adjacent SubGesture floor (never spam OP on every reply)
   const showReplyTargetBadge = Boolean(
     !isOp &&
       replyParentNode &&
+      replyParentNode.id !== node.parentId &&
       replyParentNode.floorIndex !== undefined &&
       replyParentNode.floorIndex !== floorIndex - 1
   );
