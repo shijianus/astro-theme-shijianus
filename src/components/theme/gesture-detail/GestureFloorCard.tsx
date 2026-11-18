@@ -1,4 +1,4 @@
-import React, { useLayoutEffect, useRef, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import {
   Bookmark,
   Check,
@@ -49,7 +49,7 @@ interface GestureFloorCardProps {
   onReport: (nodeId: string) => void;
   onEditSave: (nodeId: string, newMessage: string, newTitle?: string) => Promise<boolean>;
   onDelete: (nodeId: string) => Promise<void>;
-  onCopyLink: (floorIndex: number, isOp: boolean) => void;
+  onCopyLink: (floorIndex: number, isOp: boolean) => Promise<boolean>;
   onZoomImage: (src: string) => void;
 }
 
@@ -125,11 +125,12 @@ export function GestureFloorCard({
     }
   };
 
-  const handleCopyFloorLink = () => {
-    onCopyLink(floorIndex, isOp);
-    setCopiedJustNow(true);
-    setTimeout(() => setCopiedJustNow(false), 1800);
-  };
+  useEffect(() => {
+    if (!copiedJustNow) return;
+    const timer = setTimeout(() => setCopiedJustNow(false), 1800);
+    return () => clearTimeout(timer);
+  }, [copiedJustNow]);
+  const handleCopyFloorLink = async () => setCopiedJustNow(await onCopyLink(floorIndex, isOp));
 
   const handleBodyClick = (e: React.MouseEvent<HTMLDivElement>) => {
     const target = e.target as HTMLElement;

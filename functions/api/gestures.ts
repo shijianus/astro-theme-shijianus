@@ -1,3 +1,4 @@
+import { sha256Hex } from '../_lib/hash.ts';
 import { batchFetchBoostsByGestureIds, welcomeReplyCount, welcomeId, welcomeContent, welcomeReplies, isStarterBoost } from '../_lib/gesture-history.ts';
 import { collectGestureLinks, resolveGestureLinks } from '../_lib/gesture-links.ts';
 import { gestureTimestamp, validBoost } from '../../src/lib/gesture-text.ts';
@@ -292,11 +293,14 @@ export async function onRequest(context: {
     authorRole = postAuthUser.role === 'admin' ? 'admin' : 'reader';
   }
 
+  const guestId = !postAuthUser && !isAdmin && sessionToken
+    ? 'vis_' + (await sha256Hex('guestbook/' + sessionToken)).slice(0,24)
+    : generateSecureId('vis', 8);
   const resolveActor = () => {
     const rawName = (payload.authorName || (authorRole === 'visitor' ? '访客' : '读者')).trim().slice(0, 50);
     let authorName = rawName;
     let authorAvatar = (payload.authorAvatar || '').trim().slice(0, 500);
-    let authorId = payload.authorId ? String(payload.authorId).trim().slice(0, 64) : generateSecureId('vis', 6);
+    let authorId = guestId;
     let authorWebsite = (payload.authorWebsite || '').trim().slice(0, 300);
 
     if (authorRole === 'admin') {
@@ -464,6 +468,10 @@ export async function onRequest(context: {
       return jsonResponse(request, env, { ok: false, error: 'Boost 限单行、最多 16 字' }, { status: 400 });
     }
 
+    if (env.DB) await ensureGestureTables(env.DB);
+    const target = env.DB ? await env.DB.prepare('SELECT post_slug, status, post_type FROM comments WHERE id=?').bind(gestureId).first<RawCommentRow>() : memoryFallbackStore.get(gestureId);
+    if (!target || target.post_slug !== 'guestbook' || target.post_type === 'boost' || !['published','pinned'].includes(target.status))
+      return jsonResponse(request, env, { ok: false, error: '目标楼层不存在' }, { status: 404 });
     const actor = resolveActor();
     const boostId = generateSecureId('bst', 8);
     const nowIso = new Date().toISOString();
@@ -511,7 +519,6 @@ export async function onRequest(context: {
       return jsonResponse(request, env, { ok: false, error: '缺少目标楼层 ID' }, { status: 400 });
     }
 
-    const actor = resolveActor();
     const effectiveUserId = postAuthUser?.id || (isAdmin ? 'admin' : (sessionToken || `vis_${clientIp}`));
     const displayName = postAuthUser?.name || (isAdmin ? 'shijianus' : (payload.authorName || '访客'));
     const displayAvatar = postAuthUser?.avatar || (isAdmin ? '/media/shijianus/avatar.jpg' : (payload.authorAvatar || ''));
@@ -543,30 +550,23 @@ export async function onRequest(context: {
     if (env.DB) {
       await ensureGestureTables(env.DB);
 
-      const row = await env.DB.prepare(`SELECT * FROM comments WHERE id = ?`).bind(targetId).first<RawCommentRow>();
-      if (!row) {
-        return jsonResponse(request, env, { ok: false, error: '楼层不存在' }, { status: 404 });
+      for (let attempt = 0; attempt < 5; attempt++) {
+        const row = await env.DB.prepare("SELECT * FROM comments WHERE id=? AND post_slug='guestbook' AND status IN ('published','pinned')").bind(targetId).first<RawCommentRow>();
+        if (!row) return jsonResponse(request, env, { ok: false, error: '楼层不存在' }, { status: 404 });
+        const { rx, totalLikes, newUserEmoji } = applyReactionMutation(row);
+        const updated = await env.DB.prepare(`UPDATE comments SET likes_count=?, reactions=?
+          WHERE id=? AND reactions IS ? AND status IN ('published','pinned') RETURNING id`)
+          .bind(totalLikes, JSON.stringify(rx), targetId, row.reactions ?? null).first();
+        if (updated) return jsonResponse(request, env, {
+          ok: true, likesCount: totalLikes, userReaction: newUserEmoji,
+          reactions: { summary: rx.summary, users: newUserEmoji ? { [effectiveUserId]: newUserEmoji } : {}, details: buildReactionDetails(rx) },
+        });
       }
-      const { rx, totalLikes, newUserEmoji } = applyReactionMutation(row);
-      const rxJson = JSON.stringify(rx);
-      await env.DB.prepare(`UPDATE comments SET likes_count = ?, reactions = ? WHERE id = ?`)
-        .bind(totalLikes, rxJson, targetId)
-        .run();
-
-      return jsonResponse(request, env, {
-        ok: true,
-        likesCount: totalLikes,
-        userReaction: newUserEmoji,
-        reactions: {
-          summary: rx.summary,
-          users: newUserEmoji ? { [effectiveUserId]: newUserEmoji } : {},
-          details: buildReactionDetails(rx),
-        },
-      });
+      return jsonResponse(request, env, { ok: false, error: '表态正在更新，请重试' }, { status: 409 });
     }
 
     const row = memoryFallbackStore.get(targetId);
-    if (!row) {
+    if (!row || row.post_slug !== 'guestbook' || !['published','pinned'].includes(row.status)) {
       return jsonResponse(request, env, { ok: false, error: '楼层不存在' }, { status: 404 });
     }
     const { rx, totalLikes, newUserEmoji } = applyReactionMutation(row);

@@ -131,8 +131,8 @@ export function GestureDetailPage({ gestureId, channels, identity, bookmarkedPos
   }
   async function copy(floor = 1) {
     const url = location.origin + '/guestbook/#gesture-' + gestureId + (floor > 1 ? '-floor-' + floor + '~' + floors[floor-1].id : '');
-    try { await navigator.clipboard.writeText(url); onToast('链接已复制'); }
-    catch { onToast('无法访问剪贴板'); }
+    try { await navigator.clipboard.writeText(url); onToast('链接已复制'); return true; }
+    catch { onToast('无法访问剪贴板'); return false; }
   }
   function focusComposer() {
     document.getElementById('detail-reply-composer')?.scrollIntoView({ block: 'center' });

@@ -1,3 +1,4 @@
+import { sha256Hex } from '../_lib/hash.ts';
 import { welcomeContent, welcomeId, welcomeReplyCount } from '../_lib/gesture-history.ts';
 import { validBoost } from '../../src/lib/gesture-text.ts';
 import type { AppEnv } from '../_lib/types';
@@ -709,7 +710,7 @@ export async function onRequest(context: {
     } else {
       // Unauthenticated visitors CANNOT specify or forge authorEmail or authorId
       authorEmail = '';
-      authorId = `vis_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
+      authorId = slug === 'guestbook' ? 'vis_' + (await sha256Hex('guestbook/' + effectiveSessionToken)).slice(0,24) : generateSecureId('vis', 8);
     }
 
     if (authorRole !== 'admin') {
