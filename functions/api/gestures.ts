@@ -1,3 +1,4 @@
+import { validBoost } from '../../src/lib/gesture-text.ts';
 import type { AppEnv } from '../_lib/types';
 import { jsonResponse, optionsResponse, safeReadJson } from '../_lib/http.ts';
 import { getUserBySessionToken } from '../_lib/auth-service.ts';
@@ -584,8 +585,8 @@ export async function onRequest(context: {
     if (!content) {
       return jsonResponse(request, env, { ok: false, error: 'Boost 短语不能为空' }, { status: 400 });
     }
-    if (content.length > 16) {
-      return jsonResponse(request, env, { ok: false, error: 'Boost 短语限制 16 字以内' }, { status: 400 });
+    if (!validBoost(String(payload.content || ''))) {
+      return jsonResponse(request, env, { ok: false, error: 'Boost 限单行、最多 16 字' }, { status: 400 });
     }
 
     const actor = resolveActor();

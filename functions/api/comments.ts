@@ -1,3 +1,4 @@
+import { validBoost } from '../../src/lib/gesture-text.ts';
 import type { AppEnv } from '../_lib/types';
 import { jsonResponse, optionsResponse, safeReadJson } from '../_lib/http.ts';
 import { getUserBySessionToken } from '../_lib/auth-service.ts';
@@ -567,8 +568,8 @@ export async function onRequest(context: {
     }
 
     // Boost limit check: <= 30 characters
-    if (postType === 'boost' && rawMessage.length > 30) {
-      return jsonResponse(request, env, { ok: false, error: '🚀 Boost 瞬时微语不能超过 30 个字' }, { status: 400 });
+    if (postType === 'boost' && (slug === 'guestbook' ? !validBoost(payload.message) : rawMessage.length > 30)) {
+      return jsonResponse(request, env, { ok: false, error: slug === 'guestbook' ? 'Boost 限单行、最多 16 字' : '🚀 Boost 瞬时微语不能超过 30 个字' }, { status: 400 });
     }
     // Gesture limit check: >= 8 characters
     if (postType === 'gesture' && rawMessage.length < 8) {

@@ -1,3 +1,4 @@
+import { BOOST_LIMIT, boostLength, validBoost } from '../../lib/gesture-text';
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import {
   Rocket,
@@ -679,8 +680,8 @@ export function GuestbookBoard() {
     if (hasComposerTitle || hasComposerTags || hasComposerImages || hasComposerSpecificDim) {
       return 'gesture';
     }
-    const len = trimmedComposerText.length;
-    if (len <= 30) {
+    const len = boostLength(trimmedComposerText);
+    if (len <= BOOST_LIMIT && !trimmedComposerText.includes('\n')) {
       return 'boost';
     }
     return 'gesture';
@@ -694,7 +695,7 @@ export function GuestbookBoard() {
 
   // Result only: clean character count
   const composerWordResult = useMemo(() => {
-    const len = trimmedComposerText.length;
+    const len = boostLength(trimmedComposerText);
     return len > 0 ? `${len} 字` : '';
   }, [trimmedComposerText]);
 
@@ -877,8 +878,8 @@ export function GuestbookBoard() {
       setComposerError(null);
 
       if (determinedType === 'boost') {
-        if (text.length > 30) {
-          setComposerError('短句不能超过 30 字');
+        if (!validBoost(composerText)) {
+          setComposerError('Boost 限单行、最多 16 字');
           setComposerSubmitting(false);
           return;
         }
