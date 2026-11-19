@@ -20,6 +20,16 @@ function RelatedLink({ link }: { link: GestureRelatedLink }) {
   </a>;
 }
 
+function stripDigestMarkdown(text: string): string {
+  return (text || '')
+    .replace(/!\[[^\]]*\]\([^)]*\)/g, '')
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+    .replace(/^#{1,6}\s+/gm, '')
+    .replace(/[*`_>]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 export function GestureRelatedAndTopicMap({ relatedLinks, topicMap, gesture, subGestures }: Props) {
   const [all, setAll] = useState(false);
   const [titles, setTitles] = useState<Record<string, string>>({});
@@ -41,22 +51,34 @@ export function GestureRelatedAndTopicMap({ relatedLinks, topicMap, gesture, sub
     return () => controller.abort();
   }, [visible]);
   const [summary, setSummary] = useState(false);
-  const hot = subGestures.length >= 15 && topicMap.viewsCount >= 500;
+  const hot = subGestures.length >= 10 || topicMap.viewsCount >= 500;
   const highlights = useMemo(() => summary ? [...subGestures].sort((a,b) => b.likesCount - a.likesCount).slice(0,3) : [], [summary, subGestures]);
   return <div className="gd-topic-info">
     {relatedLinks.length > 0 && <section className="gd-zone5-links" aria-label="关联链接">
       <h2><Link2 size={14} />关联链接</h2>
       {visible.map(link => <RelatedLink key={link.url} link={titles[link.url] ? { ...link, title: titles[link.url] } : link} />)}
-      {relatedLinks.length > 5 && <button type="button" aria-expanded={all} onClick={() => setAll(!all)}>{all ? '收起' : '查看全部 ' + relatedLinks.length + ' 个链接'}</button>}
+      {relatedLinks.length > 5 && <button type="button" className="gd-links-more-btn" aria-expanded={all} onClick={() => setAll(!all)}>{all ? '收起' : '查看全部 ' + relatedLinks.length + ' 个链接'}</button>}
     </section>}
     <section className="gd-zone6-topic-map" aria-label="讨论概览">
       <span><strong>{topicMap.viewsCount.toLocaleString()}</strong> 观看</span>
-      {hot && <><span>{topicMap.likesCount} 次表态</span><span>{relatedLinks.length} 个链接</span><span>{topicMap.usersCount} 位参与者</span><span>约 {topicMap.estimatedReadMinutes} 分钟阅读</span></>}
-      <span className="gd-tm-avatars">{topicMap.participants.slice(0,5).map(p => <GestureAvatar key={p.authorId || p.authorName} name={p.authorName} avatar={p.authorAvatar} size={26} isOwner={p.authorRole === 'admin'} />)}</span>
+      {hot && <>
+        <span><em className="gd-tm-num">{topicMap.likesCount}</em> 次表态</span>
+        <span><em className="gd-tm-num">{relatedLinks.length}</em> 个链接</span>
+        <span><em className="gd-tm-num">{topicMap.usersCount}</em> 位参与者</span>
+        <span>约 {topicMap.estimatedReadMinutes} 分钟阅读</span>
+      </>}
+      <span className="gd-tm-avatars">{topicMap.participants.slice(0,5).map(p => (
+        <span key={p.authorId || p.authorName} title={`${p.authorName} (${p.count} 次参与)`}>
+          <GestureAvatar name={p.authorName} avatar={p.authorAvatar} size={26} isOwner={p.authorRole === 'admin'} />
+        </span>
+      ))}</span>
       <button type="button" className="gd-summary-toggle" aria-expanded={summary} onClick={() => setSummary(!summary)}><Sparkles size={14} />总结</button>
     </section>
     {summary && <section className="gd-digest" aria-label="讨论摘录"><h2>讨论摘录 · {subGestures.length} 条回复</h2>
-      {[gesture, ...highlights].map(n => <p key={n.id}><strong>{n.authorName}</strong>　{n.message.slice(0,100)}{n.message.length > 100 ? '…' : ''}</p>)}
+      {[gesture, ...highlights].map(n => {
+        const plain = stripDigestMarkdown(n.message);
+        return <p key={n.id}><strong>{n.authorName}</strong>　{plain.slice(0,110)}{plain.length > 110 ? '…' : ''}</p>;
+      })}
     </section>}
   </div>;
 }

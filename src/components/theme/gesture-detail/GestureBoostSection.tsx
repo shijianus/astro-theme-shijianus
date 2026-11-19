@@ -3,6 +3,29 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Send, Zap } from 'lucide-react';
 import type { GestureBoost } from '../../../lib/gesture-client';
 
+export function useHorizontalOverflowFade(ref: React.RefObject<HTMLDivElement | null>, depKey: unknown) {
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const sync = () => {
+      const canLeft = el.scrollLeft > 2;
+      const canRight = el.scrollLeft + el.clientWidth < el.scrollWidth - 2;
+      el.dataset.fadeLeft = canLeft ? 'true' : 'false';
+      el.dataset.fadeRight = canRight ? 'true' : 'false';
+    };
+    sync();
+    const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(sync) : null;
+    ro?.observe(el);
+    el.addEventListener('scroll', sync, { passive: true });
+    window.addEventListener('resize', sync);
+    return () => {
+      ro?.disconnect();
+      el.removeEventListener('scroll', sync);
+      window.removeEventListener('resize', sync);
+    };
+  }, [ref, depKey]);
+}
+
 interface GestureBoostSectionProps {
   gestureId: string;
   boosts: GestureBoost[];
@@ -21,6 +44,9 @@ export function GestureBoostSection({
   const [draft, setDraft] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const stripRef = useRef<HTMLDivElement>(null);
+
+  useHorizontalOverflowFade(stripRef, boosts.length);
 
   useEffect(() => {
     if (composerOpen) {
@@ -48,7 +74,7 @@ export function GestureBoostSection({
 
   return (
     <div className="gd-zone3-boost" aria-label="Boost 短评列表">
-      {boosts.length > 0 && <div className="gd-boost-op-pills" tabIndex={0} aria-label="横向浏览 Boost">
+      {boosts.length > 0 && <div ref={stripRef} className="gd-boost-op-pills" tabIndex={0} aria-label="横向浏览 Boost">
         {boosts.map((b) => (
           <span key={b.id} className="gd-boost-op-pill">
             <span className="gd-boost-op-pill-author">{b.authorName}</span>
@@ -78,7 +104,7 @@ export function GestureBoostSection({
             placeholder={`短评 Boost（${BOOST_LIMIT}字以内）...`}
             className="gd-boost-inline-input"
           />
-          <span className="gd-boost-char-hint">{length}/{BOOST_LIMIT} · {length > BOOST_LIMIT ? '超出' : '余'} {Math.abs(BOOST_LIMIT - length)}</span>
+          <span className={`gd-boost-char-hint ${length > BOOST_LIMIT ? 'is-over-limit' : ''}`}>{length}/{BOOST_LIMIT} · {length > BOOST_LIMIT ? '超出' : '余'} {Math.abs(BOOST_LIMIT - length)}</span>
           <button
             type="submit"
             disabled={!validBoost(draft) || submitting}

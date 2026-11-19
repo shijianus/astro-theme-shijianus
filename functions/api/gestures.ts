@@ -202,7 +202,7 @@ export async function onRequest(context: {
       t.reply_count = visible.length;
       if (visible.length !== original.length) oldIds.set(t.id, [t.id, ...original.map(r => r.id)]);
     }
-    const relatedLinks = resolveGestureLinks(citations, targets, floorIds, oldIds);
+    const relatedLinks = resolveGestureLinks(citations, targets, floorIds, oldIds, rootId);
 
     // Compute Topic Map metrics
     const allFloors = [opMapped, ...subMapped];

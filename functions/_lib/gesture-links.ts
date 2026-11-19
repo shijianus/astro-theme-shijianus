@@ -24,7 +24,7 @@ export function collectGestureLinks(rows: RawCommentRow[], origin: string) {
     const path = normalizeEscapes(url.pathname);
     if (/\.(?:png|jpe?g|gif|svg|avif|webp)$/i.test(path)) return;
     for (const key of [...url.searchParams.keys()]) {
-      if (/^(utm_.*|fbclid|gclid|msclkid)$/i.test(key)) url.searchParams.delete(key);
+      if (/^(utm_.*|fbclid|gclid|msclkid|spm|igshid|mc_cid|mc_eid|si)$/i.test(key)) url.searchParams.delete(key);
     }
     const internal = [new URL(origin).host, new URL(canonicalOrigin).host].includes(url.host);
     url.pathname = path;
@@ -37,7 +37,8 @@ export function collectGestureLinks(rows: RawCommentRow[], origin: string) {
     const key = keyUrl.host + keyUrl.pathname.replace(/\/$/, '') + keyUrl.search + keyUrl.hash;
     const old = found.get(key);
     if (old) {
-      if (!old.label) old.label = label;
+      if (old.url.startsWith('http://') && href.startsWith('https://')) old.url = href;
+      if (!old.label && label) old.label = label;
       return;
     }
     found.set(key, { url: href, label, internal, id: target?.id, floor: target?.floor, postId: target?.postId });
@@ -65,7 +66,14 @@ export function collectGestureLinks(rows: RawCommentRow[], origin: string) {
 }
 
 type Target = Pick<RawCommentRow, 'id' | 'title' | 'message'> & { reply_count: number };
-export function resolveGestureLinks(citations: Citation[], targets: Target[], floorIds: Map<string, string[]>, legacyIds: Map<string, string[]>) {
+const KIND_RANK: Record<string, number> = { gesture: 0, site: 1, external: 2 };
+export function resolveGestureLinks(
+  citations: Citation[],
+  targets: Target[],
+  floorIds: Map<string, string[]>,
+  legacyIds: Map<string, string[]>,
+  currentRootId?: string
+) {
   const byId = new Map(targets.map(target => [target.id, target]));
   const seen = new Set<string>();
   return citations.flatMap(citation => {
@@ -77,12 +85,14 @@ export function resolveGestureLinks(citations: Citation[], targets: Target[], fl
       const postId = citation.postId || legacyIds.get(id)?.[floor-1] || ids?.[floor-1];
       const position = ids && postId ? ids.indexOf(postId) + 1 : floor;
       if (!position || position > target.reply_count + 1 || (citation.postId && !ids?.includes(citation.postId))) return [];
+      if (currentRootId && id === currentRootId && position === 1) return [];
       const key = id + '/' + position;
       if (seen.has(key)) return [];
       seen.add(key);
       const name = target.title || target.message.replace(/^#{1,6}\s+/, '').split('\n')[0].slice(0, 80);
-      return [{ id, url: position > 1 && postId ? '/guestbook/#gesture-' + id + '-floor-' + position + '~' + postId : url, title: name + (position > 1 ? ' · 第 ' + position + ' 楼' : ''), replyCount: target.reply_count, type: 'gesture', kind: 'gesture' }];
+      return [{ id, url: position > 1 && postId ? '/guestbook/#gesture-' + id + '-floor-' + position + '~' + postId : url, title: name + (position > 1 ? ' · 第 ' + position + ' 楼' : ''), replyCount: target.reply_count, type: 'gesture' as const, kind: 'gesture' as const }];
     }
-    return [{ url, title: citation.label || url, type: 'external', kind: citation.internal ? 'site' : 'external' }];
-  }).sort((a, b) => Number(b.type === 'gesture') - Number(a.type === 'gesture'));
+    const kind = citation.internal ? 'site' as const : 'external' as const;
+    return [{ url, title: citation.label || url, type: 'external' as const, kind }];
+  }).sort((a, b) => (KIND_RANK[a.kind] ?? 2) - (KIND_RANK[b.kind] ?? 2));
 }

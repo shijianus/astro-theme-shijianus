@@ -19,14 +19,19 @@ export function GesturePopover({ anchor, label, onClose, onEnter, onLeave, child
     const el = host.current;
     if (!trigger || !el) return;
     const panel = el.firstElementChild as HTMLElement;
-    if (trigger.getBoundingClientRect().top < 170) trigger.scrollIntoView({ block: 'center', behavior: 'instant' });
+    if (trigger.getBoundingClientRect().top < 190) trigger.scrollIntoView({ block: 'center', behavior: 'instant' });
     const position = () => {
       const rect = trigger.getBoundingClientRect();
-      const width = Math.min(324, document.documentElement.clientWidth - 24);
+      const maxWidth = Math.min(324, document.documentElement.clientWidth - 24);
+      panel.style.maxWidth = maxWidth + 'px';
+      panel.style.width = 'max-content';
+      const measured = Math.ceil(panel.getBoundingClientRect().width) || 240;
+      const width = Math.min(maxWidth, Math.max(216, measured));
+      panel.style.width = '';
       el.style.width = width + 'px';
       el.style.left = Math.max(12, Math.min(rect.left, document.documentElement.clientWidth - width - 12)) + 'px';
       el.style.top = rect.top + 'px';
-      panel.style.maxHeight = Math.max(32, rect.top - 76) + 'px';
+      panel.style.maxHeight = Math.max(48, rect.top - 70) + 'px';
     };
     const outside = (event: PointerEvent) => {
       if (!el.contains(event.target as Node) && !trigger.contains(event.target as Node)) close.current();
