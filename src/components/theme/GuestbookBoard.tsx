@@ -1,4 +1,4 @@
-import { boostLength, validBoost, parseGestureHash } from '../../lib/gesture-text';
+import { boostLength, validBoost, parseGestureHash, gestureTimestamp } from '../../lib/gesture-text';
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import {
   Rocket,
@@ -7,6 +7,7 @@ import {
   Sparkles,
   Flame,
   Clock,
+  Layers,
   Search,
   Bold,
   Italic,
@@ -41,6 +42,7 @@ import {
 import { renderGestureMarkdown } from '../../lib/gesture-markdown';
 import { extractOpTitle, getOrCreateGestureSessionToken, formatMonthDay } from '../../lib/gesture-client';
 import { GestureAvatar } from './gesture-detail/GestureAvatar';
+import { useHorizontalOverflowFade } from './gesture-detail/GestureBoostSection';
 import { GesturePopover } from './gesture-detail/GesturePopover';
 import { GestureDetailPage } from './gesture-detail/GestureDetailPage';
 
@@ -133,6 +135,7 @@ export function GuestbookBoard() {
   const [listError, setListError] = useState('');
   const [retry, setRetry] = useState(0);
   const emojiButton = useRef<HTMLButtonElement>(null);
+  const plazaBoostStripRef = useRef<HTMLDivElement>(null);
 
   // Floating Non-blocking Composer Dock State
   const [showComposer, setShowComposer] = useState(false);
@@ -362,6 +365,7 @@ export function GuestbookBoard() {
   }, [toastMessage]);
 
   const allBoostComments = dbComments.filter(n => n.postType === 'boost' && !n.parentId);
+  useHorizontalOverflowFade(plazaBoostStripRef, allBoostComments.length);
   const [determinedType, setComposerType] = useState<'gesture' | 'boost'>('gesture');
   const [boostDraft, setBoostDraft] = useState('');
   const trimmedComposerText = (determinedType === 'boost' ? boostDraft : composerText).trim();
@@ -664,7 +668,7 @@ export function GuestbookBoard() {
         <>
       <header className="gb-board-header"><h1>读者留言与交流广场</h1><button type="button" className="gb-new-gesture-btn" onClick={openFloatingComposer}><Pencil size={15} />发布留言</button></header>
       {allBoostComments.length > 0 && <section className="gb-board-boosts" aria-label="广场 Boost">
-        <Rocket size={15} /><div className="gd-boost-op-pills" tabIndex={0}>{allBoostComments.map(n => <span key={n.id} className="gd-boost-op-pill"><span>{n.authorName}</span> · {n.message}</span>)}</div>
+        <Rocket size={15} /><div ref={plazaBoostStripRef} className="gd-boost-op-pills" tabIndex={0}>{allBoostComments.map(n => <span key={n.id} className="gd-boost-op-pill"><span className="gd-boost-op-pill-author">{n.authorName}</span><span className="gd-boost-op-pill-sep">·</span><span className="gd-boost-op-pill-content">{n.message}</span></span>)}</div>
       </section>}
       <nav className="gb-nav-bar" aria-label="Gesture 讨论分类与维度">
         <div className="gb-nav-bar__categories">
@@ -678,7 +682,7 @@ export function GuestbookBoard() {
               aria-expanded={showDimensionDropdown}
             >
               <span className="gb-dim-prefix">维度:</span>
-              <span className="mr-1 text-sm flex-shrink-0">{currentDimensionObj?.icon || '🌟'}</span>
+              <Layers size={14} className="gb-dim-icon" aria-hidden="true" />
               <span className="gb-dim-value">{selectedDimension === 'all' ? '全部维度' : currentDimensionObj?.label}</span>
               <ChevronDown className={`w-3.5 h-3.5 ml-1 text-slate-400 transition-transform ${showDimensionDropdown ? 'rotate-180' : ''}`} />
             </button>
@@ -751,6 +755,7 @@ export function GuestbookBoard() {
               <button
                 type="button"
                 className="gb-search-clear"
+                aria-label="清除搜索"
                 onClick={() => setSearchQuery('')}
               >
                 <X className="w-3 h-3" />
@@ -804,12 +809,19 @@ export function GuestbookBoard() {
                 const channel = CHANNELS.find(c => c.id === item.tag);
                 const { title, bodyWithoutLeadingHeading } = extractOpTitle(item);
                 const excerpt = bodyWithoutLeadingHeading.replace(/!\[[^\]]*\]\([^)]*\)/g,'').replace(/\[([^\]]+)\]\([^)]+\)/g,'$1').replace(/[#*`_>]/g,'').trim();
+                const showExcerpt = Boolean(excerpt) && excerpt !== title && (Boolean(item.title?.trim()) || !excerpt.startsWith(title));
                 return <article key={item.id} className={`gb-gesture-row ${isRead ? 'is-read-row' : ''}`}>
                   <GestureAvatar name={item.authorName} avatar={item.authorAvatar} size={34} isOwner={item.authorRole === 'admin'} />
                   <div className="gb-gesture-row__main">
                     <h2 className="gb-gesture-row__title"><a href={'#gesture-' + item.id}>{isPinned && <Pin size={13} aria-label="置顶" />}{title}</a></h2>
-                    {excerpt && !excerpt.startsWith(title) && <p className="gb-gesture-row__excerpt">{excerpt}</p>}
-                    <div className="gb-gesture-row__footer"><strong>{item.authorName}</strong><time dateTime={item.createdAt}>{formatMonthDay(item.createdAt)}</time>{channel && <span>{channel.label}</span>}</div>
+                    {showExcerpt && <p className="gb-gesture-row__excerpt">{excerpt}</p>}
+                    <div className="gb-gesture-row__footer">
+                      <strong>{item.authorName}</strong>
+                      {item.authorRole === 'admin' && <span className="gb-row-role">站长</span>}
+                      <span className="gb-meta-sep" aria-hidden="true">·</span>
+                      <time dateTime={item.createdAt} title={new Date(gestureTimestamp(item.createdAt)).toLocaleString('zh-CN')}>{formatMonthDay(item.createdAt)}</time>
+                      {channel && <><span className="gb-meta-sep" aria-hidden="true">·</span><span>{channel.label}</span></>}
+                    </div>
                   </div>
                   <div className="gb-gesture-row__right"><span title="回复数"><MessageSquare size={14} />{item.replyCount ?? 0}</span><span title="表态数"><Heart size={14} />{item.likesCount}</span>
                     <button className="gb-bookmark-toggle" aria-label="书签" aria-pressed={isBookmarked} onClick={e => toggleBookmark(item.id,e)}><Bookmark size={15} /></button></div>
@@ -950,7 +962,7 @@ export function GuestbookBoard() {
                 <button aria-pressed={determinedType === 'gesture'} onClick={() => setComposerType('gesture')}>Gesture 讨论</button>
                 <button aria-pressed={determinedType === 'boost'} onClick={() => setComposerType('boost')}>Boost 短评</button>
               </div>
-              {determinedType === 'boost' ? <input className="gb-modal-title-input" aria-label="广场 Boost" value={boostDraft} onChange={e => setBoostDraft(e.target.value)} /> : <>
+              {determinedType === 'boost' ? <input className="gb-modal-title-input" aria-label="广场 Boost" aria-invalid={wordCount > 16} placeholder="短评 Boost（16字以内）..." value={boostDraft} onChange={e => setBoostDraft(e.target.value)} /> : <>
               {/* Title Input */}
               <div className="gb-modal-row">
                 <input
@@ -1210,13 +1222,13 @@ export function GuestbookBoard() {
                 <div className="gb-preview-box is-modal-preview">
                   {composerText.trim() ? (
                     <div
-                      className="gb-markdown-body"
+                      className="gd-markdown-body"
                       dangerouslySetInnerHTML={{
                         __html: renderGestureMarkdown(composerText),
                       }}
                     />
                   ) : (
-                    <span className="text-slate-400 text-xs">暂无预览内容</span>
+                    <span className="gd-preview-empty">暂无预览内容</span>
                   )}
                 </div>
               )}
@@ -1253,7 +1265,7 @@ export function GuestbookBoard() {
               {/* Footer */}
               <div className="gb-modal-foot">
                 <span
-                  className="gb-word-count"
+                  className={`gb-word-count ${determinedType === 'boost' && wordCount > 16 ? 'is-warning' : ''}`}
                 >
                   {composerWordResult}
                 </span>
