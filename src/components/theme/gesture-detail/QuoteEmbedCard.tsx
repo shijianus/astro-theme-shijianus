@@ -11,6 +11,16 @@ interface QuoteEmbedCardProps {
   onJumpToFloor: (targetFloorIndex: number, originFloorIndex: number) => void;
 }
 
+function cleanQuoteExcerpt(text?: string): string {
+  return (text || '')
+    .replace(/!\[[^\]]*\]\([^)]*\)/g, '[图片]')
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+    .replace(/^#{1,6}\s+/gm, '')
+    .replace(/[*`_>]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 /**
  * Orthogonal Content-Level Quote Block inside the body column.
  * - Left header: (20px avatar) Quoted Author:
@@ -28,6 +38,7 @@ export function QuoteEmbedCard({
   const authorAvatar = quotedNode?.authorAvatar || quote.authorAvatar;
   const targetFloor = quotedNode?.floorIndex;
   const fullContent = quotedNode?.message || quote.fullMessage || quote.excerpt;
+  const excerptText = cleanQuoteExcerpt(quote.excerpt || quotedNode?.message.slice(0, 120));
 
   return (
     <div className={`gd-quote-card ${expanded ? 'is-expanded' : ''}`}>
@@ -41,6 +52,7 @@ export function QuoteEmbedCard({
           <button
             type="button"
             className="gd-quote-action-btn"
+            aria-expanded={expanded}
             onClick={() => setExpanded((prev) => !prev)}
             title={expanded ? '收起引用全文' : '展开被引用原贴全文'}
             aria-label={expanded ? '收起引用全文' : '展开被引用原贴全文'}
@@ -67,7 +79,7 @@ export function QuoteEmbedCard({
             dangerouslySetInnerHTML={{ __html: renderGestureMarkdown(fullContent) }}
           />
         ) : (
-          <p className="gd-quote-excerpt">{quote.excerpt || quotedNode?.message.slice(0,100)}</p>
+          <p className="gd-quote-excerpt">{excerptText}</p>
         )}
       </div>
     </div>

@@ -1,5 +1,6 @@
 import { useLayoutEffect, useRef, useState, type RefObject } from 'react';
 import { Undo2 } from 'lucide-react';
+import { gestureTimestamp } from '../../../lib/gesture-text';
 import { formatMonthDay, type GestureNode } from '../../../lib/gesture-client';
 
 interface Props {
@@ -25,14 +26,30 @@ export function GestureTimelineScroller({ content, floors, page, latest, origin,
     let frame = 0;
     function update() {
       frame = 0;
-      const anchor = matchMedia('(max-width: 760px)').matches ? 150 : 112;
+      const isMobile = matchMedia('(max-width: 760px)').matches;
+      const anchor = isMobile ? 150 : 140;
+      const headerBottom = isMobile ? 105 : 72;
       let lo = 0, hi = elements.length;
       while (lo < hi) {
         const mid = (lo + hi) >>> 1;
         if (elements[mid].getBoundingClientRect().top <= anchor) lo = mid + 1;
         else hi = mid;
       }
-      setCurrent(Number(elements[Math.max(0, lo - 1)]?.dataset.floorIndex || 1));
+      let idx = Math.max(0, lo - 1);
+      while (idx + 1 < elements.length) {
+        const curRect = elements[idx].getBoundingClientRect();
+        const nextRect = elements[idx + 1].getBoundingClientRect();
+        if (curRect.bottom <= headerBottom && nextRect.top < window.innerHeight * 0.85) idx++;
+        else break;
+      }
+      const atDocBottom = window.scrollY > 80 && window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 8;
+      if (atDocBottom && elements.length > 0) {
+        const lastRect = elements[elements.length - 1].getBoundingClientRect();
+        if (lastRect.bottom <= window.innerHeight + 8 && lastRect.top < window.innerHeight * 0.75) {
+          idx = elements.length - 1;
+        }
+      }
+      setCurrent(Number(elements[idx]?.dataset.floorIndex || 1));
     }
     const schedule = () => { if (!frame) frame = requestAnimationFrame(update); };
     const resize = new ResizeObserver(schedule);
@@ -51,24 +68,27 @@ export function GestureTimelineScroller({ content, floors, page, latest, origin,
     const fraction = rect.width > rect.height ? (e.clientX - rect.left) / rect.width : (e.clientY - rect.top) / rect.height;
     return Math.round(Math.max(0, Math.min(1, fraction)) * (total - 1)) + 1;
   }
+  const formatFull = (iso?: string) => iso ? new Date(gestureTimestamp(iso)).toLocaleString('zh-CN') : '';
   return <aside className="gd-timeline-aside" aria-label="楼层时间轴">
-    <time className="gd-tl-start" dateTime={floors[0]?.createdAt} title="话题开始">{formatMonthDay(floors[0]?.createdAt)}</time>
-    <div className="gd-tl-rail" ref={rail} tabIndex={0} role="slider" aria-label="跳转楼层" aria-valuemin={1} aria-valuemax={total} aria-valuenow={active}
-      onPointerDown={e => { if (e.button === 0) { e.currentTarget.setPointerCapture(e.pointerId); setPreview(pointerFloor(e)); } }}
-      onPointerMove={e => { if (e.currentTarget.hasPointerCapture(e.pointerId)) setPreview(pointerFloor(e)); }}
-      onPointerUp={e => { if (e.currentTarget.hasPointerCapture(e.pointerId)) { e.currentTarget.releasePointerCapture(e.pointerId); onJump(pointerFloor(e)); } setPreview(null); }}
-      onPointerCancel={() => setPreview(null)}
-      onKeyDown={e => {
-        const targets: Record<string,number> = { Home: 1, End: total, ArrowDown: active+1, ArrowRight: active+1, ArrowUp: active-1, ArrowLeft: active-1, PageDown: active+40, PageUp: active-40 };
-        if (e.key in targets) { e.preventDefault(); onJump(Math.min(total, Math.max(1, targets[e.key]))); }
-      }} style={{ '--progress': percent + '%' } as React.CSSProperties}>
-      <span className="gd-tl-thumb" />
+    <time className="gd-tl-start" dateTime={floors[0]?.createdAt} title={`话题开始 · ${formatFull(floors[0]?.createdAt)}`}>{formatMonthDay(floors[0]?.createdAt)}</time>
+    <div className="gd-tl-track-wrap" style={{ '--progress': percent + '%' } as React.CSSProperties}>
+      <div className="gd-tl-rail" ref={rail} tabIndex={0} role="slider" aria-label="跳转楼层" aria-valuemin={1} aria-valuemax={total} aria-valuenow={active}
+        onPointerDown={e => { if (e.button === 0) { e.currentTarget.setPointerCapture(e.pointerId); setPreview(pointerFloor(e)); } }}
+        onPointerMove={e => { if (e.currentTarget.hasPointerCapture(e.pointerId)) setPreview(pointerFloor(e)); }}
+        onPointerUp={e => { if (e.currentTarget.hasPointerCapture(e.pointerId)) { e.currentTarget.releasePointerCapture(e.pointerId); onJump(pointerFloor(e)); } setPreview(null); }}
+        onPointerCancel={() => setPreview(null)}
+        onKeyDown={e => {
+          const targets: Record<string,number> = { Home: 1, End: total, ArrowDown: active+1, ArrowRight: active+1, ArrowUp: active-1, ArrowLeft: active-1, PageDown: active+40, PageUp: active-40 };
+          if (e.key in targets) { e.preventDefault(); onJump(Math.min(total, Math.max(1, targets[e.key]))); }
+        }}>
+        <span className="gd-tl-thumb" />
+      </div>
+      <div className="gd-tl-readout"><details><summary aria-label="输入楼层跳转">{active} / {total}</summary>
+        <form onSubmit={e => { e.preventDefault(); const n = Number(input); if (n >= 1 && n <= total) { e.currentTarget.closest('details')!.open = false; setInput(''); onJump(n); } }}>
+          <input type="number" aria-label="目标楼层" min={1} max={total} required value={input} onChange={e => setInput(e.target.value)} /><button>跳转</button>
+        </form></details><time dateTime={date}>{formatMonthDay(date)}</time></div>
     </div>
-    <div className="gd-tl-readout"><details><summary aria-label="输入楼层跳转">{active} / {total}</summary>
-      <form onSubmit={e => { e.preventDefault(); const n = Number(input); if (n >= 1 && n <= total) { e.currentTarget.closest('details')!.open = false; setInput(''); onJump(n); } }}>
-        <input type="number" aria-label="目标楼层" min={1} max={total} required value={input} onChange={e => setInput(e.target.value)} /><button>跳转</button>
-      </form></details><time dateTime={date}>{formatMonthDay(date)}</time></div>
-    <time className="gd-tl-latest" dateTime={latest} title="最后活动时间">最近活动<br />{formatMonthDay(latest)}</time>
-    {origin !== null && <button className={'gd-return' + (fading ? ' is-fading' : '')} onClick={onReturn}><Undo2 size={13} />返回 {origin} 楼</button>}
+    <time className="gd-tl-latest" dateTime={latest} title={`最后活动时间 · ${formatFull(latest)}`}>最近活动<br />{formatMonthDay(latest)}</time>
+    {origin !== null && <button type="button" className={'gd-return' + (fading ? ' is-fading' : '')} onClick={onReturn}><Undo2 size={13} />返回 {origin} 楼</button>}
   </aside>;
 }

@@ -14,6 +14,7 @@ import {
   Trash2,
   Zap,
 } from 'lucide-react';
+import { gestureTimestamp } from '../../../lib/gesture-text';
 import {
   formatMonthDay,
   resolveAuthorBadges,
@@ -34,6 +35,7 @@ interface GestureFloorCardProps {
   bodyMarkdown: string;
   boosts: GestureBoost[];
   directReplies: GestureNode[];
+  childrenMap?: Map<string, GestureNode[]>;
   replyParentNode: GestureNode | null;
   quotedNode: GestureNode | null;
   isHighlighted: boolean;
@@ -59,6 +61,7 @@ export function GestureFloorCard({
   bodyMarkdown,
   boosts,
   directReplies,
+  childrenMap,
   replyParentNode,
   quotedNode,
   isHighlighted,
@@ -89,12 +92,33 @@ export function GestureFloorCard({
 
   const replyBodyAnchorRef = useRef<HTMLDivElement | null>(null);
   const pendingBeforeTopRef = useRef<number | null>(null);
+  const moreMenuRef = useRef<HTMLDivElement | null>(null);
 
   const renderedBody = useMemo(() => ({ __html: renderGestureMarkdown(bodyMarkdown, true) }), [bodyMarkdown]);
   const badges = resolveAuthorBadges(node);
   const editCount = Number(node.editCount || 0);
 
-  const showReplyTargetBadge = !isOp && Boolean(replyParentNode);
+  const showReplyTargetBadge = !isOp && replyParentNode !== null && replyParentNode.id !== node.parentId;
+
+  useEffect(() => {
+    if (!moreMenuOpen) return;
+    const onPointerDown = (event: PointerEvent) => {
+      if (!moreMenuRef.current?.contains(event.target as Node)) {
+        setMoreMenuOpen(false);
+      }
+    };
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setMoreMenuOpen(false);
+      }
+    };
+    document.addEventListener('pointerdown', onPointerDown, true);
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.removeEventListener('pointerdown', onPointerDown, true);
+      document.removeEventListener('keydown', onKeyDown);
+    };
+  }, [moreMenuOpen]);
 
   // Scroll height compensation right after Scene B parent collapses (zero layout flicker, instant)
   useLayoutEffect(() => {
@@ -179,7 +203,7 @@ export function GestureFloorCard({
                 </span>
               )}
 
-              <time className="gd-first-date" dateTime={node.createdAt}>
+              <time className="gd-first-date" dateTime={node.createdAt} title={new Date(gestureTimestamp(node.createdAt)).toLocaleString('zh-CN')}>
                 {formatMonthDay(node.createdAt)}
               </time>
             </div>
@@ -327,7 +351,7 @@ export function GestureFloorCard({
               {copiedJustNow ? <Check className="w-4 h-4" /> : <Link2 className="w-4 h-4" />}
             </button>
 
-            <div className={`gd-more-drawer ${moreMenuOpen ? 'is-open' : ''}`}>
+            <div ref={moreMenuRef} className={`gd-more-drawer ${moreMenuOpen ? 'is-open' : ''}`}>
               {moreMenuOpen && <div className="gd-more-drawer__items">
                 <a className="gd-icon-btn" href="/community/reporting-and-appeals/"
                   target="_blank" rel="noopener noreferrer" title="举报与申诉" aria-label="举报与申诉">
@@ -410,7 +434,7 @@ export function GestureFloorCard({
       />
 
       {directReplies.length > 0 && directRepliesExpanded && (
-        <GestureReplyContext nodes={directReplies} origin={floorIndex} onJump={onJumpToFloor} />
+        <GestureReplyContext nodes={directReplies} origin={floorIndex} childrenMap={childrenMap} onJump={onJumpToFloor} />
       )}
       </div>
     </article>

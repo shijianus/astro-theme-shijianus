@@ -147,7 +147,7 @@ export function GestureDetailPage({ gestureId, channels, identity, bookmarkedPos
     const floor = n.floorIndex!;
     const user = identity?.id || visitorSessionToken;
     return <GestureFloorCard key={n.id} node={n} floorIndex={floor} isOp={floor === 1} bodyMarkdown={body}
-      boosts={thread?.boostsByGestureId?.[n.id] || []} directReplies={children.get(n.id) || []}
+      boosts={thread?.boostsByGestureId?.[n.id] || []} directReplies={children.get(n.id) || []} childrenMap={children}
       replyParentNode={byId.get(n.replyToId || n.parentId || '') || null} quotedNode={byId.get(n.quoteId || '') || null}
       isHighlighted={highlight === floor} isBookmarked={bookmarkedPostIds.includes(gestureId)}
       canManage={n.canManage ?? (identity?.role === 'admin' || Boolean(identity?.id && identity.id === n.authorId))}
