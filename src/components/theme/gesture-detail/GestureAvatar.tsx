@@ -34,17 +34,13 @@ export function GestureAvatar({
   isOwner = false,
   className = '',
 }: GestureAvatarProps) {
-  const fontSize = Math.max(10, Math.round(size * 0.38));
   const fallbackBg = avatar ? undefined : resolveMorandiBg(name);
 
   return (
     <span
       className={`gd-avatar gd-avatar--${size} ${isOwner ? 'is-owner-avatar' : ''} ${className}`}
       style={{
-        width: `${size}px`,
-        height: `${size}px`,
         borderRadius: isOwner ? '5px' : '50%',
-        fontSize: `${fontSize}px`,
         backgroundColor: fallbackBg,
       }}
       title={name}

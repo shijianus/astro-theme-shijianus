@@ -232,7 +232,7 @@ export function GestureInlineReplyComposer({
                 ? `回复 @${replyTarget.authorName}...（支持 Markdown，可用 # / ## 排版）`
                 : '写下你的回复...（支持 Markdown，可用 # / ## 排版）'
             }
-            className="gd-reply-textarea gb-textarea is-reply-box"
+            className="gd-reply-textarea"
           />
         ) : (
           <div className="gd-reply-preview">
@@ -263,12 +263,12 @@ export function GestureInlineReplyComposer({
           </div>
         )}
 
-        <div className="gd-reply-composer__foot gb-detail-reply-footer">
+        <div className="gd-reply-composer__foot">
           <span className="gd-char-count">字数: {message.length}</span>
           <button
             type="submit"
             disabled={submitting || !message.trim()}
-            className="gd-submit-reply-btn gb-submit-btn"
+            className="gd-submit-reply-btn"
           >
             <Send className="w-3.5 h-3.5" />
             <span>{submitting ? '发表中...' : '发表回复'}</span>
