@@ -175,6 +175,11 @@ await withGuestbook(async ({ db, page, base, add, errors }) => {
     await op
       .locator('.gd-zone4-action-bar')
       .evaluate((el) => el.scrollIntoView({ block: 'center', behavior: 'instant' }));
+    await op.evaluate(() => {
+      const s = document.querySelector('#floor-1 .gd-boost-op-pills');
+      if (s) s.scrollLeft = 0;
+      return new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+    });
     const geometry = await op.evaluate((el) => {
       const box = (s) => el.querySelector(s).getBoundingClientRect();
       const pills = Array.from(el.querySelectorAll('.gd-boost-op-pill'), (p) => p.getBoundingClientRect().y);
@@ -215,9 +220,21 @@ await withGuestbook(async ({ db, page, base, add, errors }) => {
     );
     const hit = await panel.evaluate((el) => {
       const b = el.getBoundingClientRect();
-      return el.contains(document.elementFromPoint(b.x + 12, b.y + 12));
+      const bg = getComputedStyle(el).backgroundColor;
+      const m = bg.match(/rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)(?:\s*,\s*([\d.]+))?\s*\)/);
+      const r = m ? +m[1] : 255,
+        g = m ? +m[2] : 255,
+        bl = m ? +m[3] : 255,
+        a = m && m[4] !== undefined ? +m[4] : 1;
+      const luma = (r + g + bl) / 3;
+      return {
+        contained: el.contains(document.elementFromPoint(b.x + 12, b.y + 12)),
+        opaqueDark: a >= 0.95 && luma < 60,
+        bg,
+      };
     });
-    assert.ok(hit);
+    assert.ok(hit.contained);
+    assert.ok(hit.opaqueDark, JSON.stringify(hit));
     await page.keyboard.press('Escape');
     await expect(panel).toHaveCount(0);
     const bounds = await rail.boundingBox();
@@ -307,10 +324,10 @@ await withGuestbook(async ({ db, page, base, add, errors }) => {
   });
   await page.reload();
   await page.locator('#floor-2').getByRole('button', { name: /条直接回复/ }).click();
-  const r3Context = page.locator('#floor-2 .gd-reply-context');
+  const r3Context = page.locator('#floor-2 .gd-reply-context').first();
   await expect(r3Context).toContainText('山禾');
   await r3Context.getByRole('button', { name: /1 条回复/ }).click();
-  await expect(r3Context).toContainText('第三层嵌套回复');
+  await expect(page.locator('#floor-2 .gd-reply-context.is-nested')).toContainText('第三层嵌套回复');
   await page.locator('#detail-reply-composer').scrollIntoViewIfNeeded();
   await expect.poll(async () => Number(await rail.getAttribute('aria-valuenow'))).toBe(4);
   console.log('real D1: Boost, reactions, parent, nested 3-level replies, independent quote, return, timeline tracking, edit and delete passed');
@@ -415,17 +432,30 @@ await withGuestbook(async ({ db, page, base, add, errors }) => {
   );
   await expect(page.locator('#floor-1 .katex-display')).toBeVisible();
   const lightIsolation = await page.evaluate(() => {
-    const isLight = (rgb) => {
-      const m = rgb.match(/\d+/g);
-      return m ? (+m[0] + +m[1] + +m[2]) / 3 > 120 : false;
+    const effectiveLuma = (cssBg) => {
+      const m = cssBg.match(/rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)(?:\s*,\s*([\d.]+))?\s*\)/);
+      if (!m) return 255;
+      const a = m[4] !== undefined ? +m[4] : 1;
+      const r = +m[1] * a + 13 * (1 - a);
+      const g = +m[2] * a + 17 * (1 - a);
+      const b = +m[3] * a + 26 * (1 - a);
+      return (r + g + b) / 3;
     };
     const katex = document.querySelector('#floor-1 .katex-display');
     const ta = document.querySelector('.gd-reply-textarea');
     ta.focus();
+    const katexBg = getComputedStyle(katex).backgroundColor;
+    const taBg = getComputedStyle(ta).backgroundColor;
+    const katexLuma = effectiveLuma(katexBg);
+    const taLuma = effectiveLuma(taBg);
     return {
       theme: document.documentElement.dataset.theme,
-      katexLight: isLight(getComputedStyle(katex).backgroundColor),
-      taLight: isLight(getComputedStyle(ta).backgroundColor),
+      katexBg,
+      taBg,
+      katexLuma,
+      taLuma,
+      katexLight: katexLuma >= 60,
+      taLight: taLuma >= 60,
     };
   });
   assert.equal(lightIsolation.katexLight, false, JSON.stringify(lightIsolation));
