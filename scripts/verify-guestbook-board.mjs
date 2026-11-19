@@ -100,7 +100,12 @@ await withGuestbook(async ({ page, base, add, errors }) => {
     .getByRole('button', { name: '👍', exact: true })
     .click();
   await draft.getByRole('button', { name: '实时预览' }).click();
-  await expect(draft.locator('.gb-preview-box')).toContainText('新发表的主题正文');
+  await expect(draft.locator('.gb-preview-box .gd-markdown-body')).toContainText('新发表的主题正文');
+  const composerBgDark = await draft.evaluate((el) => {
+    const m = getComputedStyle(el).backgroundColor.match(/\d+/g);
+    return m ? (+m[0] + +m[1] + +m[2]) / 3 < 80 : false;
+  });
+  assert.equal(composerBgDark, true);
   await draft.getByRole('button', { name: '发布', exact: true }).click();
   await expect(page.locator('.gd-zone1-title')).toHaveText('读者新主题');
   await expect(page.locator('.gd-zone1-tags')).toContainText('摘记');

@@ -9,7 +9,10 @@ await withGuestbook(async ({ db, page, base, add, errors }) => {
   if (shots) await mkdir(shots, { recursive: true });
   const shot = async (name, target) => {
     if (!shots) return;
-    if (target) await target.evaluate((el) => el.scrollIntoView({ block: 'center', behavior: 'instant' }));
+    if (target) {
+      await target.evaluate((el) => el.scrollIntoView({ block: 'center', behavior: 'instant' }));
+      await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
+    }
     await page.screenshot({ path: shots + '/' + name + '.png', animations: 'disabled' });
   };
   const req = (payload, token) =>
@@ -176,6 +179,9 @@ await withGuestbook(async ({ db, page, base, add, errors }) => {
       const box = (s) => el.querySelector(s).getBoundingClientRect();
       const pills = Array.from(el.querySelectorAll('.gd-boost-op-pill'), (p) => p.getBoundingClientRect().y);
       const strip = el.querySelector('.gd-boost-op-pills');
+      const fadeRightBeforeScroll = strip.dataset.fadeRight;
+      const scrollbarWidth = getComputedStyle(strip).scrollbarWidth;
+      const opAvatarBox = el.querySelector('.gd-avatar').getBoundingClientRect();
       strip.scrollLeft = strip.scrollWidth;
       return {
         overflow: document.documentElement.scrollWidth - innerWidth,
@@ -186,12 +192,18 @@ await withGuestbook(async ({ db, page, base, add, errors }) => {
         ),
         rows: new Set(pills).size,
         scrollable: strip.scrollWidth <= strip.clientWidth || strip.scrollLeft > 0,
+        fadeOk: strip.scrollWidth <= strip.clientWidth || fadeRightBeforeScroll === 'true',
+        scrollbarHidden: scrollbarWidth === 'none',
+        opAvatarWidth: opAvatarBox.width,
       };
     });
     assert.equal(geometry.overflow, 0);
     assert.ok(geometry.axis < 2);
     assert.equal(geometry.rows, 1);
     assert.ok(geometry.scrollable);
+    assert.ok(geometry.fadeOk);
+    assert.ok(geometry.scrollbarHidden);
+    if (width <= 760) assert.ok(geometry.opAvatarWidth <= 35, 'mobile OP avatar fits 34px rail');
     await react.click();
     const panel = page.getByRole('dialog', { name: '选择表情' });
     await expect(panel).toBeVisible();
@@ -276,7 +288,32 @@ await withGuestbook(async ({ db, page, base, add, errors }) => {
   page.once('dialog', (d) => d.accept());
   await own.getByLabel('删除贴文').click();
   await expect(own).toHaveCount(0);
-  console.log('real D1: Boost, reactions, parent, independent quote, return, edit and delete passed');
+  // Verify suppressed redundant OP reply badge on direct floor-1 reply, 3-level nested reply expansion, more-drawer dismissal & bottom timeline tracking
+  await expect(page.locator('#floor-2 .gd-reply-target-pill')).toHaveCount(0);
+  await expect(page.locator('#floor-3 .gd-reply-target-pill')).toHaveCount(1);
+  await op.getByLabel('更多操作').click();
+  await expect(op.locator('.gd-more-drawer__items')).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(op.locator('.gd-more-drawer__items')).toHaveCount(0);
+  await op.getByLabel('更多操作').click();
+  await expect(op.locator('.gd-more-drawer__items')).toBeVisible();
+  await page.locator('.gd-zone1-title').click();
+  await expect(op.locator('.gd-more-drawer__items')).toHaveCount(0);
+  await add('r4', '这是第三层嵌套回复，用于验证逐层就地展开。', {
+    parent_id: 'reading',
+    reply_to_id: 'r3',
+    author_name: '清风',
+    created_at: '2026-08-10T09:00:00Z',
+  });
+  await page.reload();
+  await page.locator('#floor-2').getByRole('button', { name: /条直接回复/ }).click();
+  const r3Context = page.locator('#floor-2 .gd-reply-context');
+  await expect(r3Context).toContainText('山禾');
+  await r3Context.getByRole('button', { name: /1 条回复/ }).click();
+  await expect(r3Context).toContainText('第三层嵌套回复');
+  await page.locator('#detail-reply-composer').scrollIntoViewIfNeeded();
+  await expect.poll(async () => Number(await rail.getAttribute('aria-valuenow'))).toBe(4);
+  console.log('real D1: Boost, reactions, parent, nested 3-level replies, independent quote, return, timeline tracking, edit and delete passed');
   await add('long', '长讨论用来验证连续阅读和楼层定位。', { title: '长讨论', views_count: 510 });
   await db
     .prepare(
@@ -377,6 +414,22 @@ await withGuestbook(async ({ db, page, base, add, errors }) => {
     }),
   );
   await expect(page.locator('#floor-1 .katex-display')).toBeVisible();
+  const lightIsolation = await page.evaluate(() => {
+    const isLight = (rgb) => {
+      const m = rgb.match(/\d+/g);
+      return m ? (+m[0] + +m[1] + +m[2]) / 3 > 120 : false;
+    };
+    const katex = document.querySelector('#floor-1 .katex-display');
+    const ta = document.querySelector('.gd-reply-textarea');
+    ta.focus();
+    return {
+      theme: document.documentElement.dataset.theme,
+      katexLight: isLight(getComputedStyle(katex).backgroundColor),
+      taLight: isLight(getComputedStyle(ta).backgroundColor),
+    };
+  });
+  assert.equal(lightIsolation.katexLight, false, JSON.stringify(lightIsolation));
+  assert.equal(lightIsolation.taLight, false, JSON.stringify(lightIsolation));
   await page.locator('#floor-1 .tk-details summary').click();
   await expect(page.locator('#floor-1 .tk-details-content')).toBeVisible();
   await rail.focus();
