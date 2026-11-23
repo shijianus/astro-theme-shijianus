@@ -1,156 +1,25 @@
+import { sha256Hex } from '../_lib/hash.ts';
+import { fetchThreadBoosts } from '../_lib/gesture-detail-store.ts';
+import { collectGestureLinks, resolveGestureLinks } from '../_lib/gesture-links.ts';
+import { gestureTimestamp, validBoost } from '../../src/lib/gesture-text.ts';
 import type { AppEnv } from '../_lib/types';
 import { jsonResponse, optionsResponse, safeReadJson } from '../_lib/http.ts';
 import { getUserBySessionToken } from '../_lib/auth-service.ts';
 import {
   buildReactionDetails,
   ensureGestureTables,
-  extractRelatedLinks,
   generateSecureId,
   mapRowToClientComment,
   memoryBoostsStore,
   memoryFallbackStore,
   memorySubscriptionsStore,
+  memoryLinkVisits,
   parseReactionsColumn,
   resolveCountryInfo,
-  STARTER_PINNED_BOOST_ROWS,
-  STARTER_PINNED_GESTURE_ROW,
-  STARTER_PINNED_REPLY_ROWS,
   syncDevStore,
   type RawBoostRow,
   type RawCommentRow,
-} from '../_lib/gesture-shared.ts';
-
-function seedStarterPinnedIfNeeded() {
-  if (!memoryFallbackStore.has(STARTER_PINNED_GESTURE_ROW.id)) {
-    memoryFallbackStore.set(STARTER_PINNED_GESTURE_ROW.id, { ...STARTER_PINNED_GESTURE_ROW });
-  }
-  const hasAnyReply = Array.from(memoryFallbackStore.values()).some(
-    (r) => r.parent_id === STARTER_PINNED_GESTURE_ROW.id && r.status !== 'deleted' && r.post_type !== 'boost'
-  );
-  if (!hasAnyReply) {
-    for (const rep of STARTER_PINNED_REPLY_ROWS) {
-      if (!memoryFallbackStore.has(rep.id)) {
-        memoryFallbackStore.set(rep.id, { ...rep });
-      }
-    }
-  }
-  const hasAnyOpBoost = Array.from(memoryBoostsStore.values()).some(
-    (b) => b.gesture_id === STARTER_PINNED_GESTURE_ROW.id
-  );
-  if (!hasAnyOpBoost) {
-    for (const b of STARTER_PINNED_BOOST_ROWS) {
-      if (!memoryBoostsStore.has(b.id)) {
-        memoryBoostsStore.set(b.id, { ...b });
-      }
-    }
-  }
-}
-
-async function ensureStarterPinnedInD1(db: NonNullable<AppEnv['DB']>, rootId: string) {
-  if (rootId !== STARTER_PINNED_GESTURE_ROW.id) return;
-  const existing = await db.prepare(`SELECT id FROM comments WHERE id = ?`).bind(rootId).first<{ id: string }>();
-  if (!existing) {
-    await db.prepare(`
-      INSERT INTO comments (
-        id, post_slug, parent_id, reply_to_id, quote_id, quote_source, post_type, tag, title, tags,
-        edit_count, views_count, author_id, author_name, author_email, author_avatar, author_website, author_role,
-        message, session_token, ip, ip_country, ip_location, show_location, user_agent, likes_count, reactions, status, created_at, updated_at
-      ) VALUES (?, ?, NULL, NULL, NULL, '', 'gesture', ?, ?, ?, ?, ?, ?, ?, '', ?, ?, 'admin', ?, '', '', 'CN', '浙江 · 杭州', 1, '', ?, ?, 'pinned', ?, ?)
-    `).bind(
-      STARTER_PINNED_GESTURE_ROW.id,
-      STARTER_PINNED_GESTURE_ROW.post_slug,
-      STARTER_PINNED_GESTURE_ROW.tag || 'chat',
-      STARTER_PINNED_GESTURE_ROW.title || '',
-      STARTER_PINNED_GESTURE_ROW.tags || '[]',
-      STARTER_PINNED_GESTURE_ROW.edit_count || 2,
-      STARTER_PINNED_GESTURE_ROW.views_count || 1280,
-      STARTER_PINNED_GESTURE_ROW.author_id,
-      STARTER_PINNED_GESTURE_ROW.author_name,
-      STARTER_PINNED_GESTURE_ROW.author_avatar || '',
-      STARTER_PINNED_GESTURE_ROW.author_website || '',
-      STARTER_PINNED_GESTURE_ROW.message,
-      STARTER_PINNED_GESTURE_ROW.likes_count,
-      STARTER_PINNED_GESTURE_ROW.reactions || '{}',
-      STARTER_PINNED_GESTURE_ROW.created_at,
-      STARTER_PINNED_GESTURE_ROW.updated_at
-    ).run();
-
-    for (const rep of STARTER_PINNED_REPLY_ROWS) {
-      await db.prepare(`
-        INSERT OR IGNORE INTO comments (
-          id, post_slug, parent_id, reply_to_id, quote_id, quote_source, post_type, tag, title, tags,
-          edit_count, views_count, author_id, author_name, author_email, author_avatar, author_website, author_role,
-          message, session_token, ip, ip_country, ip_location, show_location, user_agent, likes_count, reactions, status, created_at, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, 'gesture', ?, NULL, '[]', ?, 0, ?, ?, '', '', '', 'reader', ?, '', '', ?, ?, 1, '', ?, ?, 'published', ?, ?)
-      `).bind(
-        rep.id,
-        rep.post_slug,
-        rep.parent_id,
-        rep.reply_to_id || null,
-        rep.quote_id || null,
-        rep.quote_source || '',
-        rep.tag || 'tech',
-        rep.edit_count || 0,
-        rep.author_id,
-        rep.author_name,
-        rep.message,
-        rep.ip_country || 'CN',
-        rep.ip_location || '',
-        rep.likes_count,
-        rep.reactions || '{}',
-        rep.created_at,
-        rep.updated_at
-      ).run();
-    }
-
-    for (const b of STARTER_PINNED_BOOST_ROWS) {
-      await db.prepare(`
-        INSERT OR IGNORE INTO boosts (id, gesture_id, user_id, author_name, author_avatar, content, created_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
-      `).bind(b.id, b.gesture_id, b.user_id, b.author_name, b.author_avatar, b.content, b.created_at).run();
-    }
-  }
-}
-
-async function batchFetchBoostsByGestureIds(
-  db: AppEnv['DB'] | undefined,
-  gestureIds: string[]
-): Promise<Record<string, RawBoostRow[]>> {
-  const grouped: Record<string, RawBoostRow[]> = {};
-  if (!gestureIds.length) return grouped;
-
-  if (db) {
-    const uniqueIds = Array.from(new Set(gestureIds));
-    // SQLite bind limit safety: chunk by 80
-    for (let i = 0; i < uniqueIds.length; i += 80) {
-      const chunk = uniqueIds.slice(i, i + 80);
-      const placeholders = chunk.map(() => '?').join(', ');
-      const res = await db
-        .prepare(`SELECT id, gesture_id, user_id, author_name, author_avatar, content, created_at FROM boosts WHERE gesture_id IN (${placeholders}) ORDER BY created_at ASC`)
-        .bind(...chunk)
-        .all<RawBoostRow>();
-
-      for (const row of res.results || []) {
-        if (!row.gesture_id) continue;
-        if (!grouped[row.gesture_id]) grouped[row.gesture_id] = [];
-        grouped[row.gesture_id].push(row);
-      }
-    }
-    return grouped;
-  }
-
-  const idSet = new Set(gestureIds);
-  const rows = Array.from(memoryBoostsStore.values())
-    .filter((b) => b.gesture_id && idSet.has(b.gesture_id))
-    .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
-
-  for (const row of rows) {
-    if (!row.gesture_id) continue;
-    if (!grouped[row.gesture_id]) grouped[row.gesture_id] = [];
-    grouped[row.gesture_id].push(row);
-  }
-  return grouped;
-}
+} from '../_lib/gesture-detail-store.ts';
 
 export async function onRequest(context: {
   request: Request;
@@ -205,37 +74,29 @@ export async function onRequest(context: {
 
     let opRow: RawCommentRow | null = null;
     let replyRows: RawCommentRow[] = [];
-    let siblingTopRows: RawCommentRow[] = [];
     let isSubscribed = false;
 
     if (env.DB) {
       await ensureGestureTables(env.DB);
-      await ensureStarterPinnedInD1(env.DB, rootId);
+
 
       if (trackView) {
         try {
-          await env.DB.prepare(`UPDATE comments SET views_count = COALESCE(views_count, 0) + 1 WHERE id = ?`).bind(rootId).run();
+          await env.DB.prepare(`UPDATE comments SET views_count = COALESCE(views_count, 0) + 1 WHERE id = ? AND parent_id IS NULL AND post_slug = 'guestbook' AND status IN ('published','pinned')`).bind(rootId).run();
         } catch {}
       }
 
-      opRow = await env.DB.prepare(`SELECT * FROM comments WHERE id = ? AND status != 'deleted'`).bind(rootId).first<RawCommentRow>();
+      opRow = await env.DB.prepare(`SELECT * FROM comments WHERE id = ? AND parent_id IS NULL AND post_slug = 'guestbook' AND status IN ('published','pinned')`).bind(rootId).first<RawCommentRow>();
       if (!opRow) {
         return jsonResponse(request, env, { ok: false, error: 'Gesture not found' }, { status: 404 });
       }
 
       const subRes = await env.DB.prepare(`
         SELECT * FROM comments
-        WHERE parent_id = ? AND post_type != 'boost' AND status != 'deleted'
-        ORDER BY created_at ASC
+        WHERE parent_id = ? AND post_type != 'boost' AND status IN ('published','pinned')
+        ORDER BY julianday(created_at), id
       `).bind(rootId).all<RawCommentRow>();
       replyRows = subRes.results || [];
-
-      const sibRes = await env.DB.prepare(`
-        SELECT * FROM comments
-        WHERE post_slug = ? AND parent_id IS NULL AND post_type = 'gesture' AND status != 'deleted'
-        ORDER BY created_at DESC LIMIT 20
-      `).bind(opRow.post_slug).all<RawCommentRow>();
-      siblingTopRows = sibRes.results || [];
 
       if (currentUserId) {
         const subRow = await env.DB.prepare(
@@ -244,35 +105,33 @@ export async function onRequest(context: {
         isSubscribed = Boolean(subRow?.subscribed);
       }
     } else {
-      seedStarterPinnedIfNeeded();
+
       opRow = memoryFallbackStore.get(rootId) || null;
-      if (!opRow || opRow.status === 'deleted') {
+      if (!opRow || opRow.parent_id || opRow.post_slug !== 'guestbook' || !['pinned','published'].includes(opRow.status)) {
         return jsonResponse(request, env, { ok: false, error: 'Gesture not found' }, { status: 404 });
       }
       if (trackView) {
         opRow.views_count = (opRow.views_count || 0) + 1;
       }
       replyRows = Array.from(memoryFallbackStore.values())
-        .filter((r) => r.parent_id === rootId && r.post_type !== 'boost' && r.status !== 'deleted')
-        .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
-
-      siblingTopRows = Array.from(memoryFallbackStore.values())
-        .filter((r) => r.post_slug === opRow!.post_slug && !r.parent_id && r.post_type === 'gesture' && r.status !== 'deleted')
-        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-        .slice(0, 20);
+        .filter((r) => r.parent_id === rootId && r.post_type !== 'boost' && ['published','pinned'].includes(r.status))
+        .sort((a, b) => Date.parse(gestureTimestamp(a.created_at)) - Date.parse(gestureTimestamp(b.created_at)) || a.id.localeCompare(b.id));
 
       if (currentUserId) {
         isSubscribed = Boolean(memorySubscriptionsStore.get(`${rootId}:${currentUserId}`));
       }
     }
 
-    // Assign implicit sequential floorIndex (1 = OP, 2..N = SubGestures chronologically)
-    const opMapped = mapRowToClientComment(opRow, isAdmin, currentUserId, 1);
-    const subMapped = replyRows.map((row, idx) => mapRowToClientComment(row, isAdmin, currentUserId, idx + 2));
-
-    // Batch fetch scoped boosts (NO N+1 queries)
-    const allIds = [opRow.id, ...replyRows.map((r) => r.id)];
-    const boostsGrouped = await batchFetchBoostsByGestureIds(env.DB, allIds);
+    const boostsGrouped = await fetchThreadBoosts(env.DB, rootId);
+    const canManage = (row: RawCommentRow) => isAdmin || Boolean(authUser?.id && authUser.id === row.author_id) ||
+      Boolean(candidateToken && row.session_token && candidateToken === row.session_token);
+    const mapFloor = (row: RawCommentRow, floor: number) => ({
+      ...mapRowToClientComment(row, isAdmin, currentUserId, floor),
+      canManage: canManage(row),
+    });
+    const opMapped = mapFloor(opRow, 1);
+    const subMapped = replyRows.map((row,i) => mapFloor(row,i+2));
+    const allIds = [opRow.id, ...replyRows.map(r => r.id)];
     const boostsByGestureId: Record<string, Array<{
       id: string;
       gestureId: string;
@@ -295,29 +154,45 @@ export async function onRequest(context: {
       }));
     }
 
-    // Build sibling reply count map for ZONE 5 related links
-    const replyCountMap = new Map<string, number>();
-    if (!env.DB) {
-      for (const r of memoryFallbackStore.values()) {
-        if (r.parent_id && r.status !== 'deleted' && r.post_type !== 'boost') {
-          replyCountMap.set(r.parent_id, (replyCountMap.get(r.parent_id) || 0) + 1);
-        }
-      }
-    } else if (siblingTopRows.length > 0) {
-      const sibIds = siblingTopRows.map((s) => s.id);
-      for (let i = 0; i < sibIds.length; i += 80) {
-        const chunk = sibIds.slice(i, i + 80);
-        const ph = chunk.map(() => '?').join(', ');
-        const cntRes = await env.DB.prepare(
-          `SELECT parent_id, COUNT(*) as cnt FROM comments WHERE parent_id IN (${ph}) AND status != 'deleted' AND post_type != 'boost' GROUP BY parent_id`
-        ).bind(...chunk).all<{ parent_id: string; cnt: number }>();
-        for (const row of cntRes.results || []) {
-          replyCountMap.set(row.parent_id, Number(row.cnt || 0));
+    const citations = collectGestureLinks([opRow, ...replyRows], url.origin);
+    const ids = [...new Set(citations.flatMap(link => link.id ? [link.id] : []))];
+    const targets: Array<Pick<RawCommentRow, 'id' | 'title' | 'message'> & { reply_count: number }> = [];
+    for (let i = 0; i < ids.length; i += 80) {
+      const chunk = ids.slice(i, i + 80);
+      if (env.DB) {
+        const marks = chunk.map(() => '?').join(',');
+        const result = await env.DB.prepare(`SELECT t.id, t.title, t.message,
+          (SELECT count(*) FROM comments r WHERE r.parent_id=t.id AND r.post_type!='boost' AND r.status IN ('published','pinned')) AS reply_count
+          FROM comments t WHERE t.id IN (${marks}) AND t.post_slug='guestbook' AND t.parent_id IS NULL AND t.status IN ('published','pinned')`)
+          .bind(...chunk).all<typeof targets[number]>();
+        targets.push(...(result.results || []));
+      } else {
+        const rows = [...memoryFallbackStore.values()];
+        for (const id of chunk) {
+          const root = memoryFallbackStore.get(id);
+          if (root?.post_slug === 'guestbook' && !root.parent_id && ['pinned','published'].includes(root.status)) {
+            targets.push({ ...root, reply_count: rows.filter(r => r.parent_id === id && r.post_type !== 'boost' && ['published','pinned'].includes(r.status)).length });
+          }
         }
       }
     }
-
-    const relatedLinks = extractRelatedLinks(opRow, siblingTopRows, replyCountMap);
+    const floorIds = new Map<string, string[]>();
+    const floorTargets = new Set(citations.filter(c => (c.floor || 1) > 1 || c.postId).map(c => c.id));
+    for (const t of targets) {
+      if (!floorTargets.has(t.id)) continue;
+      const original = t.id === rootId ? replyRows : env.DB
+        ? (await env.DB.prepare("SELECT * FROM comments WHERE parent_id=? AND post_type!='boost' AND status IN ('published','pinned') ORDER BY julianday(created_at), id").bind(t.id).all<RawCommentRow>()).results || []
+        : [...memoryFallbackStore.values()].filter(r => r.parent_id === t.id && r.post_type !== 'boost' && ['published','pinned'].includes(r.status))
+          .sort((a,b) => Date.parse(gestureTimestamp(a.created_at))-Date.parse(gestureTimestamp(b.created_at)) || a.id.localeCompare(b.id));
+      const visible = original;
+      floorIds.set(t.id, [t.id, ...visible.map(r => r.id)]);
+      t.reply_count = visible.length;
+    }
+    const linkCounts = env.DB
+      ? new Map(((await env.DB.prepare('SELECT link_key, COUNT(*) AS count FROM gesture_link_visits WHERE gesture_id=? GROUP BY link_key').bind(rootId).all<{ link_key: string; count: number }>()).results || []).map(row => [row.link_key, row.count]))
+      : new Map([...(memoryLinkVisits.get(rootId) || [])].map(([key, visitors]) => [key, visitors.size]));
+    const relatedLinks = resolveGestureLinks(citations, targets, floorIds, new Map(), rootId)
+      .map(link => ({ ...link, clickCount: linkCounts.get(link.clickKey) || 0 }));
 
     // Compute Topic Map metrics
     const allFloors = [opMapped, ...subMapped];
@@ -352,12 +227,14 @@ export async function onRequest(context: {
     for (const list of Object.values(boostsByGestureId)) {
       for (const b of list) {
         const pKey = b.userId || b.authorName;
-        if (!participantMap.has(pKey)) {
+        const existing = participantMap.get(pKey);
+        if (existing) existing.count += 1;
+        else {
           participantMap.set(pKey, {
             authorId: b.userId,
             authorName: b.authorName,
             authorAvatar: b.authorAvatar || '',
-            authorRole: 'reader',
+            authorRole: '',
             count: 1,
           });
         }
@@ -372,7 +249,11 @@ export async function onRequest(context: {
       if (bKey === opKey && aKey !== opKey) return 1;
       return b.count - a.count;
     });
-    const latestReplyAt = subMapped.length > 0 ? subMapped[subMapped.length - 1].createdAt : opMapped.createdAt;
+    let latestReplyAt = gestureTimestamp(opMapped.createdAt);
+    for (const timestamp of [...allFloors.map(f => f.updatedAt || f.createdAt), ...Object.values(boostsByGestureId).flat().map(b => b.createdAt)]) {
+      const candidate = gestureTimestamp(timestamp);
+      if (Date.parse(candidate) > Date.parse(latestReplyAt)) latestReplyAt = candidate;
+    }
 
     return jsonResponse(request, env, {
       ok: true,
@@ -424,11 +305,14 @@ export async function onRequest(context: {
     authorRole = postAuthUser.role === 'admin' ? 'admin' : 'reader';
   }
 
+  const guestId = !postAuthUser && !isAdmin && sessionToken
+    ? 'vis_' + (await sha256Hex('guestbook/' + sessionToken)).slice(0,24)
+    : generateSecureId('vis', 8);
   const resolveActor = () => {
     const rawName = (payload.authorName || (authorRole === 'visitor' ? '访客' : '读者')).trim().slice(0, 50);
     let authorName = rawName;
     let authorAvatar = (payload.authorAvatar || '').trim().slice(0, 500);
-    let authorId = payload.authorId ? String(payload.authorId).trim().slice(0, 64) : generateSecureId('vis', 6);
+    let authorId = guestId;
     let authorWebsite = (payload.authorWebsite || '').trim().slice(0, 300);
 
     if (authorRole === 'admin') {
@@ -454,13 +338,43 @@ export async function onRequest(context: {
     return { authorId, authorName, authorAvatar, authorWebsite };
   };
 
+  if (action === 'link_click') {
+    if (method !== 'POST') return jsonResponse(request, env, { ok: false, error: 'Method not allowed' }, { status: 405 });
+    const rootId = String(payload.rootId || '').trim();
+    const linkKey = String(payload.linkKey || '');
+    if (!rootId || !linkKey || !sessionToken || rootId.length > 200 || linkKey.length > 4096 || sessionToken.length > 512) {
+      return jsonResponse(request, env, { ok: false, error: '无效的链接点击请求' }, { status: 400 });
+    }
+    if (env.DB) await ensureGestureTables(env.DB);
+    const rows = env.DB
+      ? (await env.DB.prepare("SELECT * FROM comments WHERE (id=? OR parent_id=?) AND post_slug='guestbook' AND post_type!='boost' AND status IN ('published','pinned') ORDER BY julianday(created_at), id").bind(rootId, rootId).all<RawCommentRow>()).results || []
+      : [...memoryFallbackStore.values()].filter(row => (row.id === rootId || row.parent_id === rootId) && row.post_slug === 'guestbook' && row.post_type !== 'boost' && ['published', 'pinned'].includes(row.status));
+    const root = rows.find(row => row.id === rootId && !row.parent_id);
+    if (!root || !collectGestureLinks(rows, url.origin).some(link => link.key === linkKey)) {
+      return jsonResponse(request, env, { ok: false, error: '引用链接不存在' }, { status: 404 });
+    }
+    const visitorHash = await sha256Hex('gesture-link/' + (postAuthUser?.id || sessionToken));
+    let clickCount = 0;
+    if (env.DB) {
+      await env.DB.prepare('INSERT OR IGNORE INTO gesture_link_visits (gesture_id,link_key,visitor_hash) VALUES (?,?,?)').bind(rootId, linkKey, visitorHash).run();
+      clickCount = (await env.DB.prepare('SELECT COUNT(*) AS count FROM gesture_link_visits WHERE gesture_id=? AND link_key=?').bind(rootId, linkKey).first<{ count: number }>())?.count || 0;
+    } else {
+      if (!memoryLinkVisits.has(rootId)) memoryLinkVisits.set(rootId, new Map());
+      const links = memoryLinkVisits.get(rootId)!;
+      if (!links.has(linkKey)) links.set(linkKey, new Set());
+      links.get(linkKey)!.add(visitorHash);
+      clickCount = links.get(linkKey)!.size;
+    }
+    return jsonResponse(request, env, { ok: true, clickCount });
+  }
+
   // 1. CREATE SUBGESTURE REPLY
   if (action === 'reply') {
     const rootId = String(payload.rootId || payload.parentId || '').trim();
     const replyToId = payload.replyToId ? String(payload.replyToId).trim() : rootId;
     const rawMessage = String(payload.message || '').trim();
     const quoteId = payload.quoteId ? String(payload.quoteId).trim() : null;
-    const quoteSource = payload.quote ? JSON.stringify(payload.quote).slice(0, 2000) : '';
+
 
     if (!rootId) {
       return jsonResponse(request, env, { ok: false, error: '缺少主贴文 ID (rootId)' }, { status: 400 });
@@ -471,6 +385,22 @@ export async function onRequest(context: {
     if (rawMessage.length > 5000) {
       return jsonResponse(request, env, { ok: false, error: '回复内容不能超过 5000 字' }, { status: 400 });
     }
+
+    if (env.DB) await ensureGestureTables(env.DB);
+    const findNode = async (id: string) => env.DB
+      ? env.DB.prepare('SELECT * FROM comments WHERE id=?').bind(id).first<RawCommentRow>()
+      : memoryFallbackStore.get(id);
+    const root = await findNode(rootId);
+    if (!root || root.post_slug !== 'guestbook' || root.parent_id || root.post_type === 'boost' || !['published','pinned'].includes(root.status)) {
+      return jsonResponse(request, env, { ok: false, error: '讨论不存在' }, { status: 404 });
+    }
+    const inThread = (n?: RawCommentRow | null) => n && (n.id === rootId || n.parent_id === rootId) && n.post_type !== 'boost' && ['published','pinned'].includes(n.status);
+    const parent = replyToId === rootId ? root : await findNode(replyToId);
+    const quoted = quoteId ? (quoteId === replyToId ? parent : await findNode(quoteId)) : null;
+    if (!inThread(parent) || (quoteId && !inThread(quoted))) {
+      return jsonResponse(request, env, { ok: false, error: '引用或回复目标不在当前讨论中' }, { status: 400 });
+    }
+    const quoteSource = quoted ? JSON.stringify({ id: quoted.id, authorName: quoted.author_name, authorAvatar: quoted.author_avatar, excerpt: quoted.message.slice(0, 100) }) : '';
 
     const actor = resolveActor();
     const replyId = generateSecureId('sg', 8);
@@ -514,7 +444,7 @@ export async function onRequest(context: {
     let floorIndex = 2;
     if (env.DB) {
       await ensureGestureTables(env.DB);
-      await ensureStarterPinnedInD1(env.DB, rootId);
+
       await env.DB.prepare(`
         INSERT INTO comments (
           id, post_slug, parent_id, reply_to_id, quote_id, quote_source, post_type, tag, title, tags,
@@ -545,22 +475,22 @@ export async function onRequest(context: {
       ).run();
 
       const countRes = await env.DB.prepare(
-        `SELECT COUNT(*) as cnt FROM comments WHERE parent_id = ? AND post_type != 'boost' AND status != 'deleted'`
+        `SELECT COUNT(*) as cnt FROM comments WHERE parent_id = ? AND post_type != 'boost' AND status IN ('published','pinned')`
       ).bind(rootId).first<{ cnt: number }>();
       floorIndex = 1 + Number(countRes?.cnt || 1);
     } else {
-      seedStarterPinnedIfNeeded();
+
       memoryFallbackStore.set(replyId, newRow);
       syncDevStore('save');
       const siblings = Array.from(memoryFallbackStore.values()).filter(
-        (r) => r.parent_id === rootId && r.post_type !== 'boost' && r.status !== 'deleted'
+        (r) => r.parent_id === rootId && r.post_type !== 'boost' && ['published','pinned'].includes(r.status)
       );
       floorIndex = 1 + siblings.length;
     }
 
     return jsonResponse(request, env, {
       ok: true,
-      subGesture: mapRowToClientComment(newRow, false, actor.authorId, floorIndex),
+      subGesture: { ...mapRowToClientComment(newRow, false, actor.authorId, floorIndex), canManage: true },
       sessionToken: effectiveSessionToken,
     });
   }
@@ -576,10 +506,14 @@ export async function onRequest(context: {
     if (!content) {
       return jsonResponse(request, env, { ok: false, error: 'Boost 短语不能为空' }, { status: 400 });
     }
-    if (content.length > 60) {
-      return jsonResponse(request, env, { ok: false, error: 'Boost 短语限制 60 字以内' }, { status: 400 });
+    if (!validBoost(String(payload.content || ''))) {
+      return jsonResponse(request, env, { ok: false, error: 'Boost 限单行、最多 16 字' }, { status: 400 });
     }
 
+    if (env.DB) await ensureGestureTables(env.DB);
+    const target = env.DB ? await env.DB.prepare('SELECT post_slug, status, post_type FROM comments WHERE id=?').bind(gestureId).first<RawCommentRow>() : memoryFallbackStore.get(gestureId);
+    if (!target || target.post_slug !== 'guestbook' || target.post_type === 'boost' || !['published','pinned'].includes(target.status))
+      return jsonResponse(request, env, { ok: false, error: '目标楼层不存在' }, { status: 404 });
     const actor = resolveActor();
     const boostId = generateSecureId('bst', 8);
     const nowIso = new Date().toISOString();
@@ -600,7 +534,7 @@ export async function onRequest(context: {
         VALUES (?, ?, ?, ?, ?, ?, ?)
       `).bind(boostRow.id, boostRow.gesture_id, boostRow.user_id, boostRow.author_name, boostRow.author_avatar, boostRow.content, boostRow.created_at).run();
     } else {
-      seedStarterPinnedIfNeeded();
+
       memoryBoostsStore.set(boostId, boostRow);
       syncDevStore('save');
     }
@@ -627,7 +561,6 @@ export async function onRequest(context: {
       return jsonResponse(request, env, { ok: false, error: '缺少目标楼层 ID' }, { status: 400 });
     }
 
-    const actor = resolveActor();
     const effectiveUserId = postAuthUser?.id || (isAdmin ? 'admin' : (sessionToken || `vis_${clientIp}`));
     const displayName = postAuthUser?.name || (isAdmin ? 'shijianus' : (payload.authorName || '访客'));
     const displayAvatar = postAuthUser?.avatar || (isAdmin ? '/media/shijianus/avatar.jpg' : (payload.authorAvatar || ''));
@@ -658,32 +591,24 @@ export async function onRequest(context: {
 
     if (env.DB) {
       await ensureGestureTables(env.DB);
-      await ensureStarterPinnedInD1(env.DB, targetId);
-      const row = await env.DB.prepare(`SELECT * FROM comments WHERE id = ?`).bind(targetId).first<RawCommentRow>();
-      if (!row) {
-        return jsonResponse(request, env, { ok: false, error: '楼层不存在' }, { status: 404 });
-      }
-      const { rx, totalLikes, newUserEmoji } = applyReactionMutation(row);
-      const rxJson = JSON.stringify(rx);
-      await env.DB.prepare(`UPDATE comments SET likes_count = ?, reactions = ? WHERE id = ?`)
-        .bind(totalLikes, rxJson, targetId)
-        .run();
 
-      return jsonResponse(request, env, {
-        ok: true,
-        likesCount: totalLikes,
-        userReaction: newUserEmoji,
-        reactions: {
-          summary: rx.summary,
-          users: newUserEmoji ? { [effectiveUserId]: newUserEmoji } : {},
-          details: buildReactionDetails(rx),
-        },
-      });
+      for (let attempt = 0; attempt < 5; attempt++) {
+        const row = await env.DB.prepare("SELECT * FROM comments WHERE id=? AND post_slug='guestbook' AND status IN ('published','pinned')").bind(targetId).first<RawCommentRow>();
+        if (!row) return jsonResponse(request, env, { ok: false, error: '楼层不存在' }, { status: 404 });
+        const { rx, totalLikes, newUserEmoji } = applyReactionMutation(row);
+        const updated = await env.DB.prepare(`UPDATE comments SET likes_count=?, reactions=?
+          WHERE id=? AND reactions IS ? AND status IN ('published','pinned') RETURNING id`)
+          .bind(totalLikes, JSON.stringify(rx), targetId, row.reactions ?? null).first();
+        if (updated) return jsonResponse(request, env, {
+          ok: true, likesCount: totalLikes, userReaction: newUserEmoji,
+          reactions: { summary: rx.summary, users: newUserEmoji ? { [effectiveUserId]: newUserEmoji } : {}, details: buildReactionDetails(rx) },
+        });
+      }
+      return jsonResponse(request, env, { ok: false, error: '表态正在更新，请重试' }, { status: 409 });
     }
 
-    seedStarterPinnedIfNeeded();
     const row = memoryFallbackStore.get(targetId);
-    if (!row) {
+    if (!row || row.post_slug !== 'guestbook' || !['published','pinned'].includes(row.status)) {
       return jsonResponse(request, env, { ok: false, error: '楼层不存在' }, { status: 404 });
     }
     const { rx, totalLikes, newUserEmoji } = applyReactionMutation(row);
@@ -735,7 +660,6 @@ export async function onRequest(context: {
       return jsonResponse(request, env, { ok: true, editCount: nextEditCount, message, title: nextTitle });
     }
 
-    seedStarterPinnedIfNeeded();
     const row = memoryFallbackStore.get(id);
     if (!row || row.status === 'deleted') {
       return jsonResponse(request, env, { ok: false, error: '贴文不存在' }, { status: 404 });
@@ -778,7 +702,6 @@ export async function onRequest(context: {
       return jsonResponse(request, env, { ok: true });
     }
 
-    seedStarterPinnedIfNeeded();
     const row = memoryFallbackStore.get(id);
     if (!row || row.status === 'deleted') {
       return jsonResponse(request, env, { ok: false, error: '贴文不存在' }, { status: 404 });
@@ -823,7 +746,7 @@ export async function onRequest(context: {
 
   // 7. REPORT GESTURE
   if (action === 'report') {
-    return jsonResponse(request, env, { ok: true, message: '已收到反馈，站长会尽快核查' });
+    return jsonResponse(request, env, { ok: true, message: '请按站点举报与申诉说明提交反馈', url: '/community/reporting-and-appeals/' });
   }
 
   return jsonResponse(request, env, { ok: false, error: 'Unsupported action' }, { status: 400 });

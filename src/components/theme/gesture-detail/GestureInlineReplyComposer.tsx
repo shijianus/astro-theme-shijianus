@@ -1,3 +1,4 @@
+import { GesturePopover } from './GesturePopover';
 import React, { useRef, useState } from 'react';
 import {
   Bold,
@@ -13,8 +14,8 @@ import {
   X,
 } from 'lucide-react';
 import { uploadCommentImage } from '../../../lib/comment-client';
-import { renderCommentMarkdown } from '../../../lib/comment-markdown';
-import type { GestureNode, GestureQuote } from '../../../lib/gesture-client';
+import { renderGestureMarkdown } from '../../../lib/gesture-markdown';
+import type { GestureNode, GestureQuote } from '../../../lib/gesture-detail-client';
 
 const COMPACT_EMOJI_LIST = [
   '😀', '😄', '😅', '😊', '🤔', '🥳', '😎', '👍', '❤️',
@@ -51,6 +52,7 @@ export function GestureInlineReplyComposer({
   const [previewTab, setPreviewTab] = useState<'write' | 'preview'>('write');
   const [showEmoji, setShowEmoji] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const emojiButton = useRef<HTMLButtonElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const insertMarkdown = (prefix: string, suffix = '') => {
@@ -164,7 +166,7 @@ export function GestureInlineReplyComposer({
 
           <span className="gd-toolbar-sep" />
 
-          <button type="button" title="表情" onClick={() => setShowEmoji((p) => !p)}>
+          <button ref={emojiButton} aria-expanded={showEmoji} type="button" title="表情" onClick={() => setShowEmoji((p) => !p)}>
             <Smile className="w-3.5 h-3.5" />
           </button>
           <button
@@ -202,7 +204,7 @@ export function GestureInlineReplyComposer({
         </div>
 
         {showEmoji && (
-          <div className="gd-emoji-grid">
+          <GesturePopover anchor={emojiButton} label="回复表情" onClose={() => setShowEmoji(false)}><div className="gd-emoji-grid">
             {COMPACT_EMOJI_LIST.map((em) => (
               <button
                 key={em}
@@ -216,7 +218,7 @@ export function GestureInlineReplyComposer({
                 {em}
               </button>
             ))}
-          </div>
+          </div></GesturePopover>
         )}
 
         {previewTab === 'write' ? (
@@ -230,14 +232,14 @@ export function GestureInlineReplyComposer({
                 ? `回复 @${replyTarget.authorName}...（支持 Markdown，可用 # / ## 排版）`
                 : '写下你的回复...（支持 Markdown，可用 # / ## 排版）'
             }
-            className="gd-reply-textarea gb-textarea is-reply-box"
+            className="gd-reply-textarea"
           />
         ) : (
           <div className="gd-reply-preview">
             {message.trim() ? (
               <div
                 className="gd-markdown-body"
-                dangerouslySetInnerHTML={{ __html: renderCommentMarkdown(message) }}
+                dangerouslySetInnerHTML={{ __html: renderGestureMarkdown(message) }}
               />
             ) : (
               <span className="gd-preview-empty">暂无预览内容</span>
@@ -261,12 +263,12 @@ export function GestureInlineReplyComposer({
           </div>
         )}
 
-        <div className="gd-reply-composer__foot gb-detail-reply-footer">
+        <div className="gd-reply-composer__foot">
           <span className="gd-char-count">字数: {message.length}</span>
           <button
             type="submit"
             disabled={submitting || !message.trim()}
-            className="gd-submit-reply-btn gb-submit-btn"
+            className="gd-submit-reply-btn"
           >
             <Send className="w-3.5 h-3.5" />
             <span>{submitting ? '发表中...' : '发表回复'}</span>

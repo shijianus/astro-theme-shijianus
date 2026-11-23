@@ -1,158 +1,46 @@
-import React, { useMemo, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Heart } from 'lucide-react';
-import type { ReactionDetailItem } from '../../../lib/gesture-client';
-import { GestureAvatar } from './GestureAvatar';
+import type { ReactionDetailItem } from '../../../lib/gesture-detail-client';
+import { GesturePopover } from './GesturePopover';
 
-export const QUICK_REACTION_EMOJIS = ['👍', '❤️', '🚀', '💡', '🔥', '🎉', '✨', '😂'];
-
-interface EmojiReactionClusterProps {
+const emojis = ['👍', '❤️', '🚀', '💡', '🔥', '🎉', '✨', '😂'];
+interface Props {
   summary?: Record<string, number>;
   details?: ReactionDetailItem[];
   totalLikes: number;
   userReaction?: string | null;
-  onReact: (emoji: string) => void;
-  showHeartTrigger?: boolean;
-  hideSummaryPill?: boolean;
+  onReact: (emoji: string) => void | Promise<void>;
 }
 
-/**
- * ZONE 4 Left: Top-4 Aggregated Emoji Pill + Hover Full Breakdown Popover
- * Plus optional [♡] quick emoji picker trigger for OP Gesture.
- */
-export function EmojiReactionCluster({
-  summary = {},
-  details = [],
-  totalLikes,
-  userReaction,
-  onReact,
-  showHeartTrigger = false,
-  hideSummaryPill = false,
-}: EmojiReactionClusterProps) {
-  const [showBreakdown, setShowBreakdown] = useState(false);
-  const [showQuickPicker, setShowQuickPicker] = useState(false);
-
-  const sortedEntries = useMemo(() => {
-    return Object.entries(summary)
-      .filter(([, count]) => Number(count) > 0)
-      .sort((a, b) => Number(b[1]) - Number(a[1]));
-  }, [summary]);
-
-  // Top 4 emojis sorted descending
-  const topFour = sortedEntries.slice(0, 4);
-  const computedTotal = sortedEntries.reduce((acc, [, cnt]) => acc + Number(cnt), 0) || totalLikes;
-
-  const breakdownList: ReactionDetailItem[] = useMemo(() => {
-    if (details && details.length > 0) return details;
-    return sortedEntries.map(([emoji, count]) => ({
-      emoji,
-      count: Number(count),
-      users: [],
-    }));
-  }, [details, sortedEntries]);
-
-  return (
-    <div className="gd-reaction-cluster-wrap">
-      {!hideSummaryPill && (computedTotal > 0 ? (
-        <div
-          className="gd-reaction-pill-host"
-          onMouseEnter={() => setShowBreakdown(true)}
-          onMouseLeave={() => setShowBreakdown(false)}
-        >
-          <button
-            type="button"
-            className={`gd-agg-emoji-pill ${userReaction ? 'has-user-reaction' : ''}`}
-            onClick={() => onReact(userReaction || topFour[0]?.[0] || '👍')}
-            aria-label={`共 ${computedTotal} 次表态，点击表态或悬浮查看明细`}
-          >
-            <span className="gd-agg-emoji-icons">
-              {topFour.map(([emoji]) => (
-                <span key={emoji} className="gd-agg-emoji-char">
-                  {emoji}
-                </span>
-              ))}
-            </span>
-            <span className="gd-agg-emoji-total">{computedTotal}</span>
-          </button>
-
-          {showBreakdown && breakdownList.length > 0 && (
-            <div className="gd-reaction-breakdown-popover" role="tooltip">
-              <div className="gd-breakdown-header">表态明细 ({computedTotal})</div>
-              <div className="gd-breakdown-list">
-                {breakdownList.map((item) => (
-                  <button
-                    key={item.emoji}
-                    type="button"
-                    className={`gd-breakdown-row ${userReaction === item.emoji ? 'is-mine' : ''}`}
-                    onClick={() => onReact(item.emoji)}
-                  >
-                    <span className="gd-breakdown-emoji">{item.emoji}</span>
-                    <span className="gd-breakdown-count">{item.count}</span>
-                    {item.users.length > 0 && (
-                      <span className="gd-breakdown-users">
-                        {item.users.slice(0, 4).map((u, idx) => (
-                          <span key={`${u.name}-${idx}`} className="gd-breakdown-user-chip">
-                            <GestureAvatar name={u.name} avatar={u.avatar} size={18} />
-                            <span>{u.name}</span>
-                          </span>
-                        ))}
-                        {item.users.length > 4 && (
-                          <span className="gd-breakdown-more">+{item.users.length - 4}</span>
-                        )}
-                      </span>
-                    )}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      ) : (
-        <button
-          type="button"
-          className="gd-agg-emoji-pill is-empty"
-          onClick={() => onReact('👍')}
-          title="点赞表态"
-        >
-          <span>👍</span>
-          <span className="gd-agg-emoji-total">0</span>
-        </button>
-      ))}
-
-      {showHeartTrigger && (
-        <div
-          className="gd-heart-picker-host"
-          onMouseEnter={() => setShowQuickPicker(true)}
-          onMouseLeave={() => setShowQuickPicker(false)}
-        >
-          <button
-            type="button"
-            className={`gd-icon-btn gd-heart-btn ${userReaction ? 'is-reacted' : ''}`}
-            onClick={() => setShowQuickPicker((prev) => !prev)}
-            title="选择表情表态"
-            aria-label="选择表情表态"
-          >
-            <Heart className="w-4 h-4" />
-          </button>
-
-          {showQuickPicker && (
-            <div className="gd-quick-emoji-bar" role="menu">
-              {QUICK_REACTION_EMOJIS.map((emoji) => (
-                <button
-                  key={emoji}
-                  type="button"
-                  className={`gd-quick-emoji-btn ${userReaction === emoji ? 'is-active' : ''}`}
-                  onClick={() => {
-                    onReact(emoji);
-                    setShowQuickPicker(false);
-                  }}
-                >
-                  {emoji}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-    </div>
-  );
+export function EmojiReactionCluster({ summary = {}, details, totalLikes, userReaction, onReact }: Props) {
+  const trigger = useRef<HTMLButtonElement>(null);
+  const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const [panel, setPanel] = useState<'details' | 'picker' | null>(null);
+  const [pending, setPending] = useState(false);
+  const entries = Object.entries(summary).filter(([, count]) => count > 0).sort((a, b) => b[1] - a[1]);
+  const rows = details?.length ? details : entries.map(([emoji, count]) => ({ emoji, count, users: [] }));
+  const cancelClose = () => clearTimeout(timer.current);
+  const leave = () => { cancelClose(); timer.current = setTimeout(() => setPanel(p => p === 'details' ? null : p), 180); };
+  useEffect(() => () => clearTimeout(timer.current), []);
+  async function react(emoji: string) {
+    if (pending) return;
+    setPending(true);
+    try { await onReact(emoji); } finally { setPanel(null); setPending(false); trigger.current?.focus({ preventScroll: true }); }
+  }
+  return <div className="gd-reaction-cluster-wrap">
+    <button ref={trigger} type="button" className="gd-agg-emoji-pill" aria-label={`选择表情表态，当前 ${totalLikes} 次`}
+      aria-expanded={!!panel} aria-haspopup="dialog" data-reacted={Boolean(userReaction)}
+      onPointerEnter={e => { cancelClose(); if (e.pointerType === 'mouse' && rows.length) setPanel(p => p ?? 'details'); }}
+      onPointerLeave={leave} onClick={() => { cancelClose(); setPanel(p => p === 'picker' ? null : 'picker'); }}>
+      {entries.length ? <span className="gd-agg-emoji-icons">{entries.slice(0, 4).map(([e]) => <span key={e}>{e}</span>)}</span> : <Heart size={16} />}
+      {totalLikes > 0 && <span>{totalLikes}</span>}
+    </button>
+    {panel && <GesturePopover anchor={trigger} label={panel === 'picker' ? '选择表情' : '表态明细'} onClose={() => setPanel(null)} onEnter={cancelClose} onLeave={leave}>
+      {panel === 'picker' && <div className="gd-quick-emoji-bar">{emojis.map(e =>
+        <button key={e} type="button" aria-pressed={e === userReaction} disabled={pending} onClick={() => react(e)}>{e}</button>)}</div>}
+      {rows.length > 0 && <ul className="gd-breakdown-list">{rows.map(r => <li key={r.emoji}>
+        <span>{r.emoji} {r.count}</span><span>{r.users.map(u => u.name).join('、')}</span>
+      </li>)}</ul>}
+    </GesturePopover>}
+  </div>;
 }

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { ArrowUp, ChevronDown, ChevronUp } from 'lucide-react';
-import type { GestureNode, GestureQuote } from '../../../lib/gesture-client';
-import { renderCommentMarkdown } from '../../../lib/comment-markdown';
+import type { GestureNode, GestureQuote } from '../../../lib/gesture-detail-client';
+import { renderGestureMarkdown } from '../../../lib/gesture-markdown';
 import { GestureAvatar } from './GestureAvatar';
 
 interface QuoteEmbedCardProps {
@@ -9,6 +9,16 @@ interface QuoteEmbedCardProps {
   quotedNode?: GestureNode | null;
   currentFloorIndex: number;
   onJumpToFloor: (targetFloorIndex: number, originFloorIndex: number) => void;
+}
+
+function cleanQuoteExcerpt(text?: string): string {
+  return (text || '')
+    .replace(/!\[[^\]]*\]\([^)]*\)/g, '[图片]')
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+    .replace(/^#{1,6}\s+/gm, '')
+    .replace(/[*`_>]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
 /**
@@ -26,8 +36,9 @@ export function QuoteEmbedCard({
 
   const authorName = quotedNode?.authorName || quote.authorName;
   const authorAvatar = quotedNode?.authorAvatar || quote.authorAvatar;
-  const targetFloor = quotedNode?.floorIndex || quote.floorIndex || 1;
+  const targetFloor = quotedNode?.floorIndex;
   const fullContent = quotedNode?.message || quote.fullMessage || quote.excerpt;
+  const excerptText = cleanQuoteExcerpt(quote.excerpt || quotedNode?.message.slice(0, 120));
 
   return (
     <div className={`gd-quote-card ${expanded ? 'is-expanded' : ''}`}>
@@ -41,6 +52,7 @@ export function QuoteEmbedCard({
           <button
             type="button"
             className="gd-quote-action-btn"
+            aria-expanded={expanded}
             onClick={() => setExpanded((prev) => !prev)}
             title={expanded ? '收起引用全文' : '展开被引用原贴全文'}
             aria-label={expanded ? '收起引用全文' : '展开被引用原贴全文'}
@@ -48,7 +60,7 @@ export function QuoteEmbedCard({
             {expanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
           </button>
 
-          <button
+          {targetFloor && <button
             type="button"
             className="gd-quote-action-btn"
             onClick={() => onJumpToFloor(targetFloor, currentFloorIndex)}
@@ -56,7 +68,7 @@ export function QuoteEmbedCard({
             aria-label="跳至被引用楼层"
           >
             <ArrowUp className="w-3.5 h-3.5" />
-          </button>
+          </button>}
         </div>
       </div>
 
@@ -64,10 +76,10 @@ export function QuoteEmbedCard({
         {expanded ? (
           <div
             className="gd-markdown-body gd-quote-full-md"
-            dangerouslySetInnerHTML={{ __html: renderCommentMarkdown(fullContent) }}
+            dangerouslySetInnerHTML={{ __html: renderGestureMarkdown(fullContent) }}
           />
         ) : (
-          <p className="gd-quote-excerpt">{quote.excerpt}</p>
+          <p className="gd-quote-excerpt">{excerptText}</p>
         )}
       </div>
     </div>
