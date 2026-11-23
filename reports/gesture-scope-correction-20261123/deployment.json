@@ -1,0 +1,31 @@
+{
+  "id": "95ab8e77-5fa1-4da7-87c6-17c80c2c4db8",
+  "url": "https://95ab8e77.shijianus-blog.pages.dev",
+  "aliases": [
+    "https://refactor-gesturebook-reading.shijianus-blog.pages.dev"
+  ],
+  "environment": "preview",
+  "latestStage": {
+    "name": "deploy",
+    "started_on": null,
+    "ended_on": "2026-11-23T16:09:13.569377Z",
+    "status": "success"
+  },
+  "commit": "1ded941391085a467774f4b80e34fa9c90520f3f",
+  "branch": "refactor/gesturebook-reading",
+  "productionDeployment": {
+    "id": "50485961-32f3-417c-89fe-62b502442de0",
+    "url": "https://50485961.shijianus-blog.pages.dev"
+  },
+  "previewDB": {
+    "DB": {
+      "id": "a18b4c38-5da0-415e-a7de-ee3aee0b856f"
+    }
+  },
+  "productionDB": {
+    "DB": {
+      "id": "a18b4c38-5da0-415e-a7de-ee3aee0b856f"
+    }
+  },
+  "aliasStatus": 200
+}

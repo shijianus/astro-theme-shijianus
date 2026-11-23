@@ -6,7 +6,8 @@
 - [x] 将详情实现与公共留言列表、公共 Boost、共享客户端/存储隔离：`0214967` / `02149676b314762b7ce21a78fb6fa6f85f57cf8e`。
 - [x] 保持原列表入口兼容详情稳定楼层链接，切换话题时独立初始化：`7cdf15f` / `7cdf15f3bb3d21d61a41fcbecc8eebfe75b8adc9`。列表文件唯一差异为详情 URL 解析的一行正则。
 - [x] 恢复详情页随网站切换的亮色与暗色：`3fdde71` / `3fdde71752361d0a483ee632c51e5d4a0f225785`。白色阅读底板、深灰正文、原站蓝色强调；暗色保留原深蓝灰底板。
-- [x] 公共 Boost 与详情交互回归、实际截图检查（见下方真实运行记录）。
+- [x] 公共 Boost 与详情交互回归、实际截图检查：`1ded941` / `1ded941391085a467774f4b80e34fa9c90520f3f`（见下方真实运行记录）。
+- [x] 线上截图复检后，收紧手机时间轴的长相对日期，保持单行：`a9b040d` / `a9b040d9faf1fd14765185ddacd93544b9a6acf9`。
 - [ ] 更新 Cloudflare Preview 并线上验收。
 
 ## 证据
@@ -49,3 +50,20 @@
 结论：**CONDITIONAL GO（仅 Preview）**。详情布局、配色、交互与公共 Boost 回归通过；原公共列表的 SSR 初始化提示保留。原版从 localStorage 初始化已读/书签徽章与服务端 HTML 不一致，旧的相对日期也可触发 React #418；生产域名只读复现到 2 次，当前本地完整回归复现 4 次，React 会重新生成该列表。该原有代码没有为这次视觉任务额外修改。测试明确记录这项已知基线提示，仍阻断其他浏览器错误，不宣称全站零错误。
 
 LinuxDo 参考沿用前一轮下载的官方论坛公开面板截图（Topic Map、父楼、子回复与时间轴），原始 URL 与散列保存在 `reference/sources.json`。`reference/linuxdo-live-challenge.png` 记录其线上访问被验证页拦截；不将公开截图冒称为当前实时面板截图。本轮恢复网站原配色，不复制 LinuxDo 的品牌配色。
+
+## 首轮线上验证（配色修正版）
+
+Preview `https://95ab8e77.shijianus-blog.pages.dev`，源码 `1ded941391085a467774f4b80e34fa9c90520f3f`，部署环境 `preview` / `refactor/gesturebook-reading`。生产部署仍为 `50485961-32f3-417c-89fe-62b502442de0`。
+
+| 命令 | Exit Code | 日志 |
+|---|---|---|
+| `./node_modules/.bin/wrangler pages deploy dist --project-name shijianus-blog --branch refactor/gesturebook-reading --commit-hash 1ded941391085a467774f4b80e34fa9c90520f3f --commit-dirty=false` | 0 | `logs/deploy.log` |
+| `GESTURE_BASE_URL=https://95ab8e77.shijianus-blog.pages.dev GESTURE_SHOTS=reports/gesture-scope-correction-20261123/online node scripts/verify-gesture-deployed.mjs` | 0 | `logs/online.log` |
+| `GESTURE_BASE_URL=https://95ab8e77.shijianus-blog.pages.dev GESTURE_COMMIT=1ded941391085a467774f4b80e34fa9c90520f3f GESTURE_STATE_OUTPUT=reports/gesture-scope-correction-20261123/deployment.json node scripts/verify-gesture-deployment-state.mjs` | 0 | `logs/deployment-state.log` |
+| `GESTURE_BASE_URL=https://95ab8e77.shijianus-blog.pages.dev node scripts/verify-gesture-public-api.mjs` | 0 | `logs/public-api.log` |
+
+日志路径相对于 `reports/gesture-scope-correction-20261123/`。部署提示工作区有报告改动，只有本地验收报告在部署启动后补记了提交 SHA；已部署的应用源码与 `1ded941` 一致，制品未变化。后续交付部署再次固化证据后执行。
+
+在线检查只读，浏览器拦截所有 POST，详情请求设置 `trackView=0`。真实主题有 4 条回复、2 个真实正文引用链接，已有 Boost 与统计保持原值。公共 API 与生产逐项比较相同，公开存储评论为 5 条，公共 Boost 数据行 0；公共墙显示原有初始化内容，未补造新的数据。线上截图位于 `online/`，确认桌面/移动亮色白底深字，暗色为原深蓝灰；表情向上弹出，父楼展开/跳转/返回恢复成功。
+
+单行日期修正版再次构建：`BLOG_BUILD_TARGET=static PUBLIC_STATIC_EXPORT=1 ./node_modules/.bin/astro build`，Exit Code 0，日志 `reports/gesture-scope-correction-20261123/logs/build-reviewed.log`，制品清单 `artifact-reviewed.json`。

@@ -104,6 +104,7 @@ try {
         thumbWidth: style('.gd-tl-thumb').width,
         railChildren: document.querySelector('.gd-tl-rail').children.length,
         timelineBackground: style('.gd-timeline-aside').backgroundColor,
+        activityWhiteSpace: style('.gd-tl-latest').whiteSpace,
         musicPosition: document.querySelector('.shijianus-music-pocket') ? style('.shijianus-music-pocket').position : null,
         opAvatar: rect('#floor-1 > .gd-avatar-rail .gd-avatar').width,
         subAvatars: Array.from(document.querySelectorAll('.is-sub-floor > .gd-avatar-rail .gd-avatar'), el => el.getBoundingClientRect().width),
@@ -123,6 +124,7 @@ try {
     assert.equal(geometry.thumbWidth, '3px');
     assert.equal(geometry.railChildren, 1);
     assert.equal(geometry.timelineBackground, 'rgba(0, 0, 0, 0)');
+    if (width <= 760) assert.equal(geometry.activityWhiteSpace, 'nowrap');
     assert.equal(geometry.opAvatar, 42);
     assert.ok(geometry.subAvatars.every(value => value === 36));
     result.viewports.push({ width, height, ...geometry });

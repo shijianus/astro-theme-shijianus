@@ -1,0 +1,20 @@
+
+ ⛅️ wrangler 4.160.0 (update available 4.166.0)
+───────────────────────────────────────────────
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mWarning: Your working directory is a git repo and has uncommitted changes[0m
+
+  To silence this warning, pass in --commit-dirty=true
+
+
+✨ Compiled Worker successfully
+Uploading... (297/670)
+Uploading... (421/670)
+Uploading... (546/670)
+Uploading... (670/670)
+✨ Success! Uploaded 373 files (297 already uploaded) (28.44 sec)
+
+✨ Uploading _headers
+✨ Uploading Functions bundle
+🌎 Deploying...
+✨ Deployment complete! Take a peek over at https://95ab8e77.shijianus-blog.pages.dev
+✨ Deployment alias URL: https://refactor-gesturebook-reading.shijianus-blog.pages.dev
