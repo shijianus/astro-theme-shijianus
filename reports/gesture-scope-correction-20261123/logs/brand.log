@@ -1,0 +1,17 @@
+
+> shijianus-blog-v2@0.0.1 test:brand
+> node scripts/brand-banner.mjs
+
+
+    ______             ______                                
+   / ____/___  ____   / ____/___ _____ _   ______ ______     
+  / __/ / __ \/ __ \ / /   / __ `/ __ \ | / / __ `/ ___/     
+ / /___/ /_/ / /_/ // /___/ /_/ / / / / |/ / /_/ (__  )      
+/_____/ .___/\____/ \____/\__,_/_/ /_/|___/\__,_/____/       
+     /_/                                                     
+
+    SHIJIANUS   ·   ARCHITECTURE & UI ENGINE   ·   v2.6.0
+
+
+[TIP] Official Website: https://epocanvas.com
+

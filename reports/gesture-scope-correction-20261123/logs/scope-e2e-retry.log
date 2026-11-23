@@ -1,0 +1,31 @@
+node:internal/modules/run_main:123
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
++ actual - expected
+
++ [
++   'Minified React error #418; visit https://react.dev/errors/418?args[]=HTML&args[]= for the full message or use the non-minified dev environment for full errors and additional helpful warnings.',
++   'Minified React error #418; visit https://react.dev/errors/418?args[]=HTML&args[]= for the full message or use the non-minified dev environment for full errors and additional helpful warnings.',
++   'Minified React error #418; visit https://react.dev/errors/418?args[]=HTML&args[]= for the full message or use the non-minified dev environment for full errors and additional helpful warnings.',
++   'Minified React error #418; visit https://react.dev/errors/418?args[]=HTML&args[]= for the full message or use the non-minified dev environment for full errors and additional helpful warnings.'
++ ]
+- []
+
+    at file:///home/shijian/projects/shijianus-blog/scripts/verify-gesture-scope.mjs:127:10
+    at async withGuestbook (file:///home/shijian/projects/shijianus-blog/scripts/guestbook-test-server.mjs:113:5)
+    at async file:///home/shijian/projects/shijianus-blog/scripts/verify-gesture-scope.mjs:23:1 {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: [
+    'Minified React error #418; visit https://react.dev/errors/418?args[]=HTML&args[]= for the full message or use the non-minified dev environment for full errors and additional helpful warnings.',
+    'Minified React error #418; visit https://react.dev/errors/418?args[]=HTML&args[]= for the full message or use the non-minified dev environment for full errors and additional helpful warnings.',
+    'Minified React error #418; visit https://react.dev/errors/418?args[]=HTML&args[]= for the full message or use the non-minified dev environment for full errors and additional helpful warnings.',
+    'Minified React error #418; visit https://react.dev/errors/418?args[]=HTML&args[]= for the full message or use the non-minified dev environment for full errors and additional helpful warnings.'
+  ],
+  expected: [],
+  operator: 'deepStrictEqual'
+}
+
+Node.js v22.18.0

@@ -1,0 +1,904 @@
+
+> shijianus-blog-v2@0.0.1 check
+> astro check
+
+[astro] `markdown.remarkPlugins`, `markdown.rehypePlugins`, and `markdown.remarkRehype` are deprecated. Pass them to `unified({...})` from `@astrojs/markdown-remark` directly instead.
+07:52:27 [@astrojs/node] Enabling sessions with filesystem storage
+07:52:27 [vite] Re-optimizing dependencies because lockfile has changed
+07:52:28 [content] Syncing content
+07:52:28 [content] Astro config changed
+07:52:28 [content] Clearing content store
+07:52:35 [content] Synced content
+07:52:35 [types] Generated 7.72s
+07:52:35 [check] Getting diagnostics for Astro files in /home/shijian/projects/shijianus-blog...
+[96msrc/content.config.ts[0m:[93m191[0m:[93m14[0m - [93mwarning[0m[90m ts(6385): [0m'z' is deprecated.
+
+[7m191[0m     content: z.string().optional(),
+[7m   [0m [93m             ~[0m
+[96msrc/content.config.ts[0m:[93m190[0m:[93m21[0m - [93mwarning[0m[90m ts(6385): [0m'z' is deprecated.
+
+[7m190[0m     images: z.array(z.string()).default([]),
+[7m   [0m [93m                    ~[0m
+[96msrc/content.config.ts[0m:[93m190[0m:[93m13[0m - [93mwarning[0m[90m ts(6385): [0m'z' is deprecated.
+
+[7m190[0m     images: z.array(z.string()).default([]),
+[7m   [0m [93m            ~[0m
+[96msrc/content.config.ts[0m:[93m189[0m:[93m16[0m - [93mwarning[0m[90m ts(6385): [0m'z' is deprecated.
+
+[7m189[0m     originApi: z.string().optional(),
+[7m   [0m [93m               ~[0m
+[96msrc/content.config.ts[0m:[93m188[0m:[93m16[0m - [93mwarning[0m[90m ts(6385): [0m'z' is deprecated.
+
+[7m188[0m     originUrl: z.string().optional(),
+[7m   [0m [93m               ~[0m
+[96msrc/content.config.ts[0m:[93m187[0m:[93m13[0m - [93mwarning[0m[90m ts(6385): [0m'z' is deprecated.
+
+[7m187[0m     origin: z.string().optional(),
+[7m   [0m [93m            ~[0m
+[96msrc/content.config.ts[0m:[93m186[0m:[93m19[0m - [93mwarning[0m[90m ts(6385): [0m'z' is deprecated.
+
+[7m186[0m     commentCount: z.number().default(0),
+[7m   [0m [93m                  ~[0m
+[96msrc/content.config.ts[0m:[93m185[0m:[93m12[0m - [93mwarning[0m[90m ts(6385): [0m'z' is deprecated.
+
+[7m185[0m     likes: z.number().default(0),
+[7m   [0m [93m           ~[0m
+[96msrc/content.config.ts[0m:[93m184[0m:[93m13[0m - [93mwarning[0m[90m ts(6385): [0m'z' is deprecated.
+
+[7m184[0m     pinned: z.boolean().default(false),
+[7m   [0m [93m            ~[0m
+[96msrc/content.config.ts[0m:[93m183[0m:[93m15[0m - [93mwarning[0m[90m ts(6385): [0m'z' is deprecated.
+
+[7m183[0m     category: z.enum(['tech', 'life', 'design', 'thought']).default('thought'),
+[7m   [0m [93m              ~[0m
+[96msrc/content.config.ts[0m:[93m182[0m:[93m19[0m - [93mwarning[0m[90m ts(6385): [0m'z' is deprecated.
+
+[7m182[0m     tags: z.array(z.string()).default([]),
+[7m   [0m [93m                  ~[0m
+[96msrc/content.config.ts[0m:[93m182[0m:[93m11[0m - [93mwarning[0m[90m ts(6385): [0m'z' is deprecated.
+
+[7m182[0m     tags: z.array(z.string()).default([]),
+[7m   [0m [93m          ~[0m
+[96msrc/content.config.ts[0m:[93m181[0m:[93m13[0m - [93mwarning[0m[90m ts(6385): [0m'z' is deprecated.
+
+[7m181[0m     device: z.string().optional(),
+[7m   [0m [93m            ~[0m
+[96msrc/content.config.ts[0m:[93m180[0m:[93m11[0m - [93mwarning[0m[90m ts(6385): [0m'z' is deprecated.
+
+[7m180[0m     mood: z.string().optional(),
+[7m   [0m [93m          ~[0m
+[96msrc/content.config.ts[0m:[93m179[0m:[93m11[0m - [93mwarning[0m[90m ts(6385): [0m'z' is deprecated.
+
+[7m179[0m     date: z.string().optional(),
+[7m   [0m [93m          ~[0m
+[96msrc/content.config.ts[0m:[93m178[0m:[93m14[0m - [93mwarning[0m[90m ts(6385): [0m'z' is deprecated.
+
+[7m178[0m     pubDate: z.date().optional(),
+[7m   [0m [93m             ~[0m
+[96msrc/content.config.ts[0m:[93m177[0m:[93m13[0m - [93mwarning[0m[90m ts(6385): [0m'z' is deprecated.
+
+[7m177[0m     avatar: z.string().optional(),
+[7m   [0m [93m            ~[0m
+[96msrc/content.config.ts[0m:[93m176[0m:[93m16[0m - [93mwarning[0m[90m ts(6385): [0m'z' is deprecated.
+
+[7m176[0m     authorUrl: z.string().default('https://blog.epocanvas.com'),
+[7m   [0m [93m               ~[0m
+[96msrc/content.config.ts[0m:[93m175[0m:[93m13[0m - [93mwarning[0m[90m ts(6385): [0m'z' is deprecated.
+
+[7m175[0m     author: z.string().default('shijianus (站长)'),
+[7m   [0m [93m            ~[0m
+[96msrc/content.config.ts[0m:[93m174[0m:[93m9[0m - [93mwarning[0m[90m ts(6385): [0m'z' is deprecated.
+
+[7m174[0m     id: z.string().optional(),
+[7m   [0m [93m        ~[0m
+[96msrc/content.config.ts[0m:[93m173[0m:[93m11[0m - [93mwarning[0m[90m ts(6385): [0m'z' is deprecated.
+
+[7m173[0m   schema: z.object({
+[7m   [0m [93m          ~[0m
+[96msrc/content.config.ts[0m:[93m162[0m:[93m25[0m - [93mwarning[0m[90m ts(6385): [0m'z' is deprecated.
+
+[7m162[0m       compactWhenShort: z.boolean().optional(),
+[7m   [0m [93m                        ~[0m
+[96msrc/content.config.ts[0m:[93m161[0m:[93m19[0m - [93mwarning[0m[90m ts(6385): [0m'z' is deprecated.
+
+[7m161[0m       paddingTop: z.string().optional(),
+[7m   [0m [93m                  ~[0m
+[96msrc/content.config.ts[0m:[93m160[0m:[93m22[0m - [93mwarning[0m[90m ts(6385): [0m'z' is deprecated.
+
+[7m160[0m       paddingBottom: z.string().optional(),
+[7m   [0m [93m                     ~[0m
+[96msrc/content.config.ts[0m:[93m159[0m:[93m14[0m - [93mwarning[0m[90m ts(6385): [0m'z' is deprecated.
+
+[7m159[0m       align: z.enum(['flex-start', 'center', 'space-between']).optional(),
+[7m   [0m [93m             ~[0m
+[96msrc/content.config.ts[0m:[93m158[0m:[93m18[0m - [93mwarning[0m[90m ts(6385): [0m'z' is deprecated.
+
+[7m158[0m       titleSize: z.string().optional(),
+[7m   [0m [93m                 ~[0m
+[96msrc/content.config.ts[0m:[93m157[0m:[93m21[0m - [93mwarning[0m[90m ts(6385): [0m'z' is deprecated.
+
+[7m157[0m       mobileHeight: z.string().optional(),
+[7m   [0m [93m                    ~[0m
+[96msrc/content.config.ts[0m:[93m156[0m:[93m15[0m - [93mwarning[0m[90m ts(6385): [0m'z' is deprecated.
+
+[7m156[0m       height: z.string().optional(),
+[7m   [0m [93m              ~[0m
+[96msrc/content.config.ts[0m:[93m155[0m:[93m11[0m - [93mwarning[0m[90m ts(6385): [0m'z' is deprecated.
+
+[7m155[0m     hero: z.object({
+[7m   [0m [93m          ~[0m
+[96msrc/content.config.ts[0m:[93m149[0m:[93m23[0m - [93mwarning[0m[90m ts(6385): [0m'z' is deprecated.
+
+[7m149[0m     aiTranslatedFrom: z.string().optional(),
+[7m   [0m [93m                      ~[0m
+[96msrc/content.config.ts[0m:[93m146[0m:[93m20[0m - [93mwarning[0m[90m ts(6385): [0m'z' is deprecated.
+
+[7m146[0m     isAiGenerated: z.boolean().default(false).optional(),
+[7m   [0m [93m                   ~[0m
+[96msrc/content.config.ts[0m:[93m143[0m:[93m11[0m - [93mwarning[0m[90m ts(6385): [0m'z' is deprecated.
+
+[7m143[0m     lang: z.string().optional(),
+[7m   [0m [93m          ~[0m
+[96msrc/content.config.ts[0m:[93m140[0m:[93m14[0m - [93mwarning[0m[90m ts(6385): [0m'z' is deprecated.
+
+[7m140[0m     i18nKey: z.string().optional(),
+[7m   [0m [93m             ~[0m
+[96msrc/content.config.ts[0m:[93m133[0m:[93m23[0m - [93mwarning[0m[90m ts(6385): [0m'z' is deprecated.
+
+[7m133[0m     externalEncrypts: z.array(ExternalEncryptEntrySchema).optional(),
+[7m   [0m [93m                      ~[0m
+[96msrc/content.config.ts[0m:[93m127[0m:[93m12[0m - [93mwarning[0m[90m ts(6385): [0m'z' is deprecated.
+
+[7m127[0m     draft: z.boolean().default(false),
+[7m   [0m [93m           ~[0m
+[96msrc/content.config.ts[0m:[93m126[0m:[93m13[0m - [93mwarning[0m[90m ts(6385): [0m'z' is deprecated.
+
+[7m126[0m     sticky: z.number().int().default(0),
+[7m   [0m [93m            ~[0m
+[96msrc/content.config.ts[0m:[93m125[0m:[93m15[0m - [93mwarning[0m[90m ts(6385): [0m'z' is deprecated.
+
+[7m125[0m     featured: z.boolean().default(false),
+[7m   [0m [93m              ~[0m
+[96msrc/content.config.ts[0m:[93m123[0m:[93m16[0m - [93mwarning[0m[90m ts(6385): [0m'z' is deprecated.
+
+[7m123[0m       message: z.string().optional(),
+[7m   [0m [93m               ~[0m
+[96msrc/content.config.ts[0m:[93m122[0m:[93m27[0m - [93mwarning[0m[90m ts(6385): [0m'z' is deprecated.
+
+[7m122[0m       blockedIps: z.array(z.string()).default([]),
+[7m   [0m [93m                          ~[0m
+[96msrc/content.config.ts[0m:[93m122[0m:[93m19[0m - [93mwarning[0m[90m ts(6385): [0m'z' is deprecated.
+
+[7m122[0m       blockedIps: z.array(z.string()).default([]),
+[7m   [0m [93m                  ~[0m
+[96msrc/content.config.ts[0m:[93m121[0m:[93m27[0m - [93mwarning[0m[90m ts(6385): [0m'z' is deprecated.
+
+[7m121[0m       allowedIps: z.array(z.string()).default([]),
+[7m   [0m [93m                          ~[0m
+[96msrc/content.config.ts[0m:[93m121[0m:[93m19[0m - [93mwarning[0m[90m ts(6385): [0m'z' is deprecated.
+
+[7m121[0m       allowedIps: z.array(z.string()).default([]),
+[7m   [0m [93m                  ~[0m
+[96msrc/content.config.ts[0m:[93m120[0m:[93m33[0m - [93mwarning[0m[90m ts(6385): [0m'z' is deprecated.
+
+[7m120[0m       blockedCountries: z.array(z.string()).default([]),
+[7m   [0m [93m                                ~[0m
+[96msrc/content.config.ts[0m:[93m120[0m:[93m25[0m - [93mwarning[0m[90m ts(6385): [0m'z' is deprecated.
+
+[7m120[0m       blockedCountries: z.array(z.string()).default([]),
+[7m   [0m [93m                        ~[0m
+[96msrc/content.config.ts[0m:[93m119[0m:[93m33[0m - [93mwarning[0m[90m ts(6385): [0m'z' is deprecated.
+
+[7m119[0m       allowedCountries: z.array(z.string()).default([]),
+[7m   [0m [93m                                ~[0m
+[96msrc/content.config.ts[0m:[93m119[0m:[93m25[0m - [93mwarning[0m[90m ts(6385): [0m'z' is deprecated.
+
+[7m119[0m       allowedCountries: z.array(z.string()).default([]),
+[7m   [0m [93m                        ~[0m
+[96msrc/content.config.ts[0m:[93m118[0m:[93m21[0m - [93mwarning[0m[90m ts(6385): [0m'z' is deprecated.
+
+[7m118[0m       passwordHash: z.string().optional(),
+[7m   [0m [93m                    ~[0m
+[96msrc/content.config.ts[0m:[93m117[0m:[93m17[0m - [93mwarning[0m[90m ts(6385): [0m'z' is deprecated.
+
+[7m117[0m       password: z.string().optional(),
+[7m   [0m [93m                ~[0m
+[96msrc/content.config.ts[0m:[93m116[0m:[93m13[0m - [93mwarning[0m[90m ts(6385): [0m'z' is deprecated.
+
+[7m116[0m     access: z.object({
+[7m   [0m [93m            ~[0m
+[96msrc/content.config.ts[0m:[93m115[0m:[93m13[0m - [93mwarning[0m[90m ts(6385): [0m'z' is deprecated.
+
+[7m115[0m     series: z.string().optional(),
+[7m   [0m [93m            ~[0m
+[96msrc/content.config.ts[0m:[93m114[0m:[93m14[0m - [93mwarning[0m[90m ts(6385): [0m'z' is deprecated.
+
+[7m114[0m     mindmap: z.boolean().default(false).optional(),
+[7m   [0m [93m             ~[0m
+[96msrc/content.config.ts[0m:[93m113[0m:[93m14[0m - [93mwarning[0m[90m ts(6385): [0m'z' is deprecated.
+
+[7m113[0m     mermaid: z.boolean().default(false).optional(),
+[7m   [0m [93m             ~[0m
+[96msrc/content.config.ts[0m:[93m112[0m:[93m11[0m - [93mwarning[0m[90m ts(6385): [0m'z' is deprecated.
+
+[7m112[0m     math: z.boolean().default(false).optional(),
+[7m   [0m [93m          ~[0m
+[96msrc/content.config.ts[0m:[93m111[0m:[93m14[0m - [93mwarning[0m[90m ts(6385): [0m'z' is deprecated.
+
+[7m111[0m     hideToc: z.boolean().default(false).optional(),
+[7m   [0m [93m             ~[0m
+[96msrc/content.config.ts[0m:[93m110[0m:[93m10[0m - [93mwarning[0m[90m ts(6385): [0m'z' is deprecated.
+
+[7m110[0m     toc: z.boolean().default(true).optional(),
+[7m   [0m [93m         ~[0m
+[96msrc/content.config.ts[0m:[93m109[0m:[93m13[0m - [93mwarning[0m[90m ts(6385): [0m'z' is deprecated.
+
+[7m109[0m     markup: z.string().optional(),
+[7m   [0m [93m            ~[0m
+[96msrc/content.config.ts[0m:[93m108[0m:[93m17[0m - [93mwarning[0m[90m ts(6385): [0m'z' is deprecated.
+
+[7m108[0m     postFormat: z.enum(['standard', 'aside', 'status', 'quote', 'gallery', 'video', 'audio', 'link', 'chat', 'image']).default('standard').optional(),
+[7m   [0m [93m                ~[0m
+[96msrc/content.config.ts[0m:[93m107[0m:[93m17[0m - [93mwarning[0m[90m ts(6385): [0m'z' is deprecated.
+
+[7m107[0m     main_color: z.string().optional(),
+[7m   [0m [93m                ~[0m
+[96msrc/content.config.ts[0m:[93m106[0m:[93m16[0m - [93mwarning[0m[90m ts(6385): [0m'z' is deprecated.
+
+[7m106[0m     mainColor: z.string().optional(),
+[7m   [0m [93m               ~[0m
+[96msrc/content.config.ts[0m:[93m105[0m:[93m23[0m - [93mwarning[0m[90m ts(6385): [0m'z' is deprecated.
+
+[7m105[0m     coverVideoPoster: z.string().optional(),
+[7m   [0m [93m                      ~[0m
+[96msrc/content.config.ts[0m:[93m104[0m:[93m17[0m - [93mwarning[0m[90m ts(6385): [0m'z' is deprecated.
+
+[7m104[0m     coverVideo: z.string().optional(),
+[7m   [0m [93m                ~[0m
+[96msrc/content.config.ts[0m:[93m103[0m:[93m15[0m - [93mwarning[0m[90m ts(6385): [0m'z' is deprecated.
+
+[7m103[0m     coverAlt: z.string().optional(),
+[7m   [0m [93m              ~[0m
+[96msrc/content.config.ts[0m:[93m102[0m:[93m12[0m - [93mwarning[0m[90m ts(6385): [0m'z' is deprecated.
+
+[7m102[0m     cover: z.string().optional(),
+[7m   [0m [93m           ~[0m
+[96msrc/content.config.ts[0m:[93m101[0m:[93m12[0m - [93mwarning[0m[90m ts(6385): [0m'z' is deprecated.
+
+[7m101[0m     group: z.string().optional(),
+[7m   [0m [93m           ~[0m
+[96msrc/content.config.ts[0m:[93m100[0m:[93m12[0m - [93mwarning[0m[90m ts(6385): [0m'z' is deprecated.
+
+[7m100[0m     space: z.string().optional(),
+[7m   [0m [93m           ~[0m
+[96msrc/content.config.ts[0m:[93m99[0m:[93m15[0m - [93mwarning[0m[90m ts(6385): [0m'z' is deprecated.
+
+[7m99[0m     category: z.string().optional(),
+[7m  [0m [93m              ~[0m
+[96msrc/content.config.ts[0m:[93m98[0m:[93m19[0m - [93mwarning[0m[90m ts(6385): [0m'z' is deprecated.
+
+[7m98[0m     tags: z.array(z.string()).default([]),
+[7m  [0m [93m                  ~[0m
+[96msrc/content.config.ts[0m:[93m98[0m:[93m11[0m - [93mwarning[0m[90m ts(6385): [0m'z' is deprecated.
+
+[7m98[0m     tags: z.array(z.string()).default([]),
+[7m  [0m [93m          ~[0m
+[96msrc/content.config.ts[0m:[93m96[0m:[93m12[0m - [93mwarning[0m[90m ts(6385): [0m'z' is deprecated.
+
+[7m96[0m       alt: z.string()
+[7m  [0m [93m           ~[0m
+[96msrc/content.config.ts[0m:[93m95[0m:[93m12[0m - [93mwarning[0m[90m ts(6385): [0m'z' is deprecated.
+
+[7m95[0m       url: z.string(),
+[7m  [0m [93m           ~[0m
+[96msrc/content.config.ts[0m:[93m94[0m:[93m12[0m - [93mwarning[0m[90m ts(6385): [0m'z' is deprecated.
+
+[7m94[0m     image: z.object({
+[7m  [0m [93m           ~[0m
+[96msrc/content.config.ts[0m:[93m93[0m:[93m13[0m - [93mwarning[0m[90m ts(6385): [0m'z' is deprecated.
+
+[7m93[0m     author: z.string().default('shijianus'),
+[7m  [0m [93m            ~[0m
+[96msrc/content.config.ts[0m:[93m92[0m:[93m17[0m - [93mwarning[0m[90m ts(6385): [0m'z' is deprecated.
+
+[7m92[0m     ai_summary: z.string().optional(),
+[7m  [0m [93m                ~[0m
+[96msrc/content.config.ts[0m:[93m91[0m:[93m16[0m - [93mwarning[0m[90m ts(6385): [0m'z' is deprecated.
+
+[7m91[0m     aiSummary: z.string().optional(),
+[7m  [0m [93m               ~[0m
+[96msrc/content.config.ts[0m:[93m90[0m:[93m14[0m - [93mwarning[0m[90m ts(6385): [0m'z' is deprecated.
+
+[7m90[0m     summary: z.string().optional(),
+[7m  [0m [93m             ~[0m
+[96msrc/content.config.ts[0m:[93m89[0m:[93m18[0m - [93mwarning[0m[90m ts(6385): [0m'z' is deprecated.
+
+[7m89[0m     description: z.string().optional(),
+[7m  [0m [93m                 ~[0m
+[96msrc/content.config.ts[0m:[93m88[0m:[93m16[0m - [93mwarning[0m[90m ts(6385): [0m'z' is deprecated.
+
+[7m88[0m     validDays: z.number().int().positive().optional(),
+[7m  [0m [93m               ~[0m
+[96msrc/content.config.ts[0m:[93m87[0m:[93m18[0m - [93mwarning[0m[90m ts(6385): [0m'z' is deprecated.
+
+[7m87[0m     outdateDays: z.number().int().positive().optional(),
+[7m  [0m [93m                 ~[0m
+[96msrc/content.config.ts[0m:[93m86[0m:[93m14[0m - [93mwarning[0m[90m ts(6385): [0m'z' is deprecated.
+
+[7m86[0m     version: z.string().optional(),
+[7m  [0m [93m             ~[0m
+[96msrc/content.config.ts[0m:[93m85[0m:[93m18[0m - [93mwarning[0m[90m ts(6385): [0m'z' is deprecated.
+
+[7m85[0m     updatedDate: z.date().optional(),
+[7m  [0m [93m                 ~[0m
+[96msrc/content.config.ts[0m:[93m84[0m:[93m14[0m - [93mwarning[0m[90m ts(6385): [0m'z' is deprecated.
+
+[7m84[0m     pubDate: z.date(),
+[7m  [0m [93m             ~[0m
+[96msrc/content.config.ts[0m:[93m83[0m:[93m18[0m - [93mwarning[0m[90m ts(6385): [0m'z' is deprecated.
+
+[7m83[0m     short_title: z.string().optional(),
+[7m  [0m [93m                 ~[0m
+[96msrc/content.config.ts[0m:[93m82[0m:[93m17[0m - [93mwarning[0m[90m ts(6385): [0m'z' is deprecated.
+
+[7m82[0m     shortTitle: z.string().optional(),
+[7m  [0m [93m                ~[0m
+[96msrc/content.config.ts[0m:[93m81[0m:[93m12[0m - [93mwarning[0m[90m ts(6385): [0m'z' is deprecated.
+
+[7m81[0m     title: z.string(),
+[7m  [0m [93m           ~[0m
+[96msrc/content.config.ts[0m:[93m80[0m:[93m11[0m - [93mwarning[0m[90m ts(6385): [0m'z' is deprecated.
+
+[7m80[0m   schema: z.object({
+[7m  [0m [93m          ~[0m
+[96msrc/content.config.ts[0m:[93m71[0m:[93m10[0m - [93mwarning[0m[90m ts(6385): [0m'z' is deprecated.
+
+[7m71[0m   title: z.string().optional(),
+[7m  [0m [93m         ~[0m
+[96msrc/content.config.ts[0m:[93m68[0m:[93m15[0m - [93mwarning[0m[90m ts(6385): [0m'z' is deprecated.
+
+[7m68[0m   showButton: z.boolean().default(true),
+[7m  [0m [93m              ~[0m
+[96msrc/content.config.ts[0m:[93m61[0m:[93m9[0m - [93mwarning[0m[90m ts(6385): [0m'z' is deprecated.
+
+[7m61[0m   hint: z.string().optional(),
+[7m  [0m [93m        ~[0m
+[96msrc/content.config.ts[0m:[93m58[0m:[93m16[0m - [93mwarning[0m[90m ts(6385): [0m'z' is deprecated.
+
+[7m58[0m   contentSlug: z.string().optional(),
+[7m  [0m [93m               ~[0m
+[96msrc/content.config.ts[0m:[93m50[0m:[93m15[0m - [93mwarning[0m[90m ts(6385): [0m'z' is deprecated.
+
+[7m50[0m   sharedSlug: z.string().optional(),
+[7m  [0m [93m              ~[0m
+[96msrc/content.config.ts[0m:[93m43[0m:[93m9[0m - [93mwarning[0m[90m ts(6385): [0m'z' is deprecated.
+
+[7m43[0m   slug: z.string().optional(),
+[7m  [0m [93m        ~[0m
+[96msrc/content.config.ts[0m:[93m36[0m:[93m10[0m - [93mwarning[0m[90m ts(6385): [0m'z' is deprecated.
+
+[7m36[0m   token: z.string().optional(),
+[7m  [0m [93m         ~[0m
+[96msrc/content.config.ts[0m:[93m30[0m:[93m9[0m - [93mwarning[0m[90m ts(6385): [0m'z' is deprecated.
+
+[7m30[0m   hash: z.string(),
+[7m  [0m [93m        ~[0m
+[96msrc/content.config.ts[0m:[93m27[0m:[93m7[0m - [93mwarning[0m[90m ts(6385): [0m'z' is deprecated.
+
+[7m27[0m   id: z.string().optional(),
+[7m  [0m [93m      ~[0m
+[96msrc/content.config.ts[0m:[93m25[0m:[93m36[0m - [93mwarning[0m[90m ts(6385): [0m'z' is deprecated.
+
+[7m25[0m const ExternalEncryptEntrySchema = z.object({
+[7m  [0m [93m                                   ~[0m
+[96msrc/content.config.ts[0m:[93m1[0m:[93m28[0m - [93mwarning[0m[90m ts(6385): [0m'z' is deprecated.
+
+[7m1[0m import { defineCollection, z } from 'astro:content';
+[7m [0m [93m                           ~[0m
+
+[96msrc/components/CodeBlockEnhancer.astro[0m:[93m246[0m:[93m16[0m - [93mwarning[0m[90m ts(6133): [0m'full' is declared but its value is never read.
+
+[7m246[0m         const [full, comment, scriptOpen, scriptBody, scriptClose, tagOpen, tagAttrs, tagClose, expr] = match;
+[7m   [0m [93m               ~~~~[0m
+[96msrc/components/CodeBlockEnhancer.astro[0m:[93m209[0m:[93m103[0m - [93mwarning[0m[90m ts(6133): [0m'm' is declared but its value is never read.
+
+[7m209[0m           highlightedAttrs = attrs.replace(/([a-zA-Z0-9_:@#.-]+)(?:(=)("[^"]*"|'[^']*'|[^\s>]+))?/g, (m, attrName, eq, attrVal) => {
+[7m   [0m [93m                                                                                                      ~[0m
+[96msrc/components/CodeBlockEnhancer.astro[0m:[93m150[0m:[93m16[0m - [93mwarning[0m[90m ts(6133): [0m'full' is declared but its value is never read.
+
+[7m150[0m         const [full, comment, string, jsxTag, number, ident, punct] = match;
+[7m   [0m [93m               ~~~~[0m
+[96msrc/components/CodeBlockEnhancer.astro[0m:[93m85[0m:[93m18[0m - [93mwarning[0m[90m ts(6133): [0m'full' is declared but its value is never read.
+
+[7m85[0m           const [full, comment, string, variable, flag, word, operator, space, other] = match;
+[7m  [0m [93m                 ~~~~[0m
+[96msrc/components/CodeBlockEnhancer.astro[0m:[93m20[0m:[93m33[0m - [93mwarning[0m[90m ts(6387): [0mThe signature '(commandId: string, showUI?: boolean, value?: string): boolean' of 'document.execCommand' is deprecated.
+
+[7m20[0m         const copied = document.execCommand('copy');
+[7m  [0m [93m                                ~~~~~~~~~~~[0m
+
+[96msrc/components/ContentFeatureEnhancer.astro[0m:[93m2014[0m:[93m58[0m - [93mwarning[0m[90m ts(2568): [0mProperty 'webkitAudioContext' may not exist on type 'Window & typeof globalThis'. Did you mean 'AudioContext'?
+
+[7m2014[0m           const AudioCtx = window.AudioContext || window.webkitAudioContext;
+[7m    [0m [93m                                                         ~~~~~~~~~~~~~~~~~~[0m
+[96msrc/components/ContentFeatureEnhancer.astro[0m:[93m1745[0m:[93m56[0m - [93mwarning[0m[90m ts(6133): [0m'unitKey' is declared but its value is never read.
+
+[7m1745[0m         const formatUnitValue = (num, isForex = false, unitKey = '') => {
+[7m    [0m [93m                                                       ~~~~~~~[0m
+
+[96msrc/components/LoadingScreen.tsx[0m:[93m1[0m:[93m8[0m - [93mwarning[0m[90m ts(6133): [0m'React' is declared but its value is never read.
+
+[7m1[0m import React, { useEffect, useState } from 'react';
+[7m [0m [93m       ~~~~~[0m
+
+[96msrc/components/MacCodeBlock.tsx[0m:[93m25[0m:[93m18[0m - [93mwarning[0m[90m ts(6387): [0mThe signature '(commandId: string, showUI?: boolean, value?: string): boolean' of 'document.execCommand' is deprecated.
+
+[7m25[0m         document.execCommand('copy');
+[7m  [0m [93m                 ~~~~~~~~~~~[0m
+[96msrc/components/MacCodeBlock.tsx[0m:[93m1[0m:[93m8[0m - [93mwarning[0m[90m ts(6133): [0m'React' is declared but its value is never read.
+
+[7m1[0m import React, { useState } from 'react';
+[7m [0m [93m       ~~~~~[0m
+
+[96msrc/components/MindmapEnhancer.astro[0m:[93m627[0m:[93m22[0m - [93mwarning[0m[90m ts(6387): [0mThe signature '(commandId: string, showUI?: boolean, value?: string): boolean' of 'document.execCommand' is deprecated.
+
+[7m627[0m             document.execCommand('copy');
+[7m   [0m [93m                     ~~~~~~~~~~~[0m
+
+[96msrc/components/ProfileWidget.tsx[0m:[93m51[0m:[93m3[0m - [93mwarning[0m[90m ts(6133): [0m'readingTimeMinutes' is declared but its value is never read.
+
+[7m51[0m   readingTimeMinutes = 0,
+[7m  [0m [93m  ~~~~~~~~~~~~~~~~~~[0m
+[96msrc/components/ProfileWidget.tsx[0m:[93m50[0m:[93m3[0m - [93mwarning[0m[90m ts(6133): [0m'wordCount' is declared but its value is never read.
+
+[7m50[0m   wordCount = 0,
+[7m  [0m [93m  ~~~~~~~~~[0m
+[96msrc/components/ProfileWidget.tsx[0m:[93m49[0m:[93m3[0m - [93mwarning[0m[90m ts(6133): [0m'postCount' is declared but its value is never read.
+
+[7m49[0m   postCount = 0,
+[7m  [0m [93m  ~~~~~~~~~[0m
+[96msrc/components/ProfileWidget.tsx[0m:[93m44[0m:[93m3[0m - [93mwarning[0m[90m ts(6133): [0m'bio' is declared but its value is never read.
+
+[7m44[0m   bio,
+[7m  [0m [93m  ~~~[0m
+[96msrc/components/ProfileWidget.tsx[0m:[93m1[0m:[93m8[0m - [93mwarning[0m[90m ts(6133): [0m'React' is declared but its value is never read.
+
+[7m1[0m import React, { type CSSProperties, useState, useEffect } from 'react';
+[7m [0m [93m       ~~~~~[0m
+
+[96msrc/components/ShortcutPanel.tsx[0m:[93m26[0m:[93m10[0m - [93mwarning[0m[90m ts(6133): [0m'shiftPressed' is declared but its value is never read.
+
+[7m26[0m   const [shiftPressed, setShiftPressed] = useState(false);
+[7m  [0m [93m         ~~~~~~~~~~~~[0m
+[96msrc/components/ShortcutPanel.tsx[0m:[93m1[0m:[93m8[0m - [93mwarning[0m[90m ts(6133): [0m'React' is declared but its value is never read.
+
+[7m1[0m import React, { useEffect, useState } from 'react';
+[7m [0m [93m       ~~~~~[0m
+
+[96msrc/components/SiteHeader.tsx[0m:[93m461[0m:[93m9[0m - [93mwarning[0m[90m ts(6133): [0m'toggleReadMode' is declared but its value is never read.
+
+[7m461[0m   const toggleReadMode = (e: React.MouseEvent) => {
+[7m   [0m [93m        ~~~~~~~~~~~~~~[0m
+[96msrc/components/SiteHeader.tsx[0m:[93m450[0m:[93m9[0m - [93mwarning[0m[90m ts(6133): [0m'toggleLanguage' is declared but its value is never read.
+
+[7m450[0m   const toggleLanguage = (e: React.MouseEvent) => {
+[7m   [0m [93m        ~~~~~~~~~~~~~~[0m
+[96msrc/components/SiteHeader.tsx[0m:[93m235[0m:[93m3[0m - [93mwarning[0m[90m ts(6133): [0m'hasDatabase' is declared but its value is never read.
+
+[7m235[0m   hasDatabase,
+[7m   [0m [93m  ~~~~~~~~~~~[0m
+[96msrc/components/SiteHeader.tsx[0m:[93m5[0m:[93m43[0m - [93mwarning[0m[90m ts(6133): [0m'ChevronDown' is declared but its value is never read.
+
+[7m5[0m   User, ChartBar, Compass, MessageCircle, ChevronDown,
+[7m [0m [93m                                          ~~~~~~~~~~~[0m
+
+[96msrc/components/ThemeUniverse.tsx[0m:[93m65[0m:[93m9[0m - [93mwarning[0m[90m ts(6133): [0m'isScrolling' is declared but its value is never read.
+
+[7m65[0m     let isScrolling = false;
+[7m  [0m [93m        ~~~~~~~~~~~[0m
+[96msrc/components/ThemeUniverse.tsx[0m:[93m1[0m:[93m8[0m - [93mwarning[0m[90m ts(6133): [0m'React' is declared but its value is never read.
+
+[7m1[0m import React, { useEffect } from 'react';
+[7m [0m [93m       ~~~~~[0m
+
+[96msrc/components/lab/ExecutionVisualizer.tsx[0m:[93m1[0m:[93m8[0m - [93mwarning[0m[90m ts(6133): [0m'React' is declared but its value is never read.
+
+[7m1[0m import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+[7m [0m [93m       ~~~~~[0m
+
+[96msrc/components/lab/LabEditorPanel.tsx[0m:[93m86[0m:[93m9[0m - [93mwarning[0m[90m ts(6133): [0m'handleConfirmRename' is declared but its value is never read.
+
+[7m86[0m   const handleConfirmRename = () => {
+[7m  [0m [93m        ~~~~~~~~~~~~~~~~~~~[0m
+[96msrc/components/lab/LabEditorPanel.tsx[0m:[93m53[0m:[93m23[0m - [93mwarning[0m[90m ts(6133): [0m'setRenameValue' is declared but its value is never read.
+
+[7m53[0m   const [renameValue, setRenameValue] = useState('');
+[7m  [0m [93m                      ~~~~~~~~~~~~~~[0m
+[96msrc/components/lab/LabEditorPanel.tsx[0m:[93m52[0m:[93m10[0m - [93mwarning[0m[90m ts(6133): [0m'isRenaming' is declared but its value is never read.
+
+[7m52[0m   const [isRenaming, setIsRenaming] = useState(false);
+[7m  [0m [93m         ~~~~~~~~~~[0m
+[96msrc/components/lab/LabEditorPanel.tsx[0m:[93m33[0m:[93m3[0m - [93mwarning[0m[90m ts(6133): [0m'livecodesAppUrl' is declared but its value is never read.
+
+[7m33[0m   livecodesAppUrl,
+[7m  [0m [93m  ~~~~~~~~~~~~~~~[0m
+
+[96msrc/components/lab/LabPlayground.tsx[0m:[93m14[0m:[93m8[0m - [93mwarning[0m[90m ts(6133): [0m'SandboxRuntimeError' is declared but its value is never read.
+
+[7m14[0m   type SandboxRuntimeError,
+[7m  [0m [93m       ~~~~~~~~~~~~~~~~~~~[0m
+[96msrc/components/lab/LabPlayground.tsx[0m:[93m13[0m:[93m8[0m - [93mwarning[0m[90m ts(6133): [0m'SandboxConsoleEntry' is declared but its value is never read.
+
+[7m13[0m   type SandboxConsoleEntry,
+[7m  [0m [93m       ~~~~~~~~~~~~~~~~~~~[0m
+
+[96msrc/components/lab/LabPreviewPanel.tsx[0m:[93m54[0m:[93m3[0m - [93mwarning[0m[90m ts(6133): [0m'files' is declared but its value is never read.
+
+[7m54[0m   files,
+[7m  [0m [93m  ~~~~~[0m
+
+[96msrc/components/status/StatusDocEnhancer.astro[0m:[93m28[0m:[93m27[0m - [93mwarning[0m[90m ts(6387): [0mThe signature '(commandId: string, showUI?: boolean, value?: string): boolean' of 'document.execCommand' is deprecated.
+
+[7m28[0m       const ok = document.execCommand('copy');
+[7m  [0m [93m                          ~~~~~~~~~~~[0m
+
+[96msrc/components/status/StatusOfficialCard.astro[0m:[93m97[0m:[93m24[0m - [93mwarning[0m[90m ts(6133): [0m'index' is declared but its value is never read.
+
+[7m97[0m     {formats.map((fmt, index) => (
+[7m  [0m [93m                       ~~~~~[0m
+
+[96msrc/components/theme/AiSummaryPanel.astro[0m:[93m3[0m:[93m10[0m - [93mwarning[0m[90m ts(6133): [0m'Bot' is declared but its value is never read.
+
+[7m3[0m import { Bot, RefreshCw, SlidersHorizontal, Sparkles } from 'lucide-react';
+[7m [0m [93m         ~~~[0m
+
+[96msrc/components/theme/CinemaDashboard.astro[0m:[93m4[0m:[93m7[0m - [93mwarning[0m[90m ts(6133): [0m'site' is declared but its value is never read.
+
+[7m4[0m const site = siteConfig.site;
+[7m [0m [93m      ~~~~[0m
+
+[96msrc/components/theme/Footer.astro[0m:[93m94[0m:[93m33[0m - [93mwarning[0m[90m ts(7044): [0mParameter 'item' implicitly has an 'any' type, but a better type may be inferred from usage.
+
+[7m94[0m               {group.links.map((item) => (
+[7m  [0m [93m                                ~~~~[0m
+[96msrc/components/theme/Footer.astro[0m:[93m18[0m:[93m11[0m - [93mwarning[0m[90m ts(6385): [0m'Github' is deprecated.
+
+[7m18[0m   github: Github,
+[7m  [0m [93m          ~~~~~~[0m
+[96msrc/components/theme/Footer.astro[0m:[93m5[0m:[93m3[0m - [93mwarning[0m[90m ts(6385): [0m'Github' is deprecated.
+
+[7m5[0m   Github,
+[7m [0m [93m  ~~~~~~[0m
+
+[96msrc/components/theme/FriendsDashboard.astro[0m:[93m84[0m:[93m33[0m - [93mwarning[0m[90m ts(6133): [0m'src' is declared but its value is never read.
+
+[7m84[0m                   onerror="this.src='/media/brands/default-brand.svg'"
+[7m  [0m [93m                                ~~~[0m
+
+[96msrc/components/theme/HomeHero.astro[0m:[93m37[0m:[93m7[0m - [93mwarning[0m[90m ts(6133): [0m'todayCardCover' is declared but its value is never read.
+
+[7m37[0m const todayCardCover =
+[7m  [0m [93m      ~~~~~~~~~~~~~~[0m
+[96msrc/components/theme/HomeHero.astro[0m:[93m5[0m:[93m50[0m - [93mwarning[0m[90m ts(6133): [0m'resolveCategory' is declared but its value is never read.
+
+[7m5[0m import { getExcerpt, getPostPath, hasPostAccess, resolveCategory, resolveCover, resolveCoverAlt } from '../../lib/content';
+[7m [0m [93m                                                 ~~~~~~~~~~~~~~~[0m
+[96msrc/components/theme/HomeHero.astro[0m:[93m5[0m:[93m10[0m - [93mwarning[0m[90m ts(6133): [0m'getExcerpt' is declared but its value is never read.
+
+[7m5[0m import { getExcerpt, getPostPath, hasPostAccess, resolveCategory, resolveCover, resolveCoverAlt } from '../../lib/content';
+[7m [0m [93m         ~~~~~~~~~~[0m
+
+[96msrc/components/theme/LabDashboard.astro[0m:[93m1140[0m:[93m13[0m - [93mwarning[0m[90m ts(6133): [0m'orbCenter' is declared but its value is never read.
+
+[7m1140[0m       const orbCenter = document.getElementById('dash-orb-center');
+[7m    [0m [93m            ~~~~~~~~~[0m
+[96msrc/components/theme/LabDashboard.astro[0m:[93m905[0m:[93m68[0m - [93mwarning[0m[90m ts(2568): [0mProperty 'webkitAudioContext' may not exist on type 'Window & typeof globalThis'. Did you mean 'AudioContext'?
+
+[7m905[0m       if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+[7m   [0m [93m                                                                   ~~~~~~~~~~~~~~~~~~[0m
+
+[96msrc/components/theme/MarkdownForm.astro[0m:[93m61[0m:[93m37[0m - [93mwarning[0m[90m ts(7044): [0mParameter 'opt' implicitly has an 'any' type, but a better type may be inferred from usage.
+
+[7m61[0m                 {field.options.map((opt) => {
+[7m  [0m [93m                                    ~~~[0m
+
+[96msrc/components/theme/MomentsDashboard.astro[0m:[93m573[0m:[93m51[0m - [93mwarning[0m[90m ts(6133): [0m'count' is declared but its value is never read.
+
+[7m573[0m     function renderLikersStack(container, likers, count) {
+[7m   [0m [93m                                                  ~~~~~[0m
+
+[96msrc/components/theme/MusicDashboard.astro[0m:[93m4[0m:[93m7[0m - [93mwarning[0m[90m ts(6133): [0m'site' is declared but its value is never read.
+
+[7m4[0m const site = siteConfig.site;
+[7m [0m [93m      ~~~~[0m
+[96msrc/components/theme/MusicDashboard.astro[0m:[93m381[0m:[93m55[0m - [93mwarning[0m[90m ts(2568): [0mProperty 'webkitAudioContext' may not exist on type 'Window & typeof globalThis'. Did you mean 'AudioContext'?
+
+[7m381[0m         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+[7m   [0m [93m                                                      ~~~~~~~~~~~~~~~~~~[0m
+
+[96msrc/components/theme/MusicPocket.tsx[0m:[93m2865[0m:[93m29[0m - [93mwarning[0m[90m ts(6133): [0m'isWordSync' is declared but its value is never read.
+
+[7m2865[0m                       const isWordSync = lyricSyncType === 'word';
+[7m    [0m [93m                            ~~~~~~~~~~[0m
+[96msrc/components/theme/MusicPocket.tsx[0m:[93m1931[0m:[93m41[0m - [93mwarning[0m[90m ts(6385): [0m'FormEvent' is deprecated.
+
+[7m1931[0m   const handleSearch = async (e?: React.FormEvent, keywordOverride?: string) => {
+[7m    [0m [93m                                        ~~~~~~~~~[0m
+[96msrc/components/theme/MusicPocket.tsx[0m:[93m667[0m:[93m17[0m - [93mwarning[0m[90m ts(6133): [0m'setToast' is declared but its value is never read.
+
+[7m667[0m   const [toast, setToast] = useState('');
+[7m   [0m [93m                ~~~~~~~~[0m
+[96msrc/components/theme/MusicPocket.tsx[0m:[93m667[0m:[93m10[0m - [93mwarning[0m[90m ts(6133): [0m'toast' is declared but its value is never read.
+
+[7m667[0m   const [toast, setToast] = useState('');
+[7m   [0m [93m         ~~~~~[0m
+[96msrc/components/theme/MusicPocket.tsx[0m:[93m26[0m:[93m3[0m - [93mwarning[0m[90m ts(6133): [0m'Compass' is declared but its value is never read.
+
+[7m26[0m   Compass,
+[7m  [0m [93m  ~~~~~~~[0m
+
+[96msrc/components/theme/PostCard.astro[0m:[93m120[0m:[93m24[0m - [93mwarning[0m[90m ts(6385): [0m'event' is deprecated.
+
+[7m120[0m               onclick="event.stopPropagation();"
+[7m   [0m [93m                       ~~~~~[0m
+[96msrc/components/theme/PostCard.astro[0m:[93m71[0m:[93m22[0m - [93mwarning[0m[90m ts(6385): [0m'event' is deprecated.
+
+[7m71[0m             onclick="event.stopPropagation();"
+[7m  [0m [93m                     ~~~~~[0m
+
+[96msrc/components/theme/PostCopyright.astro[0m:[93m62[0m:[93m3[0m - [93mwarning[0m[90m ts(6133): [0m'rewardHref' is declared but its value is never read.
+
+[7m62[0m   rewardHref = '/about/#about-reward',
+[7m  [0m [93m  ~~~~~~~~~~[0m
+[96msrc/components/theme/PostCopyright.astro[0m:[93m3[0m:[93m3[0m - [93mwarning[0m[90m ts(6133): [0m'HeartHandshake' is declared but its value is never read.
+
+[7m3[0m   HeartHandshake,
+[7m [0m [93m  ~~~~~~~~~~~~~~[0m
+[96msrc/components/theme/PostCopyright.astro[0m:[93m534[0m:[93m22[0m - [93mwarning[0m[90m ts(6387): [0mThe signature '(commandId: string, showUI?: boolean, value?: string): boolean' of 'document.execCommand' is deprecated.
+
+[7m534[0m             document.execCommand('copy');
+[7m   [0m [93m                     ~~~~~~~~~~~[0m
+[96msrc/components/theme/PostCopyright.astro[0m:[93m427[0m:[93m13[0m - [93mwarning[0m[90m ts(6133): [0m'rewardWrapper' is declared but its value is never read.
+
+[7m427[0m       const rewardWrapper = block.querySelector('[data-reward-wrapper]');
+[7m   [0m [93m            ~~~~~~~~~~~~~[0m
+
+[96msrc/components/theme/PostHero.astro[0m:[93m51[0m:[93m1[0m - [93mwarning[0m[90m ts(6133): [0m'getLocaleMeta' is declared but its value is never read.
+
+[7m51[0m import { getLocaleMeta } from '../../config/i18n';
+[7m  [0m [93m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+[96msrc/components/theme/PostHero.astro[0m:[93m3[0m:[93m1[0m - [93mwarning[0m[90m ts(6133): [0m'normalizeLangCode' is declared but its value is never read.
+
+[7m3[0m import { normalizeLangCode } from '../../lib/content';
+[7m [0m [93m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[96msrc/components/theme/PostRewardExtension.tsx[0m:[93m182[0m:[93m35[0m - [93mwarning[0m[90m ts(6133): [0m'type' is declared but its value is never read.
+
+[7m182[0m   const showToast = (msg: string, type: 'success' | 'info' = 'success') => {
+[7m   [0m [93m                                  ~~~~[0m
+
+[96msrc/components/theme/ProfileCard.astro[0m:[93m3[0m:[93m1[0m - [93mwarning[0m[90m ts(6133): [0m'convertText' is declared but its value is never read.
+
+[7m3[0m import { convertText } from '../../lib/client-locale';
+[7m [0m [93m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+[96msrc/components/theme/ProfileCard.astro[0m:[93m2[0m:[93m1[0m - [93mwarning[0m[90m ts(6133): [0m'CSSProperties' is declared but its value is never read.
+
+[7m2[0m import type { CSSProperties } from 'react';
+[7m [0m [93m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[96msrc/components/theme/PromoWidgetCard.astro[0m:[93m456[0m:[93m26[0m - [93mwarning[0m[90m ts(6385): [0m'event' is deprecated.
+
+[7m456[0m                 onclick="event.stopPropagation();"
+[7m   [0m [93m                         ~~~~~[0m
+
+[96msrc/components/theme/RewardModal.tsx[0m:[93m836[0m:[93m42[0m - [93mwarning[0m[90m ts(6385): [0m'FormEvent' is deprecated.
+
+[7m836[0m   const handleBlessing = async (e: React.FormEvent) => {
+[7m   [0m [93m                                         ~~~~~~~~~[0m
+
+[96msrc/components/theme/RewardRegionPanel.astro[0m:[93m103[0m:[93m37[0m - [93mwarning[0m[90m ts(7044): [0mParameter 'channel' implicitly has an 'any' type, but a better type may be inferred from usage.
+
+[7m103[0m               {region.channels.map((channel) => (
+[7m   [0m [93m                                    ~~~~~~~[0m
+[96msrc/components/theme/RewardRegionPanel.astro[0m:[93m90[0m:[93m56[0m - [93mwarning[0m[90m ts(7044): [0mParameter 'channel' implicitly has an 'any' type, but a better type may be inferred from usage.
+
+[7m90[0m         const hasExtraChannels = region.channels.some((channel) => channel.priority === 'extra');
+[7m  [0m [93m                                                       ~~~~~~~[0m
+[96msrc/components/theme/RewardRegionPanel.astro[0m:[93m365[0m:[93m33[0m - [93mwarning[0m[90m ts(6385): [0m'platform' is deprecated.
+
+[7m365[0m             platform: navigator.platform || '',
+[7m   [0m [93m                                ~~~~~~~~[0m
+[96msrc/components/theme/RewardRegionPanel.astro[0m:[93m334[0m:[93m31[0m - [93mwarning[0m[90m ts(6385): [0m'platform' is deprecated.
+
+[7m334[0m           platform: navigator.platform || '',
+[7m   [0m [93m                              ~~~~~~~~[0m
+
+[96msrc/components/theme/Sidebar.astro[0m:[93m279[0m:[93m24[0m - [93mwarning[0m[90m ts(6133): [0m'index' is declared but its value is never read.
+
+[7m279[0m       const { heading, index, level, children } = node;
+[7m   [0m [93m                       ~~~~~[0m
+[96msrc/components/theme/Sidebar.astro[0m:[93m265[0m:[93m7[0m - [93mwarning[0m[90m ts(6133): [0m'featurePanelRecentPosts' is declared but its value is never read.
+
+[7m265[0m const featurePanelRecentPosts = recentPostEntries.slice(0, 6);
+[7m   [0m [93m      ~~~~~~~~~~~~~~~~~~~~~~~[0m
+[96msrc/components/theme/Sidebar.astro[0m:[93m264[0m:[93m7[0m - [93mwarning[0m[90m ts(6133): [0m'latestPublishedLabel' is declared but its value is never read.
+
+[7m264[0m const latestPublishedLabel = latestPublishedAt ? latestPublishedAt.toLocaleDateString('zh-CN').replaceAll('/', '.') : '持续更新';
+[7m   [0m [93m      ~~~~~~~~~~~~~~~~~~~~[0m
+[96msrc/components/theme/Sidebar.astro[0m:[93m262[0m:[93m7[0m - [93mwarning[0m[90m ts(6133): [0m'currentPhase' is declared but its value is never read.
+
+[7m262[0m const currentPhase = siteConfig.home.statusCards[0]?.value ?? siteConfig.site.author.statusLabel;
+[7m   [0m [93m      ~~~~~~~~~~~~[0m
+[96msrc/components/theme/Sidebar.astro[0m:[93m261[0m:[93m7[0m - [93mwarning[0m[90m ts(6133): [0m'startedAtLabel' is declared but its value is never read.
+
+[7m261[0m const startedAtLabel = new Date(siteConfig.footer.startedAt).toLocaleDateString('zh-CN').replaceAll('/', '.');
+[7m   [0m [93m      ~~~~~~~~~~~~~~[0m
+[96msrc/components/theme/Sidebar.astro[0m:[93m257[0m:[93m7[0m - [93mwarning[0m[90m ts(6133): [0m'runtimeDays' is declared but its value is never read.
+
+[7m257[0m const runtimeDays = Math.max(
+[7m   [0m [93m      ~~~~~~~~~~~[0m
+[96msrc/components/theme/Sidebar.astro[0m:[93m49[0m:[93m3[0m - [93mwarning[0m[90m ts(6133): [0m'nextPost' is declared but its value is never read.
+
+[7m49[0m   nextPost = null,
+[7m  [0m [93m  ~~~~~~~~[0m
+[96msrc/components/theme/Sidebar.astro[0m:[93m48[0m:[93m3[0m - [93mwarning[0m[90m ts(6133): [0m'previousPost' is declared but its value is never read.
+
+[7m48[0m   previousPost = null,
+[7m  [0m [93m  ~~~~~~~~~~~~[0m
+[96msrc/components/theme/Sidebar.astro[0m:[93m2[0m:[93m19[0m - [93mwarning[0m[90m ts(6133): [0m'Compass' is declared but its value is never read.
+
+[7m2[0m import { Archive, Compass, FolderOpen, History, Info, ListTree, Megaphone, Tags, Activity } from 'lucide-react';
+[7m [0m [93m                  ~~~~~~~[0m
+
+[96msrc/components/theme/SupportDashboard.tsx[0m:[93m619[0m:[93m38[0m - [93mwarning[0m[90m ts(6385): [0m'FormEvent' is deprecated.
+
+[7m619[0m   const handleJumpSubmit = (e: React.FormEvent) => {
+[7m   [0m [93m                                     ~~~~~~~~~[0m
+
+[96msrc/components/theme/VersionDashboard.astro[0m:[93m4[0m:[93m7[0m - [93mwarning[0m[90m ts(6133): [0m'site' is declared but its value is never read.
+
+[7m4[0m const site = siteConfig.site;
+[7m [0m [93m      ~~~~[0m
+
+[96msrc/components/theme/gesture-detail/GestureAvatar.tsx[0m:[93m1[0m:[93m1[0m - [93mwarning[0m[90m ts(6133): [0m'React' is declared but its value is never read.
+
+[7m1[0m import React from 'react';
+[7m [0m [93m~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[96msrc/components/theme/gesture-detail/GestureBoostSection.tsx[0m:[93m54[0m:[93m41[0m - [93mwarning[0m[90m ts(6385): [0m'FormEvent' is deprecated.
+
+[7m54[0m   const handleSubmit = async (e?: React.FormEvent) => {
+[7m  [0m [93m                                        ~~~~~~~~~[0m
+
+[96msrc/components/theme/gesture-detail/GestureFloorCard.tsx[0m:[93m189[0m:[93m44[0m - [93mwarning[0m[90m ts(6385): [0m'FormEvent' is deprecated.
+
+[7m189[0m   const handleEditSubmit = async (e: React.FormEvent) => {
+[7m   [0m [93m                                           ~~~~~~~~~[0m
+
+[96msrc/components/theme/gesture-detail/GestureInlineReplyComposer.tsx[0m:[93m93[0m:[93m44[0m - [93mwarning[0m[90m ts(6385): [0m'FormEvent' is deprecated.
+
+[7m93[0m   const handleFormSubmit = async (e: React.FormEvent) => {
+[7m  [0m [93m                                           ~~~~~~~~~[0m
+
+[96msrc/components/theme/gesture-detail/QuoteEmbedCard.tsx[0m:[93m1[0m:[93m8[0m - [93mwarning[0m[90m ts(6133): [0m'React' is declared but its value is never read.
+
+[7m1[0m import React, { useState } from 'react';
+[7m [0m [93m       ~~~~~[0m
+
+[96msrc/lib/client-locale.ts[0m:[93m3854[0m:[93m10[0m - [93mwarning[0m[90m ts(6133): [0m'shouldSkipElement' is declared but its value is never read.
+
+[7m3854[0m function shouldSkipElement(element: Element): boolean {
+[7m    [0m [93m         ~~~~~~~~~~~~~~~~~[0m
+[96msrc/lib/client-locale.ts[0m:[93m3672[0m:[93m38[0m - [93mwarning[0m[90m ts(7016): [0mCould not find a declaration file for module 'opencc-js'. '/home/shijian/projects/shijianus-blog/node_modules/opencc-js/dist/esm/full.js' implicitly has an 'any' type.
+  Try `npm i --save-dev @types/opencc-js` if it exists or add a new declaration (.d.ts) file containing `declare module 'opencc-js';`
+
+[7m3672[0m     chineseConverterPromise = import('opencc-js')
+[7m    [0m [93m                                     ~~~~~~~~~~~[0m
+[96msrc/lib/client-locale.ts[0m:[93m3587[0m:[93m7[0m - [93mwarning[0m[90m ts(6133): [0m'skipSelector' is declared but its value is never read.
+
+[7m3587[0m const skipSelector = '.ignore-opencc,[data-no-translate="true"],.theme-account-overlay,.theme-account-drawer,#theme-overlays,#local-search,#console,#article-container,.article-body,.post-content';
+[7m    [0m [93m      ~~~~~~~~~~~~[0m
+
+[96msrc/lib/lab-schema.ts[0m:[93m237[0m:[93m10[0m - [93mwarning[0m[90m ts(6387): [0mThe signature '(string: string): string' of 'unescape' is deprecated.
+
+[7m237[0m   return unescape(encodeURIComponent(input)).length;
+[7m   [0m [93m         ~~~~~~~~[0m
+[96msrc/lib/lab-schema.ts[0m:[93m215[0m:[93m7[0m - [93mwarning[0m[90m ts(6133): [0m'VALID_RUNTIMES' is declared but its value is never read.
+
+[7m215[0m const VALID_RUNTIMES = new Set<LabRuntimeType>([
+[7m   [0m [93m      ~~~~~~~~~~~~~~[0m
+
+[96msrc/lib/server-ai-summary.ts[0m:[93m596[0m:[93m9[0m - [93mwarning[0m[90m ts(6133): [0m'mode' is declared but its value is never read.
+
+[7m596[0m   const mode = payload.mode || 'auto';
+[7m   [0m [93m        ~~~~[0m
+
+[96msrc/lib/server-article-i18n.ts[0m:[93m1475[0m:[93m7[0m - [93mwarning[0m[90m ts(7043): [0mVariable 'm' implicitly has an 'any' type, but a better type may be inferred from usage.
+
+[7m1475[0m   let m;
+[7m    [0m [93m      ~[0m
+
+[96msrc/lib/site-metrics.ts[0m:[93m3[0m:[93m95[0m - [93mwarning[0m[90m ts(6133): [0m'ContentDensityTier' is declared but its value is never read.
+
+[7m3[0m import { standardsConfig, matchActivityTier, matchContentDensityTier, type ActivityTier, type ContentDensityTier } from '../config/standards.ts';
+[7m [0m [93m                                                                                              ~~~~~~~~~~~~~~~~~~[0m
+[96msrc/lib/site-metrics.ts[0m:[93m3[0m:[93m76[0m - [93mwarning[0m[90m ts(6133): [0m'ActivityTier' is declared but its value is never read.
+
+[7m3[0m import { standardsConfig, matchActivityTier, matchContentDensityTier, type ActivityTier, type ContentDensityTier } from '../config/standards.ts';
+[7m [0m [93m                                                                           ~~~~~~~~~~~~[0m
+[96msrc/lib/site-metrics.ts[0m:[93m2[0m:[93m82[0m - [93mwarning[0m[90m ts(6133): [0m'sortPostsByDate' is declared but its value is never read.
+
+[7m2[0m import { estimateWordCount, estimateReadingMinutes, getPostPath, getPublicPosts, sortPostsByDate } from './content.ts';
+[7m [0m [93m                                                                                 ~~~~~~~~~~~~~~~[0m
+
+[96msrc/lib/snow-mantle.ts[0m:[93m327[0m:[93m9[0m - [93mwarning[0m[90m ts(6133): [0m'waveAmplitude' is declared but its value is never read.
+
+[7m327[0m   const waveAmplitude = Math.max(3.5, Math.min(8.5, targetRise * 0.50));
+[7m   [0m [93m        ~~~~~~~~~~~~~[0m
+[96msrc/lib/snow-mantle.ts[0m:[93m268[0m:[93m9[0m - [93mwarning[0m[90m ts(6133): [0m'cardRight' is declared but its value is never read.
+
+[7m268[0m   const cardRight = W;
+[7m   [0m [93m        ~~~~~~~~~[0m
+[96msrc/lib/snow-mantle.ts[0m:[93m267[0m:[93m9[0m - [93mwarning[0m[90m ts(6133): [0m'cardLeft' is declared but its value is never read.
+
+[7m267[0m   const cardLeft = 0;
+[7m   [0m [93m        ~~~~~~~~[0m
+[96msrc/lib/snow-mantle.ts[0m:[93m266[0m:[93m9[0m - [93mwarning[0m[90m ts(6133): [0m'totalW' is declared but its value is never read.
+
+[7m266[0m   const totalW = W;
+[7m   [0m [93m        ~~~~~~[0m
+[96msrc/lib/snow-mantle.ts[0m:[93m265[0m:[93m9[0m - [93mwarning[0m[90m ts(6133): [0m'leftOffset' is declared but its value is never read.
+
+[7m265[0m   const leftOffset = 0;
+[7m   [0m [93m        ~~~~~~~~~~[0m
+[96msrc/lib/snow-mantle.ts[0m:[93m264[0m:[93m9[0m - [93mwarning[0m[90m ts(6133): [0m'extraSide' is declared but its value is never read.
+
+[7m264[0m   const extraSide = 0;
+[7m   [0m [93m        ~~~~~~~~~[0m
+[96msrc/lib/snow-mantle.ts[0m:[93m263[0m:[93m9[0m - [93mwarning[0m[90m ts(6133): [0m'padX' is declared but its value is never read.
+
+[7m263[0m   const padX = 0;
+[7m   [0m [93m        ~~~~[0m
+
+[96msrc/lib/starry-universe.ts[0m:[93m157[0m:[93m21[0m - [93mwarning[0m[90m ts(6133): [0m'h' is declared but its value is never read.
+
+[7m157[0m     move(w: number, h: number, px: number, py: number) {
+[7m   [0m [93m                    ~[0m
+
+[96msrc/lib/lab/adapters/BrowserDomRuntime.ts[0m:[93m41[0m:[93m11[0m - [93mwarning[0m[90m ts(6133): [0m'container' is declared but its value is never read.
+
+[7m41[0m   private container: HTMLElement | null = null;
+[7m  [0m [93m          ~~~~~~~~~[0m
+
+[96msrc/lib/lab/runtimes/quickjs/quickjs-worker.ts[0m:[93m91[0m:[93m37[0m - [93mwarning[0m[90m ts(7047): [0mRest parameter 'args' implicitly has an 'any[]' type, but a better type may be inferred from usage.
+
+[7m91[0m       return vm.newFunction(level, (...args) => {
+[7m  [0m [93m                                    ~~~~~~~[0m
+[96msrc/lib/lab/runtimes/quickjs/quickjs-worker.ts[0m:[93m60[0m:[93m9[0m - [93mwarning[0m[90m ts(7043): [0mVariable 'QuickJS' implicitly has an 'any' type, but a better type may be inferred from usage.
+
+[7m60[0m     let QuickJS;
+[7m  [0m [93m        ~~~~~~~[0m
+
+[96msrc/pages/auth/callback.astro[0m:[93m171[0m:[93m13[0m - [93mwarning[0m[90m ts(6133): [0m'state' is declared but its value is never read.
+
+[7m171[0m       const state = params.get('state') || '';
+[7m   [0m [93m            ~~~~~[0m
+
+[96msrc/pages/posts/[slug].astro[0m:[93m111[0m:[93m7[0m - [93mwarning[0m[90m ts(6133): [0m'existingPostIds' is declared but its value is never read.
+
+[7m111[0m const existingPostIds = new Set(allPosts.map((p) => p.id));
+[7m   [0m [93m      ~~~~~~~~~~~~~~~[0m
+[96msrc/pages/posts/[slug].astro[0m:[93m26[0m:[93m3[0m - [93mwarning[0m[90m ts(6133): [0m'resolveCover' is declared but its value is never read.
+
+[7m26[0m   resolveCover,
+[7m  [0m [93m  ~~~~~~~~~~~~[0m
+[96msrc/pages/posts/[slug].astro[0m:[93m2[0m:[93m25[0m - [93mwarning[0m[90m ts(6133): [0m'getEntry' is declared but its value is never read.
+
+[7m2[0m import { getCollection, getEntry, render } from 'astro:content';
+[7m [0m [93m                        ~~~~~~~~[0m
+
+Result (200 files): 
+- 0 errors
+- 0 warnings
+- 208 hints
+

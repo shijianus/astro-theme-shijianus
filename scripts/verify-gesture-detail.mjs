@@ -1,366 +1,561 @@
-import { chromium } from 'playwright';
-import { execSync, spawn } from 'child_process';
-import fs from 'fs';
-import net from 'net';
-import path from 'path';
+import assert from 'node:assert/strict';
+import { mkdir } from 'node:fs/promises';
+import { expect } from '@playwright/test';
+import { sizes, withGuestbook } from './guestbook-test-server.mjs';
 
-const COMMENTS_DEV_PATH = path.resolve(process.cwd(), '.comments-dev.json');
-const BOOSTS_DEV_PATH = path.resolve(process.cwd(), '.boosts-dev.json');
-
-function getFreePort() {
-  return new Promise((resolve, reject) => {
-    const srv = net.createServer();
-    srv.unref();
-    srv.on('error', reject);
-    srv.listen(0, '127.0.0.1', () => {
-      const addr = srv.address();
-      const port = typeof addr === 'object' && addr ? addr.port : 4339;
-      srv.close(() => resolve(port));
-    });
-  });
-}
-
-async function waitForServer(url, timeoutMs = 90000) {
-  const start = Date.now();
-  while (Date.now() - start < timeoutMs) {
+await withGuestbook(async ({ db, page, base, add, errors }) => {
+  await page.addInitScript(() => {
     try {
-      const res = await fetch(url);
-      if (res.ok) return;
+      if (!localStorage.getItem('shijianus-theme')) localStorage.setItem('shijianus-theme', 'dark');
     } catch {}
-    await new Promise((r) => setTimeout(r, 500));
-  }
-  throw new Error(`Timed out waiting for server at ${url}`);
-}
-
-function assert(cond, msg) {
-  if (!cond) throw new Error(`Assertion failed: ${msg}`);
-}
-
-async function run() {
-  try {
-    execSync('node ./node_modules/astro/bin/astro.mjs dev stop', { cwd: process.cwd(), stdio: 'ignore' });
-  } catch {}
-  const PORT = await getFreePort();
-  const BASE_URL = `http://localhost:${PORT}`;
-  const hadComments = fs.existsSync(COMMENTS_DEV_PATH);
-  const origComments = hadComments ? fs.readFileSync(COMMENTS_DEV_PATH, 'utf8') : null;
-  const hadBoosts = fs.existsSync(BOOSTS_DEV_PATH);
-  const origBoosts = hadBoosts ? fs.readFileSync(BOOSTS_DEV_PATH, 'utf8') : null;
-
-  console.log(`[Verify] Starting Astro dev server on port ${PORT}...`);
-  const devProc = spawn('node', ['./node_modules/astro/bin/astro.mjs', 'dev', '--port', String(PORT), '--host', '127.0.0.1'], {
-    cwd: process.cwd(),
-    detached: true,
-    stdio: ['ignore', 'pipe', 'pipe'],
-    env: { ...process.env, NODE_ENV: 'development' },
   });
-
-  let serverLogs = '';
-  devProc.stdout.on('data', (d) => { serverLogs += d.toString(); });
-  devProc.stderr.on('data', (d) => { serverLogs += d.toString(); });
-
-  let browser;
-  try {
-    await waitForServer(`${BASE_URL}/guestbook/`).catch((err) => {
-      console.error('[Verify] Server logs on timeout:\n', serverLogs.slice(-3000));
-      throw err;
-    });
-    console.log('[Verify] Dev server ready.');
-
-    browser = await chromium.launch({ headless: true });
-    const context = await browser.newContext({ viewport: { width: 1440, height: 920 } });
-    const page = await context.newPage();
-
-    const pageErrors = [];
-    page.on('pageerror', (err) => pageErrors.push(err.message));
-
-    console.log('[Verify] 1. Navigating to /guestbook/#gesture-pinned_welcome_official ...');
-    await page.goto(`${BASE_URL}/guestbook/#gesture-pinned_welcome_official`, {
-      waitUntil: 'domcontentloaded',
-    });
-
-    await page.waitForSelector('.gd-monolithic-shell', { timeout: 15000 });
-    await page.waitForSelector('#floor-1 .gd-edit-count-badge', { timeout: 15000 });
-    await page.waitForSelector('#floor-5 .gd-reply-target-pill', { timeout: 15000 });
-    await page.waitForTimeout(300);
-
-    // 1. Detail isolation: home boost wall & filter nav bar MUST be completely removed
-    const boostWallCount = await page.locator('.gb-boost-wall-card').count();
-    const navBarCount = await page.locator('.gb-nav-bar').count();
-    assert(boostWallCount === 0, `Home boost wall must be removed in detail view, got ${boostWallCount}`);
-    assert(navBarCount === 0, `Home filter/search nav bar must be removed in detail view, got ${navBarCount}`);
-    console.log('[Verify] ✓ Detail immersive isolation verified (home boost wall & nav removed)');
-
-    // 2. Monolithic dark frosted glass & no #1 楼主 badge
-    const shellStyle = await page.$eval('.gd-monolithic-shell', (el) => {
-      const cs = window.getComputedStyle(el);
-      return {
-        bg: cs.backgroundColor,
-        backdrop: cs.backdropFilter || cs.webkitBackdropFilter,
-        overflow: cs.overflow,
-      };
-    });
-    console.log('[Verify] Monolithic shell style:', shellStyle);
-    assert(shellStyle.overflow !== 'hidden', `Monolithic shell overflow must not be hidden (got ${shellStyle.overflow})`);
-    assert(shellStyle.backdrop.includes('blur'), `Expected backdrop-filter blur, got ${shellStyle.backdrop}`);
-
-    const floorNumTextCount = await page.locator('.gb-floor-number').count();
-    assert(floorNumTextCount === 0, 'Must NOT render explicit #1 楼主 label');
-    console.log('[Verify] ✓ Monolithic dark frosted glass & implicit floor_index verified');
-
-    // 3. ZONE 1: Title & static read-only tags
-    const titleInfo = await page.$eval('.gd-zone1-title', (el) => ({
-      text: el.textContent?.trim(),
-      fontSize: parseFloat(window.getComputedStyle(el).fontSize),
-    }));
-    assert(titleInfo.text?.includes('欢迎来到读者留言与交流广场'), `Unexpected title: ${titleInfo.text}`);
-    assert(titleInfo.fontSize >= 22, `Title font size should be >= 22px, got ${titleInfo.fontSize}`);
-    const staticTagsCount = await page.locator('.gd-zone1-tags .gd-static-badge').count();
-    assert(staticTagsCount >= 2, `Expected at least 2 static badges, got ${staticTagsCount}`);
-    console.log(`[Verify] ✓ ZONE 1 title (${titleInfo.fontSize}px) & ${staticTagsCount} static read-only tags verified`);
-
-    // 4. ZONE 2: Sticky avatar, NO vertical line on normal rail, NO IP location, edit_count + createdAt
-    const opRailCheck = await page.$eval('#floor-1 .gd-avatar-rail', (el) => {
-      const cs = window.getComputedStyle(el);
-      const stickyEl = el.querySelector('.gd-sticky-avatar-wrap');
-      const stickyCs = stickyEl ? window.getComputedStyle(stickyEl) : null;
-      return {
-        borderLeftWidth: cs.borderLeftWidth,
-        bg: cs.backgroundColor,
-        stickyPos: stickyCs?.position,
-        stickyTop: stickyCs?.top,
-      };
-    });
-    assert(opRailCheck.stickyPos === 'sticky', `OP avatar must be sticky, got ${opRailCheck.stickyPos}`);
-    assert(opRailCheck.borderLeftWidth === '0px', `Normal avatar rail must have no line, got ${opRailCheck.borderLeftWidth}`);
-
-    const opAuthorMeta = await page.locator('#floor-1 .gd-author-meta-right').textContent();
-    assert(opAuthorMeta?.includes('2') && opAuthorMeta?.includes('8月 3日'), `Expected edit_count + first date, got "${opAuthorMeta}"`);
-    assert(!opAuthorMeta?.includes('杭州') && !opAuthorMeta?.includes('中国'), `Must NOT show IP location in author bar`);
-    console.log('[Verify] ✓ ZONE 2 sticky avatar, clean rail, and author meta verified');
-
-    // 5. ZONE 3 (Placed below ZONE 4 action bar, borderless, single-column .gd-boost-op-pill)
-    const opBoostLayout = await page.$eval('#floor-1', (el) => {
-      const actionBar = el.querySelector('.gd-zone4-action-bar');
-      const boostSec = el.querySelector('.gd-zone3-boost');
-      const pillsWrap = el.querySelector('.gd-boost-op-pills');
-      const pills = Array.from(el.querySelectorAll('.gd-boost-op-pill'));
-      const boostCs = boostSec ? window.getComputedStyle(boostSec) : null;
-      const pillsCs = pillsWrap ? window.getComputedStyle(pillsWrap) : null;
-      return {
-        isBelowActionBar: Boolean(actionBar && boostSec && (actionBar.compareDocumentPosition(boostSec) & Node.DOCUMENT_POSITION_FOLLOWING)),
-        hasBoostHead: el.querySelectorAll('.gd-boost-op-head').length,
-        boostBorder: boostCs?.borderTopWidth,
-        boostBg: boostCs?.backgroundColor,
-        flexDirection: pillsCs?.flexDirection,
-        pillCount: pills.length,
-        pill1Top: pills[0]?.getBoundingClientRect().bottom || 0,
-        pill2Top: pills[1]?.getBoundingClientRect().top || 0,
-      };
-    });
-    assert(opBoostLayout.isBelowActionBar, 'Boost section must be placed below .gd-zone4-action-bar');
-    assert(opBoostLayout.hasBoostHead === 0, 'Redundant Boost header/explanation must be removed');
-    assert(opBoostLayout.boostBorder === '0px', `Boost wrapper must have no border, got ${opBoostLayout.boostBorder}`);
-    assert(opBoostLayout.flexDirection === 'column', `Boost pills must stack as a vertical column, got ${opBoostLayout.flexDirection}`);
-    assert(opBoostLayout.pillCount >= 2 && opBoostLayout.pill2Top >= opBoostLayout.pill1Top, 'Each .gd-boost-op-pill must stack vertically on its own row');
-
-    const f2BoostBefore = await page.locator('#floor-2 .gd-zone3-boost').count();
-    assert(f2BoostBefore === 0, `Floor 2 with 0 boosts must have zero DOM footprint, got ${f2BoostBefore}`);
-
-    // Click [⚡] on Floor 2 -> input slides open; blur while empty -> auto-collapses
-    await page.locator('#floor-2 button[aria-label="发送 Boost 短评"]').click();
-    await page.waitForSelector('#floor-2 .gd-boost-inline-input');
-    await page.locator('#floor-2 .gd-boost-inline-input').blur();
-    await page.waitForTimeout(150);
-    const f2BoostAfterBlur = await page.locator('#floor-2 .gd-zone3-boost').count();
-    assert(f2BoostAfterBlur === 0, 'Empty SubGesture boost input must auto-collapse on blur');
-
-    // Re-open Floor 2 Boost and actually submit a scoped boost
-    await page.locator('#floor-2 button[aria-label="发送 Boost 短评"]').click();
-    await page.locator('#floor-2 .gd-boost-inline-input').fill('测试子楼层 Boost 微语');
-    await page.locator('#floor-2 .gd-boost-inline-submit').click();
-    await page.waitForSelector('#floor-2 .gd-boost-op-pill', { timeout: 5000 });
-    console.log('[Verify] ✓ ZONE 3 below action bar, single-column .gd-boost-op-pill & submission verified');
-
-    // 6. ZONE 4: Top-4 Aggregated Emoji pill + Hover Breakdown + [•••] Slide-Out Drawer
-    const topIconsCount = await page.locator('#floor-1 .gd-agg-emoji-char').count();
-    assert(topIconsCount <= 4 && topIconsCount >= 1, `Expected 1..4 top emoji icons, got ${topIconsCount}`);
-    await page.locator('#floor-1 .gd-agg-emoji-pill').hover();
-    await page.waitForSelector('#floor-1 .gd-reaction-breakdown-popover', { timeout: 3000 });
-
-    await page.locator('#floor-1 button[aria-label="更多操作"]').click();
-    await page.waitForSelector('#floor-1 .gd-more-drawer.is-open');
-    console.log('[Verify] ✓ ZONE 4 Top-4 Emoji pill hover breakdown & animated [•••] drawer verified');
-
-    // 7. ZONE 5 & ZONE 6: Related links + Topic Map + AI summary + Hot filter + Avatar placement/order
-    const linksCount = await page.locator('.gd-zone5-links .gd-related-link-row').count();
-    assert(linksCount >= 2, `Expected >= 2 related links in ZONE 5, got ${linksCount}`);
-    const tmCheck = await page.$eval('.gd-zone6-topic-map', (el) => {
-      const metrics = el.querySelector('.gd-topic-map-metrics');
-      const avatarsWrap = el.querySelector('.gd-topic-map-left .gd-tm-avatars');
-      const avatarItems = Array.from(el.querySelectorAll('.gd-tm-avatar-item'));
-      return {
-        text: el.textContent || '',
-        avatarsAfterMetrics: Boolean(metrics && avatarsWrap && (metrics.compareDocumentPosition(avatarsWrap) & Node.DOCUMENT_POSITION_FOLLOWING)),
-        avatarCount: avatarItems.length,
-        firstTitle: avatarItems[0]?.getAttribute('title') || '',
-        firstIsOp: avatarItems[0]?.classList.contains('is-op-avatar') || false,
-      };
-    });
-    assert(tmCheck.text.includes('觀看') && tmCheck.text.includes('個讚') && tmCheck.text.includes('使用者'), 'Topic Map metrics missing');
-    assert(tmCheck.avatarsAfterMetrics, '.gd-tm-avatars must be placed directly after .gd-topic-map-metrics (.gd-tm-stat)');
-    assert(tmCheck.avatarCount >= 1 && tmCheck.avatarCount <= 5, `Expected 1..5 avatars, got ${tmCheck.avatarCount}`);
-    assert(tmCheck.firstIsOp && tmCheck.firstTitle.includes('shijianus'), `First avatar must be OP shijianus, got "${tmCheck.firstTitle}"`);
-    await page.locator('button[title="AI 讨论脉络摘要"]').click();
-    await page.waitForSelector('.gd-ai-digest-panel');
-    console.log('[Verify] ✓ ZONE 5 related links & ZONE 6 Topic Map + OP-first <=5 avatars verified');
-
-    // 8. Scene A: 1-to-N Direct Replies Timeline on Floor 2 (Alice -> 2 replies: lanfeng & Mr.XiWang)
-    const f2DirectBtn = page.locator('#floor-2 .gd-direct-replies-btn');
-    await f2DirectBtn.click();
-    await page.waitForSelector('#floor-2 .gd-direct-replies-timeline');
-    const timelineRows = await page.locator('#floor-2 .gd-timeline-reply-row').count();
-    assert(timelineRows === 2, `Expected 2 direct replies under Floor 2, got ${timelineRows}`);
-    const timelineAvatarPos = await page.$eval('#floor-2 .gd-timeline-avatar', (el) => window.getComputedStyle(el).position);
-    assert(timelineAvatarPos === 'static', `Timeline reply avatar must be non-sticky (static), got ${timelineAvatarPos}`);
-
-    // Click [↓ 跳至贴文] on first timeline reply -> should jump & pin ├─ [ 返回 ]
-    await page.locator('#floor-2 .gd-timeline-reply-row .gd-jump-post-btn').first().click();
-    await page.waitForSelector('.gd-tl-return-anchor', { timeout: 3000 });
-    await page.waitForTimeout(450);
-
-    // Click ├─ [ 返回 ] -> returns and clears anchor
-    await page.locator('.gd-tl-return-btn').click();
-    await page.waitForTimeout(450);
-    const returnAnchorAfter = await page.locator('.gd-tl-return-anchor').count();
-    assert(returnAnchorAfter === 0, 'Return anchor must fade out after clicking [返回]');
-
-    // Collapse Scene A via bottom [ ^ ] button
-    await page.locator('#floor-2 .gd-timeline-bottom-collapse-btn').click();
-    await page.waitForTimeout(150);
-    const timelineCollapsed = await page.locator('#floor-2 .gd-direct-replies-timeline').count();
-    assert(timelineCollapsed === 0, 'Bottom [ ^ ] must collapse Scene A direct replies timeline');
-    console.log('[Verify] ✓ Scene A 1-to-N timeline, non-sticky avatars, bidirectional collapse & ├─ [ 返回 ] verified');
-
-    // 9. Scene B: 1-to-1 Nested Parent SubGesture on Floor 5 (Mr.XiWang -> [↪ Alice]) + Scroll Compensation
-    const f5Badge = page.locator('#floor-5 .gd-reply-target-pill');
-    await f5Badge.scrollIntoViewIfNeeded();
-    await f5Badge.click();
-    await page.waitForSelector('#floor-5 .gd-nested-parent-box');
-
-    // Verify dual sticky avatars (outer Floor 5 + inner Alice) and explicit 1px vertical line
-    const dualSticky = await page.$eval('#floor-5', (el) => {
-      const outer = el.querySelector(':scope > .gd-floor-split .gd-sticky-avatar-wrap');
-      const inner = el.querySelector('.gd-nested-parent-sticky-cluster');
-      const line = el.querySelector('.gd-nested-rail-line');
-      return {
-        outerPos: outer ? window.getComputedStyle(outer).position : '',
-        innerPos: inner ? window.getComputedStyle(inner).position : '',
-        lineWidth: line ? window.getComputedStyle(line).width : '',
-      };
-    });
-    assert(dualSticky.outerPos === 'sticky' && dualSticky.innerPos === 'sticky', `Dual sticky avatars required, got ${JSON.stringify(dualSticky)}`);
-    assert(dualSticky.lineWidth === '1px', `Inner vertical line must be 1px, got ${dualSticky.lineWidth}`);
-
-    // Measure scroll compensation when collapsing Scene B via inner [⌄]
-    await page.evaluate(() => {
-      const card = document.querySelector('#floor-5 .gd-floor-markdown');
-      if (card) card.scrollIntoView({ block: 'center', behavior: 'instant' });
-    });
-    await page.waitForTimeout(150);
-    const collapseBtnBox = await page.locator('#floor-5 .gd-nested-collapse-btn').boundingBox();
-    assert(collapseBtnBox, 'Collapse button boundingBox missing');
-    const beforeCollapse = await page.evaluate(() => {
-      const body = document.querySelector('#floor-5 .gd-floor-markdown');
-      return {
-        scrollY: window.scrollY,
-        bodyTop: body ? body.getBoundingClientRect().top : 0,
-      };
-    });
-    // Click at exact rendered coordinates of sticky collapse button so Playwright doesn't auto-scroll sticky node
-    await page.mouse.click(collapseBtnBox.x + collapseBtnBox.width / 2, collapseBtnBox.y + collapseBtnBox.height / 2);
-    await page.waitForTimeout(100);
-    const afterCollapse = await page.evaluate(() => {
-      const body = document.querySelector('#floor-5 .gd-floor-markdown');
-      return {
-        scrollY: window.scrollY,
-        bodyTop: body ? body.getBoundingClientRect().top : 0,
-      };
-    });
-    const topDrift = Math.abs(afterCollapse.bodyTop - beforeCollapse.bodyTop);
-    console.log(`[Verify] Scene B collapse scroll compensation: scrollY ${Math.round(beforeCollapse.scrollY)} -> ${Math.round(afterCollapse.scrollY)}, bodyTop drift = ${Math.round(topDrift)}px`);
-    assert(topDrift <= 4, `Expected replyer body to stay stationary after collapse compensation, drift=${topDrift}px`);
-    console.log('[Verify] ✓ Scene B dual sticky avatars, explicit 1px │ line & scroll compensation verified');
-
-    // 10. Orthogonal Quote Card on Floor 5
-    const quoteCard = page.locator('#floor-5 .gd-quote-card');
-    assert((await quoteCard.count()) === 1, 'Expected orthogonal Quote card on Floor 5');
-    await page.locator('#floor-5 .gd-quote-action-btn[title="展开被引用原贴全文"]').click();
-    await page.waitForSelector('#floor-5 .gd-quote-full-md');
-    await page.locator('#floor-5 .gd-quote-action-btn[title="跳至被引用楼层"]').click();
-    await page.waitForSelector('.gd-tl-return-anchor');
-    await page.locator('.gd-tl-return-btn').click();
-    await page.waitForTimeout(300);
-    console.log('[Verify] ✓ Orthogonal Quote card expansion & [↑] jump + [返回] verified');
-
-    // 11. Right Timeline Scroller Controls ([📖] quick jump, [📚] hot filter, [🔔] subscribe)
-    await page.locator('.gd-tl-overview-btn').click();
-    await page.waitForSelector('.gd-tl-quick-popover');
-    await page.locator('.gd-tl-overview-btn').click();
-    await page.locator('.gd-tl-dock-btn.is-hot-filter').click();
-    await page.waitForSelector('.gd-hot-filter-banner');
-    await page.locator('.gd-hot-filter-banner button').click();
-    await page.locator('.gd-tl-dock-btn[aria-label="订阅通知"]').click();
-    await page.waitForSelector('.gd-tl-dock-btn.is-subscribed');
-    console.log('[Verify] ✓ Right timeline scroller controls verified');
-
-    // 12. Reply creation in detail view
-    await page.locator('#detail-reply-composer textarea').fill('自动化端到端测试跟帖：验证单层暗色毛玻璃与右侧时间轴滑块联动！');
-    await page.locator('.gd-submit-reply-btn').click();
-    await page.waitForSelector('#floor-6', { timeout: 8000 });
-    console.log('[Verify] ✓ Live SubGesture reply persistence & floor 6 rendering verified');
-
-    // 13. Mobile viewport check (avoiding bottom-left MusicPocket & zero horizontal overflow)
-    await page.setViewportSize({ width: 390, height: 844 });
-    await page.waitForTimeout(400);
-    const mobileMetrics = await page.evaluate(() => {
-      const aside = document.querySelector('.gd-timeline-aside');
-      const asideRect = aside ? aside.getBoundingClientRect() : null;
-      return {
-        scrollWidth: document.documentElement.scrollWidth,
-        innerWidth: window.innerWidth,
-        asideRight: asideRect ? asideRect.right : 0,
-        asideLeft: asideRect ? asideRect.left : 0,
-      };
-    });
-    console.log('[Verify] Mobile metrics:', mobileMetrics);
-    assert(mobileMetrics.scrollWidth <= mobileMetrics.innerWidth + 2, `Mobile horizontal overflow: ${mobileMetrics.scrollWidth} > ${mobileMetrics.innerWidth}`);
-    assert(mobileMetrics.asideLeft > 120, `Mobile timeline aside should stay on bottom-right away from MusicPocket, left=${mobileMetrics.asideLeft}`);
-    console.log('[Verify] ✓ Mobile layout & MusicPocket clearance verified');
-
-    assert(pageErrors.length === 0, `Page runtime errors detected: ${pageErrors.join('; ')}`);
-    console.log('\n===============================================================');
-    console.log('🎉 ALL GESTURE DETAIL PAGE E2E VERIFICATIONS PASSED 100%!');
-    console.log('===============================================================\n');
-  } finally {
-    if (browser) await browser.close();
-    try {
-      execSync('node ./node_modules/astro/bin/astro.mjs dev stop', { cwd: process.cwd(), stdio: 'ignore' });
-    } catch {}
-    try {
-      if (devProc.pid) process.kill(-devProc.pid, 'SIGKILL');
-    } catch {
-      try { devProc.kill('SIGKILL'); } catch {}
+  const path = base + '/guestbook/#gesture-';
+  const shots = process.env.GESTURE_SHOTS;
+  if (shots) await mkdir(shots, { recursive: true });
+  const shot = async (name, target) => {
+    if (!shots) return;
+    if (target) {
+      await target.evaluate((el) => el.scrollIntoView({ block: 'center', behavior: 'instant' }));
+      await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
     }
-    await new Promise((r) => setTimeout(r, 200));
-    if (hadComments && origComments !== null) fs.writeFileSync(COMMENTS_DEV_PATH, origComments, 'utf8');
-    else if (fs.existsSync(COMMENTS_DEV_PATH)) fs.unlinkSync(COMMENTS_DEV_PATH);
-    if (hadBoosts && origBoosts !== null) fs.writeFileSync(BOOSTS_DEV_PATH, origBoosts, 'utf8');
-    else if (fs.existsSync(BOOSTS_DEV_PATH)) fs.unlinkSync(BOOSTS_DEV_PATH);
+    await page.evaluate(() => { if (document.activeElement instanceof HTMLElement) document.activeElement.blur(); });
+    await page.screenshot({ path: shots + '/' + name + '.png', animations: 'disabled' });
+  };
+  const req = (payload, token) =>
+    page.request.post(base + '/api/gestures', {
+      data: payload,
+      headers: token ? { 'X-Comment-Session-Token': token } : {},
+    });
+  const detail = async (id) =>
+    (await page.request.get(base + '/api/gestures?id=' + id + '&trackView=0')).json();
+  assert.equal((await detail('pinned_welcome_official')).ok, false);
+  assert.equal((await db.prepare('SELECT count(*) n FROM comments').first()).n, 0);
+  const welcome = 'pinned_welcome_official';
+  await add(welcome, '欢迎讨论。', {
+    created_at: '2026-08-03T08:15:00.000Z',
+    updated_at: '2026-08-04T10:30:00.000Z',
+    author_role: 'admin',
+    views_count: 1283,
+    edit_count: 2,
+    likes_count: 18,
+    reactions: JSON.stringify({ summary: { '👍': 18 }, users: { reader_alice: '👍' } }),
+  });
+  await add('reply_floor_2_official', '旧版初始化写入的文字。', {
+    parent_id: welcome,
+    updated_at: '2026-08-03T09:20:00.000Z',
+  });
+  assert.equal((await detail(welcome)).topicMap.viewsCount, 1283);
+  assert.equal((await detail(welcome)).subGestures.length, 1);
+  await add('reply_to_legacy', '这段发言确实回复了旧楼。', {
+    parent_id: welcome,
+    reply_to_id: 'reply_floor_2_official',
+  });
+  assert.deepEqual((await detail(welcome)).subGestures.map((n) => n.id).sort(), [
+    'reply_floor_2_official',
+    'reply_to_legacy',
+  ]);
+  assert.equal(
+    (await db.prepare('SELECT views_count FROM comments WHERE id=?').bind(welcome).first()).views_count,
+    1283,
+  );
+  await add('empty', '只有正文的一条留言。', { author_role: 'admin' });
+  await add(
+    'citations',
+    '[仍可访问的引用](https://example.org/actual-topic?utm_source=reader) 与 /guestbook/#gesture-missing',
+  );
+  await add('cite_reply', '重复引用 http://example.org/actual-topic/ 。', { parent_id: 'citations' });
+  await add('other', '这段文字有一个实际的标题。', { title: '夜读时的摘记' });
+  await add('other_reply', '补充一段。', { parent_id: 'other' });
+  const message =
+    '夜读时记下的问题，常常会在下一次讨论中找到答案。\n\n' +
+    '[读者的摘记](/guestbook/#gesture-other) 和 [后续回复](/guestbook/#gesture-other-floor-2)。\n\n' +
+    '[排版指南](/posts/content-formats-and-markup-mastery/?utm_source=reader) · ' +
+    '[重读](http://blog.epocanvas.com/posts/%63ontent-formats-and-markup-mastery) · [外部讨论](https://linux.do/t/topic/3197718)\n\n' +
+    '> 先读正文，再回到上下文。\n\n- 保留引用\n- 回到楼层\n\n行内公式 $a^2+b^2=c^2$。';
+  await add('reading', message, {
+    title: '读书笔记里的引用，你会怎样整理？',
+    status: 'pinned',
+    author_name: '南山',
+    tag: 'ideas',
+  });
+  await add('r2', '我会给每条摘记留一个可以回到原文的位置。', {
+    parent_id: 'reading',
+    reply_to_id: 'reading',
+    author_name: '江澄',
+  });
+  await add('r3', '同意，返回原位之后还可以接着往下读。', {
+    parent_id: 'reading',
+    reply_to_id: 'r2',
+    author_name: '山禾',
+    quote_id: 'reading',
+    quote_source: JSON.stringify({ id: 'reading', authorName: '南山', excerpt: '夜读时记下的问题' }),
+    created_at: '2026-08-09T09:00:00Z',
+  });
+  const family = '👩🏽‍💻';
+  assert.equal(
+    (await req({ action: 'boost', gestureId: 'reading', content: family.repeat(17) })).status(),
+    400,
+  );
+  assert.equal((await req({ action: 'boost', gestureId: 'reading', content: 'a\nb' })).status(), 400);
+  assert.equal(
+    (await req({ action: 'boost', gestureId: 'reading', content: family.repeat(16) })).status(),
+    200,
+  );
+  for (let n = 0; n < 10; n++)
+    await req({ action: 'boost', gestureId: 'reading', content: '摘记 ' + (n + 1), authorName: '小河' });
+  for (const [i, e] of ['👍', '❤️', '🚀', '💡', '🔥', '🎉'].entries())
+    await req({ action: 'react', id: 'reading', emoji: e, authorName: '读者' + i }, 'local-reader-' + i);
+  let data = await detail('reading');
+  assert.equal(data.relatedLinks.length, 4);
+  assert.deepEqual(
+    data.relatedLinks.filter((x) => x.kind === 'gesture').map((x) => x.replyCount),
+    [1, 1],
+  );
+  assert.equal(data.relatedLinks.filter((x) => x.kind === 'site').length, 1);
+  assert.equal(data.relatedLinks.find((x) => x.kind === 'external').replyCount, undefined);
+  const concurrent = await Promise.all(
+    ['left', 'right', 'third'].map((k) => req({ action: 'react', id: 'empty', emoji: '💡' }, k)),
+  );
+  assert.deepEqual(
+    concurrent.map((r) => r.status()),
+    [200, 200, 200],
+  );
+  assert.equal((await detail('empty')).topicMap.likesCount, 3);
+  assert.equal(
+    (await req({ action: 'reply', rootId: 'other', replyToId: 'r2', message: '跨话题的目标' })).status(),
+    400,
+  );
+  assert.equal((await req({ action: 'boost', gestureId: 'missing', content: '不存在' })).status(), 404);
+  await db
+    .prepare(
+      "INSERT INTO users(id,email,name,role,provider) VALUES ('account-reader','reader@example.test','注册读者','reader','epomail')",
+    )
+    .run();
+  await db
+    .prepare(
+      "INSERT INTO user_sessions(id,user_id,token,expires_at) VALUES ('session-reader','account-reader','local-account-session',datetime('now','+1 day'))",
+    )
+    .run();
+  const accountReply = await (
+    await req({ action: 'reply', rootId: 'other', message: '登录读者写下的回复。' }, 'local-account-session')
+  ).json();
+  assert.equal(accountReply.subGesture.authorId, 'account-reader');
+  assert.equal(accountReply.subGesture.authorRole, 'reader');
+  assert.equal(
+    (await req({ action: 'delete', id: accountReply.subGesture.id }, 'local-account-session')).status(),
+    200,
+  );
+  await page.goto(path + 'empty');
+  await expect(page.locator('#floor-1')).toBeVisible();
+  await expect(page.locator('.gd-zone3-boost,.gd-zone5-links')).toHaveCount(0);
+  await expect(page.locator('.gd-edit-count-badge')).toHaveCount(0);
+  assert.ok((await page.locator('.gd-zone6-topic-map').boundingBox()).height <= 58);
+  assert.equal(await page.locator('#floor-1 .gd-avatar').evaluate(el => getComputedStyle(el).borderRadius), '50%');
+  await shot('quiet-single-post', page.locator('.gd-zone1-title'));
+  await add('threshold', '热门阈值验证。', { views_count: 499 });
+  for (let i = 0; i < 14; i++) await add('threshold_' + i, '参与讨论 ' + i, { parent_id: 'threshold' });
+  await page.goto(path + 'threshold');
+  await expect(page.locator('.gd-zone6-topic-map')).toHaveClass(/is-light/);
+  await expect(page.locator('.gd-tm-metrics')).toHaveCount(0);
+  await add('threshold_14', '第十五条回复', { parent_id: 'threshold' });
+  await page.reload();
+  await expect(page.locator('.gd-zone6-topic-map')).toHaveClass(/is-hot/);
+  await expect(page.locator('.gd-tm-metrics dd')).toHaveCount(4);
+  await shot('hot-topic', page.locator('.gd-zone6-topic-map'));
+  await db.prepare("UPDATE comments SET views_count=498 WHERE id='threshold'").run();
+  await page.reload();
+  await expect(page.locator('.gd-zone6-topic-map')).toHaveClass(/is-light/);
+  await page.goto(path + 'citations');
+  const external = page.getByRole('region', { name: '关联链接' }).getByRole('link');
+  await expect(external).toHaveCount(1);
+  await expect(external.locator('span').nth(1)).toHaveText('仍可访问的引用');
+  await expect(external.locator('.gd-link-clicks')).toHaveText('0');
+  await expect(external).toHaveAttribute('href', 'https://example.org/actual-topic');
+  const clickRecorded = page.waitForResponse(response => response.url().endsWith('/api/gestures') && response.request().method() === 'POST' && response.request().postDataJSON()?.action === 'link_click');
+  const [popup] = await Promise.all([page.waitForEvent('popup'), external.click()]);
+  await clickRecorded;
+  await popup.close();
+  await expect(external.locator('.gd-link-clicks')).toHaveText('1');
+  assert.equal((await detail('citations')).topicMap.linksCount, 1);
+  await page.goto(path + 'reading');
+  const op = page.locator('#floor-1');
+  await expect(op).toContainText('夜读时记下');
+  assert.equal(await page.evaluate(() => document.documentElement.dataset.theme), 'dark');
+  await expect(page.locator('.gd-tl-latest')).toHaveText(/刚刚|\d+(分钟|小时|天)前/);
+  assert.ok(Date.parse(await page.locator('.gd-tl-latest').getAttribute('datetime')) >= Date.parse(data.gesture.createdAt));
+  await expect(op.locator('.katex')).toBeVisible();
+  await expect(page.locator('.gd-agg-emoji-icons').first().locator('span')).toHaveCount(4);
+  const rail = page.getByRole('slider', { name: '跳转楼层' });
+  const react = op.locator('.gd-agg-emoji-pill');
+  await expect(page.locator('.gd-zone5-links a').filter({ hasText: '夜读时的摘记' })).toHaveCount(2);
+  await expect(page.locator('.gd-zone5-links a')).toHaveCount(4);
+  await expect(page.locator('.gd-zone5-links a[href^="/posts/"]')).toContainText('shijianus');
+  await shot('interaction-top', page.locator('.gd-zone1-header'));
+  await shot('body', op.locator('.gd-floor-markdown'));
+  await shot('boost', op.locator('.gd-zone3-boost'));
+  await shot('links', page.locator('.gd-zone5-links'));
+  await shot('map', page.locator('.gd-zone6-topic-map'));
+  await shot('reply', page.locator('#floor-2'));
+  await shot('rail', rail);
+  await shot('bottom', page.locator('#detail-reply-composer'));
+  for (const [width, height] of sizes) {
+    await page.setViewportSize({ width, height });
+    await op
+      .locator('.gd-zone4-action-bar')
+      .evaluate((el) => el.scrollIntoView({ block: 'center', behavior: 'instant' }));
+    await op.evaluate(() => {
+      const s = document.querySelector('#floor-1 .gd-boost-op-pills');
+      if (s) s.scrollLeft = 0;
+      return new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+    });
+    const geometry = await op.evaluate((el) => {
+      const box = (s) => el.querySelector(s).getBoundingClientRect();
+      const css = (s) => getComputedStyle(el.querySelector(s));
+      const mainX = document.querySelector('.gd-zone1-title').getBoundingClientRect().x;
+      const textX = box('.gd-floor-markdown').x;
+      const surface = document.querySelector('.gd-detail-grid');
+      const surfaceStyle = getComputedStyle(surface);
+      return {
+        overflow: document.documentElement.scrollWidth - innerWidth,
+        leftAxis: Math.max(...['.gd-zone1-tags', '.gd-zone6-topic-map', '#floor-1 > .gd-avatar-rail', '#floor-2 > .gd-avatar-rail'].map(s => Math.abs(document.querySelector(s).getBoundingClientRect().x - mainX))),
+        contentAxis: textX - mainX,
+        axis: Math.max(...['.gd-zone4-action-bar', '.gd-zone3-boost', '.gd-author-bar'].map(s => Math.abs(box(s).x - textX)), Math.abs(document.querySelector('.gd-zone5-links').getBoundingClientRect().x - textX)),
+        pills: [...el.querySelectorAll('.gd-boost-op-pill')].every(p => p.getBoundingClientRect().height <= 26 && getComputedStyle(p).borderWidth === '0px'),
+        wrapping: css('.gd-boost-op-pills').flexWrap,
+        opAvatarWidth: box('.gd-avatar').width,
+        subAvatarWidth: document.querySelector('#floor-2 > .gd-avatar-rail .gd-avatar').getBoundingClientRect().width,
+        bodySize: css('.gd-floor-markdown').fontSize,
+        bodyLeading: css('.gd-floor-markdown').lineHeight,
+        bodyColor: css('.gd-floor-markdown').color,
+        iconColor: css('.gd-icon-btn').color,
+        surfaceWidth: surface.getBoundingClientRect().width,
+        surfaceCenterError: Math.abs((surface.getBoundingClientRect().left + surface.getBoundingClientRect().right) / 2 - innerWidth / 2),
+        surfaceColor: surfaceStyle.backgroundColor,
+        blur: surfaceStyle.backdropFilter,
+        radius: surfaceStyle.borderRadius,
+        emojiGap: css('.gd-agg-emoji-icons').gap,
+        ruleWidth: getComputedStyle(document.querySelector('.gd-tl-rail'), '::before').width,
+        thumbWidth: getComputedStyle(document.querySelector('.gd-tl-thumb')).width,
+      };
+    });
+    assert.equal(geometry.overflow, 0, JSON.stringify(geometry));
+    assert.ok(geometry.axis < 1 && geometry.leftAxis < 1, JSON.stringify(geometry));
+    assert.equal(geometry.contentAxis, 56);
+    assert.ok(geometry.pills);
+    assert.equal(geometry.wrapping, 'wrap');
+    assert.equal(geometry.opAvatarWidth, 42);
+    assert.equal(geometry.subAvatarWidth, 36);
+    assert.equal(geometry.bodySize, '16px');
+    assert.equal(geometry.bodyLeading, '28px');
+    assert.equal(geometry.bodyColor, 'rgb(226, 232, 240)');
+    assert.equal(geometry.iconColor, 'rgb(100, 116, 139)');
+    assert.ok(geometry.surfaceWidth <= 960 && geometry.surfaceCenterError < 2, JSON.stringify(geometry));
+    assert.equal(geometry.surfaceColor, 'rgba(15, 23, 42, 0.88)');
+    assert.equal(geometry.blur, 'blur(20px)');
+    assert.equal(geometry.radius, '12px');
+    assert.equal(geometry.emojiGap, '1px');
+    assert.equal(geometry.ruleWidth, '1px');
+    assert.equal(geometry.thumbWidth, '3px');
+    await react.click();
+    const panel = page.getByRole('dialog', { name: '选择表情' });
+    await expect(panel).toBeVisible();
+    const a = await react.boundingBox(),
+      p = await panel.boundingBox();
+    assert.ok(
+      p.y >= 0 && p.y + p.height <= a.y - 5 && p.x >= 0 && p.x + p.width <= width,
+      JSON.stringify({ width, a, p }),
+    );
+    const hit = await panel.evaluate((el) => {
+      const b = el.getBoundingClientRect();
+      const bg = getComputedStyle(el).backgroundColor;
+      const m = bg.match(/rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)(?:\s*,\s*([\d.]+))?\s*\)/);
+      const r = m ? +m[1] : 255,
+        g = m ? +m[2] : 255,
+        bl = m ? +m[3] : 255,
+        a = m && m[4] !== undefined ? +m[4] : 1;
+      const luma = (r + g + bl) / 3;
+      return {
+        contained: el.contains(document.elementFromPoint(b.x + 12, b.y + 12)),
+        opaqueDark: a >= 0.95 && luma < 60,
+        bg,
+      };
+    });
+    assert.ok(hit.contained);
+    assert.ok(hit.opaqueDark, JSON.stringify(hit));
+    await page.keyboard.press('Escape');
+    await expect(panel).toHaveCount(0);
+    const bounds = await rail.boundingBox();
+    assert.ok(bounds.width < bounds.height, 'timeline stays a single vertical track on every viewport');
+    console.log(width + '×' + height, geometry, 'upward panel and rail verified');
+    if (width === 390) await shot('mobile-example', op.locator('.gd-floor-markdown'));
   }
-}
-
-run().catch((err) => {
-  console.error('[Verify] FAILED:', err);
-  process.exit(1);
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await op.getByLabel('发送 Boost 短评').click();
+  const input = op.getByRole('textbox', { name: 'Boost 短评' });
+  await expect(input).toHaveAttribute('maxlength', '16');
+  await input.fill('字'.repeat(17));
+  assert.equal((await input.inputValue()).length, 16);
+  await input.fill('读到这里');
+  await op.locator('.gd-boost-inline-submit').click();
+  await expect(op.locator('.gd-boost-op-pills')).toContainText('读到这里');
+  await react.hover();
+  await expect(page.getByRole('dialog', { name: '表态明细' })).toContainText('读者0');
+  if (shots) await page.screenshot({ path: shots + '/emoji.png' });
+  await react.click();
+  await page.getByRole('dialog', { name: '选择表情' }).getByRole('button', { name: '🚀' }).click();
+  await expect(react).toHaveAttribute('data-reacted', 'true');
+  await react.click();
+  await page.getByRole('dialog', { name: '选择表情' }).getByRole('button', { name: '🚀' }).click();
+  await expect(react).toHaveAttribute('data-reacted', 'false');
+  await op.getByRole('button', { name: /条直接回复/ }).click();
+  await expect(op.locator('.gd-reply-context')).toContainText('江澄');
+  const childrenRail = await op.locator('.gd-reply-context').evaluate(el => ({
+    width: getComputedStyle(el, '::before').width,
+    position: getComputedStyle(el.querySelector('.gd-avatar')).position,
+    centerOffset: el.querySelector('.gd-avatar').getBoundingClientRect().x + 13 - el.getBoundingClientRect().x,
+  }));
+  assert.deepEqual(childrenRail, { width: '1px', position: 'static', centerOffset: 13 });
+  await op.getByLabel('收起直接回复', { exact: true }).click();
+  await expect(op.locator('.gd-reply-context')).toHaveCount(0);
+  await page
+    .locator('#floor-2')
+    .getByRole('button', { name: /条直接回复/ })
+    .click();
+  await expect(page.locator('#floor-2 .gd-reply-context')).toContainText('山禾');
+  await page
+    .locator('#floor-2')
+    .getByRole('button', { name: /条直接回复/ })
+    .click();
+  await page.locator('#floor-3 .gd-reply-target-pill').click();
+  await expect(page.locator('#floor-3 .gd-reply-context')).toContainText('给每条摘记');
+  assert.equal(await page.locator('#floor-3 .gd-context-avatar-stack').evaluate(el => getComputedStyle(el).position), 'sticky');
+  await shot('parent', page.locator('#floor-3 .gd-reply-context'));
+  await page.locator('#floor-3 .gd-reply-context').getByRole('button', { name: '跳至第 2 楼贴文' }).click();
+  await expect(page.locator('.gd-return')).toBeVisible();
+  assert.equal(await page.locator('.gd-tl-track-wrap').evaluate(el => el.style.getPropertyValue('--origin-progress')), '100%');
+  await page.locator('.gd-return').click();
+  await expect(page.locator('.gd-return')).toHaveCount(0);
+  await page.locator('#floor-3').getByLabel('展开被引用原贴全文').click();
+  await expect(page.locator('#floor-3 .gd-quote-full-md')).toContainText('先读正文');
+  await page.locator('#floor-3').getByLabel('跳至被引用楼层').click();
+  await expect(op).toHaveClass(/is-jump-highlighted/);
+  await page.locator('.gd-return').click();
+  await page.locator('#floor-2').getByLabel('回复该楼层').click();
+  await page.locator('#floor-3').getByLabel('引用楼层', { exact: true }).click();
+  await page.locator('.gd-reply-textarea').fill('这是通过真实输入框发表的一条回复。');
+  await page.getByRole('button', { name: '发表回复', exact: true }).click();
+  await expect(page.locator('#floor-4')).toContainText('真实输入框');
+  data = await detail('reading');
+  const created = data.subGestures.at(-1);
+  assert.equal(created.replyToId, 'r2');
+  assert.equal(created.quoteId, 'r3');
+  const own = page.locator('#floor-4');
+  await own.getByLabel('更多操作').click();
+  await own.getByLabel('编辑贴文').click();
+  await own.locator('textarea').fill('修改后的回复正文。');
+  await own.getByRole('button', { name: '保存修改' }).click();
+  await expect(own).toContainText('修改后的回复');
+  await expect(own.locator('.gd-edit-count-badge')).toContainText('1');
+  await expect(own.locator('.gd-first-date')).toHaveAttribute('datetime', created.createdAt);
+  assert.equal(
+    (await req({ action: 'edit', id: created.id, message: '其他会话' }, 'different-reader')).status(),
+    403,
+  );
+  await own.getByLabel('更多操作').click();
+  page.once('dialog', (d) => d.accept());
+  await own.getByLabel('删除贴文').click();
+  await expect(own).toHaveCount(0);
+  // Every reply can expand its unique parent, including replies to the OP.
+  await expect(page.locator('#floor-2 .gd-reply-target-pill')).toHaveCount(1);
+  await expect(page.locator('#floor-3 .gd-reply-target-pill')).toHaveCount(1);
+  await op.getByLabel('更多操作').click();
+  await expect(op.locator('.gd-more-drawer__items')).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(op.locator('.gd-more-drawer__items')).toHaveCount(0);
+  await op.getByLabel('更多操作').click();
+  await expect(op.locator('.gd-more-drawer__items')).toBeVisible();
+  await page.locator('.gd-zone1-title').click();
+  await expect(op.locator('.gd-more-drawer__items')).toHaveCount(0);
+  await add('r4', '这是第三层嵌套回复，用于验证逐层就地展开。', {
+    parent_id: 'reading',
+    reply_to_id: 'r3',
+    author_name: '清风',
+    created_at: '2026-08-10T09:00:00Z',
+  });
+  await page.reload();
+  await page.locator('#floor-2').getByRole('button', { name: /条直接回复/ }).click();
+  const r3Context = page.locator('#floor-2 .gd-reply-context').first();
+  await expect(r3Context).toContainText('山禾');
+  await r3Context.getByRole('button', { name: /1 条回复/ }).click();
+  await expect(page.locator('#floor-2 .gd-reply-context.is-nested')).toContainText('第三层嵌套回复');
+  await page.locator('#detail-reply-composer').evaluate(el => el.scrollIntoView({ block: 'start', behavior: 'instant' }));
+  await expect.poll(async () => Number(await rail.getAttribute('aria-valuenow'))).toBe(4);
+  console.log('real D1: Boost, reactions, parent, nested 3-level replies, independent quote, return, timeline tracking, edit and delete passed');
+  await add('long', '长讨论用来验证连续阅读和楼层定位。', { title: '长讨论', views_count: 510 });
+  await db
+    .prepare(
+      "WITH RECURSIVE i(n) AS (VALUES(1) UNION ALL SELECT n+1 FROM i WHERE n<1001) INSERT INTO comments (id,post_slug,parent_id,reply_to_id,post_type,author_id,author_name,message,status,created_at,updated_at) SELECT printf('item_%04d',n),'guestbook','long',CASE WHEN n=999 THEN 'item_0001' ELSE 'long' END,'gesture','regular','读者',printf('第 %d 条回复',n),'published',datetime('2026-09-01','+'||n||' minutes'),datetime('2026-09-01','+'||n||' minutes') FROM i",
+    )
+    .run();
+  const longData = await detail('long');
+  assert.equal(longData.subGestures.length, 1001);
+  const start = performance.now();
+  await page.goto(path + 'long-floor-1000');
+  await expect(page.locator('#floor-1000')).toBeInViewport();
+  await expect(rail).toHaveAttribute('aria-valuenow', '1000');
+  const ms = Math.round(performance.now() - start);
+  assert.ok((await page.locator('[data-floor-index]').count()) <= 41);
+  await expect(rail.locator('*')).toHaveCount(1);
+  await expect(page.locator('.gd-zone6-topic-map')).toContainText('分钟阅读');
+  await page.locator('#floor-995').evaluate((el) => el.scrollIntoView({ behavior: 'instant' }));
+  await expect(rail).toHaveAttribute('aria-valuenow', '995');
+  await page.locator('#floor-1000').evaluate((el) => el.scrollIntoView({ behavior: 'instant' }));
+  await expect(rail).toHaveAttribute('aria-valuenow', '1000');
+  const source = page.locator('#floor-1000');
+  await source.locator('.gd-reply-target-pill').click();
+  const jumpBtn = source.locator('.gd-reply-context').getByRole('button', { name: '跳至第 2 楼贴文' });
+  await jumpBtn.scrollIntoViewIfNeeded();
+  // Capture the origin at the actual click, after Playwright's actionability scroll.
+  await source.evaluate(el => document.addEventListener('click', () => {
+    window.__gestureJumpSourceY = el.getBoundingClientRect().top;
+  }, { once: true, capture: true }));
+  await jumpBtn.click();
+  const y = await page.evaluate(() => window.__gestureJumpSourceY);
+  await expect(page.locator('#floor-2')).toBeInViewport();
+  await page.locator('.gd-return').click();
+  await expect(source).toBeInViewport();
+  await expect(source.locator('.gd-reply-target-pill')).toHaveAttribute('aria-expanded', 'true');
+  await expect.poll(async () => Math.abs((await source.boundingBox()).y - y), { message: 'cross-page return restores the click-time pixel offset' }).toBeLessThan(3);
+  console.log('Cross-page return deviation', Math.abs((await source.boundingBox()).y - y), 'px; parent expansion retained');
+  await rail.focus();
+  await rail.press('End');
+  await expect(page.locator('#floor-1002')).toBeInViewport();
+  await rail.press('Home');
+  await expect(page.locator('#floor-1')).toBeInViewport();
+  const box = await rail.boundingBox();
+  await page.mouse.click(box.x + 8, box.y + box.height / 2);
+  await expect.poll(async () => Number(await rail.getAttribute('aria-valuenow'))).toBeGreaterThan(480);
+  await page.locator('.gd-tl-readout summary').click();
+  await page.getByLabel('目标楼层').fill('500');
+  await page.getByRole('button', { name: '跳转', exact: true }).click();
+  await expect(page.locator('#floor-500')).toBeInViewport();
+  await page.locator('#floor-500').getByLabel('复制贴文锚点链接').click();
+  const copied = await page.evaluate(() => navigator.clipboard.readText());
+  assert.ok(copied.endsWith('-floor-500~item_0499'));
+  await db.prepare("UPDATE comments SET status='deleted' WHERE id='item_0002'").run();
+  await page.goto('about:blank');
+  await page.goto(copied);
+  await expect(page.locator('[data-gesture-id="item_0499"]')).toBeInViewport();
+  assert.equal(await page.locator('[data-gesture-id="item_0499"]').getAttribute('data-floor-index'), '499');
+  console.log(
+    '1,001 replies, deep link ' +
+      ms +
+      ' ms, ' +
+      (await page.locator('[data-floor-index]').count()) +
+      ' mounted floors, real rail pointer and keyboard jumps',
+  );
+  await page.setViewportSize({ width: 360, height: 800 });
+  await page.goto(path + 'long-floor-500');
+  await expect(rail).toBeInViewport();
+  await expect(page.locator('#floor-500')).toBeInViewport();
+  assert.ok((await rail.boundingBox()).y >= 56 && (await rail.boundingBox()).y < 112);
+  await add(
+    'essay',
+    '长文段落。'.repeat(800) +
+      '\n\n```js\n' +
+      'const identifier = 12345; '.repeat(100) +
+      '\n```\n\n$$x^2$$\n\n<details><summary>附注</summary>原始说明</details>',
+  );
+  await add(
+    'formatting',
+    '##### 分层标题\n\n- 父级\n  - 子级\n\n[这层](#gesture-long-floor-20) 与 [资源][ref]\n\n[ref]: /guestbook/\n\n![作者图像](/media/shijianus/avatar.jpg)\n\n\x60\x60\x60js\nhttps://example.org/code-only\n\x60\x60\x60',
+  );
+  await page.goto(path + 'formatting');
+  await expect(page.getByRole('heading', { name: '分层标题' })).toBeVisible();
+  await expect(page.locator('#floor-1 ul ul li')).toHaveText('子级');
+  await expect(page.locator('#floor-1 a').filter({ hasText: '这层' })).toHaveAttribute(
+    'href',
+    '#gesture-long-floor-20',
+  );
+  await expect(page.locator('#floor-1 a').filter({ hasText: '资源' })).toHaveAttribute('href', '/guestbook/');
+  const figure = page.getByRole('img', { name: '作者图像' });
+  await figure.focus();
+  await figure.press('Enter');
+  await expect(page.locator('.gb-lightbox img')).toBeVisible();
+  await page.locator('.gb-lightbox__close').click();
+  await expect(page.locator('.gb-lightbox')).toHaveCount(0);
+  assert.ok(!(await detail('formatting')).relatedLinks.some((l) => l.url.includes('code-only')));
+  await add('essay_reply', '文末。', { parent_id: 'essay' });
+  await page.locator('#nav-theme-toggle a').click();
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
+  await page.goto(path + 'essay');
+  await expect(page.locator('#floor-1')).toBeVisible();
+  const mainBody = page.locator('#floor-1 .gd-floor-markdown');
+  await mainBody.evaluate(el => window.scrollTo({ top: scrollY + el.getBoundingClientRect().top + 600, behavior: 'instant' }));
+  assert.equal(Math.round((await page.locator('#floor-1 > .gd-avatar-rail .gd-avatar').boundingBox()).y), 112);
+  const code = page.locator('[data-gesture-id="essay"] pre');
+  await code.scrollIntoViewIfNeeded();
+  assert.ok(
+    await code.evaluate((el) => {
+      el.scrollLeft = el.scrollWidth;
+      return el.scrollLeft > 0 && document.documentElement.scrollWidth === innerWidth;
+    }),
+  );
+  await expect(page.locator('#floor-1 .katex-display')).toBeVisible();
+  const lightIsolation = await page.evaluate(() => {
+    const effectiveLuma = (cssBg) => {
+      const m = cssBg.match(/rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)(?:\s*,\s*([\d.]+))?\s*\)/);
+      if (!m) return 255;
+      const a = m[4] !== undefined ? +m[4] : 1;
+      const r = +m[1] * a + 255 * (1 - a);
+      const g = +m[2] * a + 255 * (1 - a);
+      const b = +m[3] * a + 255 * (1 - a);
+      return (r + g + b) / 3;
+    };
+    const katex = document.querySelector('#floor-1 .katex-display');
+    const ta = document.querySelector('.gd-reply-textarea');
+    ta.focus();
+    const katexBg = getComputedStyle(katex).backgroundColor;
+    const taBg = getComputedStyle(ta).backgroundColor;
+    const katexLuma = effectiveLuma(katexBg);
+    const taLuma = effectiveLuma(taBg);
+    return {
+      theme: document.documentElement.dataset.theme,
+      katexBg,
+      taBg,
+      katexLuma,
+      taLuma,
+      katexLight: katexLuma >= 220,
+      taLight: taLuma >= 220,
+    };
+  });
+  assert.equal(lightIsolation.katexLight, true, JSON.stringify(lightIsolation));
+  assert.equal(lightIsolation.taLight, true, JSON.stringify(lightIsolation));
+  assert.equal(lightIsolation.theme, 'light');
+  await page.locator('#floor-1 .tk-details summary').click();
+  await expect(page.locator('#floor-1 .tk-details-content')).toBeVisible();
+  await mainBody.evaluate(el => window.scrollBy({ top: el.getBoundingClientRect().bottom - 100, behavior: 'instant' }));
+  const stoppedAvatar = await page.locator('#floor-1 > .gd-avatar-rail .gd-avatar').boundingBox();
+  assert.ok(stoppedAvatar.y < 112 && stoppedAvatar.y + stoppedAvatar.height <= (await mainBody.boundingBox()).y + (await mainBody.boundingBox()).height + 20, 'avatar stops at body end before actions');
+  await rail.focus();
+  await rail.press('End');
+  await expect(page.locator('#floor-2')).toBeInViewport();
+  await page.locator('#floor-2 .gd-reply-target-pill').click();
+  const nested = page.locator('#floor-2 .gd-reply-context.is-parent');
+  await nested.evaluate(el => window.scrollTo({ top: scrollY + el.getBoundingClientRect().top + 600, behavior: 'instant' }));
+  await expect.poll(async () => Math.round((await page.locator('#floor-2 > .gd-avatar-rail .gd-avatar').boundingBox()).y)).toBe(112);
+  assert.equal(Math.round((await nested.locator('.gd-context-avatar-stack .gd-avatar').boundingBox()).y), 112);
+  await page.locator('#floor-2 .gd-floor-markdown').evaluate(el => window.scrollBy({ top: el.getBoundingClientRect().top - 400, behavior: 'instant' }));
+  const bodyBefore = (await page.locator('#floor-2 .gd-floor-markdown').boundingBox()).y;
+  await nested.getByLabel('收起被回复楼层', { exact: true }).click();
+  assert.ok(Math.abs((await page.locator('#floor-2 .gd-floor-markdown').boundingBox()).y - bodyBefore) < 3, 'parent collapse compensates body position');
+  console.log(
+    '360px sticky progress, long text, horizontally scrollable code, display math, expandable Markdown and endpoint jump passed',
+  );
+  // Original public board initializes its read/bookmark badges from localStorage.
+  // This exact SSR mismatch is reproduced on production; keep its behavior per scope.
+  const baselineWarnings = errors.filter(error => error.startsWith('Minified React error #418;'));
+  assert.deepEqual(errors.filter(error => !baselineWarnings.includes(error)), []);
+  console.log('Preserved production baseline hydration warnings:', baselineWarnings.length);
+  console.log('Uncaught browser and React hydration errors', errors.length);
 });
