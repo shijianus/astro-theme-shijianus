@@ -570,7 +570,7 @@ body:has(.gd-detail-root) :is(#theme-snow-mid, #theme-snow-foreground) { z-index
   .gd-tl-readout { top: 0; line-height: 32px; width: max-content; }
   .gd-tl-track-wrap[data-return-near="true"] .gd-tl-readout { transform: none; }
   .gd-return { left: 88px; }
-  .gd-tl-latest { max-width: 42px; }
+  .gd-tl-latest { flex-shrink: 0; white-space: nowrap; }
   .gd-tl-readout time { display: none; }
   .gd-tl-actions { gap: 8px; }
 }
