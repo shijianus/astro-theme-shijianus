@@ -567,7 +567,7 @@ export function GuestbookBoard() {
       const hash = window.location.hash;
       if (hash.startsWith('#gesture-')) {
         const raw = hash.replace('#gesture-', '');
-        const targetId = raw.replace(/-floor-\d+$/, '');
+        const targetId = raw.replace(/-floor-\d+(?:~[\w-]+)?$/, '');
         setActiveGestureId(targetId);
         setActiveView('detail');
         markAsRead(targetId);

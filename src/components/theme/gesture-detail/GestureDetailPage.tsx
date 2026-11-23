@@ -27,7 +27,11 @@ interface Props {
 const PAGE_SIZE = 40;
 const empty: GestureNode[] = [];
 
-export function GestureDetailPage({ gestureId, channels, identity, bookmarkedPostIds, onToggleBookmark, onBackToList, onToast, onZoomImage, onSyncNewComment }: Props) {
+export function GestureDetailPage(props: Props) {
+  return <GestureDetailThread key={props.gestureId} {...props} />;
+}
+
+function GestureDetailThread({ gestureId, channels, identity, bookmarkedPostIds, onToggleBookmark, onBackToList, onToast, onZoomImage, onSyncNewComment }: Props) {
   const [thread, setThread] = useState<GestureDetailResponse | null>(null);
   const [err, setErr] = useState('');
   const [hot, setHot] = useState(false);
