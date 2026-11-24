@@ -114,7 +114,7 @@ try {
     assert.ok(geometry.leftAxisError < 1 && geometry.contentAxisError < 1, JSON.stringify(geometry));
     assert.equal(geometry.contentAxis, 56);
     assert.ok(geometry.surfaceWidth <= 960 && geometry.centerError < 2, JSON.stringify(geometry));
-    assert.equal(geometry.background, 'rgba(15, 23, 42, 0.88)');
+    assert.equal(geometry.background, 'rgba(13, 17, 26, 0.88)');
     assert.equal(geometry.blur, 'blur(20px)');
     assert.equal(geometry.radius, '12px');
     assert.deepEqual(geometry.body, ['16px', '28px', 'rgb(226, 232, 240)']);

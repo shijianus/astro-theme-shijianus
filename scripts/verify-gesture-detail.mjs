@@ -217,13 +217,22 @@ await withGuestbook(async ({ db, page, base, add, errors }) => {
       const surfaceStyle = getComputedStyle(surface);
       return {
         overflow: document.documentElement.scrollWidth - innerWidth,
-        leftAxis: Math.max(...['.gd-zone1-tags', '.gd-zone6-topic-map', '#floor-1 > .gd-avatar-rail', '#floor-2 > .gd-avatar-rail'].map(s => Math.abs(document.querySelector(s).getBoundingClientRect().x - mainX))),
+        leftAxis: Math.max(...['.gd-zone1-tags', '.gd-zone6-topic-map', '.gd-subscribe-btn', '#floor-1 > .gd-avatar-rail', '#floor-2 > .gd-avatar-rail'].map(s => Math.abs(document.querySelector(s).getBoundingClientRect().x - mainX))),
         contentAxis: textX - mainX,
         axis: Math.max(...['.gd-zone4-action-bar', '.gd-zone3-boost', '.gd-author-bar'].map(s => Math.abs(box(s).x - textX)), Math.abs(document.querySelector('.gd-zone5-links').getBoundingClientRect().x - textX)),
+        borderless: ['.gd-topbar', '.gd-role-badge', '.gd-level-badge', '.gd-zone5-links', '.gd-zone1-tags span', '.gd-subscribe-btn']
+          .filter(s => document.querySelector(s))
+          .every(s => getComputedStyle(document.querySelector(s)).borderWidth === '0px') &&
+          (innerWidth > 760
+            ? getComputedStyle(document.querySelector('.gd-timeline-aside')).borderWidth === '0px'
+            : getComputedStyle(document.querySelector('.gd-timeline-aside')).borderTopWidth === '0px' &&
+              getComputedStyle(document.querySelector('.gd-timeline-aside')).borderLeftWidth === '0px' &&
+              getComputedStyle(document.querySelector('.gd-timeline-aside')).borderRightWidth === '0px'),
         pills: [...el.querySelectorAll('.gd-boost-op-pill')].every(p => p.getBoundingClientRect().height <= 26 && getComputedStyle(p).borderWidth === '0px'),
         wrapping: css('.gd-boost-op-pills').flexWrap,
         opAvatarWidth: box('.gd-avatar').width,
         subAvatarWidth: document.querySelector('#floor-2 > .gd-avatar-rail .gd-avatar').getBoundingClientRect().width,
+        subAvatarBg: getComputedStyle(document.querySelector('#floor-2 > .gd-avatar-rail .gd-avatar')).backgroundColor,
         bodySize: css('.gd-floor-markdown').fontSize,
         bodyLeading: css('.gd-floor-markdown').lineHeight,
         bodyColor: css('.gd-floor-markdown').color,
@@ -231,6 +240,7 @@ await withGuestbook(async ({ db, page, base, add, errors }) => {
         surfaceWidth: surface.getBoundingClientRect().width,
         surfaceCenterError: Math.abs((surface.getBoundingClientRect().left + surface.getBoundingClientRect().right) / 2 - innerWidth / 2),
         surfaceColor: surfaceStyle.backgroundColor,
+        surfaceBorder: surfaceStyle.borderColor,
         blur: surfaceStyle.backdropFilter,
         radius: surfaceStyle.borderRadius,
         emojiGap: css('.gd-agg-emoji-icons').gap,
@@ -241,16 +251,22 @@ await withGuestbook(async ({ db, page, base, add, errors }) => {
     assert.equal(geometry.overflow, 0, JSON.stringify(geometry));
     assert.ok(geometry.axis < 1 && geometry.leftAxis < 1, JSON.stringify(geometry));
     assert.equal(geometry.contentAxis, 56);
+    assert.ok(geometry.borderless, JSON.stringify(geometry));
     assert.ok(geometry.pills);
     assert.equal(geometry.wrapping, 'wrap');
     assert.equal(geometry.opAvatarWidth, 42);
     assert.equal(geometry.subAvatarWidth, 36);
+    assert.ok(
+      ['rgb(51, 65, 85)', 'rgb(59, 66, 82)', 'rgb(45, 55, 72)', 'rgb(56, 68, 63)', 'rgb(69, 59, 60)', 'rgb(65, 64, 57)'].includes(geometry.subAvatarBg),
+      JSON.stringify(geometry),
+    );
     assert.equal(geometry.bodySize, '16px');
     assert.equal(geometry.bodyLeading, '28px');
     assert.equal(geometry.bodyColor, 'rgb(226, 232, 240)');
     assert.equal(geometry.iconColor, 'rgb(100, 116, 139)');
     assert.ok(geometry.surfaceWidth <= 960 && geometry.surfaceCenterError < 2, JSON.stringify(geometry));
-    assert.equal(geometry.surfaceColor, 'rgba(15, 23, 42, 0.88)');
+    assert.equal(geometry.surfaceColor, 'rgba(13, 17, 26, 0.88)');
+    assert.equal(geometry.surfaceBorder, 'rgba(255, 255, 255, 0.06)');
     assert.equal(geometry.blur, 'blur(20px)');
     assert.equal(geometry.radius, '12px');
     assert.equal(geometry.emojiGap, '1px');
@@ -329,6 +345,7 @@ await withGuestbook(async ({ db, page, base, add, errors }) => {
   await page.locator('#floor-3 .gd-reply-target-pill').click();
   await expect(page.locator('#floor-3 .gd-reply-context')).toContainText('给每条摘记');
   assert.equal(await page.locator('#floor-3 .gd-context-avatar-stack').evaluate(el => getComputedStyle(el).position), 'sticky');
+  assert.equal(await page.locator('#floor-3 .gd-reply-context.is-parent .gd-context-rail').evaluate(el => getComputedStyle(el, '::before').width), '1px');
   await shot('parent', page.locator('#floor-3 .gd-reply-context'));
   await page.locator('#floor-3 .gd-reply-context').getByRole('button', { name: '跳至第 2 楼贴文' }).click();
   await expect(page.locator('.gd-return')).toBeVisible();

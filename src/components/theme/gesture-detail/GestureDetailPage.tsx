@@ -185,25 +185,25 @@ function GestureDetailThread({ gestureId, channels, identity, bookmarkedPostIds,
   }
   const back = <button type="button" className="gd-back-btn" onClick={onBackToList}><ArrowLeft size={15} />返回 Gesture 列表</button>;
   if (!op || !thread) return <div className="gd-detail-root"><div className="gd-detail-grid"><main className="gd-monolithic-shell"><div className="gd-topbar">{back}</div>
-    <p className="gd-empty-box" role="status">{err || '正在加载讨论…'} {err && <button onClick={() => refresh(false)}>重试</button>}</p></main></div></div>;
+    <p className="gd-empty-box" role="status">{err || '正在加载讨论…'} {err && <button type="button" onClick={() => refresh(false)}>重试</button>}</p></main></div></div>;
   const title = extractOpTitle(op);
   return <div className="gd-detail-root"><div className="gd-detail-grid">
     <main className="gd-monolithic-shell" ref={content} data-detail-loaded="true">
       <div className="gd-topbar">{back}<div className="gd-topbar__actions">
-        <button className="gd-topbar-btn" aria-label="书签" aria-pressed={bookmarkedPostIds.includes(gestureId)} onClick={() => onToggleBookmark(gestureId)}><Bookmark size={16} /></button>
-        <button className="gd-topbar-btn" aria-label="分享链接" onClick={() => copy()}><Link2 size={16} /></button>
+        <button type="button" className="gd-topbar-btn" aria-label="书签" aria-pressed={bookmarkedPostIds.includes(gestureId)} onClick={() => onToggleBookmark(gestureId)}><Bookmark size={16} /></button>
+        <button type="button" className="gd-topbar-btn" aria-label="分享链接" onClick={() => copy()}><Link2 size={16} /></button>
       </div></div>
-      {err && <p role="status">{err} <button onClick={() => refresh(false)}>重试</button></p>}
+      {err && <p role="status">{err} <button type="button" onClick={() => refresh(false)}>重试</button></p>}
       <GestureHeaderZone title={title.title} isPinned={op.status === 'pinned'} channelLabel={channels.find(c => c.id === op.tag)?.label || ''} staticTags={op.tags} />
       {renderFloor(op, title.bodyWithoutLeadingHeading)}
       {thread.topicMap && <GestureRelatedAndTopicMap relatedLinks={thread.relatedLinks || []} topicMap={thread.topicMap} gesture={op} subGestures={replies} />}
-      {replies.length > 0 && <div className="gd-stream-tools"><h2>{replies.length} 条回复</h2><button aria-pressed={hot} onClick={() => { setHot(!hot); setPage(0); }}>{hot ? '查看全部回复' : '只看热门回复'}</button></div>}
+      {replies.length > 0 && <div className="gd-stream-tools"><h2>{replies.length} 条回复</h2><button type="button" aria-pressed={hot} onClick={() => { setHot(!hot); setPage(0); }}>{hot ? '查看全部回复' : '只看热门回复'}</button></div>}
       {hot && !filtered.length && <p className="gd-empty-box">暂无热门回复</p>}
       {slice.map(n => renderFloor(n, n.message))}
       {pages > 1 && <nav className="gd-pages" aria-label="回复分页">
-        <button disabled={activePage === 0} onClick={() => go(filtered[(activePage-1)*PAGE_SIZE].floorIndex!)}>上一页</button>
+        <button type="button" disabled={activePage === 0} onClick={() => go(filtered[(activePage-1)*PAGE_SIZE].floorIndex!)}>上一页</button>
         <span>{activePage + 1} / {pages}</span>
-        <button disabled={activePage === pages-1} onClick={() => go(filtered[(activePage+1)*PAGE_SIZE].floorIndex!)}>下一页</button>
+        <button type="button" disabled={activePage === pages-1} onClick={() => go(filtered[(activePage+1)*PAGE_SIZE].floorIndex!)}>下一页</button>
       </nav>}
       <GestureInlineReplyComposer replyTarget={contact} quoteTarget={quote} textareaRef={textarea} onToast={onToast}
         onClearReplyTarget={() => setContact(null)} onClearQuoteTarget={() => setQuote(null)}

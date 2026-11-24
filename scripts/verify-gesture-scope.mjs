@@ -95,7 +95,7 @@ await withGuestbook(async ({ db, page, base, add, errors }) => {
           overflow: document.documentElement.scrollWidth - innerWidth };
       });
       assert.equal(color.theme, theme);
-      assert.equal(color.paper, theme === 'light' ? 'rgba(255, 255, 255, 0.94)' : 'rgba(15, 23, 42, 0.88)');
+      assert.equal(color.paper, theme === 'light' ? 'rgba(255, 255, 255, 0.94)' : 'rgba(13, 17, 26, 0.88)');
       assert.equal(color.text, theme === 'light' ? 'rgb(54, 54, 54)' : 'rgb(226, 232, 240)');
       assert.equal(color.overflow, 0);
       await page.screenshot({ path: `${out}/detail-${theme}-${width}.png`, animations: 'disabled' });
@@ -106,7 +106,7 @@ await withGuestbook(async ({ db, page, base, add, errors }) => {
       const p = await popup.boundingBox(), a = await trigger.boundingBox();
       assert.ok(p.y >= 0 && p.y + p.height < a.y && p.x >= 0 && p.x + p.width <= width);
       const popupColor = await popup.evaluate(el => getComputedStyle(el).backgroundColor);
-      assert.equal(popupColor, theme === 'light' ? 'rgb(255, 255, 255)' : 'rgb(24, 34, 53)');
+      assert.equal(popupColor, theme === 'light' ? 'rgb(255, 255, 255)' : 'rgb(20, 28, 43)');
       await page.screenshot({ path: `${out}/emoji-${theme}-${width}.png`, animations: 'disabled' });
       await page.keyboard.press('Escape');
       result.themes.push({ width, ...color, popupColor });
