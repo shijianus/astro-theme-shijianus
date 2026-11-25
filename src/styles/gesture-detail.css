@@ -1,13 +1,18 @@
 /* ============================================================================
-   GESTURE DETAIL PAGE — CRISP SINGLE-LAYER GLASS SHEET & SLATE TONAL SYSTEM
+   GESTURE DETAIL PAGE — BORDERLESS WIDE FEATHERED VEIL & SLATE TONAL SYSTEM
    Isolated strictly to .gd-detail-root & .gd-popover-anchor (never leaks to board).
    ============================================================================ */
 
 .gd-detail-root,
 .gd-popover-anchor {
-  --gd-canvas-bg: rgba(255, 255, 255, 0.78);
-  --gd-canvas-border: rgba(255, 255, 255, 0.75);
-  --gd-canvas-shadow: 0 8px 32px rgba(30, 58, 138, 0.06);
+  --gd-veil-bg: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.72) 8%,
+    rgba(255, 255, 255, 0.80) 50%,
+    rgba(255, 255, 255, 0.72) 92%,
+    transparent 100%
+  );
   --gd-surface-elevated: rgba(255, 255, 255, 0.98);
   --gd-surface-subtle: rgba(15, 23, 42, 0.04);
   --gd-surface-hover: rgba(15, 23, 42, 0.07);
@@ -75,9 +80,14 @@
 }
 
 :root[data-theme='dark'] :is(.gd-detail-root, .gd-popover-anchor) {
-  --gd-canvas-bg: rgba(13, 18, 32, 0.76);
-  --gd-canvas-border: rgba(255, 255, 255, 0.08);
-  --gd-canvas-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
+  --gd-veil-bg: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(10, 15, 28, 0.68) 8%,
+    rgba(11, 16, 30, 0.78) 50%,
+    rgba(10, 15, 28, 0.68) 92%,
+    transparent 100%
+  );
   --gd-surface-elevated: #0b0d12;
   --gd-surface-subtle: rgba(255, 255, 255, 0.04);
   --gd-surface-hover: rgba(255, 255, 255, 0.08);
@@ -196,10 +206,11 @@ body:has(.gd-detail-root) :is(#theme-snow-mid, #theme-snow-foreground) {
 }
 
 /* ============================================================================
-   1. CRISP SINGLE-LAYER FROSTED READING SHEET (EXTERNAL TOPBAR + PURE TIMELINE)
+   1. BORDERLESS WIDE FEATHERED VEIL SHELL (COVERS READING CANVAS & TIMELINE)
    ============================================================================ */
 .gd-detail-shell {
   position: relative;
+  isolation: isolate;
   max-width: 1060px;
   margin: 0 auto;
   background: transparent;
@@ -207,7 +218,31 @@ body:has(.gd-detail-root) :is(#theme-snow-mid, #theme-snow-foreground) {
   box-shadow: none;
 }
 
-/* External floating breadcrumb bar directly above the frosted reading sheet */
+/* Soft edge-less feathered veil widened beyond shell edges so right timeline rests fully inside the smooth plateau */
+.gd-detail-shell::before {
+  content: '';
+  position: absolute;
+  inset: -16px -104px -32px -104px;
+  z-index: -1;
+  pointer-events: none;
+  background: var(--gd-veil-bg);
+  -webkit-mask-image: linear-gradient(
+    180deg,
+    transparent 0%,
+    #000 32px,
+    #000 calc(100% - 48px),
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    180deg,
+    transparent 0%,
+    #000 32px,
+    #000 calc(100% - 48px),
+    transparent 100%
+  );
+}
+
+/* External floating breadcrumb bar directly over cosmos / snowscape */
 .gd-topbar {
   display: flex;
   align-items: center;
@@ -273,17 +308,17 @@ body:has(.gd-detail-root) :is(#theme-snow-mid, #theme-snow-foreground) {
   backdrop-filter: none;
 }
 
-/* Single crisp frosted glass reading paper matching native /guestbook/ language (zero nested sub-cards inside) */
+/* Completely borderless, blur-free, unboxed reading canvas */
 .gd-reading-canvas {
   flex: 1;
   min-width: 0;
-  padding: 28px 32px;
-  background: var(--gd-canvas-bg);
-  -webkit-backdrop-filter: blur(18px);
-  backdrop-filter: blur(18px);
-  border: 1px solid var(--gd-canvas-border);
-  border-radius: 16px;
-  box-shadow: var(--gd-canvas-shadow);
+  padding: 20px 32px 36px;
+  background: transparent;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
   color: var(--gd-text);
 }
 
@@ -384,13 +419,13 @@ body:has(.gd-detail-root) :is(#theme-snow-mid, #theme-snow-foreground) {
   user-select: none;
 }
 
-/* Soft airy pastel Morandi letter-avatar palette for light snowscape mode */
-.gd-detail-root .gd-avatar--tone-0 { background-color: #dbeafe; color: #1d4ed8; }
-.gd-detail-root .gd-avatar--tone-1 { background-color: #e0e7ff; color: #4338ca; }
-.gd-detail-root .gd-avatar--tone-2 { background-color: #dcfce7; color: #15803d; }
-.gd-detail-root .gd-avatar--tone-3 { background-color: #f1f5f9; color: #334155; }
-.gd-detail-root .gd-avatar--tone-4 { background-color: #fef3c7; color: #b45309; }
-.gd-detail-root .gd-avatar--tone-5 { background-color: #f3e8ff; color: #7e22ce; }
+/* Grounded mid-dark matte Morandi letter-avatar palette with crisp white initials for light snowscape mode */
+.gd-detail-root .gd-avatar--tone-0 { background-color: #475569; color: #ffffff; }
+.gd-detail-root .gd-avatar--tone-1 { background-color: #4f5d75; color: #ffffff; }
+.gd-detail-root .gd-avatar--tone-2 { background-color: #3d5a80; color: #ffffff; }
+.gd-detail-root .gd-avatar--tone-3 { background-color: #5c677d; color: #ffffff; }
+.gd-detail-root .gd-avatar--tone-4 { background-color: #4a6070; color: #ffffff; }
+.gd-detail-root .gd-avatar--tone-5 { background-color: #525e75; color: #ffffff; }
 
 /* Restrained matte deep Morandi palette preserved for dark starry mode */
 :root[data-theme='dark'] .gd-detail-root .gd-avatar--tone-0 { background-color: #334155; color: #cbd5e1; }
@@ -1849,7 +1884,7 @@ body:has(.gd-detail-root) :is(#theme-snow-mid, #theme-snow-foreground) {
   flex-direction: column;
   align-items: flex-start;
   gap: 10px;
-  margin-top: 112px;
+  margin-top: 103px;
   padding: 0 0 12px;
   background: transparent;
   border: none;
@@ -2135,6 +2170,12 @@ body:has(.gd-detail-root) :is(#theme-snow-mid, #theme-snow-foreground) {
    11. RESPONSIVE ADAPTATIONS (<= 1140px, <= 900px, <= 760px & <= 480px)
    ============================================================================ */
 /* Keep generous horizontal safety clearance from right ThemeDock & left MusicPocket on compact desktops */
+@media (max-width: 1260px) and (min-width: 761px) {
+  .gd-detail-shell::before {
+    inset: -16px -32px -32px -32px;
+  }
+}
+
 @media (max-width: 1140px) and (min-width: 820px) {
   .gd-detail-shell {
     padding-inline: 24px;
@@ -2154,6 +2195,10 @@ body:has(.gd-detail-root) :is(#theme-snow-mid, #theme-snow-foreground) {
     margin-top: 0;
   }
 
+  .gd-detail-shell::before {
+    inset: -12px -16px -24px -16px;
+  }
+
   .gd-topbar {
     padding: 0;
     margin-bottom: 12px;
@@ -2166,8 +2211,8 @@ body:has(.gd-detail-root) :is(#theme-snow-mid, #theme-snow-foreground) {
   }
 
   .gd-reading-canvas {
-    padding: 18px 16px 24px;
-    border-radius: 14px;
+    padding: 16px 12px 24px;
+    border-radius: 0;
   }
 
   .gd-zone4-right {
