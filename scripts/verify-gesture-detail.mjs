@@ -96,14 +96,19 @@ await withGuestbook(async ({ db, page, base, add, errors }) => {
     'legacy overlong starter boost must be clamped to <= 16 chars: ' + JSON.stringify(opBoosts),
   );
 
-  // Visit welcome thread and verify visual cleanup & horizontal Boost pills
+  // Visit welcome thread and verify visual cleanup, reply badge restraint & horizontal Boost pills
   await page.goto(path + welcome);
   await expect(page.locator('#floor-1')).toBeVisible();
   await expect(page.locator('#floor-1 .gd-floor-markdown')).not.toContainText('博客功能与内容格式指南');
   await expect(page.locator('.gd-zone5-links')).toHaveCount(0);
   await expect(page.locator('.gd-zone1-tags')).toHaveText('官方置顶·随心闲聊');
   await expect(page.locator('.gd-tm-views')).toHaveText('1.3 千 觀看');
+  await expect(page.locator('.gd-monolithic-shell')).toHaveCount(0);
+  await expect(page.locator('.gd-stream-tools')).toHaveCount(0);
   await expect(page.locator('#floor-2 .gd-zone3-boost')).toHaveCount(0);
+  // Bug 1 check: Floor 2 (replies to OP) and Floor 3 (immediately below Floor 2) must NEVER show [↪] badge
+  await expect(page.locator('#floor-2 .gd-reply-target-pill')).toHaveCount(0);
+  await expect(page.locator('#floor-3 .gd-reply-target-pill')).toHaveCount(0);
   await shot('welcome-dark-1440', page.locator('.gd-topbar'));
 
   // 2. Seed additional real threads for full feature & edge-case coverage
@@ -132,14 +137,21 @@ await withGuestbook(async ({ db, page, base, add, errors }) => {
     parent_id: 'reading',
     reply_to_id: 'reading',
     author_name: '江澄',
+    created_at: '2026-08-08T09:30:00Z',
   });
-  await add('r3', '同意，返回原位之后还可以接着往下读。', {
+  await add('r3', '同意，紧邻上一楼回复时无需右上角徽章干扰视线。', {
     parent_id: 'reading',
     reply_to_id: 'r2',
     author_name: '山禾',
     quote_id: 'reading',
     quote_source: JSON.stringify({ id: 'reading', authorName: '南山', excerpt: '夜读时记下的问题' }),
     created_at: '2026-08-09T09:00:00Z',
+  });
+  await add('r4', '跨楼层回复二楼时，右上角才展示 16px 头像徽章并支持原地展开父楼。', {
+    parent_id: 'reading',
+    reply_to_id: 'r2',
+    author_name: '青岚',
+    created_at: '2026-08-09T10:00:00Z',
   });
 
   // Boost 16-grapheme strict backend checks
@@ -274,6 +286,7 @@ await withGuestbook(async ({ db, page, base, add, errors }) => {
 
   for (const [width, height] of sizes) {
     await page.setViewportSize({ width, height });
+    await page.mouse.move(0, 0);
     await op
       .locator('.gd-zone4-action-bar')
       .evaluate((el) => el.scrollIntoView({ block: 'center', behavior: 'instant' }));
@@ -284,22 +297,28 @@ await withGuestbook(async ({ db, page, base, add, errors }) => {
       const css = (s) => getComputedStyle(el.querySelector(s));
       const mainX = document.querySelector('.gd-zone1-title').getBoundingClientRect().x;
       const textX = box('.gd-floor-markdown').x;
+      const shell = document.querySelector('.gd-detail-shell');
       const grid = document.querySelector('.gd-detail-grid');
       const gridStyle = getComputedStyle(grid);
-      const shell = document.querySelector('.gd-monolithic-shell');
-      const shellStyle = getComputedStyle(shell);
+      const canvas = document.querySelector('.gd-reading-canvas');
+      const canvasStyle = getComputedStyle(canvas);
+      const topbar = document.querySelector('.gd-topbar');
+      const topbarStyle = getComputedStyle(topbar);
       const aside = document.querySelector('.gd-timeline-aside');
       const asideStyle = getComputedStyle(aside);
       const boostFlow = el.querySelector('.gd-zone3-boost');
       const boostStyle = getComputedStyle(boostFlow);
       const pills = [...el.querySelectorAll('.gd-boost-pill')];
-      // Verify horizontal multi-pill packing: at least 2 pills share a row on desktop/tablet
       const rowYCounts = new Map();
       for (const p of pills) {
         const y = Math.round(p.getBoundingClientRect().y);
         rowYCounts.set(y, (rowYCounts.get(y) || 0) + 1);
       }
       const maxPillsPerRow = Math.max(0, ...rowYCounts.values());
+      const tlActionButtons = [...document.querySelectorAll('.gd-tl-actions > button')];
+      const tlActionYs = tlActionButtons.map((b) => Math.round(b.getBoundingClientRect().y));
+      const opRightLabels = [...el.querySelectorAll('.gd-zone4-right > button, .gd-zone4-right .gd-agg-emoji-pill, .gd-zone4-right .gd-more-drawer > button')].map((b) => b.getAttribute('aria-label'));
+      const subRightLabels = [...document.querySelectorAll('#floor-2 .gd-zone4-right > button, #floor-2 .gd-zone4-right .gd-agg-emoji-pill, #floor-2 .gd-zone4-right .gd-more-drawer > button')].map((b) => b.getAttribute('aria-label'));
 
       return {
         overflow: document.documentElement.scrollWidth - innerWidth,
@@ -313,21 +332,25 @@ await withGuestbook(async ({ db, page, base, add, errors }) => {
           ...['.gd-zone4-action-bar', '.gd-zone3-boost', '.gd-author-bar'].map((s) => Math.abs(box(s).x - textX)),
           Math.abs(document.querySelector('.gd-zone5-links').getBoundingClientRect().x - textX),
         ),
+        monolithicGone: document.querySelectorAll('.gd-monolithic-shell').length === 0,
+        streamToolsGone: document.querySelectorAll('.gd-stream-tools').length === 0,
+        firstSubNoDoubleBorder: getComputedStyle(document.querySelector('#floor-2')).borderTopWidth === '0px',
+        topbarExternal: !canvas.contains(topbar),
+        topbarTransparent: topbarStyle.backgroundColor === 'rgba(0, 0, 0, 0)' && topbarStyle.borderBottomWidth === '0px',
         gridTransparent: gridStyle.backgroundColor === 'rgba(0, 0, 0, 0)' && gridStyle.borderWidth === '0px',
-        gridWidth: grid.getBoundingClientRect().width,
-        gridCenterError: Math.abs((grid.getBoundingClientRect().left + grid.getBoundingClientRect().right) / 2 - innerWidth / 2),
-        shellBg: shellStyle.backgroundColor,
-        shellBlur: shellStyle.backdropFilter,
-        shellBorder: shellStyle.borderColor,
-        shellRadius: shellStyle.borderRadius,
-        shellShadow: shellStyle.boxShadow,
+        gridGap: gridStyle.columnGap || gridStyle.gap,
+        shellWidth: shell.getBoundingClientRect().width,
+        shellCenterError: Math.abs((shell.getBoundingClientRect().left + shell.getBoundingClientRect().right) / 2 - innerWidth / 2),
+        canvasBg: canvasStyle.backgroundColor,
+        canvasBlur: canvasStyle.backdropFilter,
+        canvasBorderWidth: canvasStyle.borderTopWidth,
+        canvasShadow: canvasStyle.boxShadow,
         asideTransparent: innerWidth > 760 ? asideStyle.backgroundColor === 'rgba(0, 0, 0, 0)' && asideStyle.borderWidth === '0px' : asideStyle.borderWidth === '0px',
         asideWidth: innerWidth > 760 ? Math.round(aside.getBoundingClientRect().width) : null,
-        topbarBorderless:
-          getComputedStyle(document.querySelector('.gd-topbar')).borderTopWidth === '0px' &&
-          getComputedStyle(document.querySelector('.gd-topbar')).borderLeftWidth === '0px' &&
-          getComputedStyle(document.querySelector('.gd-topbar')).borderRightWidth === '0px' &&
-          getComputedStyle(document.querySelector('.gd-topbar')).borderBottomWidth === '1px',
+        trackHeight: innerWidth > 760 ? Math.round(document.querySelector('.gd-tl-track-wrap').getBoundingClientRect().height) : null,
+        tlActionsRow: tlActionButtons.length === 3 && Math.max(...tlActionYs) - Math.min(...tlActionYs) <= 2,
+        opRightLabels,
+        subRightLabels,
         badgeBorderless: ['.gd-level-badge', '.gd-zone5-links', '.gd-zone1-tag', '.gd-subscribe-btn']
           .filter((s) => document.querySelector(s))
           .every((s) => getComputedStyle(document.querySelector(s)).borderWidth === '0px' && getComputedStyle(document.querySelector(s)).backgroundColor === 'rgba(0, 0, 0, 0)'),
@@ -346,7 +369,8 @@ await withGuestbook(async ({ db, page, base, add, errors }) => {
           (p) =>
             getComputedStyle(p).borderRadius === '9999px' &&
             getComputedStyle(p).whiteSpace === 'nowrap' &&
-            getComputedStyle(p).borderWidth === '0px',
+            getComputedStyle(p).borderTopWidth === '1px' &&
+            getComputedStyle(p).backgroundImage.includes('linear-gradient'),
         ),
         opAvatarWidth: box('.gd-avatar').width,
         subAvatarWidth: document.querySelector('#floor-2 .gd-avatar-rail .gd-avatar').getBoundingClientRect().width,
@@ -356,6 +380,7 @@ await withGuestbook(async ({ db, page, base, add, errors }) => {
         ruleWidth: getComputedStyle(document.querySelector('.gd-tl-rail'), '::before').width,
         railChildren: document.querySelector('.gd-tl-rail').children.length,
         thumbWidth: getComputedStyle(document.querySelector('.gd-tl-thumb')).width,
+        thumbHeight: getComputedStyle(document.querySelector('.gd-tl-thumb')).height,
         thumbColor: getComputedStyle(document.querySelector('.gd-tl-thumb')).backgroundColor,
       };
     });
@@ -363,15 +388,28 @@ await withGuestbook(async ({ db, page, base, add, errors }) => {
     assert.equal(geometry.overflow, 0, JSON.stringify(geometry));
     assert.ok(geometry.axis < 1 && geometry.leftAxis < 1, JSON.stringify(geometry));
     assert.equal(geometry.contentAxis, 56, JSON.stringify(geometry));
+    assert.equal(geometry.monolithicGone, true);
+    assert.equal(geometry.streamToolsGone, true);
+    assert.equal(geometry.firstSubNoDoubleBorder, true);
+    assert.equal(geometry.topbarExternal, true);
+    assert.equal(geometry.topbarTransparent, true);
     assert.equal(geometry.gridTransparent, true, JSON.stringify(geometry));
-    assert.ok(geometry.gridWidth <= 960 && geometry.gridCenterError < 2, JSON.stringify(geometry));
-    assert.equal(geometry.shellBg, 'rgba(12, 17, 29, 0.52)');
-    assert.equal(geometry.shellBlur, 'blur(20px) saturate(1.4)');
-    assert.equal(geometry.shellBorder, 'rgba(255, 255, 255, 0.08)');
-    assert.equal(geometry.shellRadius, '14px');
+    if (width > 760) assert.equal(geometry.gridGap, '28px');
+    assert.ok(geometry.shellWidth <= 1060 && geometry.shellCenterError < 2, JSON.stringify(geometry));
+    assert.equal(geometry.canvasBg, 'rgba(15, 23, 42, 0.38)');
+    assert.equal(geometry.canvasBlur, 'blur(16px)');
+    assert.equal(geometry.canvasBorderWidth, '0px');
+    assert.equal(geometry.canvasShadow, 'none');
     assert.equal(geometry.asideTransparent, true, JSON.stringify(geometry));
-    if (width > 760) assert.equal(geometry.asideWidth, 96);
-    assert.equal(geometry.topbarBorderless, true, JSON.stringify(geometry));
+    if (width > 760) {
+      assert.equal(geometry.asideWidth, 132);
+      assert.equal(geometry.trackHeight, 220);
+    }
+    assert.equal(geometry.tlActionsRow, true, JSON.stringify(geometry));
+    assert.equal(geometry.opRightLabels.length, 5, JSON.stringify(geometry.opRightLabels));
+    assert.deepEqual(geometry.opRightLabels.slice(1), ['发送 Boost 短评', '复制贴文锚点链接', '更多操作', '回复主贴']);
+    assert.equal(geometry.subRightLabels.length, 4, JSON.stringify(geometry.subRightLabels));
+    assert.deepEqual(geometry.subRightLabels.slice(1), ['发送 Boost 短评', '复制贴文锚点链接', '回复该楼层']);
     assert.equal(geometry.badgeBorderless, true, JSON.stringify(geometry));
     assert.equal(geometry.titleSize, '26px');
     assert.equal(geometry.titleColor, 'rgb(255, 255, 255)');
@@ -398,6 +436,7 @@ await withGuestbook(async ({ db, page, base, add, errors }) => {
     assert.equal(geometry.ruleWidth, '2px');
     assert.equal(geometry.railChildren, 1, 'Zero dots on timeline rail');
     assert.equal(geometry.thumbWidth, '3px');
+    if (width > 760) assert.equal(geometry.thumbHeight, '28px');
     assert.equal(geometry.thumbColor, 'rgb(56, 189, 248)');
 
     // Upward Emoji Picker check
@@ -440,6 +479,12 @@ await withGuestbook(async ({ db, page, base, add, errors }) => {
   await page.getByRole('dialog', { name: '选择表情' }).getByRole('button', { name: '🚀' }).click();
   await expect(react).toHaveAttribute('data-reacted', 'false');
 
+  // OP [•••] smooth inline expand reveals [🚩] and [🔖]
+  await op.getByLabel('更多操作').click();
+  await expect(op.getByLabel('举报与申诉')).toBeVisible();
+  await expect(op.getByLabel('书签')).toBeVisible();
+  await op.getByLabel('更多操作').click();
+
   // Bidirectional Replies: 1-to-N children continuous 1px line
   await op.getByRole('button', { name: /条直接回复/ }).click();
   await expect(op.locator('.gd-reply-context')).toContainText('江澄');
@@ -452,22 +497,31 @@ await withGuestbook(async ({ db, page, base, add, errors }) => {
   await op.getByLabel('收起直接回复', { exact: true }).click();
   await expect(op.locator('.gd-reply-context')).toHaveCount(0);
 
-  // Bidirectional Replies: 1-to-1 parent sticky rail + 1px line + cross-jump return anchor
-  await page.locator('#floor-3 .gd-reply-target-pill').click();
-  await expect(page.locator('#floor-3 .gd-reply-context')).toContainText('给每条摘记');
+  // Bug 1 check: Floor 2 (replies to OP) and Floor 3 (adjacent reply to Floor 2) hide [↪]; Floor 4 (cross-floor reply to Floor 2) shows 16px [↪]
+  await expect(page.locator('#floor-2 .gd-reply-target-pill')).toHaveCount(0);
+  await expect(page.locator('#floor-3 .gd-reply-target-pill')).toHaveCount(0);
+  await expect(page.locator('#floor-4 .gd-reply-target-pill')).toHaveCount(1);
   assert.equal(
-    await page.locator('#floor-3 .gd-context-avatar-stack').evaluate((el) => getComputedStyle(el).position),
+    Math.round((await page.locator('#floor-4 .gd-reply-target-pill .gd-avatar').boundingBox()).width),
+    16,
+  );
+
+  // Bidirectional Replies: 1-to-1 parent sticky rail + 1px line + cross-jump return anchor
+  await page.locator('#floor-4 .gd-reply-target-pill').click();
+  await expect(page.locator('#floor-4 .gd-reply-context')).toContainText('给每条摘记');
+  assert.equal(
+    await page.locator('#floor-4 .gd-context-avatar-stack').evaluate((el) => getComputedStyle(el).position),
     'sticky',
   );
   assert.equal(
     await page
-      .locator('#floor-3 .gd-reply-context.is-parent .gd-context-rail')
+      .locator('#floor-4 .gd-reply-context.is-parent .gd-context-rail')
       .evaluate((el) => getComputedStyle(el, '::before').width),
     '1px',
   );
-  await shot('bidirectional-parent', page.locator('#floor-3 .gd-reply-context'));
+  await shot('bidirectional-parent', page.locator('#floor-4 .gd-reply-context'));
   await expect(page.locator('.gd-return')).toHaveCount(0);
-  await page.locator('#floor-3 .gd-reply-context').getByRole('button', { name: '跳至第 2 楼贴文' }).click();
+  await page.locator('#floor-4 .gd-reply-context').getByRole('button', { name: '跳至第 2 楼贴文' }).click();
   await expect(page.locator('.gd-return')).toBeVisible();
   assert.equal(await page.locator('.gd-tl-track-wrap').evaluate((el) => el.style.getPropertyValue('--origin-progress')), '100%');
   await page.locator('.gd-return').click();
@@ -483,15 +537,13 @@ await withGuestbook(async ({ db, page, base, add, errors }) => {
 
   // Reply, edit, delete
   await page.locator('#floor-2').getByLabel('回复该楼层').click();
-  await page.locator('#floor-3').getByLabel('引用楼层', { exact: true }).click();
   await page.locator('.gd-reply-textarea').fill('这是通过真实输入框发表的一条回复。');
   await page.getByRole('button', { name: '发表回复', exact: true }).click();
-  await expect(page.locator('#floor-4')).toContainText('真实输入框');
+  await expect(page.locator('#floor-5')).toContainText('真实输入框');
   data = await detail('reading');
   const created = data.subGestures.at(-1);
   assert.equal(created.replyToId, 'r2');
-  assert.equal(created.quoteId, 'r3');
-  const own = page.locator('#floor-4');
+  const own = page.locator('#floor-5');
   await own.getByLabel('更多操作').click();
   await own.getByLabel('编辑贴文').click();
   await own.locator('textarea').fill('修改后的回复正文。');
@@ -593,13 +645,35 @@ await withGuestbook(async ({ db, page, base, add, errors }) => {
   // 5. Light theme + mobile 360px sticky avatar stopping & parent collapse compensation
   await add('essay', '长文段落。'.repeat(800) + '\n\n```js\n' + 'const identifier = 12345; '.repeat(100) + '\n```\n\n$$x^2$$', {
     title: '长文粘性头像验证',
+    created_at: '2026-08-08T08:00:00Z',
   });
-  await add('essay_reply', '文末回复。', { parent_id: 'essay', reply_to_id: 'essay' });
+  await add('essay_long_parent', '这是一条较长的二楼回复，用来验证跨楼展开父楼时的双粘性头像与收起滚动补偿。'.repeat(160), {
+    parent_id: 'essay',
+    reply_to_id: 'essay',
+    author_name: '林深',
+    created_at: '2026-08-08T08:10:00Z',
+  });
+  await add('essay_mid', '中间插楼讨论。', {
+    parent_id: 'essay',
+    reply_to_id: 'essay',
+    author_name: '知秋',
+    created_at: '2026-08-08T08:20:00Z',
+  });
+  await add('essay_reply', '跨楼层回复二楼长文。', {
+    parent_id: 'essay',
+    reply_to_id: 'essay_long_parent',
+    author_name: '拾光',
+    created_at: '2026-08-08T08:30:00Z',
+  });
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.locator('#nav-theme-toggle a').click();
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
   await page.goto(path + welcome);
   await expect(page.locator('#floor-1')).toBeVisible();
+  assert.equal(
+    await page.locator('.gd-reading-canvas').evaluate((el) => getComputedStyle(el).backgroundColor),
+    'rgba(255, 255, 255, 0.56)',
+  );
   await shot('welcome-light-1440', page.locator('.gd-topbar'));
 
   await page.setViewportSize({ width: 360, height: 800 });
@@ -621,23 +695,23 @@ await withGuestbook(async ({ db, page, base, add, errors }) => {
   );
   await rail.focus();
   await rail.press('End');
-  await expect(page.locator('#floor-2')).toBeInViewport();
-  await page.locator('#floor-2 .gd-reply-target-pill').click();
-  const nested = page.locator('#floor-2 .gd-reply-context.is-parent');
+  await expect(page.locator('#floor-4')).toBeInViewport();
+  await page.locator('#floor-4 .gd-reply-target-pill').click();
+  const nested = page.locator('#floor-4 .gd-reply-context.is-parent');
   await nested.evaluate((el) =>
     window.scrollTo({ top: scrollY + el.getBoundingClientRect().top + 600, behavior: 'instant' }),
   );
   await expect
-    .poll(async () => Math.round((await page.locator('#floor-2 .gd-avatar-rail .gd-avatar').boundingBox()).y))
+    .poll(async () => Math.round((await page.locator('#floor-4 .gd-avatar-rail .gd-avatar').boundingBox()).y))
     .toBe(112);
   assert.equal(Math.round((await nested.locator('.gd-context-avatar-stack .gd-avatar').boundingBox()).y), 112);
   await page
-    .locator('#floor-2 .gd-floor-markdown')
+    .locator('#floor-4 .gd-floor-markdown')
     .evaluate((el) => window.scrollBy({ top: el.getBoundingClientRect().top - 400, behavior: 'instant' }));
-  const bodyBefore = (await page.locator('#floor-2 .gd-floor-markdown').boundingBox()).y;
+  const bodyBefore = (await page.locator('#floor-4 .gd-floor-markdown').boundingBox()).y;
   await nested.getByLabel('收起被回复楼层', { exact: true }).click();
   assert.ok(
-    Math.abs((await page.locator('#floor-2 .gd-floor-markdown').boundingBox()).y - bodyBefore) < 3,
+    Math.abs((await page.locator('#floor-4 .gd-floor-markdown').boundingBox()).y - bodyBefore) < 3,
     'parent collapse must compensate body scroll position',
   );
 

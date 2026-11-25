@@ -1,32 +1,45 @@
 /* ============================================================================
-   GESTURE DETAIL PAGE — TRANSLUCENT FROSTED GLASS & DUAL-AXIS READING SYSTEM
+   GESTURE DETAIL PAGE — NATIVE BLOG FUSION & DUAL-AXIS READING SYSTEM
    Isolated strictly to .gd-detail-root & .gd-popover-anchor (never leaks to board).
    ============================================================================ */
 
 .gd-detail-root,
 .gd-popover-anchor {
-  --gd-glass-bg: rgba(255, 255, 255, 0.84);
-  --gd-glass-border: rgba(15, 23, 42, 0.08);
-  --gd-glass-shadow: 0 24px 48px rgba(15, 23, 42, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.72);
-  --gd-surface-elevated: #ffffff;
-  --gd-surface-subtle: rgba(15, 23, 42, 0.04);
+  --gd-canvas-bg: rgba(255, 255, 255, 0.56);
+  --gd-surface-elevated: rgba(255, 255, 255, 0.96);
+  --gd-surface-subtle: rgba(15, 23, 42, 0.045);
   --gd-surface-hover: rgba(15, 23, 42, 0.08);
-  --gd-code-surface: rgba(241, 245, 249, 0.86);
+  --gd-code-surface: rgba(241, 245, 249, 0.78);
   --gd-border-subtle: rgba(15, 23, 42, 0.1);
-  --gd-boost-bg: rgba(15, 23, 42, 0.045);
-  --gd-boost-text: #334155;
+  --gd-boost-bg: linear-gradient(135deg, rgba(66, 90, 239, 0.08), rgba(147, 51, 234, 0.06));
+  --gd-boost-border: rgba(66, 90, 239, 0.16);
+  --gd-boost-hover-bg: linear-gradient(135deg, rgba(66, 90, 239, 0.14), rgba(147, 51, 234, 0.1));
+  --gd-boost-hover-border: rgba(66, 90, 239, 0.34);
+  --gd-boost-hover-glow: 0 2px 10px rgba(66, 90, 239, 0.12);
+  --gd-boost-text: #1e293b;
   --gd-text: #1e293b;
   --gd-heading: #0f172a;
   --gd-author: #334155;
   --gd-meta: #475569;
   --gd-muted: #64748b;
   --gd-faint: #64748b;
-  --gd-rule: rgba(15, 23, 42, 0.07);
-  --gd-tm-rule: rgba(15, 23, 42, 0.08);
+  --gd-topbar-color: #334155;
+  --gd-topbar-hover-bg: rgba(255, 255, 255, 0.48);
+  --gd-rule: rgba(15, 23, 42, 0.08);
+  --gd-tm-rule: rgba(15, 23, 42, 0.09);
   --gd-rail: rgba(15, 23, 42, 0.22);
-  --gd-tl-track: rgba(15, 23, 42, 0.16);
-  --gd-collapse-bg: rgba(255, 255, 255, 0.9);
-  --gd-mobile-stuck-bg: rgba(255, 255, 255, 0.92);
+  --gd-tl-track: rgba(15, 23, 42, 0.2);
+  --gd-tl-date: #334155;
+  --gd-tl-pill-bg: rgba(255, 255, 255, 0.56);
+  --gd-tl-pill-border: rgba(15, 23, 42, 0.08);
+  --gd-tl-btn-bg: rgba(255, 255, 255, 0.58);
+  --gd-tl-btn-border: rgba(15, 23, 42, 0.08);
+  --gd-tl-btn-hover-bg: rgba(255, 255, 255, 0.86);
+  --gd-tl-btn-active-bg: rgba(66, 90, 239, 0.12);
+  --gd-tl-btn-active-border: rgba(66, 90, 239, 0.32);
+  --gd-tl-btn-color: #475569;
+  --gd-collapse-bg: rgba(255, 255, 255, 0.86);
+  --gd-mobile-stuck-bg: rgba(255, 255, 255, 0.86);
   --gd-accent: var(--theme-main, #425aef);
   --gd-accent-hover: var(--theme-deep, #1856fb);
   --gd-accent-soft: rgba(66, 90, 239, 0.1);
@@ -36,28 +49,41 @@
 }
 
 :root[data-theme='dark'] :is(.gd-detail-root, .gd-popover-anchor) {
-  --gd-glass-bg: rgba(12, 17, 29, 0.52);
-  --gd-glass-border: rgba(255, 255, 255, 0.08);
-  --gd-glass-shadow: 0 24px 48px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  --gd-canvas-bg: rgba(15, 23, 42, 0.38);
   --gd-surface-elevated: rgba(15, 23, 42, 0.96);
-  --gd-surface-subtle: rgba(255, 255, 255, 0.04);
+  --gd-surface-subtle: rgba(255, 255, 255, 0.045);
   --gd-surface-hover: rgba(255, 255, 255, 0.09);
-  --gd-code-surface: rgba(7, 10, 18, 0.65);
+  --gd-code-surface: rgba(7, 10, 18, 0.56);
   --gd-border-subtle: rgba(255, 255, 255, 0.1);
-  --gd-boost-bg: rgba(255, 255, 255, 0.05);
-  --gd-boost-text: #cbd5e1;
+  --gd-boost-bg: linear-gradient(135deg, rgba(56, 189, 248, 0.08), rgba(168, 85, 247, 0.06));
+  --gd-boost-border: rgba(255, 255, 255, 0.08);
+  --gd-boost-hover-bg: linear-gradient(135deg, rgba(56, 189, 248, 0.14), rgba(168, 85, 247, 0.1));
+  --gd-boost-hover-border: rgba(56, 189, 248, 0.3);
+  --gd-boost-hover-glow: 0 0 14px rgba(56, 189, 248, 0.1);
+  --gd-boost-text: #e2e8f0;
   --gd-text: #f1f5f9;
   --gd-heading: #ffffff;
   --gd-author: #e2e8f0;
   --gd-meta: #94a3b8;
   --gd-muted: #64748b;
   --gd-faint: #64748b;
+  --gd-topbar-color: #94a3b8;
+  --gd-topbar-hover-bg: rgba(255, 255, 255, 0.08);
   --gd-rule: rgba(255, 255, 255, 0.06);
   --gd-tm-rule: rgba(255, 255, 255, 0.07);
   --gd-rail: rgba(255, 255, 255, 0.22);
-  --gd-tl-track: rgba(255, 255, 255, 0.14);
-  --gd-collapse-bg: rgba(12, 17, 29, 0.78);
-  --gd-mobile-stuck-bg: rgba(12, 17, 29, 0.88);
+  --gd-tl-track: rgba(255, 255, 255, 0.16);
+  --gd-tl-date: #94a3b8;
+  --gd-tl-pill-bg: rgba(15, 23, 42, 0.38);
+  --gd-tl-pill-border: rgba(255, 255, 255, 0.08);
+  --gd-tl-btn-bg: rgba(15, 23, 42, 0.38);
+  --gd-tl-btn-border: rgba(255, 255, 255, 0.08);
+  --gd-tl-btn-hover-bg: rgba(30, 41, 59, 0.62);
+  --gd-tl-btn-active-bg: rgba(56, 189, 248, 0.14);
+  --gd-tl-btn-active-border: rgba(56, 189, 248, 0.36);
+  --gd-tl-btn-color: #94a3b8;
+  --gd-collapse-bg: rgba(15, 23, 42, 0.78);
+  --gd-mobile-stuck-bg: rgba(15, 23, 42, 0.84);
   --gd-accent: #38bdf8;
   --gd-accent-hover: #7dd3fc;
   --gd-accent-soft: rgba(56, 189, 248, 0.12);
@@ -102,46 +128,28 @@ body:has(.gd-detail-root) :is(#theme-snow-mid, #theme-snow-foreground) {
 }
 
 /* ============================================================================
-   1. CENTERED DUAL-COLUMN SHELL (ONE FROSTED GLASS CARD + TRANSPARENT TIMELINE)
+   1. NATIVE BLOG CANVAS SHELL (EXTERNAL FLOATING TOPBAR + DE-BOXED GLASS + TIMELINE)
    ============================================================================ */
-.gd-detail-grid {
-  max-width: 960px;
+.gd-detail-shell {
+  max-width: 1060px;
   margin: 0 auto;
-  display: flex;
-  align-items: flex-start;
-  gap: 32px;
   background: transparent;
   border: none;
   box-shadow: none;
-  -webkit-backdrop-filter: none;
-  backdrop-filter: none;
 }
 
-/* THE ONLY frosted-glass container on the entire page */
-.gd-monolithic-shell {
-  flex: 1;
-  min-width: 0;
-  padding: 20px 28px 28px;
-  background: var(--gd-glass-bg);
-  -webkit-backdrop-filter: blur(20px) saturate(140%);
-  backdrop-filter: blur(20px) saturate(140%);
-  border: 1px solid var(--gd-glass-border);
-  box-shadow: var(--gd-glass-shadow);
-  border-radius: 14px;
-  color: var(--gd-text);
-}
-
-/* Borderless top bar directly inside main shell */
+/* External floating breadcrumb bar directly over starry universe / winter snowscape */
 .gd-topbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 0 0 14px;
-  margin-bottom: 20px;
+  padding: 0 2px 14px;
+  margin-bottom: 4px;
   background: transparent;
   border: none;
-  border-bottom: 1px solid var(--gd-rule);
+  border-bottom: none;
+  box-shadow: none;
 }
 
 .gd-topbar__actions {
@@ -154,31 +162,60 @@ body:has(.gd-detail-root) :is(#theme-snow-mid, #theme-snow-foreground) {
 .gd-topbar-btn {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  min-height: 30px;
-  padding: 0;
+  gap: 7px;
+  min-height: 32px;
+  padding: 0 10px 0 4px;
   background: transparent;
   border: none;
-  color: var(--gd-muted);
+  border-radius: 8px;
+  color: var(--gd-topbar-color);
   font-size: 13px;
   font-weight: 500;
-  transition: color 0.15s ease;
+  transition: color 0.15s ease, background-color 0.15s ease;
 }
 
 .gd-topbar-btn {
-  width: 30px;
+  width: 32px;
+  height: 32px;
+  padding: 0;
   justify-content: center;
-  border-radius: 6px;
 }
 
 .gd-back-btn:hover,
-.gd-topbar-btn:hover,
-.gd-topbar-btn[aria-pressed='true'] {
+.gd-topbar-btn:hover {
   color: var(--gd-heading);
+  background: var(--gd-topbar-hover-bg);
 }
 
 .gd-topbar-btn[aria-pressed='true'] {
   color: var(--gd-accent);
+  background: var(--gd-accent-soft);
+}
+
+.gd-detail-grid {
+  width: 100%;
+  display: flex;
+  align-items: flex-start;
+  gap: 28px;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+/* Ultra-lightweight native reading canvas (zero outer stroke, zero forum box shadow) */
+.gd-reading-canvas {
+  flex: 1;
+  min-width: 0;
+  padding: 28px 36px 36px;
+  background: var(--gd-canvas-bg);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+  border: none;
+  box-shadow: none;
+  border-radius: 14px;
+  color: var(--gd-text);
 }
 
 .gd-error-banner {
@@ -282,6 +319,7 @@ body:has(.gd-detail-root) :is(#theme-snow-mid, #theme-snow-foreground) {
 .gd-avatar--24 { width: 24px; height: 24px; font-size: 10px; }
 .gd-avatar--20 { width: 20px; height: 20px; font-size: 10px; }
 .gd-avatar--18 { width: 18px; height: 18px; font-size: 10px; }
+.gd-avatar--16 { width: 16px; height: 16px; font-size: 9px; }
 
 .gd-avatar img {
   width: 100%;
@@ -559,6 +597,11 @@ body:has(.gd-detail-root) :is(#theme-snow-mid, #theme-snow-foreground) {
   gap: 14px;
 }
 
+.gd-zone4-right {
+  margin-left: auto;
+  gap: 6px;
+}
+
 .gd-icon-btn,
 .gd-agg-emoji-pill,
 .gd-direct-replies-btn,
@@ -592,6 +635,7 @@ body:has(.gd-detail-root) :is(#theme-snow-mid, #theme-snow-foreground) {
 }
 
 .gd-zone4-action-bar button:hover,
+.gd-zone4-action-bar a:hover,
 .gd-reply-target-pill:hover,
 .gd-reply-target-pill.is-expanded {
   color: var(--gd-heading);
@@ -608,10 +652,10 @@ body:has(.gd-detail-root) :is(#theme-snow-mid, #theme-snow-foreground) {
   color: var(--gd-danger);
 }
 
-/* Aggregated Emoji Cluster: 1px icon gap, 6px gap to count */
+/* Aggregated Emoji Cluster: 1px icon gap, 6px gap to count + crisp heart trigger */
 .gd-agg-emoji-pill {
   gap: 6px;
-  padding-inline: 0;
+  padding-inline: 4px;
 }
 
 .gd-agg-emoji-icons {
@@ -627,22 +671,50 @@ body:has(.gd-detail-root) :is(#theme-snow-mid, #theme-snow-foreground) {
   font-variant-numeric: tabular-nums;
 }
 
+.gd-agg-emoji-sep {
+  width: 1px;
+  height: 12px;
+  background: var(--gd-rule);
+}
+
+.gd-agg-heart-icon {
+  flex-shrink: 0;
+  color: inherit;
+}
+
+.gd-agg-emoji-pill[data-reacted='true'] .gd-agg-heart-icon {
+  fill: currentColor;
+}
+
+/* Inline smooth [•••] reveal: expands [🚩] & [🔖] horizontally with zero overlap */
 .gd-more-drawer {
-  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.gd-more-drawer__tray {
+  display: grid;
+  grid-template-columns: 0fr;
+  opacity: 0;
+  visibility: hidden;
+  transition: grid-template-columns 0.2s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.18s ease,
+    visibility 0.18s ease;
+}
+
+.gd-more-drawer__tray.is-open {
+  grid-template-columns: 1fr;
+  opacity: 1;
+  visibility: visible;
 }
 
 .gd-more-drawer__items {
-  position: absolute;
-  display: flex;
-  gap: 2px;
-  right: 0;
-  bottom: calc(100% + 6px);
-  padding: 4px;
-  z-index: 6;
-  background: var(--gd-surface-elevated);
-  border: 1px solid var(--gd-border-subtle);
-  border-radius: 8px;
-  box-shadow: var(--gd-shadow);
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
 }
 
 /* Forced Upward Popover (`bottom: calc(100% + 8px)`) */
@@ -709,7 +781,7 @@ body:has(.gd-detail-root) :is(#theme-snow-mid, #theme-snow-foreground) {
 }
 
 /* ============================================================================
-   6. BOOST HORIZONTAL ROW-WRAP PILL FLOW (STRICT 56px AXIS, <= 16 CHARS)
+   6. BOOST HORIZONTAL ROW-WRAP SHIMMER PILLS (STRICT 56px AXIS, <= 16 CHARS)
    ============================================================================ */
 .gd-zone3-boost {
   display: flex;
@@ -728,18 +800,26 @@ body:has(.gd-detail-root) :is(#theme-snow-mid, #theme-snow-foreground) {
   width: fit-content;
   max-width: 100%;
   gap: 5px;
-  padding: 3px 10px;
+  padding: 3px 11px;
   border-radius: 9999px;
   background: var(--gd-boost-bg);
-  border: none;
+  border: 1px solid var(--gd-boost-border);
   font-size: 12px;
   line-height: 1.5;
   color: var(--gd-boost-text);
   white-space: nowrap;
+  transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.gd-boost-pill:hover {
+  background: var(--gd-boost-hover-bg);
+  border-color: var(--gd-boost-hover-border);
+  box-shadow: var(--gd-boost-hover-glow);
 }
 
 .gd-boost-pill__author {
-  color: var(--gd-muted);
+  color: var(--gd-meta);
+  font-weight: 500;
   max-width: 6em;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -762,19 +842,21 @@ body:has(.gd-detail-root) :is(#theme-snow-mid, #theme-snow-foreground) {
   gap: 4px;
   padding: 3px 10px;
   border-radius: 9999px;
-  border: none;
+  border: 1px solid var(--gd-boost-border);
   background: var(--gd-boost-bg);
-  color: var(--gd-muted);
+  color: var(--gd-meta);
   font-size: 12px;
   line-height: 1.5;
   white-space: nowrap;
-  transition: color 0.15s ease, background-color 0.15s ease;
+  transition: color 0.18s ease, border-color 0.18s ease, background 0.18s ease, box-shadow 0.18s ease;
 }
 
 .gd-boost-add:hover,
 .gd-boost-add.is-open {
-  color: var(--gd-heading);
-  background: var(--gd-surface-hover);
+  color: var(--gd-accent);
+  background: var(--gd-boost-hover-bg);
+  border-color: var(--gd-boost-hover-border);
+  box-shadow: var(--gd-boost-hover-glow);
 }
 
 .gd-boost-inline-form {
@@ -1244,10 +1326,14 @@ body:has(.gd-detail-root) :is(#theme-snow-mid, #theme-snow-foreground) {
 }
 
 /* ============================================================================
-   9. STREAM TOOLS, PAGINATION, INLINE EDIT, REPLY COMPOSER & SUBSCRIBE
+   9. PAGINATION, INLINE EDIT, REPLY COMPOSER & SUBSCRIBE
    ============================================================================ */
-.gd-pages,
-.gd-stream-tools {
+/* Topic Map bottom hairline flows directly into the first SubGesture (zero double border) */
+.gd-topic-info + .gd-floor-article {
+  border-top: none;
+}
+
+.gd-pages {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1258,19 +1344,7 @@ body:has(.gd-detail-root) :is(#theme-snow-mid, #theme-snow-foreground) {
   border-top: 1px solid var(--gd-rule);
 }
 
-.gd-topic-info + .gd-stream-tools {
-  border-top: none;
-}
-
-.gd-stream-tools h2 {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--gd-meta);
-  margin: 0;
-}
-
-.gd-pages button,
-.gd-stream-tools button {
+.gd-pages button {
   min-height: 30px;
   border: none;
   background: transparent;
@@ -1280,9 +1354,7 @@ body:has(.gd-detail-root) :is(#theme-snow-mid, #theme-snow-foreground) {
   transition: color 0.15s ease;
 }
 
-.gd-pages button:hover:not(:disabled),
-.gd-stream-tools button:hover,
-.gd-stream-tools button[aria-pressed='true'] {
+.gd-pages button:hover:not(:disabled) {
   color: var(--gd-accent);
 }
 
@@ -1597,7 +1669,7 @@ body:has(.gd-detail-root) :is(#theme-snow-mid, #theme-snow-foreground) {
 .gd-timeline-aside {
   position: sticky;
   top: 88px;
-  width: 96px;
+  width: 132px;
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
@@ -1615,15 +1687,24 @@ body:has(.gd-detail-root) :is(#theme-snow-mid, #theme-snow-foreground) {
 }
 
 .gd-tl-start {
-  color: var(--gd-muted);
-  font-size: 11.5px;
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  background: var(--gd-tl-pill-bg);
+  border: 1px solid var(--gd-tl-pill-border);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  color: var(--gd-tl-date);
+  font-size: 11px;
+  line-height: 1.4;
   white-space: nowrap;
 }
 
 .gd-tl-track-wrap {
   position: relative;
   width: 100%;
-  height: clamp(180px, 32vh, 260px);
+  height: 220px;
 }
 
 .gd-tl-rail {
@@ -1724,13 +1805,17 @@ body:has(.gd-detail-root) :is(#theme-snow-mid, #theme-snow-foreground) {
 
 .gd-tl-latest,
 .gd-tl-readout time {
-  color: var(--gd-muted);
+  color: var(--gd-tl-date);
   font-size: 11px;
   display: block;
   white-space: nowrap;
 }
 
-/* Cross-floor jump return anchor: ├─ 返回 */
+.gd-tl-latest {
+  padding-left: 2px;
+}
+
+/* Cross-floor jump return anchor: ├─ [ 返回 ] */
 .gd-return {
   position: absolute;
   left: 9px;
@@ -1738,12 +1823,12 @@ body:has(.gd-detail-root) :is(#theme-snow-mid, #theme-snow-foreground) {
   display: inline-flex;
   align-items: center;
   height: 24px;
-  gap: 6px;
+  gap: 4px;
   padding: 0;
   border: none;
   background: transparent;
   color: var(--gd-accent);
-  font-size: 12px;
+  font-size: 11.5px;
   font-weight: 500;
   white-space: nowrap;
   transition: opacity 0.2s ease, color 0.15s ease;
@@ -1752,13 +1837,30 @@ body:has(.gd-detail-root) :is(#theme-snow-mid, #theme-snow-foreground) {
 
 .gd-return::before {
   content: '';
-  width: 12px;
+  width: 10px;
   height: 1px;
   background: var(--gd-accent);
 }
 
+.gd-return span {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 7px;
+  border-radius: 6px;
+  background: var(--gd-tl-btn-bg);
+  border: 1px solid var(--gd-tl-btn-active-border);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  line-height: 1.5;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
 .gd-return:hover {
   color: var(--gd-accent-hover);
+}
+
+.gd-return:hover span {
+  background: var(--gd-tl-btn-active-bg);
 }
 
 .gd-return.is-fading {
@@ -1770,53 +1872,53 @@ body:has(.gd-detail-root) :is(#theme-snow-mid, #theme-snow-foreground) {
   transform: translateY(var(--readout-shift));
 }
 
-/* Bottom borderless minimal timeline action buttons: [📚 熱門], [↩], [🔔] */
+/* Bottom horizontal compact row of 3 lightweight glass micro-buttons: [📖 熱門] [↩] [🔔] */
 .gd-tl-actions {
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 10px;
-  margin-top: 6px;
-}
-
-.gd-tl-hot-btn {
-  display: inline-flex;
+  flex-direction: row;
   align-items: center;
-  gap: 5px;
-  border: none;
-  background: transparent;
-  padding: 2px 0;
-  color: var(--gd-muted);
-  font-size: 12px;
-  white-space: nowrap;
-  transition: color 0.15s ease;
+  flex-wrap: nowrap;
+  gap: 6px;
+  margin-top: 2px;
 }
 
-.gd-tl-icon-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.gd-tl-icon-row button {
+.gd-tl-glass-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border: none;
-  background: transparent;
-  padding: 3px 0;
-  color: var(--gd-muted);
-  transition: color 0.15s ease;
+  height: 28px;
+  border-radius: 8px;
+  border: 1px solid var(--gd-tl-btn-border);
+  background: var(--gd-tl-btn-bg);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  color: var(--gd-tl-btn-color);
+  white-space: nowrap;
+  transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease;
 }
 
-.gd-tl-hot-btn:hover,
-.gd-tl-icon-row button:hover {
+.gd-tl-hot-btn {
+  gap: 4px;
+  padding: 0 9px;
+  font-size: 11.5px;
+  font-weight: 500;
+}
+
+.gd-tl-icon-btn {
+  width: 28px;
+  padding: 0;
+}
+
+.gd-tl-glass-btn:hover {
   color: var(--gd-heading);
+  background: var(--gd-tl-btn-hover-bg);
+  border-color: var(--gd-tl-btn-active-border);
 }
 
-.gd-tl-hot-btn.is-active,
-.gd-tl-icon-row button.is-active {
+.gd-tl-glass-btn.is-active {
   color: var(--gd-accent);
+  background: var(--gd-tl-btn-active-bg);
+  border-color: var(--gd-tl-btn-active-border);
 }
 
 /* Floor highlight animation after cross-jump */
@@ -1846,7 +1948,12 @@ body:has(.gd-detail-root) :is(#theme-snow-mid, #theme-snow-foreground) {
    ============================================================================ */
 @media (max-width: 760px) {
   .gd-detail-root {
-    margin-top: 12px;
+    margin-top: 8px;
+  }
+
+  .gd-topbar {
+    padding: 0 0 10px;
+    margin-bottom: 2px;
   }
 
   .gd-detail-grid {
@@ -1855,8 +1962,16 @@ body:has(.gd-detail-root) :is(#theme-snow-mid, #theme-snow-foreground) {
     gap: 12px;
   }
 
-  .gd-monolithic-shell {
-    padding: 16px 16px 24px;
+  .gd-reading-canvas {
+    padding: 18px 16px 24px;
+  }
+
+  .gd-zone4-right {
+    gap: 2px;
+  }
+
+  .gd-zone4-right .gd-icon-btn:not(.is-reply-primary) {
+    width: 28px;
   }
 
   .gd-floor-article {
@@ -1876,8 +1991,8 @@ body:has(.gd-detail-root) :is(#theme-snow-mid, #theme-snow-foreground) {
     align-items: center;
     top: 60px;
     z-index: 5;
-    padding: 8px 12px;
-    gap: 10px;
+    padding: 6px 10px;
+    gap: 8px;
     border-radius: 10px;
     background: transparent;
     border: none;
@@ -1888,6 +2003,11 @@ body:has(.gd-detail-root) :is(#theme-snow-mid, #theme-snow-foreground) {
     background: var(--gd-mobile-stuck-bg);
     -webkit-backdrop-filter: blur(16px);
     backdrop-filter: blur(16px);
+  }
+
+  .gd-tl-start {
+    padding: 1px 6px;
+    font-size: 11px;
   }
 
   .gd-tl-track-wrap {
@@ -1926,16 +2046,17 @@ body:has(.gd-detail-root) :is(#theme-snow-mid, #theme-snow-foreground) {
   .gd-tl-actions {
     flex-direction: row;
     align-items: center;
-    gap: 8px;
+    gap: 5px;
     margin-top: 0;
+  }
+
+  .gd-tl-hot-btn {
+    width: 28px;
+    padding: 0;
   }
 
   .gd-tl-hot-btn span {
     display: none;
-  }
-
-  .gd-tl-icon-row {
-    gap: 8px;
   }
 }
 

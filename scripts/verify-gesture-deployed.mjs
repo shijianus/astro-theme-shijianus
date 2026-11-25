@@ -126,6 +126,7 @@ try {
   ];
   for (const [width, height] of sizes) {
     await page.setViewportSize({ width, height });
+    await page.mouse.move(0, 0);
     await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
     await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
 
@@ -134,7 +135,9 @@ try {
       const style = (selector) => getComputedStyle(document.querySelector(selector));
       const left = rect('.gd-zone1-title').x;
       const content = rect('#floor-1 .gd-floor-markdown').x;
-      const gridBox = rect('.gd-detail-grid');
+      const shellBox = rect('.gd-detail-shell');
+      const canvas = document.querySelector('.gd-reading-canvas');
+      const topbar = document.querySelector('.gd-topbar');
       const leftTargets = [
         '.gd-zone1-tags',
         '.gd-zone6-topic-map',
@@ -151,18 +154,26 @@ try {
         .every((selector) => style(selector).borderWidth === '0px');
       const boostFlow = document.querySelector('#floor-1 .gd-zone3-boost');
       const boostStyle = boostFlow ? getComputedStyle(boostFlow) : null;
+      const boostPills = [...document.querySelectorAll('#floor-1 .gd-boost-pill')];
+      const tlButtons = [...document.querySelectorAll('.gd-tl-actions > button')];
+      const tlButtonYs = tlButtons.map((b) => Math.round(b.getBoundingClientRect().y));
       return {
         overflow: document.documentElement.scrollWidth - innerWidth,
         leftAxisError: Math.max(...leftTargets.map((selector) => Math.abs(rect(selector).x - left))),
         contentAxis: Math.round(content - left),
         contentAxisError: Math.max(...contentTargets.map((selector) => Math.abs(rect(selector).x - content))),
-        centerError: Math.abs(gridBox.x + gridBox.width / 2 - innerWidth / 2),
-        gridWidth: gridBox.width,
+        centerError: Math.abs(shellBox.x + shellBox.width / 2 - innerWidth / 2),
+        shellWidth: shellBox.width,
+        monolithicGone: document.querySelectorAll('.gd-monolithic-shell').length === 0,
+        streamToolsGone: document.querySelectorAll('.gd-stream-tools').length === 0,
+        topbarExternal: !canvas.contains(topbar),
+        topbarBottomBorder: style('.gd-topbar').borderBottomWidth,
         gridBg: style('.gd-detail-grid').backgroundColor,
-        shellBg: style('.gd-monolithic-shell').backgroundColor,
-        shellBlur: style('.gd-monolithic-shell').backdropFilter,
-        shellBorder: style('.gd-monolithic-shell').borderColor,
-        shellRadius: style('.gd-monolithic-shell').borderRadius,
+        gridGap: style('.gd-detail-grid').columnGap || style('.gd-detail-grid').gap,
+        canvasBg: style('.gd-reading-canvas').backgroundColor,
+        canvasBlur: style('.gd-reading-canvas').backdropFilter,
+        canvasBorderWidth: style('.gd-reading-canvas').borderTopWidth,
+        canvasShadow: style('.gd-reading-canvas').boxShadow,
         title: [style('.gd-zone1-title').fontSize, style('.gd-zone1-title').color],
         body: [
           style('.gd-floor-markdown').fontSize,
@@ -174,11 +185,14 @@ try {
         boostFlow: boostStyle
           ? { dir: boostStyle.flexDirection, wrap: boostStyle.flexWrap, ml: boostStyle.marginLeft, gap: boostStyle.gap }
           : null,
+        boostShimmerOk: boostPills.every((p) => getComputedStyle(p).backgroundImage.includes('linear-gradient') && getComputedStyle(p).borderTopWidth === '1px'),
         railWidth: getComputedStyle(document.querySelector('.gd-tl-rail'), '::before').width,
+        trackHeight: innerWidth > 760 ? Math.round(rect('.gd-tl-track-wrap').height) : null,
         thumbWidth: style('.gd-tl-thumb').width,
         thumbColor: style('.gd-tl-thumb').backgroundColor,
         railChildren: document.querySelector('.gd-tl-rail').children.length,
         timelineBg: style('.gd-timeline-aside').backgroundColor,
+        tlActionsRow: tlButtons.length === 3 && Math.max(...tlButtonYs) - Math.min(...tlButtonYs) <= 2,
         activityWhiteSpace: style('.gd-tl-latest').whiteSpace,
         opAvatar: rect('#floor-1 .gd-avatar-rail .gd-avatar').width,
         subAvatars: Array.from(document.querySelectorAll('.is-sub-floor .gd-avatar-rail .gd-avatar'), (el) =>
@@ -190,24 +204,32 @@ try {
     assert.equal(geometry.overflow, 0, JSON.stringify(geometry));
     assert.ok(geometry.leftAxisError < 1 && geometry.contentAxisError < 1, JSON.stringify(geometry));
     assert.equal(geometry.contentAxis, 56, JSON.stringify(geometry));
-    assert.ok(geometry.gridWidth <= 960 && geometry.centerError < 2, JSON.stringify(geometry));
+    assert.ok(geometry.shellWidth <= 1060 && geometry.centerError < 2, JSON.stringify(geometry));
+    assert.equal(geometry.monolithicGone, true);
+    assert.equal(geometry.streamToolsGone, true);
+    assert.equal(geometry.topbarExternal, true);
+    assert.equal(geometry.topbarBottomBorder, '0px');
     assert.equal(geometry.gridBg, 'rgba(0, 0, 0, 0)');
-    assert.equal(geometry.shellBg, 'rgba(12, 17, 29, 0.52)');
-    assert.equal(geometry.shellBlur, 'blur(20px) saturate(1.4)');
-    assert.equal(geometry.shellBorder, 'rgba(255, 255, 255, 0.08)');
-    assert.equal(geometry.shellRadius, '14px');
+    if (width > 760) assert.equal(geometry.gridGap, '28px');
+    assert.equal(geometry.canvasBg, 'rgba(15, 23, 42, 0.38)');
+    assert.equal(geometry.canvasBlur, 'blur(16px)');
+    assert.equal(geometry.canvasBorderWidth, '0px');
+    assert.equal(geometry.canvasShadow, 'none');
     assert.deepEqual(geometry.title, ['26px', 'rgb(255, 255, 255)']);
     assert.deepEqual(geometry.body, ['16px', '28.8px', 'rgb(241, 245, 249)']);
     assert.equal(geometry.icon, 'rgb(100, 116, 139)');
     assert.ok(geometry.borderless);
     if (geometry.boostFlow) {
       assert.deepEqual(geometry.boostFlow, { dir: 'row', wrap: 'wrap', ml: '56px', gap: '6px' });
+      assert.equal(geometry.boostShimmerOk, true);
     }
     assert.equal(geometry.railWidth, '2px');
+    if (width > 760) assert.equal(geometry.trackHeight, 220);
     assert.equal(geometry.thumbWidth, '3px');
     assert.equal(geometry.thumbColor, 'rgb(56, 189, 248)');
     assert.equal(geometry.railChildren, 1);
     assert.equal(geometry.timelineBg, 'rgba(0, 0, 0, 0)');
+    assert.equal(geometry.tlActionsRow, true);
     if (width <= 760) assert.equal(geometry.activityWhiteSpace, 'nowrap');
     assert.equal(geometry.opAvatar, 42);
     assert.ok(geometry.subAvatars.every((value) => value === 36));
@@ -291,8 +313,8 @@ try {
   await expect(page.locator('.snackbar-container.show')).toHaveCount(0, { timeout: 10000 });
   await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
   assert.equal(
-    await page.locator('.gd-monolithic-shell').evaluate((el) => getComputedStyle(el).backgroundColor),
-    'rgba(255, 255, 255, 0.84)',
+    await page.locator('.gd-reading-canvas').evaluate((el) => getComputedStyle(el).backgroundColor),
+    'rgba(255, 255, 255, 0.56)',
   );
   await screenshot('light-1440');
 

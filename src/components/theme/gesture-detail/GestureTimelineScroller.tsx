@@ -410,36 +410,36 @@ export function GestureTimelineScroller({
       <div className="gd-tl-actions">
         <button
           type="button"
-          className={`gd-tl-hot-btn ${hotOnly ? 'is-active' : ''}`}
+          className={`gd-tl-glass-btn gd-tl-hot-btn ${hotOnly ? 'is-active' : ''}`}
           aria-pressed={hotOnly}
           aria-label={hotOnly ? '查看全部回复' : '只看热门回复'}
           title={hotOnly ? '查看全部回复' : '只看热门回复'}
           onClick={onToggleHot}
         >
-          <BookOpen size={13} />
+          <BookOpen size={12} />
           <span>熱門</span>
         </button>
 
-        <div className="gd-tl-icon-row">
-          <button
-            type="button"
-            aria-label="回复主贴"
-            title="回复主贴"
-            onClick={onQuickReply}
-          >
-            <Reply size={14} />
-          </button>
-          <button
-            type="button"
-            className={subscribed ? 'is-active' : ''}
-            aria-pressed={subscribed}
-            aria-label={subscribed ? '已订阅讨论' : '订阅讨论'}
-            title={subscribed ? '已订阅讨论' : '订阅讨论'}
-            onClick={onToggleSubscribe}
-          >
-            <Bell size={14} />
-          </button>
-        </div>
+        <button
+          type="button"
+          className="gd-tl-glass-btn gd-tl-icon-btn"
+          aria-label="回复主贴"
+          title="回复主贴"
+          onClick={onQuickReply}
+        >
+          <Reply size={13} />
+        </button>
+
+        <button
+          type="button"
+          className={`gd-tl-glass-btn gd-tl-icon-btn ${subscribed ? 'is-active' : ''}`}
+          aria-pressed={subscribed}
+          aria-label={subscribed ? '已订阅讨论' : '订阅讨论'}
+          title={subscribed ? '已订阅讨论' : '订阅讨论'}
+          onClick={onToggleSubscribe}
+        >
+          <Bell size={13} />
+        </button>
       </div>
     </aside>
   );

@@ -75,15 +75,22 @@ export function EmojiReactionCluster({
         }}
       >
         {entries.length > 0 ? (
-          <span className="gd-agg-emoji-icons">
-            {entries.slice(0, 4).map(([emoji]) => (
-              <span key={emoji}>{emoji}</span>
-            ))}
-          </span>
+          <>
+            <span className="gd-agg-emoji-icons">
+              {entries.slice(0, 4).map(([emoji]) => (
+                <span key={emoji}>{emoji}</span>
+              ))}
+            </span>
+            {totalLikes > 0 && <span className="gd-agg-emoji-count">{totalLikes}</span>}
+            <span className="gd-agg-emoji-sep" aria-hidden="true" />
+            <Heart size={15} className="gd-agg-heart-icon" />
+          </>
         ) : (
-          <Heart size={16} />
+          <>
+            <Heart size={16} className="gd-agg-heart-icon" />
+            {totalLikes > 0 && <span className="gd-agg-emoji-count">{totalLikes}</span>}
+          </>
         )}
-        {totalLikes > 0 && <span className="gd-agg-emoji-count">{totalLikes}</span>}
       </button>
 
       {panel && (
