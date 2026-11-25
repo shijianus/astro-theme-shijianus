@@ -82,14 +82,17 @@ export function GestureReplyContext({
               <div className="gd-context-heading">
                 <strong>{node.authorName}</strong>
                 <time dateTime={node.createdAt}>{formatMonthDay(node.createdAt)}</time>
-                <button
-                  type="button"
-                  onClick={() => onJump(node.floorIndex!, origin)}
-                  aria-label={`跳至第 ${node.floorIndex} 楼贴文`}
-                >
-                  <JumpIcon size={13} />
-                  <span>跳至贴文</span>
-                </button>
+                {isParent && (
+                  <button
+                    type="button"
+                    className="gd-context-jump-btn"
+                    onClick={() => onJump(node.floorIndex!, origin)}
+                    aria-label={`跳至第 ${node.floorIndex} 楼贴文`}
+                  >
+                    <JumpIcon size={13} />
+                    <span>跳至贴文</span>
+                  </button>
+                )}
               </div>
 
               <div
@@ -97,16 +100,30 @@ export function GestureReplyContext({
                 dangerouslySetInnerHTML={{ __html: renderGestureMarkdown(node.message) }}
               />
 
-              {nested.length > 0 && (
-                <button
-                  type="button"
-                  className="gd-nested-replies-toggle"
-                  aria-expanded={isNestedOpen}
-                  onClick={() => setExpandedIds((prev) => ({ ...prev, [node.id]: !prev[node.id] }))}
-                >
-                  <span>{nested.length} 条回复</span>
-                  {isNestedOpen ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
-                </button>
+              {!isParent && (
+                <div className="gd-context-footer">
+                  <button
+                    type="button"
+                    className="gd-context-jump-btn"
+                    onClick={() => onJump(node.floorIndex!, origin)}
+                    aria-label={`跳至第 ${node.floorIndex} 楼贴文`}
+                  >
+                    <JumpIcon size={13} />
+                    <span>跳至贴文</span>
+                  </button>
+
+                  {nested.length > 0 && (
+                    <button
+                      type="button"
+                      className="gd-nested-replies-toggle"
+                      aria-expanded={isNestedOpen}
+                      onClick={() => setExpandedIds((prev) => ({ ...prev, [node.id]: !prev[node.id] }))}
+                    >
+                      <span>{nested.length} 条回复</span>
+                      {isNestedOpen ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
+                    </button>
+                  )}
+                </div>
               )}
 
               {nested.length > 0 && isNestedOpen && (

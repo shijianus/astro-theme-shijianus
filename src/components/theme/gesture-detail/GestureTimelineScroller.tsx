@@ -57,6 +57,7 @@ export function GestureTimelineScroller({
 
   const railRef = useRef<HTMLDivElement>(null);
   const isDraggingRef = useRef(false);
+  const dragRailRectRef = useRef<{ top: number; height: number } | null>(null);
   const dragRafRef = useRef(0);
   const pendingRatioRef = useRef<number | null>(null);
 
@@ -172,6 +173,10 @@ export function GestureTimelineScroller({
   }, [page, floors, content]);
 
   const computeRatio = useCallback((clientY: number): number => {
+    const locked = dragRailRectRef.current;
+    if (locked && locked.height > 0) {
+      return clamp01((clientY - locked.top) / locked.height);
+    }
     const rail = railRef.current;
     if (!rail) return 0;
     const rect = rail.getBoundingClientRect();
@@ -237,6 +242,8 @@ export function GestureTimelineScroller({
 
   const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     if (e.button !== 0) return;
+    const rect = railRef.current?.getBoundingClientRect();
+    dragRailRectRef.current = rect && rect.height > 0 ? { top: rect.top, height: rect.height } : null;
     isDraggingRef.current = true;
     setIsDragging(true);
     e.currentTarget.setPointerCapture(e.pointerId);
@@ -264,6 +271,7 @@ export function GestureTimelineScroller({
     const finalRatio = commit ? computeRatio(e.clientY) : (pendingRatioRef.current ?? 0);
     const targetFloor = total > 1 ? Math.round(finalRatio * (total - 1)) + 1 : 1;
     pendingRatioRef.current = null;
+    dragRailRectRef.current = null;
     isDraggingRef.current = false;
     setIsDragging(false);
 

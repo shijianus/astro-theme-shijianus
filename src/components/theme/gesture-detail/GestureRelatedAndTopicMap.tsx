@@ -193,9 +193,7 @@ export function GestureRelatedAndTopicMap({ relatedLinks, topicMap, gesture, sub
                 type="button"
                 aria-label="从主贴开始阅读"
                 title="从主贴开始阅读"
-                onClick={() =>
-                  document.getElementById('floor-1')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-                }
+                onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
               >
                 <BookOpen size={15} />
               </button>
