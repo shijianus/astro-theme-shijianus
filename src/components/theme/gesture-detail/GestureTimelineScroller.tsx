@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type RefObject } from 'react';
-import { Bell, BookOpen, Reply } from 'lucide-react';
+import { Bell, BookOpen, Library, Reply } from 'lucide-react';
 import { gestureTimestamp } from '../../../lib/gesture-text';
 import {
   formatCompactRelative,
@@ -302,6 +302,16 @@ export function GestureTimelineScroller({
 
   return (
     <aside className="gd-timeline-aside" aria-label="楼层时间轴">
+      <button
+        type="button"
+        className="gd-tl-top-btn"
+        aria-label="回到主贴顶部"
+        title="回到主贴顶部"
+        onClick={() => onJump(1)}
+      >
+        <BookOpen size={14} />
+      </button>
+
       <time
         className="gd-tl-start"
         dateTime={floors[0]?.createdAt}
@@ -416,7 +426,7 @@ export function GestureTimelineScroller({
           title={hotOnly ? '查看全部回复' : '只看热门回复'}
           onClick={onToggleHot}
         >
-          <BookOpen size={12} />
+          <Library size={13} />
           <span>熱門</span>
         </button>
 
@@ -427,7 +437,7 @@ export function GestureTimelineScroller({
           title="回复主贴"
           onClick={onQuickReply}
         >
-          <Reply size={13} />
+          <Reply size={14} />
         </button>
 
         <button
@@ -438,7 +448,7 @@ export function GestureTimelineScroller({
           title={subscribed ? '已订阅讨论' : '订阅讨论'}
           onClick={onToggleSubscribe}
         >
-          <Bell size={13} />
+          <Bell size={14} />
         </button>
       </div>
     </aside>
