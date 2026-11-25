@@ -62,8 +62,7 @@ export function GestureBoostSection({
         const displayText = normalizeBoostDisplay(b.content, b.id);
         return (
           <span key={b.id} className="gd-boost-pill" title={`${b.authorName}: ${displayText}`}>
-            <GestureAvatar name={b.authorName} avatar={b.authorAvatar} size={16} />
-            <span className="gd-boost-pill__author">{b.authorName}:</span>
+            <GestureAvatar name={b.authorName} avatar={b.authorAvatar} size={20} />
             <span className="gd-boost-pill__content">{displayText}</span>
           </span>
         );

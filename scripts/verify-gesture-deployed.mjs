@@ -157,8 +157,21 @@ try {
       const boostPills = [...document.querySelectorAll('#floor-1 .gd-boost-pill')];
       const tlButtons = [...document.querySelectorAll('.gd-tl-actions > button')];
       const tlButtonYs = tlButtons.map((b) => Math.round(b.getBoundingClientRect().y));
+      const tlTopBtn = document.querySelector('.gd-tl-top-btn');
+      const tlTopStyle = tlTopBtn ? getComputedStyle(tlTopBtn) : null;
+      const tlTopRect = tlTopBtn ? tlTopBtn.getBoundingClientRect() : null;
       const opLeft = document.querySelector('#floor-1 .gd-zone4-left');
       const opRight = document.querySelector('#floor-1 .gd-zone4-right');
+      const headerRef = document.querySelector('.gd-zone1-tags') || document.querySelector('.gd-zone1-title');
+      const opMainTop = document.querySelector('#floor-1 .gd-floor-main').getBoundingClientRect().top;
+      const headerToOpGap = Math.round(opMainTop - headerRef.getBoundingClientRect().bottom);
+      const asideTop = rect('.gd-timeline-aside').top;
+      const opAvatarTop = rect('#floor-1 .gd-avatar-rail .gd-avatar').top;
+      const tmStyle = style('.gd-zone6-topic-map');
+      const parseRgba = (str) => {
+        const m = str.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/);
+        return m ? { r: +m[1], g: +m[2], b: +m[3], a: m[4] === undefined ? 1 : +m[4] } : null;
+      };
       return {
         overflow: document.documentElement.scrollWidth - innerWidth,
         leftAxisError: Math.max(...leftTargets.map((selector) => Math.abs(rect(selector).x - left))),
@@ -174,6 +187,10 @@ try {
         topbarExternal: !canvas.contains(topbar),
         topbarBottomBorder: style('.gd-topbar').borderBottomWidth,
         navClearance: Math.round(rect('.gd-topbar').y - rect('#nav').bottom),
+        headerToOpGap,
+        topicMapPadding: [tmStyle.paddingTop, tmStyle.paddingBottom],
+        ruleColor: tmStyle.borderTopColor,
+        timelineVsOpAvatarDelta: innerWidth > 760 ? Math.round(asideTop - opAvatarTop) : null,
         gridBg: style('.gd-detail-grid').backgroundColor,
         gridGap: style('.gd-detail-grid').columnGap || style('.gd-detail-grid').gap,
         canvasBg: style('.gd-reading-canvas').backgroundColor,
@@ -189,6 +206,7 @@ try {
         ],
         icon: style('.gd-icon-btn').color,
         directReplyColor: opLeft.querySelector('.gd-direct-replies-btn') ? getComputedStyle(opLeft.querySelector('.gd-direct-replies-btn')).color : null,
+        directReplyBorderWidth: opLeft.querySelector('.gd-direct-replies-btn') ? getComputedStyle(opLeft.querySelector('.gd-direct-replies-btn')).borderTopWidth : null,
         emojiInLeft: Boolean(opLeft.querySelector('.gd-agg-emoji-pill')) && !opRight.querySelector('.gd-agg-emoji-pill'),
         leftGap: getComputedStyle(opLeft).gap,
         rightGap: getComputedStyle(opRight).gap,
@@ -196,20 +214,58 @@ try {
         boostFlow: boostStyle
           ? { dir: boostStyle.flexDirection, wrap: boostStyle.flexWrap, ml: boostStyle.marginLeft, gap: boostStyle.gap }
           : null,
-        boostMatteOk: boostPills.every(
-          (p) =>
-            getComputedStyle(p).backgroundImage === 'none' &&
-            getComputedStyle(p).backgroundColor === 'rgba(255, 255, 255, 0.04)' &&
-            getComputedStyle(p).borderTopColor === 'rgba(255, 255, 255, 0.08)' &&
-            Math.round(p.querySelector('.gd-avatar')?.getBoundingClientRect().width || 0) === 16,
-        ),
+        boostMatteOk: boostPills.every((p) => {
+          const ps = getComputedStyle(p);
+          const bg = parseRgba(ps.backgroundColor);
+          return (
+            ps.backgroundImage === 'none' &&
+            bg &&
+            bg.r === 255 &&
+            bg.g === 255 &&
+            bg.b === 255 &&
+            Math.abs(bg.a - 0.065) < 0.005 &&
+            ps.borderTopWidth === '0px' &&
+            ps.fontSize === '12.5px' &&
+            ps.color === 'rgb(212, 212, 216)' &&
+            p.querySelector('.gd-boost-pill__author') === null &&
+            Math.round(p.querySelector('.gd-avatar')?.getBoundingClientRect().width || 0) === 20
+          );
+        }),
         railWidth: getComputedStyle(document.querySelector('.gd-tl-rail'), '::before').width,
+        railTrackColor: getComputedStyle(document.querySelector('.gd-tl-rail'), '::before').backgroundColor,
         trackHeight: innerWidth > 760 ? Math.round(rect('.gd-tl-track-wrap').height) : null,
         thumbWidth: style('.gd-tl-thumb').width,
+        thumbHeight: style('.gd-tl-thumb').height,
         thumbColor: style('.gd-tl-thumb').backgroundColor,
+        tlReadoutSummary: [
+          style('.gd-tl-readout summary').color,
+          style('.gd-tl-readout summary').fontWeight,
+        ],
+        tlTopBtnOk: innerWidth > 760
+          ? Boolean(
+              tlTopRect &&
+                Math.round(tlTopRect.width) === 30 &&
+                Math.round(tlTopRect.height) === 30 &&
+                tlTopStyle.borderRadius === '6px' &&
+                tlTopStyle.color === 'rgb(148, 163, 184)' &&
+                tlTopStyle.borderTopColor === 'rgba(255, 255, 255, 0.1)' &&
+                tlTopStyle.backgroundColor === 'rgba(255, 255, 255, 0.05)',
+            )
+          : tlTopStyle?.display === 'none',
         railChildren: document.querySelector('.gd-tl-rail').children.length,
         timelineBg: style('.gd-timeline-aside').backgroundColor,
         tlActionsRow: tlButtons.length === 3 && Math.max(...tlButtonYs) - Math.min(...tlButtonYs) <= 2,
+        tlActionButtonsStyleOk: tlButtons.every((b) => {
+          const s = getComputedStyle(b);
+          const r = b.getBoundingClientRect();
+          return (
+            Math.round(r.height) === 30 &&
+            s.borderRadius === '6px' &&
+            s.color === 'rgb(203, 213, 225)' &&
+            s.borderTopColor === 'rgba(255, 255, 255, 0.1)' &&
+            s.backgroundColor === 'rgba(255, 255, 255, 0.05)'
+          );
+        }),
         activityWhiteSpace: style('.gd-tl-latest').whiteSpace,
         opAvatar: rect('#floor-1 .gd-avatar-rail .gd-avatar').width,
         subAvatars: Array.from(document.querySelectorAll('.is-sub-floor .gd-avatar-rail .gd-avatar'), (el) =>
@@ -222,7 +278,11 @@ try {
     assert.ok(geometry.leftAxisError < 1 && geometry.contentAxisError < 1, JSON.stringify(geometry));
     assert.equal(geometry.contentAxis, 56, JSON.stringify(geometry));
     assert.ok(geometry.shellWidth <= 1060 && geometry.centerError < 2, JSON.stringify(geometry));
-    assert.ok(geometry.shellVeilBg.includes('rgba(5, 7, 11, 0.8)'), JSON.stringify(geometry.shellVeilBg));
+    assert.ok(
+      geometry.shellVeilBg.includes('rgba(10, 15, 28, 0.68)') &&
+        geometry.shellVeilBg.includes('rgba(11, 16, 30, 0.78)'),
+      JSON.stringify(geometry.shellVeilBg),
+    );
     assert.equal(geometry.monolithicGone, true);
     assert.equal(geometry.streamToolsGone, true);
     assert.equal(geometry.topbarButtonsGone, true);
@@ -230,6 +290,9 @@ try {
     assert.equal(geometry.topbarExternal, true);
     assert.equal(geometry.topbarBottomBorder, '0px');
     assert.ok(geometry.navClearance >= 0, 'topbar must clear fixed #nav: ' + JSON.stringify(geometry));
+    assert.ok(geometry.headerToOpGap >= 20 && geometry.headerToOpGap <= 22, JSON.stringify(geometry));
+    assert.deepEqual(geometry.topicMapPadding, ['12px', '12px']);
+    assert.equal(geometry.ruleColor, 'rgba(148, 163, 184, 0.14)');
     assert.equal(geometry.gridBg, 'rgba(0, 0, 0, 0)');
     if (width > 760) {
       assert.equal(geometry.gridGap, '28px');
@@ -240,24 +303,34 @@ try {
     assert.equal(geometry.canvasBorderWidth, '0px');
     assert.equal(geometry.canvasRadius, '0px');
     assert.equal(geometry.canvasShadow, 'none');
-    assert.deepEqual(geometry.title, ['26px', 'rgb(255, 255, 255)']);
-    assert.deepEqual(geometry.body, ['16px', '28.8px', 'rgb(228, 228, 231)']);
-    assert.equal(geometry.icon, 'rgb(113, 113, 122)');
-    if (geometry.directReplyColor) assert.equal(geometry.directReplyColor, 'rgb(161, 161, 170)');
+    assert.deepEqual(geometry.title, ['24px', 'rgb(241, 245, 249)']);
+    assert.deepEqual(geometry.body, ['16px', '28px', 'rgb(226, 232, 240)']);
+    assert.equal(geometry.icon, 'rgb(148, 163, 184)');
+    if (geometry.directReplyColor) {
+      assert.equal(geometry.directReplyColor, 'rgb(148, 163, 184)');
+      assert.equal(geometry.directReplyBorderWidth, '0px');
+    }
     assert.equal(geometry.emojiInLeft, true);
     assert.equal(geometry.leftGap, '12px');
     assert.ok(geometry.borderless);
     if (geometry.boostFlow) {
       assert.deepEqual(geometry.boostFlow, { dir: 'row', wrap: 'wrap', ml: '56px', gap: '6px' });
-      assert.equal(geometry.boostMatteOk, true);
+      assert.equal(geometry.boostMatteOk, true, JSON.stringify(geometry));
     }
     assert.equal(geometry.railWidth, '2px');
-    if (width > 760) assert.equal(geometry.trackHeight, 220);
+    assert.equal(geometry.railTrackColor, 'rgba(56, 189, 248, 0.24)');
+    if (width > 760) {
+      assert.equal(geometry.trackHeight, 220);
+      assert.equal(geometry.thumbHeight, '32px');
+    }
     assert.equal(geometry.thumbWidth, '3px');
     assert.equal(geometry.thumbColor, 'rgb(56, 189, 248)');
+    assert.deepEqual(geometry.tlReadoutSummary, ['rgb(241, 245, 249)', '700']);
+    assert.equal(geometry.tlTopBtnOk, true, JSON.stringify(geometry));
     assert.equal(geometry.railChildren, 1);
     assert.equal(geometry.timelineBg, 'rgba(0, 0, 0, 0)');
     assert.equal(geometry.tlActionsRow, true);
+    assert.equal(geometry.tlActionButtonsStyleOk, true, JSON.stringify(geometry));
     if (width <= 760) assert.equal(geometry.activityWhiteSpace, 'nowrap');
     assert.equal(geometry.opAvatar, 42);
     assert.ok(geometry.subAvatars.every((value) => value === 36));
