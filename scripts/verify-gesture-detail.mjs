@@ -317,8 +317,10 @@ await withGuestbook(async ({ db, page, base, add, errors }) => {
       const maxPillsPerRow = Math.max(0, ...rowYCounts.values());
       const tlActionButtons = [...document.querySelectorAll('.gd-tl-actions > button')];
       const tlActionYs = tlActionButtons.map((b) => Math.round(b.getBoundingClientRect().y));
-      const opRightLabels = [...el.querySelectorAll('.gd-zone4-right > button, .gd-zone4-right .gd-agg-emoji-pill, .gd-zone4-right .gd-more-drawer > button')].map((b) => b.getAttribute('aria-label'));
-      const subRightLabels = [...document.querySelectorAll('#floor-2 .gd-zone4-right > button, #floor-2 .gd-zone4-right .gd-agg-emoji-pill, #floor-2 .gd-zone4-right .gd-more-drawer > button')].map((b) => b.getAttribute('aria-label'));
+      const leftZone = el.querySelector('.gd-zone4-left');
+      const rightZone = el.querySelector('.gd-zone4-right');
+      const opRightLabels = [...el.querySelectorAll('.gd-zone4-right > button, .gd-zone4-right .gd-heart-trigger-btn, .gd-zone4-right .gd-more-drawer > button')].map((b) => b.getAttribute('aria-label'));
+      const subRightLabels = [...document.querySelectorAll('#floor-2 .gd-zone4-right > button, #floor-2 .gd-zone4-right .gd-heart-trigger-btn, #floor-2 .gd-zone4-right .gd-more-drawer > button')].map((b) => b.getAttribute('aria-label'));
 
       return {
         overflow: document.documentElement.scrollWidth - innerWidth,
@@ -341,14 +343,21 @@ await withGuestbook(async ({ db, page, base, add, errors }) => {
         gridGap: gridStyle.columnGap || gridStyle.gap,
         shellWidth: shell.getBoundingClientRect().width,
         shellCenterError: Math.abs((shell.getBoundingClientRect().left + shell.getBoundingClientRect().right) / 2 - innerWidth / 2),
+        shellVeilBg: getComputedStyle(shell, '::before').backgroundImage,
         canvasBg: canvasStyle.backgroundColor,
         canvasBlur: canvasStyle.backdropFilter,
         canvasBorderWidth: canvasStyle.borderTopWidth,
+        canvasRadius: canvasStyle.borderRadius,
         canvasShadow: canvasStyle.boxShadow,
         asideTransparent: innerWidth > 760 ? asideStyle.backgroundColor === 'rgba(0, 0, 0, 0)' && asideStyle.borderWidth === '0px' : asideStyle.borderWidth === '0px',
         asideWidth: innerWidth > 760 ? Math.round(aside.getBoundingClientRect().width) : null,
         trackHeight: innerWidth > 760 ? Math.round(document.querySelector('.gd-tl-track-wrap').getBoundingClientRect().height) : null,
         tlActionsRow: tlActionButtons.length === 3 && Math.max(...tlActionYs) - Math.min(...tlActionYs) <= 2,
+        emojiInLeft: Boolean(leftZone.querySelector('.gd-agg-emoji-pill')) && !rightZone.querySelector('.gd-agg-emoji-pill'),
+        emojiRestTransparent: getComputedStyle(el.querySelector('.gd-agg-emoji-pill')).backgroundColor === 'rgba(0, 0, 0, 0)',
+        leftZoneGap: getComputedStyle(leftZone).gap,
+        rightZoneGap: getComputedStyle(rightZone).gap,
+        directReplyColor: getComputedStyle(el.querySelector('.gd-direct-replies-btn')).color,
         opRightLabels,
         subRightLabels,
         badgeBorderless: ['.gd-level-badge', '.gd-zone5-links', '.gd-zone1-tag', '.gd-subscribe-btn']
@@ -356,10 +365,12 @@ await withGuestbook(async ({ db, page, base, add, errors }) => {
           .every((s) => getComputedStyle(document.querySelector(s)).borderWidth === '0px' && getComputedStyle(document.querySelector(s)).backgroundColor === 'rgba(0, 0, 0, 0)'),
         titleSize: getComputedStyle(document.querySelector('.gd-zone1-title')).fontSize,
         titleColor: getComputedStyle(document.querySelector('.gd-zone1-title')).color,
+        authorColor: css('.gd-author-name').color,
         bodySize: css('.gd-floor-markdown').fontSize,
         bodyLeading: css('.gd-floor-markdown').lineHeight,
         bodyColor: css('.gd-floor-markdown').color,
         iconColor: css('.gd-icon-btn').color,
+        ruleColor: getComputedStyle(document.querySelector('.gd-zone6-topic-map')).borderTopColor,
         boostDirection: boostStyle.flexDirection,
         boostWrap: boostStyle.flexWrap,
         boostGap: boostStyle.gap,
@@ -369,9 +380,15 @@ await withGuestbook(async ({ db, page, base, add, errors }) => {
           (p) =>
             getComputedStyle(p).borderRadius === '9999px' &&
             getComputedStyle(p).whiteSpace === 'nowrap' &&
-            getComputedStyle(p).borderTopWidth === '1px' &&
-            getComputedStyle(p).backgroundImage.includes('linear-gradient'),
+            getComputedStyle(p).backgroundImage === 'none' &&
+            getComputedStyle(p).backgroundColor === 'rgba(255, 255, 255, 0.04)' &&
+            getComputedStyle(p).borderTopColor === 'rgba(255, 255, 255, 0.08)' &&
+            getComputedStyle(p).color === 'rgb(212, 212, 216)' &&
+            Math.round(p.querySelector('.gd-avatar')?.getBoundingClientRect().width || 0) === 16,
         ),
+        boostAddDashed:
+          getComputedStyle(el.querySelector('.gd-boost-add')).borderTopStyle === 'dashed' &&
+          getComputedStyle(el.querySelector('.gd-boost-add')).backgroundColor === 'rgba(0, 0, 0, 0)',
         opAvatarWidth: box('.gd-avatar').width,
         subAvatarWidth: document.querySelector('#floor-2 .gd-avatar-rail .gd-avatar').getBoundingClientRect().width,
         subAvatarBg: getComputedStyle(document.querySelector('#floor-2 .gd-avatar-rail .gd-avatar')).backgroundColor,
@@ -396,33 +413,41 @@ await withGuestbook(async ({ db, page, base, add, errors }) => {
     assert.equal(geometry.gridTransparent, true, JSON.stringify(geometry));
     if (width > 760) assert.equal(geometry.gridGap, '28px');
     assert.ok(geometry.shellWidth <= 1060 && geometry.shellCenterError < 2, JSON.stringify(geometry));
-    assert.equal(geometry.canvasBg, 'rgba(15, 23, 42, 0.38)');
-    assert.equal(geometry.canvasBlur, 'blur(16px)');
+    assert.ok(geometry.shellVeilBg.includes('rgba(5, 7, 11, 0.8)'), JSON.stringify(geometry.shellVeilBg));
+    assert.equal(geometry.canvasBg, 'rgba(0, 0, 0, 0)');
+    assert.equal(geometry.canvasBlur, 'none');
     assert.equal(geometry.canvasBorderWidth, '0px');
+    assert.equal(geometry.canvasRadius, '0px');
     assert.equal(geometry.canvasShadow, 'none');
     assert.equal(geometry.asideTransparent, true, JSON.stringify(geometry));
     if (width > 760) {
       assert.equal(geometry.asideWidth, 132);
       assert.equal(geometry.trackHeight, 220);
+      assert.equal(geometry.rightZoneGap, '14px');
     }
     assert.equal(geometry.tlActionsRow, true, JSON.stringify(geometry));
-    assert.equal(geometry.opRightLabels.length, 5, JSON.stringify(geometry.opRightLabels));
-    assert.deepEqual(geometry.opRightLabels.slice(1), ['发送 Boost 短评', '复制贴文锚点链接', '更多操作', '回复主贴']);
-    assert.equal(geometry.subRightLabels.length, 4, JSON.stringify(geometry.subRightLabels));
-    assert.deepEqual(geometry.subRightLabels.slice(1), ['发送 Boost 短评', '复制贴文锚点链接', '回复该楼层']);
+    assert.equal(geometry.emojiInLeft, true, JSON.stringify(geometry));
+    assert.equal(geometry.emojiRestTransparent, true);
+    assert.equal(geometry.leftZoneGap, '12px');
+    assert.equal(geometry.directReplyColor, 'rgb(161, 161, 170)');
+    assert.deepEqual(geometry.opRightLabels, ['表态点赞', '发送 Boost 短评', '复制贴文锚点链接', '更多操作', '回复主贴']);
+    assert.deepEqual(geometry.subRightLabels, ['表态点赞', '发送 Boost 短评', '复制贴文锚点链接', '回复该楼层']);
     assert.equal(geometry.badgeBorderless, true, JSON.stringify(geometry));
     assert.equal(geometry.titleSize, '26px');
     assert.equal(geometry.titleColor, 'rgb(255, 255, 255)');
+    assert.equal(geometry.authorColor, 'rgb(244, 244, 245)');
     assert.equal(geometry.bodySize, '16px');
     assert.equal(geometry.bodyLeading, '28.8px');
-    assert.equal(geometry.bodyColor, 'rgb(241, 245, 249)');
-    assert.equal(geometry.iconColor, 'rgb(100, 116, 139)');
+    assert.equal(geometry.bodyColor, 'rgb(228, 228, 231)');
+    assert.equal(geometry.iconColor, 'rgb(113, 113, 122)');
+    assert.equal(geometry.ruleColor, 'rgba(255, 255, 255, 0.08)');
     assert.equal(geometry.boostDirection, 'row');
     assert.equal(geometry.boostWrap, 'wrap');
     assert.equal(geometry.boostGap, '6px');
     assert.equal(geometry.boostMarginLeft, '56px');
     if (width >= 768) assert.ok(geometry.maxPillsPerRow >= 3, 'Boost pills must pack horizontally: ' + JSON.stringify(geometry));
-    assert.equal(geometry.pillStyleOk, true);
+    assert.equal(geometry.pillStyleOk, true, JSON.stringify(geometry));
+    assert.equal(geometry.boostAddDashed, true);
     assert.equal(geometry.opAvatarWidth, 42);
     assert.equal(geometry.subAvatarWidth, 36);
     assert.ok(
@@ -672,7 +697,12 @@ await withGuestbook(async ({ db, page, base, add, errors }) => {
   await expect(page.locator('#floor-1')).toBeVisible();
   assert.equal(
     await page.locator('.gd-reading-canvas').evaluate((el) => getComputedStyle(el).backgroundColor),
-    'rgba(255, 255, 255, 0.56)',
+    'rgba(0, 0, 0, 0)',
+  );
+  assert.ok(
+    await page
+      .locator('.gd-detail-shell')
+      .evaluate((el) => getComputedStyle(el, '::before').backgroundImage.includes('rgba(255, 255, 255, 0.78)')),
   );
   await shot('welcome-light-1440', page.locator('.gd-topbar'));
 

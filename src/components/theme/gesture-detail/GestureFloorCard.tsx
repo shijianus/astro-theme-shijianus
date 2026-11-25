@@ -355,6 +355,15 @@ export function GestureFloorCard({
       {/* Action bar locked on right content axis (margin-left: 56px) */}
       <div className="gd-zone4-action-bar">
         <div className="gd-zone4-left">
+          <EmojiReactionCluster
+            mode="summary"
+            summary={node.reactions?.summary}
+            details={node.reactions?.details}
+            totalLikes={node.likesCount || 0}
+            userReaction={currentUserReaction}
+            onReact={(emoji) => onReact(node.id, emoji)}
+          />
+
           {directReplies.length > 0 && (
             <button
               type="button"
@@ -371,6 +380,7 @@ export function GestureFloorCard({
 
         <div className="gd-zone4-right">
           <EmojiReactionCluster
+            mode="trigger"
             summary={node.reactions?.summary}
             details={node.reactions?.details}
             totalLikes={node.likesCount || 0}

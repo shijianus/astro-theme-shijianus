@@ -7,6 +7,7 @@ import {
   validBoost,
 } from '../../../lib/gesture-text';
 import type { GestureBoost } from '../../../lib/gesture-detail-client';
+import { GestureAvatar } from './GestureAvatar';
 
 interface GestureBoostSectionProps {
   gestureId: string;
@@ -60,9 +61,9 @@ export function GestureBoostSection({
       {boosts.map((b) => {
         const displayText = normalizeBoostDisplay(b.content, b.id);
         return (
-          <span key={b.id} className="gd-boost-pill" title={`${b.authorName} · ${displayText}`}>
-            <span className="gd-boost-pill__author">{b.authorName}</span>
-            <span className="gd-boost-pill__sep" aria-hidden="true">·</span>
+          <span key={b.id} className="gd-boost-pill" title={`${b.authorName}: ${displayText}`}>
+            <GestureAvatar name={b.authorName} avatar={b.authorAvatar} size={16} />
+            <span className="gd-boost-pill__author">{b.authorName}:</span>
             <span className="gd-boost-pill__content">{displayText}</span>
           </span>
         );

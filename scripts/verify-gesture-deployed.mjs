@@ -157,6 +157,8 @@ try {
       const boostPills = [...document.querySelectorAll('#floor-1 .gd-boost-pill')];
       const tlButtons = [...document.querySelectorAll('.gd-tl-actions > button')];
       const tlButtonYs = tlButtons.map((b) => Math.round(b.getBoundingClientRect().y));
+      const opLeft = document.querySelector('#floor-1 .gd-zone4-left');
+      const opRight = document.querySelector('#floor-1 .gd-zone4-right');
       return {
         overflow: document.documentElement.scrollWidth - innerWidth,
         leftAxisError: Math.max(...leftTargets.map((selector) => Math.abs(rect(selector).x - left))),
@@ -164,6 +166,7 @@ try {
         contentAxisError: Math.max(...contentTargets.map((selector) => Math.abs(rect(selector).x - content))),
         centerError: Math.abs(shellBox.x + shellBox.width / 2 - innerWidth / 2),
         shellWidth: shellBox.width,
+        shellVeilBg: getComputedStyle(document.querySelector('.gd-detail-shell'), '::before').backgroundImage,
         monolithicGone: document.querySelectorAll('.gd-monolithic-shell').length === 0,
         streamToolsGone: document.querySelectorAll('.gd-stream-tools').length === 0,
         topbarExternal: !canvas.contains(topbar),
@@ -174,6 +177,7 @@ try {
         canvasBg: style('.gd-reading-canvas').backgroundColor,
         canvasBlur: style('.gd-reading-canvas').backdropFilter,
         canvasBorderWidth: style('.gd-reading-canvas').borderTopWidth,
+        canvasRadius: style('.gd-reading-canvas').borderRadius,
         canvasShadow: style('.gd-reading-canvas').boxShadow,
         title: [style('.gd-zone1-title').fontSize, style('.gd-zone1-title').color],
         body: [
@@ -182,11 +186,21 @@ try {
           style('.gd-floor-markdown').color,
         ],
         icon: style('.gd-icon-btn').color,
+        directReplyColor: opLeft.querySelector('.gd-direct-replies-btn') ? getComputedStyle(opLeft.querySelector('.gd-direct-replies-btn')).color : null,
+        emojiInLeft: Boolean(opLeft.querySelector('.gd-agg-emoji-pill')) && !opRight.querySelector('.gd-agg-emoji-pill'),
+        leftGap: getComputedStyle(opLeft).gap,
+        rightGap: getComputedStyle(opRight).gap,
         borderless,
         boostFlow: boostStyle
           ? { dir: boostStyle.flexDirection, wrap: boostStyle.flexWrap, ml: boostStyle.marginLeft, gap: boostStyle.gap }
           : null,
-        boostShimmerOk: boostPills.every((p) => getComputedStyle(p).backgroundImage.includes('linear-gradient') && getComputedStyle(p).borderTopWidth === '1px'),
+        boostMatteOk: boostPills.every(
+          (p) =>
+            getComputedStyle(p).backgroundImage === 'none' &&
+            getComputedStyle(p).backgroundColor === 'rgba(255, 255, 255, 0.04)' &&
+            getComputedStyle(p).borderTopColor === 'rgba(255, 255, 255, 0.08)' &&
+            Math.round(p.querySelector('.gd-avatar')?.getBoundingClientRect().width || 0) === 16,
+        ),
         railWidth: getComputedStyle(document.querySelector('.gd-tl-rail'), '::before').width,
         trackHeight: innerWidth > 760 ? Math.round(rect('.gd-tl-track-wrap').height) : null,
         thumbWidth: style('.gd-tl-thumb').width,
@@ -206,24 +220,32 @@ try {
     assert.ok(geometry.leftAxisError < 1 && geometry.contentAxisError < 1, JSON.stringify(geometry));
     assert.equal(geometry.contentAxis, 56, JSON.stringify(geometry));
     assert.ok(geometry.shellWidth <= 1060 && geometry.centerError < 2, JSON.stringify(geometry));
+    assert.ok(geometry.shellVeilBg.includes('rgba(5, 7, 11, 0.8)'), JSON.stringify(geometry.shellVeilBg));
     assert.equal(geometry.monolithicGone, true);
     assert.equal(geometry.streamToolsGone, true);
     assert.equal(geometry.topbarExternal, true);
     assert.equal(geometry.topbarBottomBorder, '0px');
     assert.ok(geometry.navClearance >= 0, 'topbar must clear fixed #nav: ' + JSON.stringify(geometry));
     assert.equal(geometry.gridBg, 'rgba(0, 0, 0, 0)');
-    if (width > 760) assert.equal(geometry.gridGap, '28px');
-    assert.equal(geometry.canvasBg, 'rgba(15, 23, 42, 0.38)');
-    assert.equal(geometry.canvasBlur, 'blur(16px)');
+    if (width > 760) {
+      assert.equal(geometry.gridGap, '28px');
+      assert.equal(geometry.rightGap, '14px');
+    }
+    assert.equal(geometry.canvasBg, 'rgba(0, 0, 0, 0)');
+    assert.equal(geometry.canvasBlur, 'none');
     assert.equal(geometry.canvasBorderWidth, '0px');
+    assert.equal(geometry.canvasRadius, '0px');
     assert.equal(geometry.canvasShadow, 'none');
     assert.deepEqual(geometry.title, ['26px', 'rgb(255, 255, 255)']);
-    assert.deepEqual(geometry.body, ['16px', '28.8px', 'rgb(241, 245, 249)']);
-    assert.equal(geometry.icon, 'rgb(100, 116, 139)');
+    assert.deepEqual(geometry.body, ['16px', '28.8px', 'rgb(228, 228, 231)']);
+    assert.equal(geometry.icon, 'rgb(113, 113, 122)');
+    if (geometry.directReplyColor) assert.equal(geometry.directReplyColor, 'rgb(161, 161, 170)');
+    assert.equal(geometry.emojiInLeft, true);
+    assert.equal(geometry.leftGap, '12px');
     assert.ok(geometry.borderless);
     if (geometry.boostFlow) {
       assert.deepEqual(geometry.boostFlow, { dir: 'row', wrap: 'wrap', ml: '56px', gap: '6px' });
-      assert.equal(geometry.boostShimmerOk, true);
+      assert.equal(geometry.boostMatteOk, true);
     }
     assert.equal(geometry.railWidth, '2px');
     if (width > 760) assert.equal(geometry.trackHeight, 220);
@@ -316,7 +338,12 @@ try {
   await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
   assert.equal(
     await page.locator('.gd-reading-canvas').evaluate((el) => getComputedStyle(el).backgroundColor),
-    'rgba(255, 255, 255, 0.56)',
+    'rgba(0, 0, 0, 0)',
+  );
+  assert.ok(
+    await page
+      .locator('.gd-detail-shell')
+      .evaluate((el) => getComputedStyle(el, '::before').backgroundImage.includes('rgba(255, 255, 255, 0.78)')),
   );
   await screenshot('light-1440');
 
