@@ -23,7 +23,7 @@
   --gd-faint: #64748b;
   --gd-rule: rgba(15, 23, 42, 0.07);
   --gd-tm-rule: rgba(15, 23, 42, 0.08);
-  --gd-rail: rgba(15, 23, 42, 0.18);
+  --gd-rail: rgba(15, 23, 42, 0.22);
   --gd-tl-track: rgba(15, 23, 42, 0.16);
   --gd-collapse-bg: rgba(255, 255, 255, 0.9);
   --gd-mobile-stuck-bg: rgba(255, 255, 255, 0.92);
@@ -54,7 +54,7 @@
   --gd-faint: #64748b;
   --gd-rule: rgba(255, 255, 255, 0.06);
   --gd-tm-rule: rgba(255, 255, 255, 0.07);
-  --gd-rail: rgba(255, 255, 255, 0.16);
+  --gd-rail: rgba(255, 255, 255, 0.22);
   --gd-tl-track: rgba(255, 255, 255, 0.14);
   --gd-collapse-bg: rgba(12, 17, 29, 0.78);
   --gd-mobile-stuck-bg: rgba(12, 17, 29, 0.88);
@@ -552,11 +552,11 @@ body:has(.gd-detail-root) :is(#theme-snow-mid, #theme-snow-foreground) {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 4px;
+  gap: 8px;
 }
 
 .gd-zone4-left {
-  gap: 12px;
+  gap: 14px;
 }
 
 .gd-icon-btn,
@@ -882,6 +882,10 @@ body:has(.gd-detail-root) :is(#theme-snow-mid, #theme-snow-foreground) {
   grid-template-columns: 32px minmax(0, 1fr);
 }
 
+.gd-reply-context.is-parent .gd-context-rail {
+  min-height: 76px;
+}
+
 .gd-reply-context.is-parent .gd-context-rail::before {
   content: '';
   position: absolute;
@@ -895,6 +899,7 @@ body:has(.gd-detail-root) :is(#theme-snow-mid, #theme-snow-foreground) {
 .gd-reply-context.is-parent .gd-context-avatar-stack {
   position: sticky;
   top: 88px;
+  gap: 12px;
 }
 
 .gd-context-parent-collapse {
@@ -1760,8 +1765,8 @@ body:has(.gd-detail-root) :is(#theme-snow-mid, #theme-snow-foreground) {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 8px;
-  margin-top: 4px;
+  gap: 10px;
+  margin-top: 6px;
 }
 
 .gd-tl-hot-btn {
