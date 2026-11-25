@@ -4,11 +4,11 @@ import { getCommentInitials } from '../../../lib/comment-client';
 const MATTE_MORANDI_PALETTE = [
   '#334155',
   '#3b4252',
-  '#2d3748',
+  '#2e3a4e',
   '#38443f',
-  '#453b3c',
-  '#414039',
-];
+  '#423b42',
+  '#3c4048',
+] as const;
 
 function resolveMorandiBg(name: string): string {
   const str = name || '访';

@@ -93,17 +93,18 @@ export function GestureFloorCard({
   const [editTitleDraft, setEditTitleDraft] = useState(node.title || '');
   const [editSaving, setEditSaving] = useState(false);
 
-
   const replyBodyAnchorRef = useRef<HTMLDivElement | null>(null);
   const pendingBeforeTopRef = useRef<number | null>(null);
   const directToggleRef = useRef<HTMLButtonElement | null>(null);
   const pendingDirectTopRef = useRef<number | null>(null);
   const moreMenuRef = useRef<HTMLDivElement | null>(null);
 
-  const renderedBody = useMemo(() => ({ __html: renderGestureMarkdown(bodyMarkdown, true) }), [bodyMarkdown]);
+  const renderedBody = useMemo(
+    () => ({ __html: renderGestureMarkdown(bodyMarkdown, true) }),
+    [bodyMarkdown],
+  );
   const badges = resolveAuthorBadges(node);
   const editCount = Number(node.editCount || 0);
-
   const showReplyTargetBadge = !isOp && replyParentNode !== null;
 
   useEffect(() => {
@@ -130,7 +131,7 @@ export function GestureFloorCard({
     };
   }, [moreMenuOpen]);
 
-  // Scroll height compensation right after Scene B parent collapses (zero layout flicker, instant)
+  // Instant scroll compensation when nested 1-to-1 parent floor collapses
   useLayoutEffect(() => {
     if (!parentExpanded && pendingBeforeTopRef.current !== null) {
       const beforeTop = pendingBeforeTopRef.current;
@@ -176,6 +177,7 @@ export function GestureFloorCard({
     const timer = setTimeout(() => setCopiedJustNow(false), 1800);
     return () => clearTimeout(timer);
   }, [copiedJustNow]);
+
   const handleCopyFloorLink = async () => setCopiedJustNow(await onCopyLink(floorIndex, isOp));
 
   const handleBodyClick = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -203,13 +205,20 @@ export function GestureFloorCard({
       id={`floor-${floorIndex}`}
       data-gesture-id={node.id}
       data-floor-index={floorIndex}
-      className={`gd-floor-article gb-floor-target ${isOp ? 'is-op-floor' : 'is-sub-floor'} ${isHighlighted ? 'is-jump-highlighted' : ''}`}
+      className={`gd-floor-article ${isOp ? 'is-op-floor' : 'is-sub-floor'} ${isHighlighted ? 'is-jump-highlighted' : ''}`}
     >
-      <div className="gd-avatar-rail">
-        <GestureAvatar name={node.authorName} avatar={node.authorAvatar} size={isOp ? 42 : 36} isOwner={badges.isOwner} />
-      </div>
-      <div className="gd-content-col">
+      {/* Dual-axis body region: avatar sticks only until right above action bar */}
+      <div className="gd-floor-main">
+        <div className="gd-avatar-rail">
+          <GestureAvatar
+            name={node.authorName}
+            avatar={node.authorAvatar}
+            size={isOp ? 42 : 36}
+            isOwner={badges.isOwner}
+          />
+        </div>
 
+        <div className="gd-content-col">
           <div className="gd-author-bar">
             <div className="gd-author-badges">
               <span className="gd-author-name">{node.authorName || '访客'}</span>
@@ -219,40 +228,67 @@ export function GestureFloorCard({
 
             <div className="gd-author-meta-right">
               {showReplyTargetBadge && replyParentNode && (
-                <button type="button" className={`gd-reply-target-pill ${parentExpanded ? 'is-expanded' : ''}`}
-                  onClick={toggleNestedParent} title={parentExpanded ? '收起被回复楼层' : `原地展开 ${replyParentNode.authorName} 的楼层`} aria-expanded={parentExpanded}>
+                <button
+                  type="button"
+                  className={`gd-reply-target-pill ${parentExpanded ? 'is-expanded' : ''}`}
+                  onClick={toggleNestedParent}
+                  title={parentExpanded ? '收起被回复楼层' : `原地展开 ${replyParentNode.authorName} 的楼层`}
+                  aria-expanded={parentExpanded}
+                >
                   <CornerDownRight size={12} />
-                  <GestureAvatar name={replyParentNode.authorName} avatar={replyParentNode.authorAvatar} size={18} isOwner={replyParentNode.authorRole === 'admin'} />
+                  <GestureAvatar
+                    name={replyParentNode.authorName}
+                    avatar={replyParentNode.authorAvatar}
+                    size={18}
+                    isOwner={replyParentNode.authorRole === 'admin'}
+                  />
                   <span>{replyParentNode.authorName}</span>
                 </button>
               )}
+
               {editCount > 0 && (
                 <span className="gd-edit-count-badge" title={`已编辑 ${editCount} 次`}>
                   <span>{editCount}</span>
-                  <Pencil className="w-3 h-3" />
-                  <span className="gd-meta-dot">·</span>
+                  <Pencil size={12} />
+                  <span className="gd-meta-dot" aria-hidden="true">·</span>
                 </span>
               )}
 
-              <time className="gd-first-date" dateTime={node.createdAt} title={new Date(gestureTimestamp(node.createdAt)).toLocaleString('zh-CN')}>
+              <time
+                className="gd-first-date"
+                dateTime={node.createdAt}
+                title={new Date(gestureTimestamp(node.createdAt)).toLocaleString('zh-CN')}
+              >
                 {formatMonthDay(node.createdAt)}
               </time>
             </div>
           </div>
 
-          {parentExpanded && replyParentNode && <GestureReplyContext variant="parent" nodes={[replyParentNode]} origin={floorIndex} onJump={onJumpToFloor} onCollapse={toggleNestedParent} />}
+          {parentExpanded && replyParentNode && (
+            <GestureReplyContext
+              variant="parent"
+              nodes={[replyParentNode]}
+              origin={floorIndex}
+              onJump={onJumpToFloor}
+              onCollapse={toggleNestedParent}
+            />
+          )}
 
-          {/* Orthogonal Quote Block (Content-level excerpt, independent of Reply relation) */}
           {(node.quote || quotedNode) && (
             <QuoteEmbedCard
-              quote={node.quote || { id: quotedNode!.id, authorName: quotedNode!.authorName, excerpt: quotedNode!.message.slice(0,100) }}
+              quote={
+                node.quote || {
+                  id: quotedNode!.id,
+                  authorName: quotedNode!.authorName,
+                  excerpt: quotedNode!.message.slice(0, 100),
+                }
+              }
               quotedNode={quotedNode}
               currentFloorIndex={floorIndex}
               onJumpToFloor={onJumpToFloor}
             />
           )}
 
-          {/* Body Stream (or Inline Edit Mode) */}
           {isEditing ? (
             <form className="gd-inline-edit-form" onSubmit={handleEditSubmit}>
               {isOp && (
@@ -295,7 +331,7 @@ export function GestureFloorCard({
               ref={replyBodyAnchorRef}
               className="gd-markdown-body gd-floor-markdown"
               onClick={handleBodyClick}
-              onKeyDown={e => {
+              onKeyDown={(e) => {
                 if (e.target instanceof HTMLImageElement && (e.key === 'Enter' || e.key === ' ')) {
                   e.preventDefault();
                   onZoomImage(e.target);
@@ -304,8 +340,10 @@ export function GestureFloorCard({
               dangerouslySetInnerHTML={renderedBody}
             />
           )}
-
+        </div>
       </div>
+
+      {/* Action bar locked on right content axis (margin-left: 56px) */}
       <div className="gd-zone4-action-bar">
         <div className="gd-zone4-left">
           <EmojiReactionCluster
@@ -325,51 +363,54 @@ export function GestureFloorCard({
               aria-expanded={directRepliesExpanded}
             >
               <span>{directReplies.length} 条直接回复</span>
-              {directRepliesExpanded ? (
-                <ChevronUp className="w-3.5 h-3.5" />
-              ) : (
-                <ChevronDown className="w-3.5 h-3.5" />
-              )}
+              {directRepliesExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
             </button>
           )}
         </div>
 
-          <div className="gd-zone4-right">
-            <button
-              type="button"
-              className={`gd-icon-btn ${boostComposerOpen ? 'is-active' : ''}`}
-              onClick={() => setBoostComposerOpen((prev) => !prev)}
-              title="发送 Boost 短评"
-              aria-label="发送 Boost 短评"
-            >
-              <Zap className="w-4 h-4" />
-            </button>
+        <div className="gd-zone4-right">
+          <button
+            type="button"
+            className={`gd-icon-btn ${boostComposerOpen ? 'is-active' : ''}`}
+            onClick={() => setBoostComposerOpen((prev) => !prev)}
+            title="发送 Boost 短评"
+            aria-label="发送 Boost 短评"
+          >
+            <Zap size={16} />
+          </button>
 
-            <button
-              type="button"
-              className="gd-icon-btn"
-              onClick={() => onQuoteFloor(node)}
-              title="引用楼层"
-              aria-label="引用楼层"
-            >
-              <QuoteIcon className="w-4 h-4" />
-            </button>
+          <button
+            type="button"
+            className="gd-icon-btn"
+            onClick={() => onQuoteFloor(node)}
+            title="引用楼层"
+            aria-label="引用楼层"
+          >
+            <QuoteIcon size={16} />
+          </button>
 
-            <button
-              type="button"
-              className={`gd-icon-btn ${copiedJustNow ? 'is-success' : ''}`}
-              onClick={handleCopyFloorLink}
-              title="复制贴文锚点链接"
-              aria-label="复制贴文锚点链接"
-            >
-              {copiedJustNow ? <Check className="w-4 h-4" /> : <Link2 className="w-4 h-4" />}
-            </button>
+          <button
+            type="button"
+            className={`gd-icon-btn ${copiedJustNow ? 'is-success' : ''}`}
+            onClick={handleCopyFloorLink}
+            title="复制贴文锚点链接"
+            aria-label="复制贴文锚点链接"
+          >
+            {copiedJustNow ? <Check size={16} /> : <Link2 size={16} />}
+          </button>
 
-            <div ref={moreMenuRef} className={`gd-more-drawer ${moreMenuOpen ? 'is-open' : ''}`}>
-              {moreMenuOpen && <div className="gd-more-drawer__items">
-                <a className="gd-icon-btn" href="/community/reporting-and-appeals/"
-                  target="_blank" rel="noopener noreferrer" title="举报与申诉" aria-label="举报与申诉">
-                  <Flag className="w-3.5 h-3.5" />
+          <div ref={moreMenuRef} className={`gd-more-drawer ${moreMenuOpen ? 'is-open' : ''}`}>
+            {moreMenuOpen && (
+              <div className="gd-more-drawer__items">
+                <a
+                  className="gd-icon-btn"
+                  href="/community/reporting-and-appeals/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title="举报与申诉"
+                  aria-label="举报与申诉"
+                >
+                  <Flag size={14} />
                 </a>
                 <button
                   type="button"
@@ -381,7 +422,7 @@ export function GestureFloorCard({
                   title={isBookmarked ? '移出书签' : '加入书签'}
                   aria-label="书签"
                 >
-                  <Bookmark className="w-3.5 h-3.5" />
+                  <Bookmark size={14} />
                 </button>
                 {canManage && (
                   <>
@@ -397,7 +438,7 @@ export function GestureFloorCard({
                       title="编辑贴文"
                       aria-label="编辑贴文"
                     >
-                      <Pencil className="w-3.5 h-3.5" />
+                      <Pencil size={14} />
                     </button>
                     <button
                       type="button"
@@ -409,50 +450,64 @@ export function GestureFloorCard({
                       title="删除贴文"
                       aria-label="删除贴文"
                     >
-                      <Trash2 className="w-3.5 h-3.5" />
+                      <Trash2 size={14} />
                     </button>
                   </>
                 )}
-              </div>}
-
-              <button
-                type="button"
-                className={`gd-icon-btn ${moreMenuOpen ? 'is-active' : ''}`}
-                onClick={() => setMoreMenuOpen((prev) => !prev)}
-                title="更多操作"
-                aria-expanded={moreMenuOpen}
-                aria-label="更多操作"
-              >
-                <MoreHorizontal className="w-4 h-4" />
-              </button>
-            </div>
+              </div>
+            )}
 
             <button
               type="button"
-              className="gd-icon-btn is-reply-primary"
-              onClick={() => onReplyFloor(node)}
-              title={isOp ? "回复主贴" : "回复该楼层"}
-              aria-label={isOp ? "回复主贴" : "回复该楼层"}
+              className={`gd-icon-btn ${moreMenuOpen ? 'is-active' : ''}`}
+              onClick={() => setMoreMenuOpen((prev) => !prev)}
+              title="更多操作"
+              aria-expanded={moreMenuOpen}
+              aria-label="更多操作"
             >
-              <Reply className="w-4 h-4" />
-              <span>回复</span>
+              <MoreHorizontal size={16} />
             </button>
           </div>
+
+          <button
+            type="button"
+            className="gd-icon-btn is-reply-primary"
+            onClick={() => onReplyFloor(node)}
+            title={isOp ? '回复主贴' : '回复该楼层'}
+            aria-label={isOp ? '回复主贴' : '回复该楼层'}
+          >
+            <Reply size={16} />
+            <span>回复</span>
+          </button>
+        </div>
       </div>
 
+      {/* Horizontal row-wrap Boost pill flow strictly on margin-left: 56px */}
       <GestureBoostSection
         gestureId={node.id}
+        isOp={isOp}
         boosts={boosts}
         composerOpen={boostComposerOpen}
         onComposerOpenChange={setBoostComposerOpen}
         onAddBoost={onAddBoost}
       />
 
+      {/* Chronological direct replies list (1-to-N) strictly on margin-left: 56px */}
       {directReplies.length > 0 && directRepliesExpanded && (
-        <GestureReplyContext nodes={directReplies} origin={floorIndex} childrenMap={childrenMap} onJump={onJumpToFloor} onCollapse={() => {
-          pendingDirectTopRef.current = Math.max(120, directToggleRef.current?.getBoundingClientRect().top || 120);
-          setDirectRepliesExpanded(false);
-        }} />
+        <GestureReplyContext
+          variant="children"
+          nodes={directReplies}
+          origin={floorIndex}
+          childrenMap={childrenMap}
+          onJump={onJumpToFloor}
+          onCollapse={() => {
+            pendingDirectTopRef.current = Math.max(
+              120,
+              directToggleRef.current?.getBoundingClientRect().top || 120,
+            );
+            setDirectRepliesExpanded(false);
+          }}
+        />
       )}
     </article>
   );

@@ -1,7 +1,7 @@
 import { sha256Hex } from '../_lib/hash.ts';
 import { fetchThreadBoosts } from '../_lib/gesture-detail-store.ts';
 import { collectGestureLinks, resolveGestureLinks } from '../_lib/gesture-links.ts';
-import { gestureTimestamp, validBoost } from '../../src/lib/gesture-text.ts';
+import { gestureTimestamp, normalizeBoostDisplay, stripLegacyFakeWelcomeRefs, validBoost } from '../../src/lib/gesture-text.ts';
 import type { AppEnv } from '../_lib/types';
 import { jsonResponse, optionsResponse, safeReadJson } from '../_lib/http.ts';
 import { getUserBySessionToken } from '../_lib/auth-service.ts';
@@ -122,6 +122,10 @@ export async function onRequest(context: {
       }
     }
 
+    const cleanOpRow: RawCommentRow = {
+      ...opRow,
+      message: stripLegacyFakeWelcomeRefs(opRow.id, opRow.message),
+    };
     const boostsGrouped = await fetchThreadBoosts(env.DB, rootId);
     const canManage = (row: RawCommentRow) => isAdmin || Boolean(authUser?.id && authUser.id === row.author_id) ||
       Boolean(candidateToken && row.session_token && candidateToken === row.session_token);
@@ -129,9 +133,9 @@ export async function onRequest(context: {
       ...mapRowToClientComment(row, isAdmin, currentUserId, floor),
       canManage: canManage(row),
     });
-    const opMapped = mapFloor(opRow, 1);
+    const opMapped = mapFloor(cleanOpRow, 1);
     const subMapped = replyRows.map((row,i) => mapFloor(row,i+2));
-    const allIds = [opRow.id, ...replyRows.map(r => r.id)];
+    const allIds = [cleanOpRow.id, ...replyRows.map(r => r.id)];
     const boostsByGestureId: Record<string, Array<{
       id: string;
       gestureId: string;
@@ -149,12 +153,12 @@ export async function onRequest(context: {
         userId: b.user_id,
         authorName: b.author_name,
         authorAvatar: b.author_avatar || '',
-        content: b.content,
+        content: normalizeBoostDisplay(b.content, b.id),
         createdAt: b.created_at,
       }));
     }
 
-    const citations = collectGestureLinks([opRow, ...replyRows], url.origin);
+    const citations = collectGestureLinks([cleanOpRow, ...replyRows], url.origin);
     const ids = [...new Set(citations.flatMap(link => link.id ? [link.id] : []))];
     const targets: Array<Pick<RawCommentRow, 'id' | 'title' | 'message'> & { reply_count: number }> = [];
     for (let i = 0; i < ids.length; i += 80) {
@@ -349,8 +353,9 @@ export async function onRequest(context: {
     const rows = env.DB
       ? (await env.DB.prepare("SELECT * FROM comments WHERE (id=? OR parent_id=?) AND post_slug='guestbook' AND post_type!='boost' AND status IN ('published','pinned') ORDER BY julianday(created_at), id").bind(rootId, rootId).all<RawCommentRow>()).results || []
       : [...memoryFallbackStore.values()].filter(row => (row.id === rootId || row.parent_id === rootId) && row.post_slug === 'guestbook' && row.post_type !== 'boost' && ['published', 'pinned'].includes(row.status));
-    const root = rows.find(row => row.id === rootId && !row.parent_id);
-    if (!root || !collectGestureLinks(rows, url.origin).some(link => link.key === linkKey)) {
+    const normalizedRows = rows.map(row => row.id === rootId ? { ...row, message: stripLegacyFakeWelcomeRefs(row.id, row.message) } : row);
+    const root = normalizedRows.find(row => row.id === rootId && !row.parent_id);
+    if (!root || !collectGestureLinks(normalizedRows, url.origin).some(link => link.key === linkKey)) {
       return jsonResponse(request, env, { ok: false, error: '引用链接不存在' }, { status: 404 });
     }
     const visitorHash = await sha256Hex('gesture-link/' + (postAuthUser?.id || sessionToken));

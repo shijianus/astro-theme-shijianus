@@ -400,7 +400,7 @@ export const STARTER_PINNED_GESTURE_ROW: RawCommentRow = {
   author_role: 'admin',
   message: `欢迎在此留下你的足迹、想法与问候，探讨技术、交流灵感或随心闲聊，期待与你的每一次思想碰撞！✨
 
-在这里你可以自由开启话题（Gesture）、发送短评微语（Boost），或者通过右侧时间轴滑块快速穿梭于长篇讨论之中。相关参考：[博客功能与内容格式指南](/posts/content-formats-and-markup-mastery/) 与 [社区规范与等级体系](/community/identity-levels-and-badges/)。`,
+在这里你可以自由开启话题（Gesture）、发送短评微语（Boost），或者通过右侧时间轴滑块快速穿梭于长篇讨论之中。`,
   likes_count: 18,
   reactions: JSON.stringify({
     summary: { '👍': 7, '❤️': 5, '🚀': 4, '💡': 2 },
@@ -565,7 +565,7 @@ export const STARTER_PINNED_BOOST_ROWS: RawBoostRow[] = [
     user_id: 'reader_bob',
     author_name: 'Bob_Dev',
     author_avatar: '',
-    content: '星空背景太帅了！毛玻璃透出质感绝佳',
+    content: '星空背景太帅，毛玻璃质感绝佳！',
     created_at: '2026-08-03T09:05:00.000Z',
   },
   {

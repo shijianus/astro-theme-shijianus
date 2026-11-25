@@ -316,7 +316,9 @@ export function formatMonthDay(iso?: string): string {
   try {
     const d = new Date(gestureTimestamp(iso));
     if (Number.isNaN(d.getTime())) return '—';
-    return new Intl.DateTimeFormat('zh-CN', { month: 'short', day: 'numeric', ...(d.getFullYear() !== new Date().getFullYear() ? { year: 'numeric' as const } : {}) }).format(d);
+    const currentYear = new Date().getFullYear();
+    const md = `${d.getMonth() + 1}月 ${d.getDate()}日`;
+    return d.getFullYear() !== currentYear ? `${d.getFullYear()}年 ${md}` : md;
   } catch {
     return '刚刚';
   }
@@ -325,12 +327,12 @@ export function formatMonthDay(iso?: string): string {
 /**
  * Formats compact relative activity duration (e.g. "2天前", "5小时前", "刚刚") for timeline dock.
  */
-export function formatCompactRelative(iso?: string): string {
+export function formatCompactRelative(iso?: string, nowMs = Date.now()): string {
   if (!iso) return '刚刚';
   try {
     const d = new Date(gestureTimestamp(iso));
     if (Number.isNaN(d.getTime())) return '刚刚';
-    const diffMs = Math.max(0, Date.now() - d.getTime());
+    const diffMs = Math.max(0, nowMs - d.getTime());
     const mins = Math.floor(diffMs / 60000);
     if (mins < 1) return '刚刚';
     if (mins < 60) return `${mins}分钟前`;
