@@ -7,6 +7,7 @@ import {
   validBoost,
 } from '../../../lib/gesture-text';
 import type { GestureBoost } from '../../../lib/gesture-detail-client';
+import { GestureAvatar } from './GestureAvatar';
 
 interface GestureBoostSectionProps {
   gestureId: string;
@@ -50,8 +51,8 @@ export function GestureBoostSection({
     }
   };
 
-  // SubGesture with 0 boosts and closed composer renders zero footprint (null).
-  if (!isOp && boosts.length === 0 && !composerOpen) {
+  // Zero footprint when there are no boosts and the inline composer is closed.
+  if (boosts.length === 0 && !composerOpen) {
     return null;
   }
 
@@ -60,25 +61,13 @@ export function GestureBoostSection({
       {boosts.map((b) => {
         const displayText = normalizeBoostDisplay(b.content, b.id);
         return (
-          <span key={b.id} className="gd-boost-pill" title={`${b.authorName} · ${displayText}`}>
-            <span className="gd-boost-pill__author">{b.authorName}</span>
-            <span className="gd-boost-pill__sep" aria-hidden="true">·</span>
+          <span key={b.id} className="gd-boost-pill" title={`${b.authorName}: ${displayText}`}>
+            <GestureAvatar name={b.authorName} avatar={b.authorAvatar} size={16} />
+            <span className="gd-boost-pill__author">{b.authorName}:</span>
             <span className="gd-boost-pill__content">{displayText}</span>
           </span>
         );
       })}
-
-      {isOp && (
-        <button
-          type="button"
-          className={`gd-boost-add ${composerOpen ? 'is-open' : ''}`}
-          onClick={() => onComposerOpenChange(!composerOpen)}
-          aria-expanded={composerOpen}
-        >
-          <Zap size={12} />
-          <span>+ Boost</span>
-        </button>
-      )}
 
       {composerOpen && (
         <form className="gd-boost-inline-form is-slide-in" onSubmit={handleSubmit}>

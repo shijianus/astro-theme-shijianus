@@ -119,7 +119,7 @@ export function GestureInlineReplyComposer({
     <section id="detail-reply-composer" className="gd-reply-composer">
       <div className="gd-reply-composer__head">
         <span className="gd-reply-composer__title">
-          <MessageSquare className="w-4 h-4 text-sky-400" />
+          <MessageSquare className="w-4 h-4" />
           <span>参与讨论回复</span>
         </span>
 

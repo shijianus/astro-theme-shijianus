@@ -44,7 +44,7 @@ export function QuoteEmbedCard({
     <div className={`gd-quote-card ${expanded ? 'is-expanded' : ''}`}>
       <div className="gd-quote-card__head">
         <div className="gd-quote-card__author">
-          <GestureAvatar name={authorName} avatar={authorAvatar} size={20} isOwner={quotedNode?.authorRole === 'admin'} />
+          <GestureAvatar name={authorName} avatar={authorAvatar} size={18} isOwner={quotedNode?.authorRole === 'admin'} />
           <span className="gd-quote-card__name">{authorName}:</span>
         </div>
 

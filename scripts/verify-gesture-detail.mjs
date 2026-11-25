@@ -217,12 +217,14 @@ await withGuestbook(async ({ db, page, base, add, errors }) => {
     200,
   );
 
-  // Empty OP: 0 related links (hidden), OP shows + Boost trigger, 0 boost pills
+  // Empty OP: 0 related links (hidden), 0 boost footprint until [⚡] clicked, 0 duplicate buttons
   await page.goto(path + 'empty');
   await expect(page.locator('#floor-1')).toBeVisible();
   await expect(page.locator('.gd-zone5-links')).toHaveCount(0);
+  await expect(page.locator('#floor-1 .gd-zone3-boost')).toHaveCount(0);
   await expect(page.locator('#floor-1 .gd-boost-pill')).toHaveCount(0);
-  await expect(page.locator('#floor-1 .gd-boost-add')).toHaveCount(1);
+  await expect(page.locator('.gd-boost-add')).toHaveCount(0);
+  await expect(page.locator('.gd-topbar-btn')).toHaveCount(0);
   await expect(page.locator('.gd-edit-count-badge')).toHaveCount(0);
   assert.ok((await page.locator('.gd-zone6-topic-map').boundingBox()).height <= 58);
   assert.equal(await page.locator('#floor-1 .gd-avatar').evaluate((el) => getComputedStyle(el).borderRadius), '50%');
@@ -290,6 +292,7 @@ await withGuestbook(async ({ db, page, base, add, errors }) => {
     await op
       .locator('.gd-zone4-action-bar')
       .evaluate((el) => el.scrollIntoView({ block: 'center', behavior: 'instant' }));
+    await page.waitForTimeout(180);
     await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
 
     const geometry = await op.evaluate((el) => {
@@ -317,8 +320,10 @@ await withGuestbook(async ({ db, page, base, add, errors }) => {
       const maxPillsPerRow = Math.max(0, ...rowYCounts.values());
       const tlActionButtons = [...document.querySelectorAll('.gd-tl-actions > button')];
       const tlActionYs = tlActionButtons.map((b) => Math.round(b.getBoundingClientRect().y));
-      const opRightLabels = [...el.querySelectorAll('.gd-zone4-right > button, .gd-zone4-right .gd-agg-emoji-pill, .gd-zone4-right .gd-more-drawer > button')].map((b) => b.getAttribute('aria-label'));
-      const subRightLabels = [...document.querySelectorAll('#floor-2 .gd-zone4-right > button, #floor-2 .gd-zone4-right .gd-agg-emoji-pill, #floor-2 .gd-zone4-right .gd-more-drawer > button')].map((b) => b.getAttribute('aria-label'));
+      const leftZone = el.querySelector('.gd-zone4-left');
+      const rightZone = el.querySelector('.gd-zone4-right');
+      const opRightLabels = [...el.querySelectorAll('.gd-zone4-right > button, .gd-zone4-right .gd-heart-trigger-btn, .gd-zone4-right .gd-more-drawer > button')].map((b) => b.getAttribute('aria-label'));
+      const subRightLabels = [...document.querySelectorAll('#floor-2 .gd-zone4-right > button, #floor-2 .gd-zone4-right .gd-heart-trigger-btn, #floor-2 .gd-zone4-right .gd-more-drawer > button')].map((b) => b.getAttribute('aria-label'));
 
       return {
         overflow: document.documentElement.scrollWidth - innerWidth,
@@ -341,14 +346,21 @@ await withGuestbook(async ({ db, page, base, add, errors }) => {
         gridGap: gridStyle.columnGap || gridStyle.gap,
         shellWidth: shell.getBoundingClientRect().width,
         shellCenterError: Math.abs((shell.getBoundingClientRect().left + shell.getBoundingClientRect().right) / 2 - innerWidth / 2),
+        shellVeilBg: getComputedStyle(shell, '::before').backgroundImage,
         canvasBg: canvasStyle.backgroundColor,
         canvasBlur: canvasStyle.backdropFilter,
         canvasBorderWidth: canvasStyle.borderTopWidth,
+        canvasRadius: canvasStyle.borderRadius,
         canvasShadow: canvasStyle.boxShadow,
         asideTransparent: innerWidth > 760 ? asideStyle.backgroundColor === 'rgba(0, 0, 0, 0)' && asideStyle.borderWidth === '0px' : asideStyle.borderWidth === '0px',
         asideWidth: innerWidth > 760 ? Math.round(aside.getBoundingClientRect().width) : null,
         trackHeight: innerWidth > 760 ? Math.round(document.querySelector('.gd-tl-track-wrap').getBoundingClientRect().height) : null,
         tlActionsRow: tlActionButtons.length === 3 && Math.max(...tlActionYs) - Math.min(...tlActionYs) <= 2,
+        emojiInLeft: Boolean(leftZone.querySelector('.gd-agg-emoji-pill')) && !rightZone.querySelector('.gd-agg-emoji-pill'),
+        emojiRestTransparent: getComputedStyle(el.querySelector('.gd-agg-emoji-pill')).backgroundColor === 'rgba(0, 0, 0, 0)',
+        leftZoneGap: getComputedStyle(leftZone).gap,
+        rightZoneGap: getComputedStyle(rightZone).gap,
+        directReplyColor: getComputedStyle(el.querySelector('.gd-direct-replies-btn')).color,
         opRightLabels,
         subRightLabels,
         badgeBorderless: ['.gd-level-badge', '.gd-zone5-links', '.gd-zone1-tag', '.gd-subscribe-btn']
@@ -356,10 +368,12 @@ await withGuestbook(async ({ db, page, base, add, errors }) => {
           .every((s) => getComputedStyle(document.querySelector(s)).borderWidth === '0px' && getComputedStyle(document.querySelector(s)).backgroundColor === 'rgba(0, 0, 0, 0)'),
         titleSize: getComputedStyle(document.querySelector('.gd-zone1-title')).fontSize,
         titleColor: getComputedStyle(document.querySelector('.gd-zone1-title')).color,
+        authorColor: css('.gd-author-name').color,
         bodySize: css('.gd-floor-markdown').fontSize,
         bodyLeading: css('.gd-floor-markdown').lineHeight,
         bodyColor: css('.gd-floor-markdown').color,
         iconColor: css('.gd-icon-btn').color,
+        ruleColor: getComputedStyle(document.querySelector('.gd-zone6-topic-map')).borderTopColor,
         boostDirection: boostStyle.flexDirection,
         boostWrap: boostStyle.flexWrap,
         boostGap: boostStyle.gap,
@@ -369,9 +383,38 @@ await withGuestbook(async ({ db, page, base, add, errors }) => {
           (p) =>
             getComputedStyle(p).borderRadius === '9999px' &&
             getComputedStyle(p).whiteSpace === 'nowrap' &&
-            getComputedStyle(p).borderTopWidth === '1px' &&
-            getComputedStyle(p).backgroundImage.includes('linear-gradient'),
+            getComputedStyle(p).backgroundImage === 'none' &&
+            getComputedStyle(p).backgroundColor === 'rgba(255, 255, 255, 0.04)' &&
+            getComputedStyle(p).borderTopColor === 'rgba(255, 255, 255, 0.08)' &&
+            getComputedStyle(p).color === 'rgb(212, 212, 216)' &&
+            Math.round(p.querySelector('.gd-avatar')?.getBoundingClientRect().width || 0) === 16,
         ),
+        topbarButtonsGone: document.querySelectorAll('.gd-topbar-btn').length === 0,
+        boostAddGone: document.querySelectorAll('.gd-boost-add').length === 0,
+        quoteCardStyle: (() => {
+          const q = document.querySelector('.gd-quote-card');
+          if (!q) return null;
+          const qs = getComputedStyle(q);
+          return {
+            bg: qs.backgroundColor,
+            radius: qs.borderRadius,
+            leftBorder: `${qs.borderLeftWidth} ${qs.borderLeftColor}`,
+            topBorder: qs.borderTopWidth,
+            avatarWidth: Math.round(q.querySelector('.gd-avatar')?.getBoundingClientRect().width || 0),
+          };
+        })(),
+        composerStyle: (() => {
+          const ta = document.querySelector('.gd-reply-textarea');
+          const btn = document.querySelector('.gd-submit-reply-btn');
+          return ta && btn
+            ? {
+                taBg: getComputedStyle(ta).backgroundColor,
+                taBorder: getComputedStyle(ta).borderBottomColor,
+                btnBg: getComputedStyle(btn).backgroundColor,
+                btnColor: getComputedStyle(btn).color,
+              }
+            : null;
+        })(),
         opAvatarWidth: box('.gd-avatar').width,
         subAvatarWidth: document.querySelector('#floor-2 .gd-avatar-rail .gd-avatar').getBoundingClientRect().width,
         subAvatarBg: getComputedStyle(document.querySelector('#floor-2 .gd-avatar-rail .gd-avatar')).backgroundColor,
@@ -396,33 +439,55 @@ await withGuestbook(async ({ db, page, base, add, errors }) => {
     assert.equal(geometry.gridTransparent, true, JSON.stringify(geometry));
     if (width > 760) assert.equal(geometry.gridGap, '28px');
     assert.ok(geometry.shellWidth <= 1060 && geometry.shellCenterError < 2, JSON.stringify(geometry));
-    assert.equal(geometry.canvasBg, 'rgba(15, 23, 42, 0.38)');
-    assert.equal(geometry.canvasBlur, 'blur(16px)');
+    assert.ok(geometry.shellVeilBg.includes('rgba(5, 7, 11, 0.8)'), JSON.stringify(geometry.shellVeilBg));
+    assert.equal(geometry.canvasBg, 'rgba(0, 0, 0, 0)');
+    assert.equal(geometry.canvasBlur, 'none');
     assert.equal(geometry.canvasBorderWidth, '0px');
+    assert.equal(geometry.canvasRadius, '0px');
     assert.equal(geometry.canvasShadow, 'none');
     assert.equal(geometry.asideTransparent, true, JSON.stringify(geometry));
     if (width > 760) {
       assert.equal(geometry.asideWidth, 132);
       assert.equal(geometry.trackHeight, 220);
+      assert.equal(geometry.rightZoneGap, '14px');
     }
     assert.equal(geometry.tlActionsRow, true, JSON.stringify(geometry));
-    assert.equal(geometry.opRightLabels.length, 5, JSON.stringify(geometry.opRightLabels));
-    assert.deepEqual(geometry.opRightLabels.slice(1), ['发送 Boost 短评', '复制贴文锚点链接', '更多操作', '回复主贴']);
-    assert.equal(geometry.subRightLabels.length, 4, JSON.stringify(geometry.subRightLabels));
-    assert.deepEqual(geometry.subRightLabels.slice(1), ['发送 Boost 短评', '复制贴文锚点链接', '回复该楼层']);
+    assert.equal(geometry.emojiInLeft, true, JSON.stringify(geometry));
+    assert.equal(geometry.emojiRestTransparent, true);
+    assert.equal(geometry.leftZoneGap, '12px');
+    assert.equal(geometry.directReplyColor, 'rgb(161, 161, 170)');
+    assert.deepEqual(geometry.opRightLabels, ['表态点赞', '发送 Boost 短评', '复制贴文锚点链接', '更多操作', '回复主贴']);
+    assert.deepEqual(geometry.subRightLabels, ['表态点赞', '发送 Boost 短评', '复制贴文锚点链接', '回复该楼层']);
     assert.equal(geometry.badgeBorderless, true, JSON.stringify(geometry));
     assert.equal(geometry.titleSize, '26px');
     assert.equal(geometry.titleColor, 'rgb(255, 255, 255)');
+    assert.equal(geometry.authorColor, 'rgb(244, 244, 245)');
     assert.equal(geometry.bodySize, '16px');
     assert.equal(geometry.bodyLeading, '28.8px');
-    assert.equal(geometry.bodyColor, 'rgb(241, 245, 249)');
-    assert.equal(geometry.iconColor, 'rgb(100, 116, 139)');
+    assert.equal(geometry.bodyColor, 'rgb(228, 228, 231)');
+    assert.equal(geometry.iconColor, 'rgb(113, 113, 122)');
+    assert.equal(geometry.ruleColor, 'rgba(255, 255, 255, 0.08)');
     assert.equal(geometry.boostDirection, 'row');
     assert.equal(geometry.boostWrap, 'wrap');
     assert.equal(geometry.boostGap, '6px');
     assert.equal(geometry.boostMarginLeft, '56px');
     if (width >= 768) assert.ok(geometry.maxPillsPerRow >= 3, 'Boost pills must pack horizontally: ' + JSON.stringify(geometry));
-    assert.equal(geometry.pillStyleOk, true);
+    assert.equal(geometry.pillStyleOk, true, JSON.stringify(geometry));
+    assert.equal(geometry.topbarButtonsGone, true);
+    assert.equal(geometry.boostAddGone, true);
+    assert.deepEqual(geometry.quoteCardStyle, {
+      bg: 'rgba(255, 255, 255, 0.027)',
+      radius: '6px',
+      leftBorder: '2px rgba(255, 255, 255, 0.22)',
+      topBorder: '0px',
+      avatarWidth: 18,
+    });
+    assert.deepEqual(geometry.composerStyle, {
+      taBg: 'rgb(12, 14, 19)',
+      taBorder: 'rgba(255, 255, 255, 0.1)',
+      btnBg: 'rgb(228, 228, 231)',
+      btnColor: 'rgb(9, 9, 11)',
+    });
     assert.equal(geometry.opAvatarWidth, 42);
     assert.equal(geometry.subAvatarWidth, 36);
     assert.ok(
@@ -458,11 +523,12 @@ await withGuestbook(async ({ db, page, base, add, errors }) => {
     if (width === 390) await shot('reading-dark-390', page.locator('.gd-topbar'));
   }
 
-  // Interactive Boost, Emoji, Bidirectional Replies, Quote, Cross-Jump Return, Edit/Delete
+  // Interactive Boost (unified via [⚡] action icon), Emoji, Bidirectional Replies, Quote, Cross-Jump Return, Edit/Delete
   await page.setViewportSize({ width: 1440, height: 900 });
-  await op.locator('.gd-boost-add').click();
+  await op.getByLabel('发送 Boost 短评').click();
   const input = op.getByRole('textbox', { name: 'Boost 短评' });
   await expect(input).toHaveAttribute('maxlength', '16');
+  assert.equal(await input.evaluate((el) => getComputedStyle(el).boxShadow), 'none');
   await input.fill('字'.repeat(17));
   assert.equal((await input.inputValue()).length, 16);
   await input.fill('读到这里');
@@ -485,17 +551,40 @@ await withGuestbook(async ({ db, page, base, add, errors }) => {
   await expect(op.getByLabel('书签')).toBeVisible();
   await op.getByLabel('更多操作').click();
 
-  // Bidirectional Replies: 1-to-N children continuous 1px line
-  await op.getByRole('button', { name: /条直接回复/ }).click();
+  // Bidirectional Replies: 1-to-N children continuous 1px line + zero mouse click focus ring
+  const directToggleBtn = op.getByRole('button', { name: /条直接回复/ });
+  await directToggleBtn.click();
   await expect(op.locator('.gd-reply-context')).toContainText('江澄');
-  const childrenRail = await op.locator('.gd-reply-context').evaluate((el) => ({
-    width: getComputedStyle(el, '::before').width,
-    position: getComputedStyle(el.querySelector('.gd-avatar')).position,
-    centerOffset: Math.round(el.querySelector('.gd-avatar').getBoundingClientRect().x + 13 - el.getBoundingClientRect().x),
-  }));
-  assert.deepEqual(childrenRail, { width: '1px', position: 'static', centerOffset: 13 });
+  const toggleFocusAfterClick = await directToggleBtn.evaluate((el) => {
+    const s = getComputedStyle(el);
+    return { outlineStyle: s.outlineStyle, outlineWidth: s.outlineWidth, borderTopWidth: s.borderTopWidth, bg: s.backgroundColor };
+  });
+  assert.equal(toggleFocusAfterClick.outlineStyle, 'none', JSON.stringify(toggleFocusAfterClick));
+  assert.equal(toggleFocusAfterClick.borderTopWidth, '0px', JSON.stringify(toggleFocusAfterClick));
+  assert.equal(toggleFocusAfterClick.bg, 'rgba(0, 0, 0, 0)', JSON.stringify(toggleFocusAfterClick));
+  const childrenRail = await op.locator('.gd-reply-context').evaluate((el) => {
+    const collapseBtn = el.querySelector('.gd-context-collapse');
+    const cs = getComputedStyle(collapseBtn);
+    return {
+      width: getComputedStyle(el, '::before').width,
+      railColor: getComputedStyle(el, '::before').backgroundColor,
+      position: getComputedStyle(el.querySelector('.gd-avatar')).position,
+      centerOffset: Math.round(el.querySelector('.gd-avatar').getBoundingClientRect().x + 13 - el.getBoundingClientRect().x),
+      collapseBox: { w: cs.width, h: cs.height, radius: cs.borderRadius, bg: cs.backgroundColor },
+    };
+  });
+  assert.deepEqual(childrenRail, {
+    width: '1px',
+    railColor: 'rgba(255, 255, 255, 0.12)',
+    position: 'static',
+    centerOffset: 13,
+    collapseBox: { w: '22px', h: '22px', radius: '5px', bg: 'rgb(14, 16, 21)' },
+  });
+  if (shots) await page.screenshot({ path: shots + '/direct-replies-expanded.png', animations: 'disabled' });
   await op.getByLabel('收起直接回复', { exact: true }).click();
   await expect(op.locator('.gd-reply-context')).toHaveCount(0);
+  // Ensure collapsing with mouse does not leave a stray focus box on the toggle button
+  assert.equal(await directToggleBtn.evaluate((el) => getComputedStyle(el).outlineStyle), 'none');
 
   // Bug 1 check: Floor 2 (replies to OP) and Floor 3 (adjacent reply to Floor 2) hide [↪]; Floor 4 (cross-floor reply to Floor 2) shows 16px [↪]
   await expect(page.locator('#floor-2 .gd-reply-target-pill')).toHaveCount(0);
@@ -672,7 +761,12 @@ await withGuestbook(async ({ db, page, base, add, errors }) => {
   await expect(page.locator('#floor-1')).toBeVisible();
   assert.equal(
     await page.locator('.gd-reading-canvas').evaluate((el) => getComputedStyle(el).backgroundColor),
-    'rgba(255, 255, 255, 0.56)',
+    'rgba(0, 0, 0, 0)',
+  );
+  assert.ok(
+    await page
+      .locator('.gd-detail-shell')
+      .evaluate((el) => getComputedStyle(el, '::before').backgroundImage.includes('rgba(255, 255, 255, 0.78)')),
   );
   await shot('welcome-light-1440', page.locator('.gd-topbar'));
 

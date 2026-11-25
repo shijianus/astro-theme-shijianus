@@ -10,6 +10,7 @@ interface Props {
   details?: ReactionDetailItem[];
   totalLikes: number;
   userReaction?: string | null;
+  mode?: 'summary' | 'trigger';
   onReact: (emoji: string) => void | Promise<void>;
 }
 
@@ -18,6 +19,7 @@ export function EmojiReactionCluster({
   details,
   totalLikes,
   userReaction,
+  mode = 'summary',
   onReact,
 }: Props) {
   const trigger = useRef<HTMLButtonElement>(null);
@@ -42,29 +44,43 @@ export function EmojiReactionCluster({
 
   async function react(emoji: string) {
     if (pending) return;
+    const fromKeyboard = Boolean(
+      document.activeElement instanceof HTMLElement &&
+        document.activeElement.matches(':focus-visible'),
+    );
     setPending(true);
     try {
       await onReact(emoji);
     } finally {
       setPanel(null);
       setPending(false);
-      trigger.current?.focus({ preventScroll: true });
+      if (fromKeyboard) {
+        trigger.current?.focus({ preventScroll: true });
+      }
     }
   }
+
+  // Left summary cluster renders zero footprint when there are no reactions yet.
+  if (mode === 'summary' && entries.length === 0 && totalLikes === 0) {
+    return null;
+  }
+
+  const isTrigger = mode === 'trigger';
 
   return (
     <div className="gd-reaction-cluster-wrap">
       <button
         ref={trigger}
         type="button"
-        className="gd-agg-emoji-pill"
-        aria-label={`选择表情表态，当前 ${totalLikes} 次`}
+        className={isTrigger ? 'gd-icon-btn gd-heart-trigger-btn' : 'gd-agg-emoji-pill'}
+        aria-label={isTrigger ? '表态点赞' : `选择表情表态，当前 ${totalLikes} 次`}
+        title={isTrigger ? '表态点赞' : undefined}
         aria-expanded={Boolean(panel)}
         aria-haspopup="dialog"
         data-reacted={Boolean(userReaction)}
         onPointerEnter={(e) => {
           cancelClose();
-          if (e.pointerType === 'mouse' && rows.length > 0) {
+          if (!isTrigger && e.pointerType === 'mouse' && rows.length > 0) {
             setPanel((p) => p ?? 'details');
           }
         }}
@@ -74,20 +90,17 @@ export function EmojiReactionCluster({
           setPanel((p) => (p === 'picker' ? null : 'picker'));
         }}
       >
-        {entries.length > 0 ? (
-          <>
-            <span className="gd-agg-emoji-icons">
-              {entries.slice(0, 4).map(([emoji]) => (
-                <span key={emoji}>{emoji}</span>
-              ))}
-            </span>
-            {totalLikes > 0 && <span className="gd-agg-emoji-count">{totalLikes}</span>}
-            <span className="gd-agg-emoji-sep" aria-hidden="true" />
-            <Heart size={15} className="gd-agg-heart-icon" />
-          </>
+        {isTrigger ? (
+          <Heart size={16} className="gd-agg-heart-icon" />
         ) : (
           <>
-            <Heart size={16} className="gd-agg-heart-icon" />
+            {entries.length > 0 && (
+              <span className="gd-agg-emoji-icons">
+                {entries.slice(0, 4).map(([emoji]) => (
+                  <span key={emoji}>{emoji}</span>
+                ))}
+              </span>
+            )}
             {totalLikes > 0 && <span className="gd-agg-emoji-count">{totalLikes}</span>}
           </>
         )}
