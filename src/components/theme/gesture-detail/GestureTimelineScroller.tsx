@@ -109,7 +109,9 @@ export function GestureTimelineScroller({
       const isMobile = window.matchMedia('(max-width: 760px)').matches;
       const aside = railRef.current?.closest<HTMLElement>('.gd-timeline-aside');
       if (aside) {
-        aside.dataset.stuck = String(isMobile && aside.getBoundingClientRect().top <= 60.5);
+        aside.dataset.stuck = String(
+          isMobile && window.scrollY > 12 && aside.getBoundingClientRect().top <= 62,
+        );
       }
 
       if (elements.length === 0) return;
