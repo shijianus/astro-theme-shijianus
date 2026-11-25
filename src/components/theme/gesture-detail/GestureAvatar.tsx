@@ -1,22 +1,15 @@
 import React from 'react';
 import { getCommentInitials } from '../../../lib/comment-client';
 
-const MATTE_MORANDI_PALETTE = [
-  '#334155',
-  '#3b4252',
-  '#2e3a4e',
-  '#38443f',
-  '#423b42',
-  '#3c4048',
-] as const;
+const AVATAR_TONE_COUNT = 6;
 
-function resolveMorandiBg(name: string): string {
+function resolveAvatarTone(name: string): number {
   const str = name || '访';
   let hash = 0;
   for (let i = 0; i < str.length; i += 1) {
     hash = (hash * 31 + str.charCodeAt(i)) | 0;
   }
-  return MATTE_MORANDI_PALETTE[Math.abs(hash) % MATTE_MORANDI_PALETTE.length];
+  return Math.abs(hash) % AVATAR_TONE_COUNT;
 }
 
 interface GestureAvatarProps {
@@ -34,15 +27,12 @@ export function GestureAvatar({
   isOwner = false,
   className = '',
 }: GestureAvatarProps) {
-  const fallbackBg = avatar ? undefined : resolveMorandiBg(name);
+  const toneClass = avatar ? '' : `gd-avatar--tone-${resolveAvatarTone(name)}`;
 
   return (
     <span
-      className={`gd-avatar gd-avatar--${size} ${isOwner ? 'is-owner-avatar' : ''} ${className}`}
-      style={{
-        borderRadius: '50%',
-        backgroundColor: fallbackBg,
-      }}
+      className={`gd-avatar gd-avatar--${size} ${toneClass} ${isOwner ? 'is-owner-avatar' : ''} ${className}`}
+      style={{ borderRadius: '50%' }}
       title={name}
     >
       {avatar ? (

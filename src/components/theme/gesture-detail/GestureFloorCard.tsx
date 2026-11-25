@@ -377,7 +377,7 @@ export function GestureFloorCard({
               onClick={() => setDirectRepliesExpanded((prev) => !prev)}
               aria-expanded={directRepliesExpanded}
             >
-              <span>{directReplies.length} 条直接回复</span>
+              <span>{directReplies.length} 条回复</span>
               {directRepliesExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
             </button>
           )}

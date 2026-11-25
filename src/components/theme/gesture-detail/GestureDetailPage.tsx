@@ -148,18 +148,30 @@ function GestureDetailThread({
   );
 
   useLayoutEffect(() => {
+    const route = parseGestureHash(location.hash);
+    if (!route || (!route.postId && route.floor <= 1)) {
+      window.scrollTo({ top: 0, behavior: 'instant' });
+    }
+  }, [gestureId]);
+
+  useLayoutEffect(() => {
     if (!jump) return;
     const el = document.getElementById(`floor-${jump.floor}`);
     if (!el) return;
     cancelAnimationFrame(restoreFrame.current);
     if (jump.offset === undefined) {
-      el.scrollIntoView({
-        block: 'start',
-        behavior:
-          jump.instant || window.matchMedia('(prefers-reduced-motion: reduce)').matches
-            ? 'instant'
-            : 'smooth',
-      });
+      const behavior: ScrollBehavior =
+        jump.instant || window.matchMedia('(prefers-reduced-motion: reduce)').matches
+          ? 'instant'
+          : 'smooth';
+      if (jump.floor === 1) {
+        window.scrollTo({ top: 0, behavior });
+      } else {
+        el.scrollIntoView({
+          block: 'start',
+          behavior,
+        });
+      }
     } else {
       const restore = () =>
         window.scrollTo({
@@ -187,7 +199,7 @@ function GestureDetailThread({
       return;
     }
     if (target > 1 || route.floor > 1) go(target);
-    else if (window.scrollY > 120) go(1);
+    else if (window.scrollY > 0) window.scrollTo({ top: 0, behavior: 'instant' });
   };
 
   useEffect(() => {

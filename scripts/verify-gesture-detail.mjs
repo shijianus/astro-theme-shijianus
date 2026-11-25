@@ -361,12 +361,14 @@ await withGuestbook(async ({ db, page, base, add, errors }) => {
         gridGap: gridStyle.columnGap || gridStyle.gap,
         shellWidth: shell.getBoundingClientRect().width,
         shellCenterError: Math.abs((shell.getBoundingClientRect().left + shell.getBoundingClientRect().right) / 2 - innerWidth / 2),
-        shellVeilBg: getComputedStyle(shell, '::before').backgroundImage,
+        shellVeilContent: getComputedStyle(shell, '::before').content,
         canvasBg: canvasStyle.backgroundColor,
         canvasBlur: canvasStyle.backdropFilter,
         canvasBorderWidth: canvasStyle.borderTopWidth,
+        canvasBorderColor: canvasStyle.borderTopColor,
         canvasRadius: canvasStyle.borderRadius,
         canvasShadow: canvasStyle.boxShadow,
+        topbarToCanvasGap: Math.round((innerWidth > 760 ? canvas : grid).getBoundingClientRect().top - topbar.getBoundingClientRect().bottom),
         asideTransparent: innerWidth > 760 ? asideStyle.backgroundColor === 'rgba(0, 0, 0, 0)' && asideStyle.borderWidth === '0px' : asideStyle.borderWidth === '0px',
         asideWidth: innerWidth > 760 ? Math.round(aside.getBoundingClientRect().width) : null,
         asideMarginTop: innerWidth > 760 ? asideStyle.marginTop : null,
@@ -499,20 +501,18 @@ await withGuestbook(async ({ db, page, base, add, errors }) => {
     assert.equal(geometry.gridTransparent, true, JSON.stringify(geometry));
     if (width > 760) assert.equal(geometry.gridGap, '28px');
     assert.ok(geometry.shellWidth <= 1060 && geometry.shellCenterError < 2, JSON.stringify(geometry));
-    assert.ok(
-      geometry.shellVeilBg.includes('rgba(10, 15, 28, 0.68)') &&
-        geometry.shellVeilBg.includes('rgba(11, 16, 30, 0.78)'),
-      JSON.stringify(geometry.shellVeilBg),
-    );
-    assert.equal(geometry.canvasBg, 'rgba(0, 0, 0, 0)');
-    assert.equal(geometry.canvasBlur, 'none');
-    assert.equal(geometry.canvasBorderWidth, '0px');
-    assert.equal(geometry.canvasRadius, '0px');
-    assert.equal(geometry.canvasShadow, 'none');
+    assert.equal(geometry.shellVeilContent, 'none', 'Feathered veil ::before must be removed');
+    assert.equal(geometry.canvasBg, 'rgba(13, 18, 32, 0.76)');
+    assert.equal(geometry.canvasBlur, 'blur(18px)');
+    assert.equal(geometry.canvasBorderWidth, '1px');
+    assert.equal(geometry.canvasBorderColor, 'rgba(255, 255, 255, 0.08)');
+    assert.equal(geometry.canvasRadius, width > 760 ? '16px' : '14px');
+    assert.notEqual(geometry.canvasShadow, 'none');
+    assert.ok(geometry.topbarToCanvasGap >= 12 && geometry.topbarToCanvasGap <= 16, JSON.stringify(geometry));
     assert.equal(geometry.asideTransparent, true, JSON.stringify(geometry));
     if (width > 760) {
       assert.equal(geometry.asideWidth, 140);
-      assert.equal(geometry.asideMarginTop, '98px');
+      assert.equal(geometry.asideMarginTop, '112px');
       assert.equal(geometry.trackHeight, 220);
       assert.equal(geometry.rightZoneGap, '14px');
     }
@@ -624,26 +624,42 @@ await withGuestbook(async ({ db, page, base, add, errors }) => {
   await expect(op.getByLabel('书签')).toBeVisible();
   await op.getByLabel('更多操作').click();
 
-  // Bidirectional Replies: 1-to-N children continuous 1px line + zero mouse click focus ring
-  const directToggleBtn = op.getByRole('button', { name: /条直接回复/ });
+  // Bidirectional Replies: 1-to-N children continuous 1px line, unified "N 条回复" label, zero underline, bottom-left ↓ jump
+  const directToggleBtn = op.locator('.gd-direct-replies-btn');
+  await expect(directToggleBtn).toHaveText(/^\d+ 条回复$/);
   await directToggleBtn.click();
   await expect(op.locator('.gd-reply-context')).toContainText('江澄');
   const toggleFocusAfterClick = await directToggleBtn.evaluate((el) => {
     const s = getComputedStyle(el);
-    return { outlineStyle: s.outlineStyle, outlineWidth: s.outlineWidth, borderTopWidth: s.borderTopWidth, bg: s.backgroundColor };
+    return {
+      outlineStyle: s.outlineStyle,
+      outlineWidth: s.outlineWidth,
+      borderTopWidth: s.borderTopWidth,
+      borderBottomWidth: s.borderBottomWidth,
+      textDecorationLine: s.textDecorationLine,
+      bg: s.backgroundColor,
+    };
   });
   assert.equal(toggleFocusAfterClick.outlineStyle, 'none', JSON.stringify(toggleFocusAfterClick));
   assert.equal(toggleFocusAfterClick.borderTopWidth, '0px', JSON.stringify(toggleFocusAfterClick));
+  assert.equal(toggleFocusAfterClick.borderBottomWidth, '0px', JSON.stringify(toggleFocusAfterClick));
+  assert.equal(toggleFocusAfterClick.textDecorationLine, 'none', JSON.stringify(toggleFocusAfterClick));
   assert.equal(toggleFocusAfterClick.bg, 'rgba(0, 0, 0, 0)', JSON.stringify(toggleFocusAfterClick));
   const childrenRail = await op.locator('.gd-reply-context').evaluate((el) => {
     const collapseBtn = el.querySelector('.gd-context-collapse');
     const cs = getComputedStyle(collapseBtn);
+    const entry = el.querySelector('.gd-context-entry');
+    const bodyRect = entry.querySelector('.gd-markdown-body').getBoundingClientRect();
+    const jumpRect = entry.querySelector('.gd-context-footer .gd-context-jump-btn').getBoundingClientRect();
     return {
       width: getComputedStyle(el, '::before').width,
       railColor: getComputedStyle(el, '::before').backgroundColor,
       position: getComputedStyle(el.querySelector('.gd-avatar')).position,
       centerOffset: Math.round(el.querySelector('.gd-avatar').getBoundingClientRect().x + 13 - el.getBoundingClientRect().x),
       collapseBox: { w: cs.width, h: cs.height, radius: cs.borderRadius, bg: cs.backgroundColor },
+      jumpBelowBody: jumpRect.top >= bodyRect.bottom,
+      jumpLeftDelta: Math.abs(Math.round(jumpRect.left - bodyRect.left)),
+      headingHasJump: Boolean(entry.querySelector('.gd-context-heading .gd-context-jump-btn')),
     };
   });
   assert.deepEqual(childrenRail, {
@@ -652,12 +668,16 @@ await withGuestbook(async ({ db, page, base, add, errors }) => {
     position: 'static',
     centerOffset: 13,
     collapseBox: { w: '22px', h: '22px', radius: '5px', bg: 'rgb(14, 16, 21)' },
+    jumpBelowBody: true,
+    jumpLeftDelta: 0,
+    headingHasJump: false,
   });
   if (shots) await page.screenshot({ path: shots + '/direct-replies-expanded.png', animations: 'disabled' });
   await op.getByLabel('收起直接回复', { exact: true }).click();
   await expect(op.locator('.gd-reply-context')).toHaveCount(0);
-  // Ensure collapsing with mouse does not leave a stray focus box on the toggle button
+  // Ensure collapsing with mouse does not leave a stray focus box or underline on the toggle button
   assert.equal(await directToggleBtn.evaluate((el) => getComputedStyle(el).outlineStyle), 'none');
+  assert.equal(await directToggleBtn.evaluate((el) => getComputedStyle(el).textDecorationLine), 'none');
 
   // Bug 1 check: Floor 2 (replies to OP) and Floor 3 (adjacent reply to Floor 2) hide [↪]; Floor 4 (cross-floor reply to Floor 2) shows 16px [↪]
   await expect(page.locator('#floor-2 .gd-reply-target-pill')).toHaveCount(0);
@@ -830,18 +850,101 @@ await withGuestbook(async ({ db, page, base, add, errors }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.locator('#nav-theme-toggle a').click();
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
+  // Verify clicking a topic from a scrolled /guestbook/ board always resets to scrollY=0 so .gd-topbar clears #nav
+  await page.goto(base + '/guestbook/');
+  await expect(page.locator('.gb-gesture-row').first()).toBeVisible();
+  await page.evaluate(() => window.scrollTo({ top: 360, behavior: 'instant' }));
+  await page.locator('.gb-gesture-row').first().click();
+  await expect(page.locator('#floor-1')).toBeVisible();
+  await page.waitForTimeout(260);
+  const scrolledBoardEntry = await page.evaluate(() => ({
+    scrollY: Math.round(window.scrollY),
+    navClearance: Math.round(
+      document.querySelector('.gd-topbar').getBoundingClientRect().top -
+        document.querySelector('#nav').getBoundingClientRect().bottom,
+    ),
+  }));
+  assert.equal(scrolledBoardEntry.scrollY, 0, JSON.stringify(scrolledBoardEntry));
+  assert.ok(scrolledBoardEntry.navClearance >= 16, 'topbar must clear fixed #nav after scrolled board click: ' + JSON.stringify(scrolledBoardEntry));
+
   await page.goto(path + welcome);
   await expect(page.locator('#floor-1')).toBeVisible();
-  assert.equal(
-    await page.locator('.gd-reading-canvas').evaluate((el) => getComputedStyle(el).backgroundColor),
-    'rgba(0, 0, 0, 0)',
-  );
+  await page.waitForTimeout(120);
+  const lightEntry = await page.evaluate(() => {
+    const nav = document.querySelector('#nav').getBoundingClientRect();
+    const topbar = document.querySelector('.gd-topbar').getBoundingClientRect();
+    const canvas = document.querySelector('.gd-reading-canvas');
+    const cs = getComputedStyle(canvas);
+    const av = getComputedStyle(document.querySelector('#floor-2 .gd-avatar-rail .gd-avatar'));
+    const pill = getComputedStyle(document.querySelector('#floor-1 .gd-boost-pill'));
+    const tlBtn = getComputedStyle(document.querySelector('.gd-tl-top-btn'));
+    return {
+      scrollY: Math.round(window.scrollY),
+      navClearance: Math.round(topbar.top - nav.bottom),
+      topbarToCanvasGap: Math.round(canvas.getBoundingClientRect().top - topbar.bottom),
+      veilContent: getComputedStyle(document.querySelector('.gd-detail-shell'), '::before').content,
+      canvasBg: cs.backgroundColor,
+      canvasBlur: cs.backdropFilter,
+      canvasBorderColor: cs.borderTopColor,
+      canvasRadius: cs.borderRadius,
+      lightAvatarBg: av.backgroundColor,
+      lightAvatarColor: av.color,
+      lightBoostColor: pill.color,
+      lightTlTrack: getComputedStyle(document.querySelector('.gd-tl-rail'), '::before').backgroundColor,
+      lightTlThumb: getComputedStyle(document.querySelector('.gd-tl-thumb')).backgroundColor,
+      lightTlBtnBg: tlBtn.backgroundColor,
+      lightTlBtnBorder: tlBtn.borderTopColor,
+      lightTlBtnColor: tlBtn.color,
+    };
+  });
+  assert.equal(lightEntry.scrollY, 0, JSON.stringify(lightEntry));
+  assert.ok(lightEntry.navClearance >= 16, 'topbar must clear fixed #nav after scrolled board click: ' + JSON.stringify(lightEntry));
+  assert.ok(lightEntry.topbarToCanvasGap >= 12 && lightEntry.topbarToCanvasGap <= 16, JSON.stringify(lightEntry));
+  assert.equal(lightEntry.veilContent, 'none');
+  assert.equal(lightEntry.canvasBg, 'rgba(255, 255, 255, 0.78)');
+  assert.equal(lightEntry.canvasBlur, 'blur(18px)');
+  assert.equal(lightEntry.canvasBorderColor, 'rgba(255, 255, 255, 0.75)');
+  assert.equal(lightEntry.canvasRadius, '16px');
   assert.ok(
-    await page
-      .locator('.gd-detail-shell')
-      .evaluate((el) => getComputedStyle(el, '::before').backgroundImage.includes('rgba(255, 255, 255, 0.78)')),
+    ['rgb(219, 234, 254)', 'rgb(224, 231, 255)', 'rgb(220, 252, 231)', 'rgb(241, 245, 249)', 'rgb(254, 243, 199)', 'rgb(243, 232, 255)'].includes(
+      lightEntry.lightAvatarBg,
+    ),
+    'light letter avatar must use airy pastel Morandi bg: ' + JSON.stringify(lightEntry),
   );
-  await shot('welcome-light-1440', page.locator('.gd-topbar'));
+  assert.equal(lightEntry.lightBoostColor, 'rgb(51, 65, 85)');
+  assert.equal(lightEntry.lightTlTrack, 'rgba(37, 99, 235, 0.25)');
+  assert.equal(lightEntry.lightTlThumb, 'rgb(37, 99, 235)');
+  assert.equal(lightEntry.lightTlBtnBg, 'rgba(255, 255, 255, 0.72)');
+  assert.equal(lightEntry.lightTlBtnBorder, 'rgba(255, 255, 255, 0.85)');
+  assert.equal(lightEntry.lightTlBtnColor, 'rgb(51, 65, 85)');
+  await shot('welcome-light-1440');
+
+  // Verify light-mode 1-to-N expanded direct replies rail, white 22x22 button, bottom-left ↓ jump & zero underline
+  const lightToggle = page.locator('#floor-1 .gd-direct-replies-btn');
+  await lightToggle.click();
+  await expect(page.locator('#floor-1 .gd-reply-context.is-children')).toBeVisible();
+  const lightRepliesCheck = await page.evaluate(() => {
+    const toggle = document.querySelector('#floor-1 .gd-direct-replies-btn');
+    const ctx = document.querySelector('#floor-1 .gd-reply-context.is-children');
+    const btn = ctx.querySelector('.gd-context-collapse');
+    const bs = getComputedStyle(btn);
+    return {
+      toggleUnderline: getComputedStyle(toggle).textDecorationLine,
+      railColor: getComputedStyle(ctx, '::before').backgroundColor,
+      collapseBg: bs.backgroundColor,
+      collapseBorder: bs.borderTopColor,
+      collapseColor: bs.color,
+    };
+  });
+  assert.deepEqual(lightRepliesCheck, {
+    toggleUnderline: 'none',
+    railColor: 'rgba(15, 23, 42, 0.18)',
+    collapseBg: 'rgb(255, 255, 255)',
+    collapseBorder: 'rgba(15, 23, 42, 0.14)',
+    collapseColor: 'rgb(71, 85, 105)',
+  });
+  if (shots) await page.screenshot({ path: shots + '/welcome-light-1440-replies.png', animations: 'disabled' });
+  await page.locator('#floor-1').getByLabel('收起直接回复', { exact: true }).click();
 
   await page.setViewportSize({ width: 360, height: 800 });
   await page.goto(path + 'essay');
