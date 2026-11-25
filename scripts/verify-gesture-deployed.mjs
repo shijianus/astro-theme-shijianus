@@ -258,11 +258,23 @@ try {
   result.interactions.push('Live timeline pointer drag state machine verified');
 
   if (data.subGestures.length) {
+    const childrenToggle = op.locator('.gd-direct-replies-btn');
+    if (await childrenToggle.count()) {
+      await childrenToggle.click();
+      const childrenCtx = op.locator('.gd-reply-context.is-children');
+      await expect(childrenCtx).toBeVisible();
+      await childrenCtx.scrollIntoViewIfNeeded();
+      await screenshot('bidirectional-children');
+      await op.getByLabel('收起直接回复', { exact: true }).click();
+      await expect(childrenCtx).toHaveCount(0);
+      result.interactions.push('Expanded real direct replies list with continuous 1px vertical rail');
+    }
     const parentToggle = page.locator('.is-sub-floor .gd-reply-target-pill').first();
     if (await parentToggle.count()) {
       await parentToggle.click();
       const parent = page.locator('.gd-reply-context.is-parent');
       await expect(parent).toBeVisible();
+      await parent.scrollIntoViewIfNeeded();
       await screenshot('bidirectional-parent');
       await parent.getByRole('button', { name: /跳至第 .* 楼贴文/ }).click();
       await expect(page.locator('.gd-return')).toBeVisible();
