@@ -1047,7 +1047,7 @@ body:has(.gd-detail-root) :is(#theme-snow-mid, #theme-snow-foreground) {
 /* Parent view (1-to-1): whisper-thin hierarchy layer, zero heavy box, subtle bottom hairline */
 .gd-reply-context.is-parent {
   margin: 10px 0 12px;
-  padding: 4px 10px 10px 0;
+  padding: 4px 0 10px 0;
   background: var(--gd-parent-ctx-bg);
   border: none;
   border-bottom: 1px solid var(--gd-parent-ctx-border);

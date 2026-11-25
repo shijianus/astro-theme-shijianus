@@ -314,8 +314,26 @@ try {
       await childrenToggle.click();
       const childrenCtx = op.locator('.gd-reply-context.is-children');
       await expect(childrenCtx).toBeVisible();
-      // Verify clicking [N 条直接回复] leaves zero blue/white focus outline
+      // Verify clicking [N 条直接回复] leaves zero blue/white focus outline and 1px rail aligns strictly at 0px error
       assert.equal(await childrenToggle.evaluate((el) => getComputedStyle(el).outlineStyle), 'none');
+      const childrenRailDelta = await page.evaluate(() => {
+        const ctx = document.querySelector('#floor-1 .gd-reply-context.is-children');
+        const ctxRect = ctx.getBoundingClientRect();
+        const railStyle = getComputedStyle(ctx, '::before');
+        const railCenter = ctxRect.left + parseFloat(railStyle.left) + parseFloat(railStyle.width) / 2;
+        const centers = [
+          ...[...ctx.querySelectorAll(':scope > .gd-context-entry .gd-avatar')].map((a) => {
+            const r = a.getBoundingClientRect();
+            return r.left + r.width / 2;
+          }),
+          (() => {
+            const r = ctx.querySelector(':scope > .gd-context-collapse').getBoundingClientRect();
+            return r.left + r.width / 2;
+          })(),
+        ];
+        return Math.max(...centers.map((cx) => Math.abs(cx - railCenter)));
+      });
+      assert.ok(childrenRailDelta <= 0.5, 'children 1px rail center mismatch: ' + childrenRailDelta);
       await childrenCtx.scrollIntoViewIfNeeded();
       await page.screenshot({ path: resolve(output, 'bidirectional-children.png'), animations: 'disabled' });
       result.screenshots.push('bidirectional-children.png');
@@ -330,6 +348,23 @@ try {
       const parent = page.locator('.gd-reply-context.is-parent');
       await expect(parent).toBeVisible();
       assert.equal(await parentToggle.evaluate((el) => getComputedStyle(el).outlineStyle), 'none');
+      const parentRailMetrics = await page.evaluate(() => {
+        const ctx = document.querySelector('.gd-reply-context.is-parent');
+        const rail = ctx.querySelector('.gd-context-rail');
+        const railRect = rail.getBoundingClientRect();
+        const railStyle = getComputedStyle(rail, '::before');
+        const railCenter = railRect.left + parseFloat(railStyle.left) + parseFloat(railStyle.width) / 2;
+        const av = ctx.querySelector('.gd-avatar').getBoundingClientRect();
+        const btn = ctx.querySelector('.gd-context-parent-collapse').getBoundingClientRect();
+        const jump = ctx.querySelector('.gd-context-heading button').getBoundingClientRect();
+        const authorRight = ctx.closest('.gd-floor-article').querySelector('.gd-author-meta-right').getBoundingClientRect();
+        return {
+          railDelta: Math.max(Math.abs(av.left + av.width / 2 - railCenter), Math.abs(btn.left + btn.width / 2 - railCenter)),
+          jumpRightOffset: Math.abs(Math.round(authorRight.right - jump.right)),
+        };
+      });
+      assert.ok(parentRailMetrics.railDelta <= 0.5, 'parent 1px rail center mismatch: ' + JSON.stringify(parentRailMetrics));
+      assert.ok(parentRailMetrics.jumpRightOffset <= 1, 'parent jump right edge mismatch: ' + JSON.stringify(parentRailMetrics));
       await parent.scrollIntoViewIfNeeded();
       await page.screenshot({ path: resolve(output, 'bidirectional-parent.png'), animations: 'disabled' });
       result.screenshots.push('bidirectional-parent.png');
@@ -354,6 +389,8 @@ try {
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
   await expect(page.locator('.snackbar-container.show')).toHaveCount(0, { timeout: 10000 });
   await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
+  await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
+  await page.waitForTimeout(120);
   assert.equal(
     await page.locator('.gd-reading-canvas').evaluate((el) => getComputedStyle(el).backgroundColor),
     'rgba(0, 0, 0, 0)',

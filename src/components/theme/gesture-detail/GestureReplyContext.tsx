@@ -142,7 +142,7 @@ export function GestureReplyContext({
             aria-label="收起直接回复"
             title="收起直接回复"
           >
-            <ChevronUp size={15} />
+            <ChevronUp size={14} />
           </button>
         </>
       )}
