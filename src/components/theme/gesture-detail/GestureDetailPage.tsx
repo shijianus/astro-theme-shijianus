@@ -259,13 +259,15 @@ function GestureDetailThread({
     textarea.current?.focus({ preventScroll: true });
   }
 
-  function renderFloor(node: GestureNode, body: string) {
+  function renderFloor(node: GestureNode, body: string, previousFloorId: string | null = null) {
     const floor = node.floorIndex!;
     const user = identity?.id || visitorSessionToken;
     return (
       <GestureFloorCard
         key={node.id}
         node={node}
+        rootId={op?.id || gestureId}
+        previousFloorId={previousFloorId}
         floorIndex={floor}
         isOp={floor === 1}
         bodyMarkdown={body}
@@ -291,14 +293,6 @@ function GestureDetailThread({
         }
         onReplyFloor={(target) => {
           setContact(target);
-          focusComposer();
-        }}
-        onQuoteFloor={(target) => {
-          setQuote({
-            id: target.id,
-            authorName: target.authorName,
-            excerpt: target.message.slice(0, 100),
-          });
           focusComposer();
         }}
         onJumpToFloor={crossJump}
@@ -353,18 +347,20 @@ function GestureDetailThread({
   if (!op || !thread) {
     return (
       <div className="gd-detail-root">
-        <div className="gd-detail-grid">
-          <main className="gd-monolithic-shell">
-            <div className="gd-topbar">{backButton}</div>
-            <p className="gd-empty-box" role="status">
-              {err || '正在加载讨论…'}{' '}
-              {err && (
-                <button type="button" onClick={() => refresh(false)}>
-                  重试
-                </button>
-              )}
-            </p>
-          </main>
+        <div className="gd-detail-shell">
+          <div className="gd-topbar">{backButton}</div>
+          <div className="gd-detail-grid">
+            <main className="gd-reading-canvas">
+              <p className="gd-empty-box" role="status">
+                {err || '正在加载讨论…'}{' '}
+                {err && (
+                  <button type="button" onClick={() => refresh(false)}>
+                    重试
+                  </button>
+                )}
+              </p>
+            </main>
+          </div>
         </div>
       </div>
     );
@@ -374,185 +370,173 @@ function GestureDetailThread({
 
   return (
     <div className="gd-detail-root">
-      <div className="gd-detail-grid">
-        <main className="gd-monolithic-shell" ref={content} data-detail-loaded="true">
-          <div className="gd-topbar">
-            {backButton}
-            <div className="gd-topbar__actions">
-              <button
-                type="button"
-                className="gd-topbar-btn"
-                aria-label="书签"
-                aria-pressed={bookmarkedPostIds.includes(gestureId)}
-                onClick={() => onToggleBookmark(gestureId)}
-              >
-                <Bookmark size={16} />
-              </button>
-              <button
-                type="button"
-                className="gd-topbar-btn"
-                aria-label="分享链接"
-                onClick={() => copy()}
-              >
-                <Link2 size={16} />
-              </button>
-            </div>
+      <div className="gd-detail-shell">
+        <div className="gd-topbar">
+          {backButton}
+          <div className="gd-topbar__actions">
+            <button
+              type="button"
+              className="gd-topbar-btn"
+              aria-label="书签"
+              aria-pressed={bookmarkedPostIds.includes(gestureId)}
+              onClick={() => onToggleBookmark(gestureId)}
+            >
+              <Bookmark size={16} />
+            </button>
+            <button
+              type="button"
+              className="gd-topbar-btn"
+              aria-label="分享链接"
+              onClick={() => copy()}
+            >
+              <Link2 size={16} />
+            </button>
           </div>
+        </div>
 
-          {err && (
-            <p className="gd-error-banner" role="status">
-              {err}{' '}
-              <button type="button" onClick={() => refresh(false)}>
-                重试
-              </button>
-            </p>
-          )}
+        <div className="gd-detail-grid">
+          <main className="gd-reading-canvas" ref={content} data-detail-loaded="true">
+            {err && (
+              <p className="gd-error-banner" role="status">
+                {err}{' '}
+                <button type="button" onClick={() => refresh(false)}>
+                  重试
+                </button>
+              </p>
+            )}
 
-          <GestureHeaderZone
-            title={title.title}
-            isPinned={op.status === 'pinned'}
-            channelLabel={channels.find((c) => c.id === op.tag)?.label || ''}
-            staticTags={op.tags}
-          />
-
-          {renderFloor(op, title.bodyWithoutLeadingHeading)}
-
-          {thread.topicMap && (
-            <GestureRelatedAndTopicMap
-              relatedLinks={safeRelatedLinks}
-              topicMap={thread.topicMap}
-              gesture={op}
-              subGestures={replies}
+            <GestureHeaderZone
+              title={title.title}
+              isPinned={op.status === 'pinned'}
+              channelLabel={channels.find((c) => c.id === op.tag)?.label || ''}
+              staticTags={op.tags}
             />
-          )}
 
-          {replies.length > 0 && (
-            <div className="gd-stream-tools">
-              <h2>{replies.length} 条回复</h2>
-              <button
-                type="button"
-                aria-pressed={hot}
-                onClick={() => {
-                  setHot((prev) => !prev);
-                  setPage(0);
-                }}
-              >
-                {hot ? '查看全部回复' : '只看热门回复'}
-              </button>
-            </div>
-          )}
+            {renderFloor(op, title.bodyWithoutLeadingHeading, null)}
 
-          {hot && filtered.length === 0 && <p className="gd-empty-box">暂无热门回复</p>}
+            {thread.topicMap && (
+              <GestureRelatedAndTopicMap
+                relatedLinks={safeRelatedLinks}
+                topicMap={thread.topicMap}
+                gesture={op}
+                subGestures={replies}
+              />
+            )}
 
-          {slice.map((n) => renderFloor(n, n.message))}
+            {hot && filtered.length === 0 && <p className="gd-empty-box">暂无热门回复</p>}
 
-          {pages > 1 && (
-            <nav className="gd-pages" aria-label="回复分页">
-              <button
-                type="button"
-                disabled={activePage === 0}
-                onClick={() => go(filtered[(activePage - 1) * PAGE_SIZE].floorIndex!)}
-              >
-                上一页
-              </button>
-              <span>
-                {activePage + 1} / {pages}
-              </span>
-              <button
-                type="button"
-                disabled={activePage === pages - 1}
-                onClick={() => go(filtered[(activePage + 1) * PAGE_SIZE].floorIndex!)}
-              >
-                下一页
-              </button>
-            </nav>
-          )}
+            {slice.map((n, idx) =>
+              renderFloor(n, n.message, idx === 0 ? (activePage === 0 ? op.id : null) : slice[idx - 1].id),
+            )}
 
-          <GestureInlineReplyComposer
-            replyTarget={contact}
-            quoteTarget={quote}
-            textareaRef={textarea}
-            onToast={onToast}
-            onClearReplyTarget={() => setContact(null)}
-            onClearQuoteTarget={() => setQuote(null)}
-            onSubmit={async (payload) => {
-              try {
-                const res = await replyToGesture({
-                  ...payload,
-                  rootId: gestureId,
-                  tag: op.tag,
-                  identity,
-                });
-                if (!res.ok || !res.subGesture) {
-                  onToast(res.error || '回复失败');
+            {pages > 1 && (
+              <nav className="gd-pages" aria-label="回复分页">
+                <button
+                  type="button"
+                  disabled={activePage === 0}
+                  onClick={() => go(filtered[(activePage - 1) * PAGE_SIZE].floorIndex!)}
+                >
+                  上一页
+                </button>
+                <span>
+                  {activePage + 1} / {pages}
+                </span>
+                <button
+                  type="button"
+                  disabled={activePage === pages - 1}
+                  onClick={() => go(filtered[(activePage + 1) * PAGE_SIZE].floorIndex!)}
+                >
+                  下一页
+                </button>
+              </nav>
+            )}
+
+            <GestureInlineReplyComposer
+              replyTarget={contact}
+              quoteTarget={quote}
+              textareaRef={textarea}
+              onToast={onToast}
+              onClearReplyTarget={() => setContact(null)}
+              onClearQuoteTarget={() => setQuote(null)}
+              onSubmit={async (payload) => {
+                try {
+                  const res = await replyToGesture({
+                    ...payload,
+                    rootId: gestureId,
+                    tag: op.tag,
+                    identity,
+                  });
+                  if (!res.ok || !res.subGesture) {
+                    onToast(res.error || '回复失败');
+                    return false;
+                  }
+                  onSyncNewComment({
+                    ...res.subGesture,
+                    showLocation: false,
+                    quote: res.subGesture.quote
+                      ? {
+                          id: res.subGesture.quote.id,
+                          authorName: res.subGesture.quote.authorName,
+                          text: res.subGesture.quote.excerpt,
+                        }
+                      : null,
+                  });
+                  const data = await refresh();
+                  const created = data?.subGestures?.find((n) => n.id === res.subGesture?.id);
+                  setContact(null);
+                  setQuote(null);
+                  setHot(false);
+                  if (created?.floorIndex) {
+                    setPage(Math.floor((created.floorIndex - 2) / PAGE_SIZE));
+                    setJump({ floor: created.floorIndex });
+                  }
+                  onToast('回复已发表');
+                  return true;
+                } catch {
+                  onToast('回复失败，请重试');
                   return false;
                 }
-                onSyncNewComment({
-                  ...res.subGesture,
-                  showLocation: false,
-                  quote: res.subGesture.quote
-                    ? {
-                        id: res.subGesture.quote.id,
-                        authorName: res.subGesture.quote.authorName,
-                        text: res.subGesture.quote.excerpt,
-                      }
-                    : null,
-                });
-                const data = await refresh();
-                const created = data?.subGestures?.find((n) => n.id === res.subGesture?.id);
-                setContact(null);
-                setQuote(null);
-                setHot(false);
-                if (created?.floorIndex) {
-                  setPage(Math.floor((created.floorIndex - 2) / PAGE_SIZE));
-                  setJump({ floor: created.floorIndex });
-                }
-                onToast('回复已发表');
-                return true;
-              } catch {
-                onToast('回复失败，请重试');
-                return false;
+              }}
+            />
+
+            <button
+              type="button"
+              className="gd-subscribe-btn"
+              aria-pressed={Boolean(thread.subscribed)}
+              onClick={() => void mutate(toggleGestureSubscription({ gestureId, identity }))}
+            >
+              <Bell size={14} />
+              <span>{thread.subscribed ? '已订阅讨论' : '订阅讨论'}</span>
+            </button>
+          </main>
+
+          <GestureTimelineScroller
+            content={content}
+            floors={floors}
+            page={hot ? -(activePage + 1) : activePage}
+            latest={thread.topicMap?.latestReplyAt || op.createdAt}
+            origin={origin?.floor ?? null}
+            fading={fading}
+            hotOnly={hot}
+            subscribed={Boolean(thread.subscribed)}
+            onToggleHot={() => {
+              setHot((prev) => !prev);
+              setPage(0);
+            }}
+            onQuickReply={() => {
+              setContact(null);
+              focusComposer();
+            }}
+            onToggleSubscribe={() => void mutate(toggleGestureSubscription({ gestureId, identity }))}
+            onJump={go}
+            onReturn={() => {
+              if (origin) {
+                go(origin.floor, origin.offset, true);
+                setFading(true);
               }
             }}
           />
-
-          <button
-            type="button"
-            className="gd-subscribe-btn"
-            aria-pressed={Boolean(thread.subscribed)}
-            onClick={() => void mutate(toggleGestureSubscription({ gestureId, identity }))}
-          >
-            <Bell size={14} />
-            <span>{thread.subscribed ? '已订阅讨论' : '订阅讨论'}</span>
-          </button>
-        </main>
-
-        <GestureTimelineScroller
-          content={content}
-          floors={floors}
-          page={hot ? -(activePage + 1) : activePage}
-          latest={thread.topicMap?.latestReplyAt || op.createdAt}
-          origin={origin?.floor ?? null}
-          fading={fading}
-          hotOnly={hot}
-          subscribed={Boolean(thread.subscribed)}
-          onToggleHot={() => {
-            setHot((prev) => !prev);
-            setPage(0);
-          }}
-          onQuickReply={() => {
-            setContact(null);
-            focusComposer();
-          }}
-          onToggleSubscribe={() => void mutate(toggleGestureSubscription({ gestureId, identity }))}
-          onJump={go}
-          onReturn={() => {
-            if (origin) {
-              go(origin.floor, origin.offset, true);
-              setFading(true);
-            }
-          }}
-        />
+        </div>
       </div>
     </div>
   );

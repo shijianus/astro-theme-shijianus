@@ -9,7 +9,6 @@ import {
   Link2,
   MoreHorizontal,
   Pencil,
-  Quote as QuoteIcon,
   Reply,
   Trash2,
   Zap,
@@ -30,6 +29,8 @@ import { GestureReplyContext } from './GestureReplyContext';
 
 interface GestureFloorCardProps {
   node: GestureNode;
+  rootId: string;
+  previousFloorId?: string | null;
   isOp: boolean;
   floorIndex: number;
   bodyMarkdown: string;
@@ -47,7 +48,6 @@ interface GestureFloorCardProps {
   onReact: (nodeId: string, emoji: string) => void;
   onAddBoost: (gestureId: string, content: string) => Promise<boolean>;
   onReplyFloor: (node: GestureNode) => void;
-  onQuoteFloor: (node: GestureNode) => void;
   onJumpToFloor: (targetFloorIndex: number, originFloorIndex: number) => void;
   onToggleBookmark: (nodeId: string) => void;
   onEditSave: (nodeId: string, newMessage: string, newTitle?: string) => Promise<boolean>;
@@ -58,6 +58,8 @@ interface GestureFloorCardProps {
 
 export function GestureFloorCard({
   node,
+  rootId,
+  previousFloorId = null,
   isOp,
   floorIndex,
   bodyMarkdown,
@@ -75,7 +77,6 @@ export function GestureFloorCard({
   onReact,
   onAddBoost,
   onReplyFloor,
-  onQuoteFloor,
   onJumpToFloor,
   onToggleBookmark,
   onEditSave,
@@ -105,7 +106,15 @@ export function GestureFloorCard({
   );
   const badges = resolveAuthorBadges(node);
   const editCount = Number(node.editCount || 0);
-  const showReplyTargetBadge = !isOp && replyParentNode !== null;
+  // Strictly follow LinuxDo restraint: hide [↪] for direct OP replies or replies directly below their target floor.
+  const isDirectReplyToOp =
+    !replyParentNode || replyParentNode.id === rootId || replyParentNode.floorIndex === 1;
+  const isImmediatelyBelowParent =
+    Boolean(replyParentNode) &&
+    (replyParentNode!.floorIndex === floorIndex - 1 ||
+      (Boolean(previousFloorId) && replyParentNode!.id === previousFloorId));
+  const showReplyTargetBadge =
+    !isOp && Boolean(replyParentNode) && !isDirectReplyToOp && !isImmediatelyBelowParent;
 
   useEffect(() => {
     onRememberExpansion({ parent: parentExpanded, children: directRepliesExpanded });
@@ -239,7 +248,7 @@ export function GestureFloorCard({
                   <GestureAvatar
                     name={replyParentNode.authorName}
                     avatar={replyParentNode.authorAvatar}
-                    size={18}
+                    size={16}
                     isOwner={replyParentNode.authorRole === 'admin'}
                   />
                   <span>{replyParentNode.authorName}</span>
@@ -346,14 +355,6 @@ export function GestureFloorCard({
       {/* Action bar locked on right content axis (margin-left: 56px) */}
       <div className="gd-zone4-action-bar">
         <div className="gd-zone4-left">
-          <EmojiReactionCluster
-            summary={node.reactions?.summary}
-            details={node.reactions?.details}
-            totalLikes={node.likesCount || 0}
-            userReaction={currentUserReaction}
-            onReact={(emoji) => onReact(node.id, emoji)}
-          />
-
           {directReplies.length > 0 && (
             <button
               type="button"
@@ -369,6 +370,14 @@ export function GestureFloorCard({
         </div>
 
         <div className="gd-zone4-right">
+          <EmojiReactionCluster
+            summary={node.reactions?.summary}
+            details={node.reactions?.details}
+            totalLikes={node.likesCount || 0}
+            userReaction={currentUserReaction}
+            onReact={(emoji) => onReact(node.id, emoji)}
+          />
+
           <button
             type="button"
             className={`gd-icon-btn ${boostComposerOpen ? 'is-active' : ''}`}
@@ -381,16 +390,6 @@ export function GestureFloorCard({
 
           <button
             type="button"
-            className="gd-icon-btn"
-            onClick={() => onQuoteFloor(node)}
-            title="引用楼层"
-            aria-label="引用楼层"
-          >
-            <QuoteIcon size={16} />
-          </button>
-
-          <button
-            type="button"
             className={`gd-icon-btn ${copiedJustNow ? 'is-success' : ''}`}
             onClick={handleCopyFloorLink}
             title="复制贴文锚点链接"
@@ -399,75 +398,88 @@ export function GestureFloorCard({
             {copiedJustNow ? <Check size={16} /> : <Link2 size={16} />}
           </button>
 
-          <div ref={moreMenuRef} className={`gd-more-drawer ${moreMenuOpen ? 'is-open' : ''}`}>
-            {moreMenuOpen && (
-              <div className="gd-more-drawer__items">
-                <a
-                  className="gd-icon-btn"
-                  href="/community/reporting-and-appeals/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  title="举报与申诉"
-                  aria-label="举报与申诉"
-                >
-                  <Flag size={14} />
-                </a>
-                <button
-                  type="button"
-                  className={`gd-icon-btn ${isBookmarked ? 'is-bookmarked' : ''}`}
-                  onClick={() => {
-                    onToggleBookmark(node.id);
-                    setMoreMenuOpen(false);
-                  }}
-                  title={isBookmarked ? '移出书签' : '加入书签'}
-                  aria-label="书签"
-                >
-                  <Bookmark size={14} />
-                </button>
-                {canManage && (
-                  <>
-                    <button
-                      type="button"
-                      className="gd-icon-btn"
-                      onClick={() => {
-                        setEditDraft(node.message);
-                        setEditTitleDraft(node.title || '');
-                        setIsEditing((prev) => !prev);
-                        setMoreMenuOpen(false);
-                      }}
-                      title="编辑贴文"
-                      aria-label="编辑贴文"
-                    >
-                      <Pencil size={14} />
-                    </button>
-                    <button
-                      type="button"
-                      className="gd-icon-btn is-danger"
-                      onClick={() => {
-                        setMoreMenuOpen(false);
-                        onDelete(node.id);
-                      }}
-                      title="删除贴文"
-                      aria-label="删除贴文"
-                    >
-                      <Trash2 size={14} />
-                    </button>
-                  </>
-                )}
+          {(isOp || canManage) && (
+            <div ref={moreMenuRef} className={`gd-more-drawer ${moreMenuOpen ? 'is-open' : ''}`}>
+              <div
+                className={`gd-more-drawer__tray ${moreMenuOpen ? 'is-open' : ''}`}
+                aria-hidden={!moreMenuOpen}
+              >
+                <div className="gd-more-drawer__items">
+                  {isOp && (
+                    <>
+                      <a
+                        className="gd-icon-btn"
+                        href="/community/reporting-and-appeals/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        tabIndex={moreMenuOpen ? 0 : -1}
+                        title="举报与申诉"
+                        aria-label="举报与申诉"
+                      >
+                        <Flag size={15} />
+                      </a>
+                      <button
+                        type="button"
+                        className={`gd-icon-btn ${isBookmarked ? 'is-bookmarked' : ''}`}
+                        tabIndex={moreMenuOpen ? 0 : -1}
+                        onClick={() => {
+                          onToggleBookmark(node.id);
+                          setMoreMenuOpen(false);
+                        }}
+                        title={isBookmarked ? '移出书签' : '加入书签'}
+                        aria-label="书签"
+                      >
+                        <Bookmark size={15} />
+                      </button>
+                    </>
+                  )}
+                  {canManage && (
+                    <>
+                      <button
+                        type="button"
+                        className="gd-icon-btn"
+                        tabIndex={moreMenuOpen ? 0 : -1}
+                        onClick={() => {
+                          setEditDraft(node.message);
+                          setEditTitleDraft(node.title || '');
+                          setIsEditing((prev) => !prev);
+                          setMoreMenuOpen(false);
+                        }}
+                        title="编辑贴文"
+                        aria-label="编辑贴文"
+                      >
+                        <Pencil size={15} />
+                      </button>
+                      <button
+                        type="button"
+                        className="gd-icon-btn is-danger"
+                        tabIndex={moreMenuOpen ? 0 : -1}
+                        onClick={() => {
+                          setMoreMenuOpen(false);
+                          onDelete(node.id);
+                        }}
+                        title="删除贴文"
+                        aria-label="删除贴文"
+                      >
+                        <Trash2 size={15} />
+                      </button>
+                    </>
+                  )}
+                </div>
               </div>
-            )}
 
-            <button
-              type="button"
-              className={`gd-icon-btn ${moreMenuOpen ? 'is-active' : ''}`}
-              onClick={() => setMoreMenuOpen((prev) => !prev)}
-              title="更多操作"
-              aria-expanded={moreMenuOpen}
-              aria-label="更多操作"
-            >
-              <MoreHorizontal size={16} />
-            </button>
-          </div>
+              <button
+                type="button"
+                className={`gd-icon-btn ${moreMenuOpen ? 'is-active' : ''}`}
+                onClick={() => setMoreMenuOpen((prev) => !prev)}
+                title="更多操作"
+                aria-expanded={moreMenuOpen}
+                aria-label="更多操作"
+              >
+                <MoreHorizontal size={16} />
+              </button>
+            </div>
+          )}
 
           <button
             type="button"

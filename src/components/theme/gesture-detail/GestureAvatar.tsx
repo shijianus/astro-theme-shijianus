@@ -22,7 +22,7 @@ function resolveMorandiBg(name: string): string {
 interface GestureAvatarProps {
   name: string;
   avatar?: string;
-  size?: 42 | 40 | 36 | 34 | 32 | 26 | 24 | 20 | 18;
+  size?: 42 | 40 | 36 | 34 | 32 | 26 | 24 | 20 | 18 | 16;
   isOwner?: boolean;
   className?: string;
 }
