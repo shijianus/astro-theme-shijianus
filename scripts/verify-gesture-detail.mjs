@@ -217,12 +217,14 @@ await withGuestbook(async ({ db, page, base, add, errors }) => {
     200,
   );
 
-  // Empty OP: 0 related links (hidden), OP shows + Boost trigger, 0 boost pills
+  // Empty OP: 0 related links (hidden), 0 boost footprint until [⚡] clicked, 0 duplicate buttons
   await page.goto(path + 'empty');
   await expect(page.locator('#floor-1')).toBeVisible();
   await expect(page.locator('.gd-zone5-links')).toHaveCount(0);
+  await expect(page.locator('#floor-1 .gd-zone3-boost')).toHaveCount(0);
   await expect(page.locator('#floor-1 .gd-boost-pill')).toHaveCount(0);
-  await expect(page.locator('#floor-1 .gd-boost-add')).toHaveCount(1);
+  await expect(page.locator('.gd-boost-add')).toHaveCount(0);
+  await expect(page.locator('.gd-topbar-btn')).toHaveCount(0);
   await expect(page.locator('.gd-edit-count-badge')).toHaveCount(0);
   assert.ok((await page.locator('.gd-zone6-topic-map').boundingBox()).height <= 58);
   assert.equal(await page.locator('#floor-1 .gd-avatar').evaluate((el) => getComputedStyle(el).borderRadius), '50%');
@@ -290,6 +292,7 @@ await withGuestbook(async ({ db, page, base, add, errors }) => {
     await op
       .locator('.gd-zone4-action-bar')
       .evaluate((el) => el.scrollIntoView({ block: 'center', behavior: 'instant' }));
+    await page.waitForTimeout(180);
     await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
 
     const geometry = await op.evaluate((el) => {
@@ -386,9 +389,32 @@ await withGuestbook(async ({ db, page, base, add, errors }) => {
             getComputedStyle(p).color === 'rgb(212, 212, 216)' &&
             Math.round(p.querySelector('.gd-avatar')?.getBoundingClientRect().width || 0) === 16,
         ),
-        boostAddDashed:
-          getComputedStyle(el.querySelector('.gd-boost-add')).borderTopStyle === 'dashed' &&
-          getComputedStyle(el.querySelector('.gd-boost-add')).backgroundColor === 'rgba(0, 0, 0, 0)',
+        topbarButtonsGone: document.querySelectorAll('.gd-topbar-btn').length === 0,
+        boostAddGone: document.querySelectorAll('.gd-boost-add').length === 0,
+        quoteCardStyle: (() => {
+          const q = document.querySelector('.gd-quote-card');
+          if (!q) return null;
+          const qs = getComputedStyle(q);
+          return {
+            bg: qs.backgroundColor,
+            radius: qs.borderRadius,
+            leftBorder: `${qs.borderLeftWidth} ${qs.borderLeftColor}`,
+            topBorder: qs.borderTopWidth,
+            avatarWidth: Math.round(q.querySelector('.gd-avatar')?.getBoundingClientRect().width || 0),
+          };
+        })(),
+        composerStyle: (() => {
+          const ta = document.querySelector('.gd-reply-textarea');
+          const btn = document.querySelector('.gd-submit-reply-btn');
+          return ta && btn
+            ? {
+                taBg: getComputedStyle(ta).backgroundColor,
+                taBorder: getComputedStyle(ta).borderBottomColor,
+                btnBg: getComputedStyle(btn).backgroundColor,
+                btnColor: getComputedStyle(btn).color,
+              }
+            : null;
+        })(),
         opAvatarWidth: box('.gd-avatar').width,
         subAvatarWidth: document.querySelector('#floor-2 .gd-avatar-rail .gd-avatar').getBoundingClientRect().width,
         subAvatarBg: getComputedStyle(document.querySelector('#floor-2 .gd-avatar-rail .gd-avatar')).backgroundColor,
@@ -447,7 +473,21 @@ await withGuestbook(async ({ db, page, base, add, errors }) => {
     assert.equal(geometry.boostMarginLeft, '56px');
     if (width >= 768) assert.ok(geometry.maxPillsPerRow >= 3, 'Boost pills must pack horizontally: ' + JSON.stringify(geometry));
     assert.equal(geometry.pillStyleOk, true, JSON.stringify(geometry));
-    assert.equal(geometry.boostAddDashed, true);
+    assert.equal(geometry.topbarButtonsGone, true);
+    assert.equal(geometry.boostAddGone, true);
+    assert.deepEqual(geometry.quoteCardStyle, {
+      bg: 'rgba(255, 255, 255, 0.027)',
+      radius: '6px',
+      leftBorder: '2px rgba(255, 255, 255, 0.22)',
+      topBorder: '0px',
+      avatarWidth: 18,
+    });
+    assert.deepEqual(geometry.composerStyle, {
+      taBg: 'rgb(12, 14, 19)',
+      taBorder: 'rgba(255, 255, 255, 0.1)',
+      btnBg: 'rgb(228, 228, 231)',
+      btnColor: 'rgb(9, 9, 11)',
+    });
     assert.equal(geometry.opAvatarWidth, 42);
     assert.equal(geometry.subAvatarWidth, 36);
     assert.ok(
@@ -483,11 +523,12 @@ await withGuestbook(async ({ db, page, base, add, errors }) => {
     if (width === 390) await shot('reading-dark-390', page.locator('.gd-topbar'));
   }
 
-  // Interactive Boost, Emoji, Bidirectional Replies, Quote, Cross-Jump Return, Edit/Delete
+  // Interactive Boost (unified via [⚡] action icon), Emoji, Bidirectional Replies, Quote, Cross-Jump Return, Edit/Delete
   await page.setViewportSize({ width: 1440, height: 900 });
-  await op.locator('.gd-boost-add').click();
+  await op.getByLabel('发送 Boost 短评').click();
   const input = op.getByRole('textbox', { name: 'Boost 短评' });
   await expect(input).toHaveAttribute('maxlength', '16');
+  assert.equal(await input.evaluate((el) => getComputedStyle(el).boxShadow), 'none');
   await input.fill('字'.repeat(17));
   assert.equal((await input.inputValue()).length, 16);
   await input.fill('读到这里');
@@ -510,17 +551,40 @@ await withGuestbook(async ({ db, page, base, add, errors }) => {
   await expect(op.getByLabel('书签')).toBeVisible();
   await op.getByLabel('更多操作').click();
 
-  // Bidirectional Replies: 1-to-N children continuous 1px line
-  await op.getByRole('button', { name: /条直接回复/ }).click();
+  // Bidirectional Replies: 1-to-N children continuous 1px line + zero mouse click focus ring
+  const directToggleBtn = op.getByRole('button', { name: /条直接回复/ });
+  await directToggleBtn.click();
   await expect(op.locator('.gd-reply-context')).toContainText('江澄');
-  const childrenRail = await op.locator('.gd-reply-context').evaluate((el) => ({
-    width: getComputedStyle(el, '::before').width,
-    position: getComputedStyle(el.querySelector('.gd-avatar')).position,
-    centerOffset: Math.round(el.querySelector('.gd-avatar').getBoundingClientRect().x + 13 - el.getBoundingClientRect().x),
-  }));
-  assert.deepEqual(childrenRail, { width: '1px', position: 'static', centerOffset: 13 });
+  const toggleFocusAfterClick = await directToggleBtn.evaluate((el) => {
+    const s = getComputedStyle(el);
+    return { outlineStyle: s.outlineStyle, outlineWidth: s.outlineWidth, borderTopWidth: s.borderTopWidth, bg: s.backgroundColor };
+  });
+  assert.equal(toggleFocusAfterClick.outlineStyle, 'none', JSON.stringify(toggleFocusAfterClick));
+  assert.equal(toggleFocusAfterClick.borderTopWidth, '0px', JSON.stringify(toggleFocusAfterClick));
+  assert.equal(toggleFocusAfterClick.bg, 'rgba(0, 0, 0, 0)', JSON.stringify(toggleFocusAfterClick));
+  const childrenRail = await op.locator('.gd-reply-context').evaluate((el) => {
+    const collapseBtn = el.querySelector('.gd-context-collapse');
+    const cs = getComputedStyle(collapseBtn);
+    return {
+      width: getComputedStyle(el, '::before').width,
+      railColor: getComputedStyle(el, '::before').backgroundColor,
+      position: getComputedStyle(el.querySelector('.gd-avatar')).position,
+      centerOffset: Math.round(el.querySelector('.gd-avatar').getBoundingClientRect().x + 13 - el.getBoundingClientRect().x),
+      collapseBox: { w: cs.width, h: cs.height, radius: cs.borderRadius, bg: cs.backgroundColor },
+    };
+  });
+  assert.deepEqual(childrenRail, {
+    width: '1px',
+    railColor: 'rgba(255, 255, 255, 0.12)',
+    position: 'static',
+    centerOffset: 13,
+    collapseBox: { w: '22px', h: '22px', radius: '5px', bg: 'rgb(14, 16, 21)' },
+  });
+  if (shots) await page.screenshot({ path: shots + '/direct-replies-expanded.png', animations: 'disabled' });
   await op.getByLabel('收起直接回复', { exact: true }).click();
   await expect(op.locator('.gd-reply-context')).toHaveCount(0);
+  // Ensure collapsing with mouse does not leave a stray focus box on the toggle button
+  assert.equal(await directToggleBtn.evaluate((el) => getComputedStyle(el).outlineStyle), 'none');
 
   // Bug 1 check: Floor 2 (replies to OP) and Floor 3 (adjacent reply to Floor 2) hide [↪]; Floor 4 (cross-floor reply to Floor 2) shows 16px [↪]
   await expect(page.locator('#floor-2 .gd-reply-target-pill')).toHaveCount(0);

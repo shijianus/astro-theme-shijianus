@@ -51,8 +51,8 @@ export function GestureBoostSection({
     }
   };
 
-  // SubGesture with 0 boosts and closed composer renders zero footprint (null).
-  if (!isOp && boosts.length === 0 && !composerOpen) {
+  // Zero footprint when there are no boosts and the inline composer is closed.
+  if (boosts.length === 0 && !composerOpen) {
     return null;
   }
 
@@ -68,18 +68,6 @@ export function GestureBoostSection({
           </span>
         );
       })}
-
-      {isOp && (
-        <button
-          type="button"
-          className={`gd-boost-add ${composerOpen ? 'is-open' : ''}`}
-          onClick={() => onComposerOpenChange(!composerOpen)}
-          aria-expanded={composerOpen}
-        >
-          <Zap size={12} />
-          <span>+ Boost</span>
-        </button>
-      )}
 
       {composerOpen && (
         <form className="gd-boost-inline-form is-slide-in" onSubmit={handleSubmit}>

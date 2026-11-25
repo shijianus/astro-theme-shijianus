@@ -169,6 +169,8 @@ try {
         shellVeilBg: getComputedStyle(document.querySelector('.gd-detail-shell'), '::before').backgroundImage,
         monolithicGone: document.querySelectorAll('.gd-monolithic-shell').length === 0,
         streamToolsGone: document.querySelectorAll('.gd-stream-tools').length === 0,
+        topbarButtonsGone: document.querySelectorAll('.gd-topbar-btn').length === 0,
+        boostAddGone: document.querySelectorAll('.gd-boost-add').length === 0,
         topbarExternal: !canvas.contains(topbar),
         topbarBottomBorder: style('.gd-topbar').borderBottomWidth,
         navClearance: Math.round(rect('.gd-topbar').y - rect('#nav').bottom),
@@ -223,6 +225,8 @@ try {
     assert.ok(geometry.shellVeilBg.includes('rgba(5, 7, 11, 0.8)'), JSON.stringify(geometry.shellVeilBg));
     assert.equal(geometry.monolithicGone, true);
     assert.equal(geometry.streamToolsGone, true);
+    assert.equal(geometry.topbarButtonsGone, true);
+    assert.equal(geometry.boostAddGone, true);
     assert.equal(geometry.topbarExternal, true);
     assert.equal(geometry.topbarBottomBorder, '0px');
     assert.ok(geometry.navClearance >= 0, 'topbar must clear fixed #nav: ' + JSON.stringify(geometry));
@@ -275,14 +279,15 @@ try {
   result.interactions.push('Upward Emoji picker at all seven viewport sizes');
 
   await page.setViewportSize({ width: 1440, height: 900 });
-  await op.locator('.gd-boost-add').click();
+  await op.getByLabel('发送 Boost 短评').click();
   const boost = op.getByRole('textbox', { name: 'Boost 短评', exact: true });
   await expect(boost).toHaveAttribute('maxlength', '16');
+  assert.equal(await boost.evaluate((el) => getComputedStyle(el).boxShadow), 'none');
   await boost.fill('字'.repeat(17));
   assert.equal((await boost.inputValue()).length, 16);
   await boost.fill('');
   await page.locator('.gd-zone1-title').click();
-  result.interactions.push('Inline Boost input rejects character 17; no submission');
+  result.interactions.push('Unified [⚡] Boost input rejects character 17 with zero blue glow; no submission');
 
   await page.locator('.gd-summary-toggle').click();
   await expect(page.getByRole('region', { name: '讨论摘录' })).toBeVisible();
@@ -309,19 +314,25 @@ try {
       await childrenToggle.click();
       const childrenCtx = op.locator('.gd-reply-context.is-children');
       await expect(childrenCtx).toBeVisible();
+      // Verify clicking [N 条直接回复] leaves zero blue/white focus outline
+      assert.equal(await childrenToggle.evaluate((el) => getComputedStyle(el).outlineStyle), 'none');
       await childrenCtx.scrollIntoViewIfNeeded();
-      await screenshot('bidirectional-children');
+      await page.screenshot({ path: resolve(output, 'bidirectional-children.png'), animations: 'disabled' });
+      result.screenshots.push('bidirectional-children.png');
       await op.getByLabel('收起直接回复', { exact: true }).click();
       await expect(childrenCtx).toHaveCount(0);
-      result.interactions.push('Expanded real direct replies list with continuous 1px vertical rail');
+      assert.equal(await childrenToggle.evaluate((el) => getComputedStyle(el).outlineStyle), 'none');
+      result.interactions.push('Expanded real direct replies list with continuous 1px rail & zero click focus ring');
     }
     const parentToggle = page.locator('.is-sub-floor .gd-reply-target-pill').first();
     if (await parentToggle.count()) {
       await parentToggle.click();
       const parent = page.locator('.gd-reply-context.is-parent');
       await expect(parent).toBeVisible();
+      assert.equal(await parentToggle.evaluate((el) => getComputedStyle(el).outlineStyle), 'none');
       await parent.scrollIntoViewIfNeeded();
-      await screenshot('bidirectional-parent');
+      await page.screenshot({ path: resolve(output, 'bidirectional-parent.png'), animations: 'disabled' });
+      result.screenshots.push('bidirectional-parent.png');
       await parent.getByRole('button', { name: /跳至第 .* 楼贴文/ }).click();
       await expect(page.locator('.gd-return')).toBeVisible();
       await page.locator('.gd-return').click();
@@ -329,6 +340,13 @@ try {
       await expect(parentToggle).toHaveAttribute('aria-expanded', 'true');
       result.interactions.push('Expanded real parent jump preserves return anchor and restores expansion');
     }
+    const composer = page.locator('#detail-reply-composer');
+    await composer.scrollIntoViewIfNeeded();
+    await composer.locator('.gd-reply-textarea').click();
+    assert.equal(await composer.locator('.gd-reply-textarea').evaluate((el) => getComputedStyle(el).boxShadow), 'none');
+    await page.screenshot({ path: resolve(output, 'quote-and-composer.png'), animations: 'disabled' });
+    result.screenshots.push('quote-and-composer.png');
+    result.interactions.push('Verified etched matte quote block and matte obsidian reply composer');
   }
 
   // Light theme verification

@@ -44,13 +44,19 @@ export function EmojiReactionCluster({
 
   async function react(emoji: string) {
     if (pending) return;
+    const fromKeyboard = Boolean(
+      document.activeElement instanceof HTMLElement &&
+        document.activeElement.matches(':focus-visible'),
+    );
     setPending(true);
     try {
       await onReact(emoji);
     } finally {
       setPanel(null);
       setPending(false);
-      trigger.current?.focus({ preventScroll: true });
+      if (fromKeyboard) {
+        trigger.current?.focus({ preventScroll: true });
+      }
     }
   }
 

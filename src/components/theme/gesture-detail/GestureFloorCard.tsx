@@ -98,6 +98,7 @@ export function GestureFloorCard({
   const pendingBeforeTopRef = useRef<number | null>(null);
   const directToggleRef = useRef<HTMLButtonElement | null>(null);
   const pendingDirectTopRef = useRef<number | null>(null);
+  const restoreDirectFocusRef = useRef(false);
   const moreMenuRef = useRef<HTMLDivElement | null>(null);
 
   const renderedBody = useMemo(
@@ -160,10 +161,14 @@ export function GestureFloorCard({
     if (!directRepliesExpanded && pendingDirectTopRef.current !== null) {
       const before = pendingDirectTopRef.current;
       pendingDirectTopRef.current = null;
+      const shouldFocus = restoreDirectFocusRef.current;
+      restoreDirectFocusRef.current = false;
       const toggle = directToggleRef.current;
       if (toggle) {
         window.scrollBy({ top: toggle.getBoundingClientRect().top - before, behavior: 'instant' });
-        toggle.focus({ preventScroll: true });
+        if (shouldFocus) {
+          toggle.focus({ preventScroll: true });
+        }
       }
     }
   }, [directRepliesExpanded]);
@@ -523,6 +528,10 @@ export function GestureFloorCard({
           childrenMap={childrenMap}
           onJump={onJumpToFloor}
           onCollapse={() => {
+            restoreDirectFocusRef.current = Boolean(
+              document.activeElement instanceof HTMLElement &&
+                document.activeElement.matches(':focus-visible'),
+            );
             pendingDirectTopRef.current = Math.max(
               120,
               directToggleRef.current?.getBoundingClientRect().top || 120,

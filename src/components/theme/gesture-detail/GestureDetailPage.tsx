@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { ArrowLeft, Bell, Bookmark, Link2 } from 'lucide-react';
+import { ArrowLeft, Bell } from 'lucide-react';
 import type { BlogComment, CommentIdentity } from '../../../lib/comment-client';
 import { parseGestureHash, stripLegacyFakeWelcomeRefs } from '../../../lib/gesture-text';
 import {
@@ -200,7 +200,7 @@ function GestureDetailThread({
 
   useEffect(() => {
     if (!highlight) return;
-    const t = setTimeout(() => setHighlight(0), 1200);
+    const t = setTimeout(() => setHighlight(0), 1450);
     return () => clearTimeout(t);
   }, [highlight]);
 
@@ -371,28 +371,7 @@ function GestureDetailThread({
   return (
     <div className="gd-detail-root">
       <div className="gd-detail-shell">
-        <div className="gd-topbar">
-          {backButton}
-          <div className="gd-topbar__actions">
-            <button
-              type="button"
-              className="gd-topbar-btn"
-              aria-label="书签"
-              aria-pressed={bookmarkedPostIds.includes(gestureId)}
-              onClick={() => onToggleBookmark(gestureId)}
-            >
-              <Bookmark size={16} />
-            </button>
-            <button
-              type="button"
-              className="gd-topbar-btn"
-              aria-label="分享链接"
-              onClick={() => copy()}
-            >
-              <Link2 size={16} />
-            </button>
-          </div>
-        </div>
+        <div className="gd-topbar">{backButton}</div>
 
         <div className="gd-detail-grid">
           <main className="gd-reading-canvas" ref={content} data-detail-loaded="true">
