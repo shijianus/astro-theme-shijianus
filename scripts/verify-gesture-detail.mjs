@@ -361,11 +361,11 @@ await withGuestbook(async ({ db, page, base, add, errors }) => {
         gridGap: gridStyle.columnGap || gridStyle.gap,
         shellWidth: shell.getBoundingClientRect().width,
         shellCenterError: Math.abs((shell.getBoundingClientRect().left + shell.getBoundingClientRect().right) / 2 - innerWidth / 2),
-        shellVeilContent: getComputedStyle(shell, '::before').content,
+        shellVeilBg: getComputedStyle(shell, '::before').backgroundImage,
+        shellVeilRightExtent: parseFloat(getComputedStyle(shell, '::before').right),
         canvasBg: canvasStyle.backgroundColor,
         canvasBlur: canvasStyle.backdropFilter,
         canvasBorderWidth: canvasStyle.borderTopWidth,
-        canvasBorderColor: canvasStyle.borderTopColor,
         canvasRadius: canvasStyle.borderRadius,
         canvasShadow: canvasStyle.boxShadow,
         topbarToCanvasGap: Math.round((innerWidth > 760 ? canvas : grid).getBoundingClientRect().top - topbar.getBoundingClientRect().bottom),
@@ -501,18 +501,22 @@ await withGuestbook(async ({ db, page, base, add, errors }) => {
     assert.equal(geometry.gridTransparent, true, JSON.stringify(geometry));
     if (width > 760) assert.equal(geometry.gridGap, '28px');
     assert.ok(geometry.shellWidth <= 1060 && geometry.shellCenterError < 2, JSON.stringify(geometry));
-    assert.equal(geometry.shellVeilContent, 'none', 'Feathered veil ::before must be removed');
-    assert.equal(geometry.canvasBg, 'rgba(13, 18, 32, 0.76)');
-    assert.equal(geometry.canvasBlur, 'blur(18px)');
-    assert.equal(geometry.canvasBorderWidth, '1px');
-    assert.equal(geometry.canvasBorderColor, 'rgba(255, 255, 255, 0.08)');
-    assert.equal(geometry.canvasRadius, width > 760 ? '16px' : '14px');
-    assert.notEqual(geometry.canvasShadow, 'none');
+    assert.ok(
+      geometry.shellVeilBg.includes('rgba(10, 15, 28, 0.68)') &&
+        geometry.shellVeilBg.includes('rgba(11, 16, 30, 0.78)'),
+      JSON.stringify(geometry.shellVeilBg),
+    );
+    if (width >= 1280) assert.ok(geometry.shellVeilRightExtent <= -100, 'Wide veil must extend past right timeline: ' + JSON.stringify(geometry));
+    assert.equal(geometry.canvasBg, 'rgba(0, 0, 0, 0)');
+    assert.equal(geometry.canvasBlur, 'none');
+    assert.equal(geometry.canvasBorderWidth, '0px');
+    assert.equal(geometry.canvasRadius, '0px');
+    assert.equal(geometry.canvasShadow, 'none');
     assert.ok(geometry.topbarToCanvasGap >= 12 && geometry.topbarToCanvasGap <= 16, JSON.stringify(geometry));
     assert.equal(geometry.asideTransparent, true, JSON.stringify(geometry));
     if (width > 760) {
       assert.equal(geometry.asideWidth, 140);
-      assert.equal(geometry.asideMarginTop, '112px');
+      assert.equal(geometry.asideMarginTop, '103px');
       assert.equal(geometry.trackHeight, 220);
       assert.equal(geometry.rightZoneGap, '14px');
     }
@@ -820,6 +824,7 @@ await withGuestbook(async ({ db, page, base, add, errors }) => {
   await expect(page.locator('#floor-1002')).toBeInViewport();
   await rail.press('Home');
   await expect(page.locator('#floor-1')).toBeInViewport();
+  await expect.poll(() => page.evaluate(() => Math.round(window.scrollY))).toBe(0);
   const box = await rail.boundingBox();
   await page.mouse.click(box.x + 8, box.y + box.height / 2);
   await expect.poll(async () => Number(await rail.getAttribute('aria-valuenow'))).toBeGreaterThan(480);
@@ -882,10 +887,11 @@ await withGuestbook(async ({ db, page, base, add, errors }) => {
       scrollY: Math.round(window.scrollY),
       navClearance: Math.round(topbar.top - nav.bottom),
       topbarToCanvasGap: Math.round(canvas.getBoundingClientRect().top - topbar.bottom),
-      veilContent: getComputedStyle(document.querySelector('.gd-detail-shell'), '::before').content,
+      veilBg: getComputedStyle(document.querySelector('.gd-detail-shell'), '::before').backgroundImage,
+      veilRightExtent: parseFloat(getComputedStyle(document.querySelector('.gd-detail-shell'), '::before').right),
       canvasBg: cs.backgroundColor,
       canvasBlur: cs.backdropFilter,
-      canvasBorderColor: cs.borderTopColor,
+      canvasBorderWidth: cs.borderTopWidth,
       canvasRadius: cs.borderRadius,
       lightAvatarBg: av.backgroundColor,
       lightAvatarColor: av.color,
@@ -900,17 +906,23 @@ await withGuestbook(async ({ db, page, base, add, errors }) => {
   assert.equal(lightEntry.scrollY, 0, JSON.stringify(lightEntry));
   assert.ok(lightEntry.navClearance >= 16, 'topbar must clear fixed #nav after scrolled board click: ' + JSON.stringify(lightEntry));
   assert.ok(lightEntry.topbarToCanvasGap >= 12 && lightEntry.topbarToCanvasGap <= 16, JSON.stringify(lightEntry));
-  assert.equal(lightEntry.veilContent, 'none');
-  assert.equal(lightEntry.canvasBg, 'rgba(255, 255, 255, 0.78)');
-  assert.equal(lightEntry.canvasBlur, 'blur(18px)');
-  assert.equal(lightEntry.canvasBorderColor, 'rgba(255, 255, 255, 0.75)');
-  assert.equal(lightEntry.canvasRadius, '16px');
   assert.ok(
-    ['rgb(219, 234, 254)', 'rgb(224, 231, 255)', 'rgb(220, 252, 231)', 'rgb(241, 245, 249)', 'rgb(254, 243, 199)', 'rgb(243, 232, 255)'].includes(
+    lightEntry.veilBg.includes('rgba(255, 255, 255, 0.8)') &&
+      lightEntry.veilBg.includes('rgba(255, 255, 255, 0.72)'),
+    JSON.stringify(lightEntry),
+  );
+  assert.ok(lightEntry.veilRightExtent <= -100, JSON.stringify(lightEntry));
+  assert.equal(lightEntry.canvasBg, 'rgba(0, 0, 0, 0)');
+  assert.equal(lightEntry.canvasBlur, 'none');
+  assert.equal(lightEntry.canvasBorderWidth, '0px');
+  assert.equal(lightEntry.canvasRadius, '0px');
+  assert.ok(
+    ['rgb(71, 85, 105)', 'rgb(79, 93, 117)', 'rgb(61, 90, 128)', 'rgb(92, 103, 125)', 'rgb(74, 96, 112)', 'rgb(82, 94, 117)'].includes(
       lightEntry.lightAvatarBg,
     ),
-    'light letter avatar must use airy pastel Morandi bg: ' + JSON.stringify(lightEntry),
+    'light letter avatar must use grounded mid-dark matte Morandi bg: ' + JSON.stringify(lightEntry),
   );
+  assert.equal(lightEntry.lightAvatarColor, 'rgb(255, 255, 255)');
   assert.equal(lightEntry.lightBoostColor, 'rgb(51, 65, 85)');
   assert.equal(lightEntry.lightTlTrack, 'rgba(37, 99, 235, 0.25)');
   assert.equal(lightEntry.lightTlThumb, 'rgb(37, 99, 235)');

@@ -197,7 +197,8 @@ try {
         contentAxisError: Math.max(...contentTargets.map((selector) => Math.abs(rect(selector).x - content))),
         centerError: Math.abs(shellBox.x + shellBox.width / 2 - innerWidth / 2),
         shellWidth: shellBox.width,
-        shellVeilContent: getComputedStyle(document.querySelector('.gd-detail-shell'), '::before').content,
+        shellVeilBg: getComputedStyle(document.querySelector('.gd-detail-shell'), '::before').backgroundImage,
+        shellVeilRightExtent: parseFloat(getComputedStyle(document.querySelector('.gd-detail-shell'), '::before').right),
         monolithicGone: document.querySelectorAll('.gd-monolithic-shell').length === 0,
         streamToolsGone: document.querySelectorAll('.gd-stream-tools').length === 0,
         topbarButtonsGone: document.querySelectorAll('.gd-topbar-btn').length === 0,
@@ -215,7 +216,6 @@ try {
         canvasBg: style('.gd-reading-canvas').backgroundColor,
         canvasBlur: style('.gd-reading-canvas').backdropFilter,
         canvasBorderWidth: style('.gd-reading-canvas').borderTopWidth,
-        canvasBorderColor: style('.gd-reading-canvas').borderTopColor,
         canvasRadius: style('.gd-reading-canvas').borderRadius,
         canvasShadow: style('.gd-reading-canvas').boxShadow,
         title: [style('.gd-zone1-title').fontSize, style('.gd-zone1-title').color],
@@ -298,7 +298,12 @@ try {
     assert.ok(geometry.leftAxisError < 1 && geometry.contentAxisError < 1, JSON.stringify(geometry));
     assert.equal(geometry.contentAxis, 56, JSON.stringify(geometry));
     assert.ok(geometry.shellWidth <= 1060 && geometry.centerError < 2, JSON.stringify(geometry));
-    assert.equal(geometry.shellVeilContent, 'none');
+    assert.ok(
+      geometry.shellVeilBg.includes('rgba(10, 15, 28, 0.68)') &&
+        geometry.shellVeilBg.includes('rgba(11, 16, 30, 0.78)'),
+      JSON.stringify(geometry.shellVeilBg),
+    );
+    if (width >= 1280) assert.ok(geometry.shellVeilRightExtent <= -100, JSON.stringify(geometry));
     assert.equal(geometry.monolithicGone, true);
     assert.equal(geometry.streamToolsGone, true);
     assert.equal(geometry.topbarButtonsGone, true);
@@ -315,12 +320,11 @@ try {
       assert.equal(geometry.gridGap, '28px');
       assert.equal(geometry.rightGap, '14px');
     }
-    assert.equal(geometry.canvasBg, 'rgba(13, 18, 32, 0.76)');
-    assert.equal(geometry.canvasBlur, 'blur(18px)');
-    assert.equal(geometry.canvasBorderWidth, '1px');
-    assert.equal(geometry.canvasBorderColor, 'rgba(255, 255, 255, 0.08)');
-    assert.equal(geometry.canvasRadius, width > 760 ? '16px' : '14px');
-    assert.notEqual(geometry.canvasShadow, 'none');
+    assert.equal(geometry.canvasBg, 'rgba(0, 0, 0, 0)');
+    assert.equal(geometry.canvasBlur, 'none');
+    assert.equal(geometry.canvasBorderWidth, '0px');
+    assert.equal(geometry.canvasRadius, '0px');
+    assert.equal(geometry.canvasShadow, 'none');
     assert.deepEqual(geometry.title, ['24px', 'rgb(241, 245, 249)']);
     assert.deepEqual(geometry.body, ['16px', '28px', 'rgb(226, 232, 240)']);
     assert.equal(geometry.icon, 'rgb(148, 163, 184)');
@@ -492,7 +496,7 @@ try {
     result.interactions.push('Verified etched matte quote block and matte obsidian reply composer');
   }
 
-  // Light theme verification: crisp white glass sheet, airy Morandi letter avatars, crisp light timeline & 1px rail
+  // Light theme verification: borderless wide soft-white veil covering timeline, grounded matte letter avatars, crisp light timeline & 1px rail
   await page.locator('#nav-theme-toggle a').click();
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
   await expect(page.locator('.snackbar-container.show')).toHaveCount(0, { timeout: 10000 });
@@ -504,13 +508,16 @@ try {
     const subAv = document.querySelector('.is-sub-floor .gd-avatar-rail .gd-avatar');
     const pill = document.querySelector('#floor-1 .gd-boost-pill');
     const topBtn = getComputedStyle(document.querySelector('.gd-tl-top-btn'));
+    const veilStyle = getComputedStyle(document.querySelector('.gd-detail-shell'), '::before');
     return {
-      veilContent: getComputedStyle(document.querySelector('.gd-detail-shell'), '::before').content,
+      veilBg: veilStyle.backgroundImage,
+      veilRightExtent: parseFloat(veilStyle.right),
       canvasBg: cs.backgroundColor,
       canvasBlur: cs.backdropFilter,
-      canvasBorderColor: cs.borderTopColor,
+      canvasBorderWidth: cs.borderTopWidth,
       canvasRadius: cs.borderRadius,
       lightAvatarBg: subAv ? getComputedStyle(subAv).backgroundColor : null,
+      lightAvatarColor: subAv ? getComputedStyle(subAv).color : null,
       lightBoostColor: pill ? getComputedStyle(pill).color : null,
       lightTlTrack: getComputedStyle(document.querySelector('.gd-tl-rail'), '::before').backgroundColor,
       lightTlThumb: getComputedStyle(document.querySelector('.gd-tl-thumb')).backgroundColor,
@@ -519,18 +526,24 @@ try {
       lightTlBtnColor: topBtn.color,
     };
   });
-  assert.equal(lightMetrics.veilContent, 'none');
-  assert.equal(lightMetrics.canvasBg, 'rgba(255, 255, 255, 0.78)');
-  assert.equal(lightMetrics.canvasBlur, 'blur(18px)');
-  assert.equal(lightMetrics.canvasBorderColor, 'rgba(255, 255, 255, 0.75)');
-  assert.equal(lightMetrics.canvasRadius, '16px');
+  assert.ok(
+    lightMetrics.veilBg.includes('rgba(255, 255, 255, 0.8)') &&
+      lightMetrics.veilBg.includes('rgba(255, 255, 255, 0.72)'),
+    JSON.stringify(lightMetrics),
+  );
+  assert.ok(lightMetrics.veilRightExtent <= -100, JSON.stringify(lightMetrics));
+  assert.equal(lightMetrics.canvasBg, 'rgba(0, 0, 0, 0)');
+  assert.equal(lightMetrics.canvasBlur, 'none');
+  assert.equal(lightMetrics.canvasBorderWidth, '0px');
+  assert.equal(lightMetrics.canvasRadius, '0px');
   if (lightMetrics.lightAvatarBg) {
     assert.ok(
-      ['rgb(219, 234, 254)', 'rgb(224, 231, 255)', 'rgb(220, 252, 231)', 'rgb(241, 245, 249)', 'rgb(254, 243, 199)', 'rgb(243, 232, 255)'].includes(
+      ['rgb(71, 85, 105)', 'rgb(79, 93, 117)', 'rgb(61, 90, 128)', 'rgb(92, 103, 125)', 'rgb(74, 96, 112)', 'rgb(82, 94, 117)'].includes(
         lightMetrics.lightAvatarBg,
       ),
-      'light letter avatar must be airy pastel: ' + JSON.stringify(lightMetrics),
+      'light letter avatar must use grounded mid-dark matte Morandi bg: ' + JSON.stringify(lightMetrics),
     );
+    assert.equal(lightMetrics.lightAvatarColor, 'rgb(255, 255, 255)');
   }
   if (lightMetrics.lightBoostColor) assert.equal(lightMetrics.lightBoostColor, 'rgb(51, 65, 85)');
   assert.equal(lightMetrics.lightTlTrack, 'rgba(37, 99, 235, 0.25)');
