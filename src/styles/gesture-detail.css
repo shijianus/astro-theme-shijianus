@@ -110,6 +110,7 @@ body:has(.gd-detail-root) :is(#theme-snow-mid, #theme-snow-foreground) {
   z-index: 1;
   width: 100%;
   color: var(--gd-text);
+  font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Lato, Roboto, "PingFang SC", "Microsoft YaHei", sans-serif);
 }
 
 .gd-detail-root :is(button:not(:disabled), summary, [role='slider']),
@@ -1944,11 +1945,27 @@ body:has(.gd-detail-root) :is(#theme-snow-mid, #theme-snow-foreground) {
 }
 
 /* ============================================================================
-   11. RESPONSIVE ADAPTATIONS (<= 760px & <= 480px)
+   11. RESPONSIVE ADAPTATIONS (<= 1140px, <= 900px, <= 760px & <= 480px)
    ============================================================================ */
+/* Keep generous horizontal safety clearance from right ThemeDock & left MusicPocket on compact desktops */
+@media (max-width: 1140px) and (min-width: 820px) {
+  .gd-detail-shell {
+    padding-inline: 24px;
+    box-sizing: border-box;
+  }
+}
+
+/* Guarantee clean top clearance below fixed 60px SiteHeader on tablet & mobile viewports */
+@media (max-width: 900px) {
+  .gd-detail-root {
+    padding-top: 28px;
+  }
+}
+
 @media (max-width: 760px) {
   .gd-detail-root {
-    margin-top: 8px;
+    margin-top: 0;
+    padding-top: 24px;
   }
 
   .gd-topbar {

@@ -168,6 +168,7 @@ try {
         streamToolsGone: document.querySelectorAll('.gd-stream-tools').length === 0,
         topbarExternal: !canvas.contains(topbar),
         topbarBottomBorder: style('.gd-topbar').borderBottomWidth,
+        navClearance: Math.round(rect('.gd-topbar').y - rect('#nav').bottom),
         gridBg: style('.gd-detail-grid').backgroundColor,
         gridGap: style('.gd-detail-grid').columnGap || style('.gd-detail-grid').gap,
         canvasBg: style('.gd-reading-canvas').backgroundColor,
@@ -209,6 +210,7 @@ try {
     assert.equal(geometry.streamToolsGone, true);
     assert.equal(geometry.topbarExternal, true);
     assert.equal(geometry.topbarBottomBorder, '0px');
+    assert.ok(geometry.navClearance >= 0, 'topbar must clear fixed #nav: ' + JSON.stringify(geometry));
     assert.equal(geometry.gridBg, 'rgba(0, 0, 0, 0)');
     if (width > 760) assert.equal(geometry.gridGap, '28px');
     assert.equal(geometry.canvasBg, 'rgba(15, 23, 42, 0.38)');
