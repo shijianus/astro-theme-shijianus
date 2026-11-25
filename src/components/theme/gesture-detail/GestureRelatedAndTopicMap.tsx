@@ -1,255 +1,232 @@
-import React, { useMemo, useState } from 'react';
-import { BookOpen, ChevronDown, ChevronUp, Link2, Sparkles } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { BookOpen, Link2, Sparkles } from 'lucide-react';
 import {
   formatMetricCount,
+  recordGestureLinkClick,
   type GestureNode,
-  type GestureParticipant,
   type GestureRelatedLink,
   type GestureTopicMap,
-} from '../../../lib/gesture-client';
+} from '../../../lib/gesture-detail-client';
 import { GestureAvatar } from './GestureAvatar';
+import { readCitationTitle } from './related-titles';
 
-interface GestureRelatedAndTopicMapProps {
+interface Props {
   relatedLinks: GestureRelatedLink[];
   topicMap: GestureTopicMap;
-  hotFilterActive: boolean;
-  onToggleHotFilter: () => void;
-  aiSummaryOpen: boolean;
-  onToggleAiSummary: () => void;
   gesture: GestureNode;
   subGestures: GestureNode[];
 }
 
-function resolveLinkBadgeText(link: GestureRelatedLink): string | null {
-  if (link.replyCount > 0) return String(link.replyCount);
-  return null;
+function RelatedLinkRow({ link, rootId }: { link: GestureRelatedLink; rootId: string }) {
+  const [count, setCount] = useState(link.clickCount);
+  useEffect(() => setCount(link.clickCount), [link.clickCount]);
+
+  const kind = link.kind || (link.type === 'gesture' ? 'gesture' : link.url.startsWith('/') ? 'site' : 'external');
+  const label = kind === 'gesture' ? '关联讨论' : kind === 'site' ? '站内引用' : '外部引用';
+
+  const recordClick = async () => {
+    if (!link.clickKey) return;
+    const result = await recordGestureLinkClick(rootId, link.clickKey);
+    if (result !== undefined) setCount(result);
+  };
+
+  return (
+    <a
+      className="gd-related-link-row"
+      href={link.url}
+      target={kind === 'external' ? '_blank' : undefined}
+      rel={kind === 'external' ? 'noopener noreferrer' : undefined}
+      onClick={() => void recordClick()}
+      onAuxClick={(event) => {
+        if (event.button === 1) void recordClick();
+      }}
+    >
+      <span className="gd-related-link-icon" title={label}>
+        <Link2 size={14} aria-label={label} />
+      </span>
+      <span className="gd-related-link-title">{link.title}</span>
+      {typeof count === 'number' && (
+        <small
+          className="gd-link-clicks"
+          title={`${count} 次点击（同一会话去重）`}
+          aria-label={`${count} 次点击`}
+        >
+          {count}
+        </small>
+      )}
+    </a>
+  );
 }
 
-/**
- * ZONE 5 (Borderless Real Related Links) + ZONE 6 (Adaptive Dual-Mode Topic Map)
- */
-export function GestureRelatedAndTopicMap({
-  relatedLinks,
-  topicMap,
-  hotFilterActive,
-  onToggleHotFilter,
-  aiSummaryOpen,
-  onToggleAiSummary,
-  gesture,
-  subGestures,
-}: GestureRelatedAndTopicMapProps) {
+function stripDigestMarkdown(text: string): string {
+  return (text || '')
+    .replace(/!\[[^\]]*\]\([^)]*\)/g, '')
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+    .replace(/^#{1,6}\s+/gm, '')
+    .replace(/[*`_>]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+export function GestureRelatedAndTopicMap({ relatedLinks, topicMap, gesture, subGestures }: Props) {
   const [showAllLinks, setShowAllLinks] = useState(false);
+  const [titles, setTitles] = useState<Record<string, string>>({});
+  const [summaryOpen, setSummaryOpen] = useState(false);
 
-  const visibleLinks = showAllLinks ? relatedLinks : relatedLinks.slice(0, 5);
-  const hiddenCount = Math.max(0, relatedLinks.length - 5);
+  // Strictly deduplicate real URLs; never synthesize mock links.
+  const links = useMemo(() => {
+    const dedup = new Map<string, GestureRelatedLink>();
+    for (const link of relatedLinks) {
+      const normalized = (link.url || '').trim();
+      if (!normalized || dedup.has(normalized)) continue;
+      dedup.set(normalized, { ...link, url: normalized });
+    }
+    return [...dedup.values()].sort(
+      (a, b) => Number(b.type === 'gesture') - Number(a.type === 'gesture'),
+    );
+  }, [relatedLinks]);
 
-  // Adaptive dual-mode threshold: Hot Topic when replies >= 15 AND views >= 500
-  const isHotTopic = subGestures.length >= 15 && topicMap.viewsCount >= 500;
+  const visibleLinks = useMemo(
+    () => (showAllLinks ? links : links.slice(0, 5)),
+    [showAllLinks, links],
+  );
 
-  const summaryHighlights = subGestures
-    .slice()
-    .sort((a, b) => (b.likesCount || 0) - (a.likesCount || 0))
-    .slice(0, 3);
+  useEffect(() => {
+    if (visibleLinks.length === 0) return;
+    const controller = new AbortController();
+    const docs = visibleLinks.filter((link) => link.type !== 'gesture');
+    let index = 0;
 
-  // Guarantee max 5 avatars, and the 1st avatar is ALWAYS the OP (楼主)
-  const orderedAvatars: GestureParticipant[] = useMemo(() => {
-    const opKey = gesture.authorId || gesture.authorName;
-    const opEntry: GestureParticipant = {
-      authorId: gesture.authorId,
-      authorName: gesture.authorName,
-      authorAvatar: gesture.authorAvatar,
-      authorRole: gesture.authorRole,
-      count: 1,
-    };
-
-    const others: GestureParticipant[] = [];
-    const seen = new Set<string>([opKey]);
-
-    for (const p of topicMap.participants || []) {
-      const pKey = p.authorId || p.authorName;
-      if (pKey === opKey) {
-        opEntry.count = p.count;
-        continue;
-      }
-      if (!seen.has(pKey)) {
-        seen.add(pKey);
-        others.push(p);
+    async function resolveTitles() {
+      while (index < docs.length && !controller.signal.aborted) {
+        const link = docs[index++];
+        const title = await readCitationTitle(link, controller.signal);
+        if (title && !controller.signal.aborted) {
+          setTitles((prev) => (prev[link.url] === title ? prev : { ...prev, [link.url]: title }));
+        }
       }
     }
 
-    return [opEntry, ...others].slice(0, 5);
-  }, [gesture, topicMap.participants]);
+    void Promise.all(Array.from({ length: Math.min(4, docs.length) }, resolveTitles));
+    return () => controller.abort();
+  }, [visibleLinks]);
+
+  // Adaptive Topic Map: replies < 15 degrades to minimal single-row bar.
+  const isHotTopic = subGestures.length >= 15 && topicMap.viewsCount >= 500;
+
+  const participants = useMemo(
+    () => [...topicMap.participants].sort((a, b) => b.count - a.count).slice(0, 5),
+    [topicMap.participants],
+  );
+
+  const highlights = useMemo(
+    () => (summaryOpen ? [...subGestures].sort((a, b) => b.likesCount - a.likesCount).slice(0, 3) : []),
+    [summaryOpen, subGestures],
+  );
 
   return (
-    <div className="gd-zone5-6-wrap">
-      {/* ZONE 5: Borderless Related Links aligned on 56px content axis (0 height when empty) */}
-      {relatedLinks.length > 0 && (
-        <section className="gd-zone5-links" aria-label="关联链接汇总">
-          {visibleLinks.map((link, idx) => {
-            const badgeText = resolveLinkBadgeText(link);
-            return (
-              <a
-                key={`${link.url}-${idx}`}
-                href={link.url}
-                target={link.type === 'external' && /^https?:\/\//.test(link.url) ? '_blank' : undefined}
-                rel={link.type === 'external' ? 'noopener noreferrer' : undefined}
-                className="gd-related-link-row"
-              >
-                <span className="gd-related-link-main">
-                  <Link2 className="w-3.5 h-3.5 gd-related-link-icon flex-shrink-0" />
-                  <span className="gd-related-link-title">{link.title}</span>
-                </span>
-                {badgeText && (
-                  <span className="gd-related-link-count">{badgeText}</span>
-                )}
-              </a>
-            );
-          })}
-
-          {hiddenCount > 0 && (
+    <div className="gd-topic-info">
+      {links.length > 0 ? (
+        <section className="gd-zone5-links" aria-label="关联链接">
+          {visibleLinks.map((link) => (
+            <RelatedLinkRow
+              key={link.url}
+              rootId={gesture.id}
+              link={titles[link.url] ? { ...link, title: titles[link.url] } : link}
+            />
+          ))}
+          {links.length > 5 && (
             <button
               type="button"
-              className="gd-related-more-btn"
-              onClick={() => setShowAllLinks((prev) => !prev)}
+              className="gd-links-more-btn"
+              aria-expanded={showAllLinks}
+              onClick={() => setShowAllLinks((v) => !v)}
             >
-              <span>{showAllLinks ? '收起关联链接' : `${hiddenCount} 更多`}</span>
-              {showAllLinks ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+              {showAllLinks ? '收起' : `查看全部 ${links.length} 个链接`}
             </button>
           )}
         </section>
-      )}
+      ) : null}
 
-      {/* ZONE 6: Topic Map (Borderless background, strictly bounded by top & bottom 1px hairlines) */}
       <section
-        className={`gd-zone6-topic-map ${isHotTopic ? 'is-hot-mode' : 'is-light-mode'}`}
-        aria-label="讨论统计与 Topic Map"
+        className={`gd-zone6-topic-map ${isHotTopic ? 'is-hot' : 'is-light'}`}
+        aria-label="讨论概览"
       >
-        {isHotTopic ? (
-          <>
-            <div className="gd-topic-map-left">
-              <div className="gd-topic-map-metrics is-stacked">
-                <div className="gd-tm-stat">
-                  <strong>{formatMetricCount(topicMap.viewsCount)}</strong>
-                  <span>觀看</span>
-                </div>
-                <div className="gd-tm-stat">
-                  <strong>{formatMetricCount(topicMap.likesCount)}</strong>
-                  <span>個讚</span>
-                </div>
-                <div className="gd-tm-stat">
-                  <strong>{topicMap.linksCount}</strong>
-                  <span>連結</span>
-                </div>
-                <div className="gd-tm-stat">
-                  <strong>{topicMap.usersCount}</strong>
-                  <span>使用者</span>
-                </div>
+        {isHotTopic && (
+          <dl className="gd-tm-metrics">
+            {[
+              [formatMetricCount(topicMap.viewsCount), '觀看'],
+              [formatMetricCount(topicMap.likesCount), '個讚'],
+              [String(links.length), '連結'],
+              [String(topicMap.usersCount), '使用者'],
+            ].map(([value, label]) => (
+              <div key={label}>
+                <dt>{label}</dt>
+                <dd>{value}</dd>
               </div>
+            ))}
+          </dl>
+        )}
 
-              <div className="gd-tm-avatars" aria-label="讨论参与者头像">
-                {orderedAvatars.map((p, idx) => (
-                  <div
-                    key={p.authorId || p.authorName}
-                    className={`gd-tm-avatar-item ${idx === 0 ? 'is-op-avatar' : ''}`}
-                    title={`${p.authorName}${idx === 0 ? ' (楼主)' : ''} · ${p.count} 条发言`}
-                  >
-                    <GestureAvatar
-                      name={p.authorName}
-                      avatar={p.authorAvatar}
-                      size={26}
-                      isOwner={p.authorRole === 'admin'}
-                    />
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="gd-topic-map-right">
-              <span className="gd-tm-read-time">{topicMap.estimatedReadMinutes} 分钟阅读</span>
-              <div className="gd-tm-toggles">
-                <button
-                  type="button"
-                  className={`gd-tm-toggle-btn ${hotFilterActive ? 'is-active' : ''}`}
-                  onClick={onToggleHotFilter}
-                  title={hotFilterActive ? '显示全部回复' : '仅看热门/高赞回复'}
-                  aria-pressed={hotFilterActive}
-                >
-                  <BookOpen className="w-3.5 h-3.5" />
-                </button>
-                <button
-                  type="button"
-                  className={`gd-tm-toggle-btn gd-tm-summary-btn ${aiSummaryOpen ? 'is-active' : ''}`}
-                  onClick={onToggleAiSummary}
-                  title="AI 讨论脉络摘要"
-                  aria-pressed={aiSummaryOpen}
-                >
-                  <Sparkles className="w-3.5 h-3.5" />
-                  <span>總結</span>
-                </button>
-              </div>
-            </div>
-          </>
-        ) : (
-          <>
-            <div className="gd-topic-map-left">
-              <span className="gd-tm-light-views">
-                <strong>{formatMetricCount(topicMap.viewsCount)}</strong> 觀看
+        <div className="gd-tm-community">
+          {!isHotTopic && (
+            <span className="gd-tm-views">{formatMetricCount(topicMap.viewsCount)} 觀看</span>
+          )}
+          <span className="gd-tm-avatars">
+            {participants.map((p) => (
+              <span key={p.authorId || p.authorName} title={`${p.authorName} (${p.count} 次参与)`}>
+                <GestureAvatar
+                  name={p.authorName}
+                  avatar={p.authorAvatar}
+                  size={26}
+                  isOwner={p.authorRole === 'admin'}
+                />
               </span>
-
-              <div className="gd-tm-avatars" aria-label="讨论参与者头像">
-                {orderedAvatars.map((p, idx) => (
-                  <div
-                    key={p.authorId || p.authorName}
-                    className={`gd-tm-avatar-item ${idx === 0 ? 'is-op-avatar' : ''}`}
-                    title={`${p.authorName}${idx === 0 ? ' (楼主)' : ''} · ${p.count} 条发言`}
-                  >
-                    <GestureAvatar
-                      name={p.authorName}
-                      avatar={p.authorAvatar}
-                      size={26}
-                      isOwner={p.authorRole === 'admin'}
-                    />
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="gd-topic-map-right">
+            ))}
+          </span>
+          {isHotTopic && (
+            <span className="gd-tm-read-time">约 {topicMap.estimatedReadMinutes} 分钟阅读</span>
+          )}
+          <span className="gd-tm-actions">
+            {isHotTopic && (
               <button
                 type="button"
-                className={`gd-tm-toggle-btn gd-tm-summary-btn ${aiSummaryOpen ? 'is-active' : ''}`}
-                onClick={onToggleAiSummary}
-                title="AI 讨论脉络摘要"
-                aria-pressed={aiSummaryOpen}
+                aria-label="从主贴开始阅读"
+                title="从主贴开始阅读"
+                onClick={() =>
+                  document.getElementById('floor-1')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                }
               >
-                <Sparkles className="w-3.5 h-3.5" />
-                <span>總結</span>
+                <BookOpen size={15} />
               </button>
-            </div>
-          </>
-        )}
+            )}
+            <button
+              type="button"
+              className="gd-summary-toggle"
+              aria-label="讨论总结"
+              aria-expanded={summaryOpen}
+              onClick={() => setSummaryOpen((v) => !v)}
+            >
+              <Sparkles size={13} />
+              <span>總結</span>
+            </button>
+          </span>
+        </div>
       </section>
 
-      {aiSummaryOpen && (
-        <div className="gd-ai-digest-panel">
-          <div className="gd-ai-digest-head">
-            <Sparkles className="w-3.5 h-3.5 text-sky-400" />
-            <span>讨论脉络摘要 ({subGestures.length} 条回复 · {topicMap.usersCount} 位参与者)</span>
-          </div>
-          <p className="gd-ai-digest-lead">
-            主贴由 <strong>{gesture.authorName}</strong> 发起，围绕互动广场、时间轴定位与讨论体验展开交流。
-          </p>
-          {summaryHighlights.length > 0 && (
-            <ul className="gd-ai-digest-points">
-              {summaryHighlights.map((item) => (
-                <li key={item.id}>
-                  <strong>{item.authorName}</strong>：{item.message.replace(/[#*`>\n]+/g, ' ').trim().slice(0, 80)}
-                  {item.message.length > 80 ? '…' : ''}
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
+      {summaryOpen && (
+        <section className="gd-digest" aria-label="讨论摘录">
+          <h2>讨论摘录 · {subGestures.length} 条回复</h2>
+          {[gesture, ...highlights].map((node) => {
+            const plain = stripDigestMarkdown(node.message);
+            return (
+              <p key={node.id}>
+                <strong>{node.authorName}</strong>　{plain.slice(0, 110)}
+                {plain.length > 110 ? '…' : ''}
+              </p>
+            );
+          })}
+        </section>
       )}
     </div>
   );

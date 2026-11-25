@@ -1,284 +1,446 @@
-import React, { useCallback, useRef, useState } from 'react';
-import { Bell, BellRing, BookOpen, CornerUpLeft, Reply, Undo2 } from 'lucide-react';
+import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type RefObject } from 'react';
+import { Bell, BookOpen, Reply } from 'lucide-react';
+import { gestureTimestamp } from '../../../lib/gesture-text';
 import {
   formatCompactRelative,
   formatMonthDay,
-  type JumpOriginAnchor,
-} from '../../../lib/gesture-client';
+  type GestureNode,
+} from '../../../lib/gesture-detail-client';
 
-interface GestureTimelineScrollerProps {
-  totalFloors: number;
-  currentFloor: number;
-  currentFloorDate?: string;
-  startDate?: string;
-  latestDate?: string;
-  scrollPercent: number;
-  jumpOrigin: JumpOriginAnchor | null;
-  jumpOriginFading?: boolean;
-  hotFilterActive: boolean;
+interface Props {
+  content: RefObject<HTMLElement | null>;
+  floors: GestureNode[];
+  page: number;
+  latest: string;
+  origin: number | null;
+  fading: boolean;
+  hotOnly: boolean;
   subscribed: boolean;
-  onJumpToFloor: (floorIndex: number) => void;
-  onReturnToOrigin: () => void;
-  onToggleHotFilter: () => void;
-  onReplyOp: () => void;
+  onToggleHot: () => void;
+  onQuickReply: () => void;
   onToggleSubscribe: () => void;
+  onJump: (floor: number, offset?: number, instant?: boolean) => void;
+  onReturn: () => void;
+}
+
+function clamp01(value: number): number {
+  return Math.max(0, Math.min(1, value));
 }
 
 /**
- * Right-side Sticky Borderless Timeline Scroller & Cross-Floor Jump Origin Anchor (├─ [ 返回 ]).
- * - Zero card frame / background / border.
- * - Strictly NO floor dots/notches on the 1px vertical rail regardless of floor count.
- * - Only a 1px vertical line + single 3px bright cyan-blue active thumb bar.
+ * Borderless, dot-free vertical timeline scroller with a zero-jitter drag state machine:
+ * - Clean 2px vertical track line + single 3x28px #38bdf8 draggable indicator
+ * - PointerCapture + isDraggingRef locks out window scroll feedback during drag
+ * - Uses requestAnimationFrame + window.scrollTo({ behavior: 'instant' }) (never smooth during drag)
+ * - Cross-jump return anchor (`├─ 返回`) rendered only after cross-floor navigation
  */
 export function GestureTimelineScroller({
-  totalFloors,
-  currentFloor,
-  currentFloorDate,
-  startDate,
-  latestDate,
-  scrollPercent,
-  jumpOrigin,
-  jumpOriginFading = false,
-  hotFilterActive,
+  content,
+  floors,
+  page,
+  latest,
+  origin,
+  fading,
+  hotOnly,
   subscribed,
-  onJumpToFloor,
-  onReturnToOrigin,
-  onToggleHotFilter,
-  onReplyOp,
+  onToggleHot,
+  onQuickReply,
   onToggleSubscribe,
-}: GestureTimelineScrollerProps) {
-  const [quickJumpOpen, setQuickJumpOpen] = useState(false);
-  const [jumpInput, setJumpInput] = useState('');
+  onJump,
+  onReturn,
+}: Props) {
+  const [currentFloor, setCurrentFloor] = useState(1);
+  const [dragRatio, setDragRatio] = useState<number | null>(null);
   const [isDragging, setIsDragging] = useState(false);
-  const [previewFloor, setPreviewFloor] = useState<number | null>(null);
+  const [floorInput, setFloorInput] = useState('');
+  const [now, setNow] = useState(() => Date.now());
+
   const railRef = useRef<HTMLDivElement>(null);
+  const isDraggingRef = useRef(false);
+  const dragRafRef = useRef(0);
+  const pendingRatioRef = useRef<number | null>(null);
 
-  const safeTotal = Math.max(1, totalFloors);
-  const displayFloor = previewFloor ?? currentFloor;
-  const thumbPercent =
-    safeTotal <= 1 ? 0 : Math.min(100, Math.max(0, ((displayFloor - 1) / (safeTotal - 1)) * 100));
+  const total = Math.max(1, floors.length);
 
-  const computeFloorFromClientY = useCallback(
-    (clientY: number) => {
-      const rail = railRef.current;
-      if (!rail) return 1;
-      const rect = rail.getBoundingClientRect();
-      const ratio = Math.min(1, Math.max(0, (clientY - rect.top) / Math.max(1, rect.height)));
-      return Math.min(safeTotal, Math.max(1, Math.round(ratio * (safeTotal - 1)) + 1));
+  useEffect(() => {
+    const timer = setInterval(() => setNow(Date.now()), 60_000);
+    return () => clearInterval(timer);
+  }, []);
+
+  useEffect(() => () => cancelAnimationFrame(dragRafRef.current), []);
+
+  // Guarantee latest activity timestamp is never earlier than the OP start date (prevents date reversal).
+  const latestActivity = useMemo(() => {
+    const candidates = [
+      latest,
+      ...floors.flatMap((floor) => [floor.createdAt, floor.updatedAt || floor.createdAt]),
+    ]
+      .filter(Boolean)
+      .map(gestureTimestamp)
+      .filter((iso) => Number.isFinite(Date.parse(iso)));
+
+    const startTs = floors[0]?.createdAt ? Date.parse(gestureTimestamp(floors[0].createdAt)) : 0;
+    let bestIso = floors[0]?.createdAt ? gestureTimestamp(floors[0].createdAt) : '';
+    let bestTs = Number.isFinite(startTs) ? startTs : 0;
+
+    for (const iso of candidates) {
+      const ts = Date.parse(iso);
+      if (ts >= bestTs) {
+        bestTs = ts;
+        bestIso = iso;
+      }
+    }
+    return bestIso;
+  }, [latest, floors]);
+
+  const relativeLatest = formatCompactRelative(latestActivity, now);
+
+  // Scroll spy: strictly skips updates while user is dragging the thumb.
+  useLayoutEffect(() => {
+    const main = content.current;
+    if (!main) return;
+    const elements = Array.from(main.querySelectorAll<HTMLElement>('[data-floor-index]'));
+    let frame = 0;
+
+    function syncFromScroll() {
+      frame = 0;
+      if (isDraggingRef.current) return;
+
+      const isMobile = window.matchMedia('(max-width: 760px)').matches;
+      const aside = railRef.current?.closest<HTMLElement>('.gd-timeline-aside');
+      if (aside) {
+        aside.dataset.stuck = String(
+          isMobile && window.scrollY > 12 && aside.getBoundingClientRect().top <= 62,
+        );
+      }
+
+      if (elements.length === 0) return;
+
+      const anchor = isMobile ? 150 : 140;
+      const headerBottom = isMobile ? 105 : 72;
+
+      let lo = 0;
+      let hi = elements.length;
+      while (lo < hi) {
+        const mid = (lo + hi) >>> 1;
+        if (elements[mid].getBoundingClientRect().top <= anchor) lo = mid + 1;
+        else hi = mid;
+      }
+
+      let idx = Math.max(0, lo - 1);
+      while (idx + 1 < elements.length) {
+        const curRect = elements[idx].getBoundingClientRect();
+        const nextRect = elements[idx + 1].getBoundingClientRect();
+        if (curRect.bottom <= headerBottom && nextRect.top < window.innerHeight * 0.85) {
+          idx += 1;
+        } else {
+          break;
+        }
+      }
+
+      const atDocBottom =
+        window.scrollY > 80 &&
+        window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 8;
+      if (atDocBottom) {
+        const lastRect = elements[elements.length - 1].getBoundingClientRect();
+        if (lastRect.bottom <= window.innerHeight + 8 && lastRect.top < window.innerHeight * 0.75) {
+          idx = elements.length - 1;
+        }
+      }
+
+      const detected = Number(elements[idx]?.dataset.floorIndex || 1);
+      setCurrentFloor(detected);
+    }
+
+    const onScrollOrResize = () => {
+      if (isDraggingRef.current) return;
+      if (!frame) frame = requestAnimationFrame(syncFromScroll);
+    };
+
+    const resizeObserver = new ResizeObserver(onScrollOrResize);
+    resizeObserver.observe(main);
+    window.addEventListener('scroll', onScrollOrResize, { passive: true });
+    window.addEventListener('resize', onScrollOrResize);
+    syncFromScroll();
+
+    return () => {
+      resizeObserver.disconnect();
+      cancelAnimationFrame(frame);
+      window.removeEventListener('scroll', onScrollOrResize);
+      window.removeEventListener('resize', onScrollOrResize);
+    };
+  }, [page, floors, content]);
+
+  const computeRatio = useCallback((clientY: number): number => {
+    const rail = railRef.current;
+    if (!rail) return 0;
+    const rect = rail.getBoundingClientRect();
+    if (rect.height <= 0) return 0;
+    return clamp01((clientY - rect.top) / rect.height);
+  }, []);
+
+  const applyInstantScrollForRatio = useCallback(
+    (ratio: number) => {
+      const main = content.current;
+      if (!main) return false;
+      const mounted = Array.from(main.querySelectorAll<HTMLElement>('[data-floor-index]'));
+      if (mounted.length === 0) return false;
+
+      const isMobile = window.matchMedia('(max-width: 760px)').matches;
+      const stickyOffset = isMobile ? 118 : 96;
+      const maxDocScroll = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+
+      // When all floors are mounted on the current page, interpolate smoothly across floor anchors.
+      if (mounted.length === total && !hotOnly) {
+        const anchors: number[] = [];
+        for (let i = 0; i < mounted.length; i += 1) {
+          const rawTop = window.scrollY + mounted[i].getBoundingClientRect().top - stickyOffset;
+          const clamped = Math.max(0, Math.min(maxDocScroll, rawTop));
+          anchors.push(i > 0 ? Math.max(anchors[i - 1], clamped) : clamped);
+        }
+        const pos = ratio * Math.max(0, anchors.length - 1);
+        const lo = Math.floor(pos);
+        const hi = Math.min(anchors.length - 1, Math.ceil(pos));
+        const frac = pos - lo;
+        const targetScrollY = anchors[lo] + (anchors[hi] - anchors[lo]) * frac;
+        window.scrollTo({ top: targetScrollY, behavior: 'instant' });
+        return true;
+      }
+
+      // Paginated or filtered mode: instant scroll if target floor is currently mounted.
+      const targetFloor = total > 1 ? Math.round(ratio * (total - 1)) + 1 : 1;
+      const el = document.getElementById(`floor-${targetFloor}`);
+      if (el) {
+        const rawTop = window.scrollY + el.getBoundingClientRect().top - stickyOffset;
+        const targetScrollY = Math.max(0, Math.min(maxDocScroll, rawTop));
+        window.scrollTo({ top: targetScrollY, behavior: 'instant' });
+        return true;
+      }
+      return false;
     },
-    [safeTotal]
+    [content, total, hotOnly],
   );
 
-  const handleRailPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+  const scheduleDragScroll = useCallback(
+    (ratio: number) => {
+      pendingRatioRef.current = ratio;
+      if (dragRafRef.current) return;
+      dragRafRef.current = requestAnimationFrame(() => {
+        dragRafRef.current = 0;
+        if (pendingRatioRef.current !== null) {
+          applyInstantScrollForRatio(pendingRatioRef.current);
+        }
+      });
+    },
+    [applyInstantScrollForRatio],
+  );
+
+  const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     if (e.button !== 0) return;
-    e.preventDefault();
+    isDraggingRef.current = true;
     setIsDragging(true);
-    const floor = computeFloorFromClientY(e.clientY);
-    setPreviewFloor(floor);
-    onJumpToFloor(floor);
-
-    const handleMove = (mv: PointerEvent) => {
-      const f = computeFloorFromClientY(mv.clientY);
-      setPreviewFloor(f);
-      onJumpToFloor(f);
-    };
-
-    const handleUp = () => {
-      setIsDragging(false);
-      setPreviewFloor(null);
-      window.removeEventListener('pointermove', handleMove);
-      window.removeEventListener('pointerup', handleUp);
-    };
-
-    window.addEventListener('pointermove', handleMove);
-    window.addEventListener('pointerup', handleUp);
+    e.currentTarget.setPointerCapture(e.pointerId);
+    const ratio = computeRatio(e.clientY);
+    setDragRatio(ratio);
+    scheduleDragScroll(ratio);
   };
 
-  const handleQuickJumpSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const parsed = Number.parseInt(jumpInput.trim(), 10);
-    if (Number.isFinite(parsed) && parsed >= 1 && parsed <= safeTotal) {
-      onJumpToFloor(parsed);
-      setQuickJumpOpen(false);
-      setJumpInput('');
+  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!isDraggingRef.current) return;
+    const ratio = computeRatio(e.clientY);
+    setDragRatio(ratio);
+    scheduleDragScroll(ratio);
+  };
+
+  const finishDrag = (e: React.PointerEvent<HTMLDivElement>, commit: boolean) => {
+    if (!isDraggingRef.current) return;
+    cancelAnimationFrame(dragRafRef.current);
+    dragRafRef.current = 0;
+
+    if (e.currentTarget.hasPointerCapture(e.pointerId)) {
+      e.currentTarget.releasePointerCapture(e.pointerId);
+    }
+
+    const finalRatio = commit ? computeRatio(e.clientY) : (pendingRatioRef.current ?? 0);
+    const targetFloor = total > 1 ? Math.round(finalRatio * (total - 1)) + 1 : 1;
+    pendingRatioRef.current = null;
+    isDraggingRef.current = false;
+    setIsDragging(false);
+
+    if (commit) {
+      const scrolledInPlace = applyInstantScrollForRatio(finalRatio);
+      setCurrentFloor(targetFloor);
+      setDragRatio(null);
+      if (!scrolledInPlace) {
+        onJump(targetFloor, undefined, true);
+      }
+    } else {
+      setDragRatio(null);
     }
   };
 
+  const activeFloor =
+    dragRatio !== null
+      ? total > 1
+        ? Math.round(dragRatio * (total - 1)) + 1
+        : 1
+      : Math.min(Math.max(1, currentFloor), total);
+
+  const percent =
+    dragRatio !== null
+      ? dragRatio * 100
+      : total > 1
+        ? (100 * (activeFloor - 1)) / (total - 1)
+        : 0;
+
+  const originPercent =
+    origin !== null && total > 1 ? (100 * (Math.min(origin, total) - 1)) / (total - 1) : 0;
+
+  const activeDate = floors[activeFloor - 1]?.createdAt;
+  const formatFull = (iso?: string) =>
+    iso ? new Date(gestureTimestamp(iso)).toLocaleString('zh-CN') : '';
+
   return (
-    <aside className="gd-timeline-aside" aria-label="贴文楼层时间轴滑块">
-      <div className={`gd-timeline-card gb-floor-scroller-card ${isDragging ? 'is-dragging' : ''}`}>
-        {/* 1. Top Minimal [📖] Quick Jump Popover Toggle */}
-        <div className="gd-tl-top-wrap">
-          <button
-            type="button"
-            className={`gd-tl-overview-btn ${quickJumpOpen ? 'is-active' : ''}`}
-            onClick={() => setQuickJumpOpen((prev) => !prev)}
-            title="阅读总览 / 快捷楼层跳转"
-            aria-expanded={quickJumpOpen}
-          >
-            <BookOpen className="w-3.5 h-3.5" />
-          </button>
+    <aside className="gd-timeline-aside" aria-label="楼层时间轴">
+      <time
+        className="gd-tl-start"
+        dateTime={floors[0]?.createdAt}
+        title={`话题开始 · ${formatFull(floors[0]?.createdAt)}`}
+      >
+        {formatMonthDay(floors[0]?.createdAt)}
+      </time>
 
-          {quickJumpOpen && (
-            <div className="gd-tl-quick-popover">
-              <div className="gd-tl-quick-title">快捷楼层跳转 (1 ~ {safeTotal})</div>
-              <form className="gd-tl-quick-form" onSubmit={handleQuickJumpSubmit}>
-                <input
-                  type="number"
-                  min={1}
-                  max={safeTotal}
-                  value={jumpInput}
-                  onChange={(e) => setJumpInput(e.target.value)}
-                  placeholder={`1-${safeTotal}`}
-                  className="gd-tl-quick-input"
-                />
-                <button type="submit" className="gd-tl-quick-go">
-                  跳转
-                </button>
-              </form>
-              <div className="gd-tl-quick-presets">
-                <button
-                  type="button"
-                  onClick={() => {
-                    onJumpToFloor(1);
-                    setQuickJumpOpen(false);
-                  }}
-                >
-                  1 楼
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    onJumpToFloor(safeTotal);
-                    setQuickJumpOpen(false);
-                  }}
-                >
-                  最新 ({safeTotal})
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* 2. Start Date (Borderless plain label) */}
-        <button
-          type="button"
-          className="gd-tl-date-capsule"
-          onClick={() => onJumpToFloor(1)}
-          title="回到主贴文"
+      <div
+        className="gd-tl-track-wrap"
+        data-dragging={isDragging ? 'true' : 'false'}
+        data-return-near={origin !== null && Math.abs(originPercent - percent) < 16 ? 'true' : 'false'}
+        style={
+          {
+            '--progress': `${percent}%`,
+            '--origin-progress': `${originPercent}%`,
+            '--readout-shift': percent < 50 ? '28px' : '-28px',
+          } as React.CSSProperties
+        }
+      >
+        <div
+          className="gd-tl-rail"
+          ref={railRef}
+          tabIndex={0}
+          role="slider"
+          aria-label="跳转楼层"
+          aria-valuemin={1}
+          aria-valuemax={total}
+          aria-valuenow={activeFloor}
+          onPointerDown={handlePointerDown}
+          onPointerMove={handlePointerMove}
+          onPointerUp={(e) => finishDrag(e, true)}
+          onPointerCancel={(e) => finishDrag(e, false)}
+          onKeyDown={(e) => {
+            const targets: Record<string, number> = {
+              Home: 1,
+              End: total,
+              ArrowDown: activeFloor + 1,
+              ArrowRight: activeFloor + 1,
+              ArrowUp: activeFloor - 1,
+              ArrowLeft: activeFloor - 1,
+              PageDown: activeFloor + 40,
+              PageUp: activeFloor - 40,
+            };
+            if (e.key in targets) {
+              e.preventDefault();
+              onJump(Math.min(total, Math.max(1, targets[e.key])));
+            }
+          }}
         >
-          {formatMonthDay(startDate)}
-        </button>
-
-        {/* 3. Pure 1px Vertical Line + Single 3px Bright Cyan-Blue Thumb */}
-        <div className="gd-tl-rail-section">
-          <div
-            ref={railRef}
-            className="gd-tl-rail"
-            onPointerDown={handleRailPointerDown}
-            role="slider"
-            aria-valuemin={1}
-            aria-valuemax={safeTotal}
-            aria-valuenow={displayFloor}
-            aria-label="楼层阅读进度滑块"
-          >
-            <div
-              className="gd-tl-active-thumb"
-              style={{ top: `${thumbPercent}%` }}
-            >
-              <span className="gd-tl-thumb-bar" />
-              <div className="gd-tl-thumb-readout">
-                <strong className="gb-scroller-floor-label">
-                  {displayFloor} / {safeTotal}
-                </strong>
-                <span>{formatMonthDay(currentFloorDate || startDate)}</span>
-              </div>
-            </div>
-
-            {/* Cross-Floor Jump Origin Anchor: ├─ [ 返回 ] */}
-            {jumpOrigin && (
-              <div
-                className={`gd-tl-return-anchor ${jumpOriginFading ? 'is-fading' : ''}`}
-                style={{ top: `${Math.min(96, Math.max(4, jumpOrigin.percent))}%` }}
-                onPointerDown={(e) => e.stopPropagation()}
-              >
-                <span className="gd-tl-return-tick" aria-hidden="true" />
-                <button
-                  type="button"
-                  className="gd-tl-return-btn"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onReturnToOrigin();
-                  }}
-                  title={`返回跳转前位置 (${jumpOrigin.floorIndex} 楼)`}
-                >
-                  <Undo2 className="w-3 h-3" />
-                  <span>返回</span>
-                </button>
-              </div>
-            )}
-          </div>
+          <span className="gd-tl-thumb" />
         </div>
 
-        {/* 4. Latest Active Relative Time */}
-        <button
-          type="button"
-          className="gd-tl-latest-time"
-          onClick={() => onJumpToFloor(safeTotal)}
-          title="跳至最新回复"
-        >
-          {formatCompactRelative(latestDate)}
-        </button>
-
-        {/* 5. Minimal Borderless Action Icons: [📚] [↩] [🔔] */}
-        <div className="gd-tl-bottom-dock">
+        {origin !== null && (
           <button
             type="button"
-            className={`gd-tl-dock-btn is-hot-filter ${hotFilterActive ? 'is-active' : ''}`}
-            onClick={onToggleHotFilter}
-            title={hotFilterActive ? '退出热门筛选' : '只看热门回复'}
-            aria-label={hotFilterActive ? '退出热门筛选' : '只看热门回复'}
-            aria-pressed={hotFilterActive}
+            className={`gd-return ${fading ? 'is-fading' : ''}`}
+            onClick={onReturn}
+            title={`返回第 ${origin} 楼原阅读位置`}
+            aria-label={`返回第 ${origin} 楼原阅读位置`}
           >
-            <BookOpen className="w-3.5 h-3.5" />
-          </button>
-
-          <button
-            type="button"
-            className="gd-tl-dock-btn"
-            onClick={onReplyOp}
-            title="回复主贴"
-            aria-label="回复主贴"
-          >
-            <Reply className="w-3.5 h-3.5" />
-          </button>
-
-          <button
-            type="button"
-            className={`gd-tl-dock-btn ${subscribed ? 'is-subscribed' : ''}`}
-            onClick={onToggleSubscribe}
-            title={subscribed ? '已订阅贴文更新通知' : '订阅贴文更新通知'}
-            aria-pressed={subscribed}
-            aria-label="订阅通知"
-          >
-            {subscribed ? <BellRing className="w-3.5 h-3.5" /> : <Bell className="w-3.5 h-3.5" />}
-          </button>
-        </div>
-
-        {/* Mobile Floating Return Anchor if jumped on <=1024px */}
-        {jumpOrigin && (
-          <button
-            type="button"
-            className={`gd-mobile-return-pill ${jumpOriginFading ? 'is-fading' : ''}`}
-            onClick={onReturnToOrigin}
-          >
-            <CornerUpLeft className="w-3.5 h-3.5" />
-            <span>返回 {jumpOrigin.floorIndex}F</span>
+            <span>返回</span>
           </button>
         )}
+
+        <div className="gd-tl-readout">
+          <details>
+            <summary aria-label="输入楼层跳转">
+              {activeFloor} / {total}
+            </summary>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                const target = Number(floorInput);
+                if (target >= 1 && target <= total) {
+                  e.currentTarget.closest('details')!.open = false;
+                  setFloorInput('');
+                  onJump(target);
+                }
+              }}
+            >
+              <input
+                type="number"
+                aria-label="目标楼层"
+                min={1}
+                max={total}
+                required
+                value={floorInput}
+                onChange={(e) => setFloorInput(e.target.value)}
+              />
+              <button type="submit">跳转</button>
+            </form>
+          </details>
+          <time dateTime={activeDate}>{formatMonthDay(activeDate)}</time>
+        </div>
       </div>
 
-      <span className="sr-only">{scrollPercent}%</span>
+      <time
+        className="gd-tl-latest"
+        dateTime={latestActivity}
+        title={`最后活动时间 · ${formatFull(latestActivity)}`}
+      >
+        {relativeLatest}
+      </time>
+
+      <div className="gd-tl-actions">
+        <button
+          type="button"
+          className={`gd-tl-hot-btn ${hotOnly ? 'is-active' : ''}`}
+          aria-pressed={hotOnly}
+          aria-label={hotOnly ? '查看全部回复' : '只看热门回复'}
+          title={hotOnly ? '查看全部回复' : '只看热门回复'}
+          onClick={onToggleHot}
+        >
+          <BookOpen size={13} />
+          <span>熱門</span>
+        </button>
+
+        <div className="gd-tl-icon-row">
+          <button
+            type="button"
+            aria-label="回复主贴"
+            title="回复主贴"
+            onClick={onQuickReply}
+          >
+            <Reply size={14} />
+          </button>
+          <button
+            type="button"
+            className={subscribed ? 'is-active' : ''}
+            aria-pressed={subscribed}
+            aria-label={subscribed ? '已订阅讨论' : '订阅讨论'}
+            title={subscribed ? '已订阅讨论' : '订阅讨论'}
+            onClick={onToggleSubscribe}
+          >
+            <Bell size={14} />
+          </button>
+        </div>
+      </div>
     </aside>
   );
 }

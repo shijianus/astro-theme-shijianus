@@ -1,0 +1,189 @@
+1920×1080 {
+  overflow: 0,
+  leftAxis: 0,
+  contentAxis: 56,
+  axis: 0,
+  pills: true,
+  wrapping: 'wrap',
+  opAvatarWidth: 42,
+  subAvatarWidth: 36,
+  bodySize: '16px',
+  bodyLeading: '28px',
+  bodyColor: 'rgb(226, 232, 240)',
+  iconColor: 'rgb(100, 116, 139)',
+  surfaceWidth: 960,
+  surfaceCenterError: 0,
+  surfaceColor: 'rgba(15, 23, 42, 0.88)',
+  blur: 'blur(20px)',
+  radius: '12px',
+  emojiGap: '1px',
+  ruleWidth: '1px',
+  thumbWidth: '3px'
+} upward panel and rail verified
+1440×900 {
+  overflow: 0,
+  leftAxis: 0,
+  contentAxis: 56,
+  axis: 0,
+  pills: true,
+  wrapping: 'wrap',
+  opAvatarWidth: 42,
+  subAvatarWidth: 36,
+  bodySize: '16px',
+  bodyLeading: '28px',
+  bodyColor: 'rgb(226, 232, 240)',
+  iconColor: 'rgb(100, 116, 139)',
+  surfaceWidth: 960,
+  surfaceCenterError: 0,
+  surfaceColor: 'rgba(15, 23, 42, 0.88)',
+  blur: 'blur(20px)',
+  radius: '12px',
+  emojiGap: '1px',
+  ruleWidth: '1px',
+  thumbWidth: '3px'
+} upward panel and rail verified
+1280×800 {
+  overflow: 0,
+  leftAxis: 0,
+  contentAxis: 56,
+  axis: 0,
+  pills: true,
+  wrapping: 'wrap',
+  opAvatarWidth: 42,
+  subAvatarWidth: 36,
+  bodySize: '16px',
+  bodyLeading: '28px',
+  bodyColor: 'rgb(226, 232, 240)',
+  iconColor: 'rgb(100, 116, 139)',
+  surfaceWidth: 960,
+  surfaceCenterError: 0,
+  surfaceColor: 'rgba(15, 23, 42, 0.88)',
+  blur: 'blur(20px)',
+  radius: '12px',
+  emojiGap: '1px',
+  ruleWidth: '1px',
+  thumbWidth: '3px'
+} upward panel and rail verified
+1024×768 {
+  overflow: 0,
+  leftAxis: 0,
+  contentAxis: 56,
+  axis: 0,
+  pills: true,
+  wrapping: 'wrap',
+  opAvatarWidth: 42,
+  subAvatarWidth: 36,
+  bodySize: '16px',
+  bodyLeading: '28px',
+  bodyColor: 'rgb(226, 232, 240)',
+  iconColor: 'rgb(100, 116, 139)',
+  surfaceWidth: 960,
+  surfaceCenterError: 0,
+  surfaceColor: 'rgba(15, 23, 42, 0.88)',
+  blur: 'blur(20px)',
+  radius: '12px',
+  emojiGap: '1px',
+  ruleWidth: '1px',
+  thumbWidth: '3px'
+} upward panel and rail verified
+768×1024 {
+  overflow: 0,
+  leftAxis: 0,
+  contentAxis: 56,
+  axis: 0,
+  pills: true,
+  wrapping: 'wrap',
+  opAvatarWidth: 42,
+  subAvatarWidth: 36,
+  bodySize: '16px',
+  bodyLeading: '28px',
+  bodyColor: 'rgb(226, 232, 240)',
+  iconColor: 'rgb(100, 116, 139)',
+  surfaceWidth: 704,
+  surfaceCenterError: 0,
+  surfaceColor: 'rgba(15, 23, 42, 0.88)',
+  blur: 'blur(20px)',
+  radius: '12px',
+  emojiGap: '1px',
+  ruleWidth: '1px',
+  thumbWidth: '3px'
+} upward panel and rail verified
+390×844 {
+  overflow: 0,
+  leftAxis: 0,
+  contentAxis: 56,
+  axis: 0,
+  pills: true,
+  wrapping: 'wrap',
+  opAvatarWidth: 42,
+  subAvatarWidth: 36,
+  bodySize: '16px',
+  bodyLeading: '28px',
+  bodyColor: 'rgb(226, 232, 240)',
+  iconColor: 'rgb(100, 116, 139)',
+  surfaceWidth: 326,
+  surfaceCenterError: 0,
+  surfaceColor: 'rgba(15, 23, 42, 0.88)',
+  blur: 'blur(20px)',
+  radius: '12px',
+  emojiGap: '1px',
+  ruleWidth: '1px',
+  thumbWidth: '3px'
+} upward panel and rail verified
+360×800 {
+  overflow: 0,
+  leftAxis: 0,
+  contentAxis: 56,
+  axis: 0,
+  pills: true,
+  wrapping: 'wrap',
+  opAvatarWidth: 42,
+  subAvatarWidth: 36,
+  bodySize: '16px',
+  bodyLeading: '28px',
+  bodyColor: 'rgb(226, 232, 240)',
+  iconColor: 'rgb(100, 116, 139)',
+  surfaceWidth: 296,
+  surfaceCenterError: 0,
+  surfaceColor: 'rgba(15, 23, 42, 0.88)',
+  blur: 'blur(20px)',
+  radius: '12px',
+  emojiGap: '1px',
+  ruleWidth: '1px',
+  thumbWidth: '3px'
+} upward panel and rail verified
+real D1: Boost, reactions, parent, nested 3-level replies, independent quote, return, timeline tracking, edit and delete passed
+Cross-page return deviation 0 px; parent expansion retained
+1,001 replies, deep link 1578 ms, 41 mounted floors, real rail pointer and keyboard jumps
+360px sticky progress, long text, horizontally scrollable code, display math, expandable Markdown and endpoint jump passed
+node:internal/modules/run_main:123
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
++ actual - expected
+
++ [
++   'Minified React error #418; visit https://react.dev/errors/418?args[]=HTML&args[]= for the full message or use the non-minified dev environment for full errors and additional helpful warnings.',
++   'Minified React error #418; visit https://react.dev/errors/418?args[]=HTML&args[]= for the full message or use the non-minified dev environment for full errors and additional helpful warnings.',
++   'Minified React error #418; visit https://react.dev/errors/418?args[]=HTML&args[]= for the full message or use the non-minified dev environment for full errors and additional helpful warnings.',
++   'Minified React error #418; visit https://react.dev/errors/418?args[]=HTML&args[]= for the full message or use the non-minified dev environment for full errors and additional helpful warnings.'
++ ]
+- []
+
+    at file:///home/shijian/projects/shijianus-blog/scripts/verify-gesture-detail.mjs:555:10
+    at async withGuestbook (file:///home/shijian/projects/shijianus-blog/scripts/guestbook-test-server.mjs:113:5)
+    at async file:///home/shijian/projects/shijianus-blog/scripts/verify-gesture-detail.mjs:6:1 {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: [
+    'Minified React error #418; visit https://react.dev/errors/418?args[]=HTML&args[]= for the full message or use the non-minified dev environment for full errors and additional helpful warnings.',
+    'Minified React error #418; visit https://react.dev/errors/418?args[]=HTML&args[]= for the full message or use the non-minified dev environment for full errors and additional helpful warnings.',
+    'Minified React error #418; visit https://react.dev/errors/418?args[]=HTML&args[]= for the full message or use the non-minified dev environment for full errors and additional helpful warnings.',
+    'Minified React error #418; visit https://react.dev/errors/418?args[]=HTML&args[]= for the full message or use the non-minified dev environment for full errors and additional helpful warnings.'
+  ],
+  expected: [],
+  operator: 'deepStrictEqual'
+}
+
+Node.js v22.18.0

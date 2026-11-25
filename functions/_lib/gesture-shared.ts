@@ -400,7 +400,7 @@ export const STARTER_PINNED_GESTURE_ROW: RawCommentRow = {
   author_role: 'admin',
   message: `欢迎在此留下你的足迹、想法与问候，探讨技术、交流灵感或随心闲聊，期待与你的每一次思想碰撞！✨
 
-在这里你可以自由开启话题（Gesture）、发送短评微语（Boost），或者通过右侧时间轴滑块快速穿梭于长篇讨论之中。相关参考：[博客功能与内容格式指南](/posts/content-formats-and-markup-mastery/) 与 [社区规范与等级体系](/community/identity-levels-and-badges/)。`,
+在这里你可以自由开启话题（Gesture）、发送短评微语（Boost），或者通过右侧时间轴滑块快速穿梭于长篇讨论之中。`,
   likes_count: 18,
   reactions: JSON.stringify({
     summary: { '👍': 7, '❤️': 5, '🚀': 4, '💡': 2 },
@@ -565,7 +565,7 @@ export const STARTER_PINNED_BOOST_ROWS: RawBoostRow[] = [
     user_id: 'reader_bob',
     author_name: 'Bob_Dev',
     author_avatar: '',
-    content: '星空背景太帅了！质感绝佳',
+    content: '星空背景太帅，毛玻璃质感绝佳！',
     created_at: '2026-08-03T09:05:00.000Z',
   },
   {
@@ -579,82 +579,61 @@ export const STARTER_PINNED_BOOST_ROWS: RawBoostRow[] = [
   },
 ];
 
-export function extractRelatedLinks(
-  opRow: RawCommentRow,
-  replyRows: RawCommentRow[],
-  allTopGestures: RawCommentRow[],
-  replyCountMap: Map<string, number>
-) {
+export function extractRelatedLinks(opRow: RawCommentRow, allTopGestures: RawCommentRow[], replyCountMap: Map<string, number>) {
   const links: Array<{ id?: string; title: string; url: string; replyCount: number; type: 'external' | 'gesture' }> = [];
   const seenUrls = new Set<string>();
 
-  const gestureById = new Map<string, RawCommentRow>();
-  for (const g of allTopGestures) {
-    if (g.id && g.status !== 'deleted') {
-      gestureById.set(g.id, g);
-    }
-  }
-
-  const normalizeUrl = (rawUrl: string) => rawUrl.trim().replace(/[.,;!?)]+$/, '');
-
-  const pushLink = (title: string, rawUrl: string) => {
-    const url = normalizeUrl(rawUrl);
-    if (!url || seenUrls.has(url)) return;
-    // Ignore uploaded image assets
-    if (/\.(png|jpe?g|gif|webp|svg|avif)(\?.*)?$/i.test(url)) return;
-
-    seenUrls.add(url);
-
-    // Detect /guestbook/#gesture-<id> internal discussion reference
-    const gestureMatch = url.match(/\/guestbook\/#gesture-([a-zA-Z0-9_-]+)/);
-    if (gestureMatch) {
-      const targetId = gestureMatch[1];
-      const targetGesture = gestureById.get(targetId);
-      const headingMatch = (targetGesture?.message || '').match(/^#{1,3}\s+(.*)$/m);
-      const resolvedTitle =
-        targetGesture?.title?.trim() ||
-        (headingMatch ? headingMatch[1].trim() : '') ||
-        title ||
-        '关联 Gesture 讨论';
+  // 1. Extract Markdown links [title](url) from OP message
+  const mdLinkRegex = /\[([^\]]+)\]\(((?:https?:\/\/|\/)[^\s)]+)\)/g;
+  let match: RegExpExecArray | null;
+  while ((match = mdLinkRegex.exec(opRow.message || '')) !== null) {
+    const title = match[1].trim();
+    const url = match[2].trim();
+    if (!seenUrls.has(url)) {
+      seenUrls.add(url);
       links.push({
-        id: targetId,
-        title: resolvedTitle,
+        title: title || url,
         url,
-        replyCount: replyCountMap.get(targetId) || 0,
-        type: 'gesture',
+        replyCount: 0,
+        type: 'external',
       });
-      return;
-    }
-
-    links.push({
-      title: title || url.replace(/^https?:\/\//, '').slice(0, 60),
-      url,
-      replyCount: 0,
-      type: 'external',
-    });
-  };
-
-  const messagesToScan = [opRow.message || '', ...replyRows.map((r) => r.message || '')];
-  const mdLinkRegex = /(?<!!)\[([^\]]+)\]\(((?:https?:\/\/|\/)[^\s)]+)\)/g;
-  const bareUrlRegex = /(?<!\()(https?:\/\/[^\s)<>]+)/g;
-
-  for (const text of messagesToScan) {
-    if (!text) continue;
-    let match: RegExpExecArray | null;
-    mdLinkRegex.lastIndex = 0;
-    while ((match = mdLinkRegex.exec(text)) !== null) {
-      pushLink(match[1].trim(), match[2]);
-    }
-    bareUrlRegex.lastIndex = 0;
-    while ((match = bareUrlRegex.exec(text)) !== null) {
-      pushLink('', match[1]);
     }
   }
 
-  // Prioritize /guestbook/ gesture links first, preserving discovery order otherwise
-  return links.sort((a, b) => {
-    if (a.type === 'gesture' && b.type !== 'gesture') return -1;
-    if (a.type !== 'gesture' && b.type === 'gesture') return 1;
-    return 0;
-  });
+  // 2. Extract bare URLs not already captured
+  const bareUrlRegex = /(?<!\()(https?:\/\/[^\s)<>]+)/g;
+  while ((match = bareUrlRegex.exec(opRow.message || '')) !== null) {
+    const url = match[1].trim();
+    if (!seenUrls.has(url)) {
+      seenUrls.add(url);
+      links.push({
+        title: url.replace(/^https?:\/\//, '').slice(0, 60),
+        url,
+        replyCount: 0,
+        type: 'external',
+      });
+    }
+  }
+
+  // 3. Same-author / same-tag sibling Gestures
+  for (const g of allTopGestures) {
+    if (g.id === opRow.id || g.parent_id || g.post_type === 'boost' || g.status === 'deleted') continue;
+    const sameAuthor = g.author_id === opRow.author_id || g.author_name === opRow.author_name;
+    const sameTag = (g.tag || 'general') === (opRow.tag || 'general');
+    if (!sameAuthor && !sameTag) continue;
+    const url = `/guestbook/#gesture-${g.id}`;
+    if (seenUrls.has(url)) continue;
+    seenUrls.add(url);
+    const titleMatch = (g.message || '').match(/^###\s+(.*)$/m);
+    const title = g.title || (titleMatch ? titleMatch[1].trim() : g.message.replace(/[#*`_>]/g, '').trim().slice(0, 48));
+    links.push({
+      id: g.id,
+      title: title || '关联 Gesture 讨论',
+      url,
+      replyCount: replyCountMap.get(g.id) || 0,
+      type: 'gesture',
+    });
+  }
+
+  return links;
 }
